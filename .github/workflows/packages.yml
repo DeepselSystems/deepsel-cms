@@ -1,0 +1,144 @@
+name: Packages CI/CD
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
+    tags:
+      - 'cms-utils-v*'
+      - 'cms-react-v*'
+
+jobs:
+  # Detect which packages changed
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cms-utils: ${{ steps.filter.outputs.cms-utils }}
+      cms-react: ${{ steps.filter.outputs.cms-react }}
+      # For tag events, detect which package the tag is for
+      tagged-package: ${{ steps.tag-check.outputs.package }}
+      tag-version: ${{ steps.tag-check.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check tag
+        id: tag-check
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG" == cms-utils-v* ]]; then
+            echo "package=cms-utils" >> $GITHUB_OUTPUT
+            echo "version=${TAG#cms-utils-v}" >> $GITHUB_OUTPUT
+          elif [[ "$TAG" == cms-react-v* ]]; then
+            echo "package=cms-react" >> $GITHUB_OUTPUT
+            echo "version=${TAG#cms-react-v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detect changed packages
+        uses: dorny/paths-filter@v3
+        id: filter
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        with:
+          filters: |
+            cms-utils:
+              - 'packages/cms-utils/**'
+            cms-react:
+              - 'packages/cms-react/**'
+
+  # cms-utils CI
+  cms-utils:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.cms-utils == 'true' || needs.detect-changes.outputs.tagged-package == 'cms-utils'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: packages/cms-utils
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: packages/cms-utils/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish package
+        if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
+
+  # cms-react CI
+  cms-react:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.cms-react == 'true' || needs.detect-changes.outputs.tagged-package == 'cms-react'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: packages/cms-react
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: packages/cms-react/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish package
+        if: needs.detect-changes.outputs.tagged-package == 'cms-react'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish

@@ -1,3 +1,6 @@
+# Exclude packages folder
+packages
+
 venv
 .idea
 .serverless

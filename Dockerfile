@@ -8,11 +8,12 @@ RUN apk update && apk add --no-cache \
     npm \
     postgresql-client
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
 COPY . .
 
-RUN npm install --omit=dev
+WORKDIR /usr/src/app/backend
 
 COPY crontab /tmp/crontab
 RUN cat /tmp/crontab > /etc/crontabs/root
