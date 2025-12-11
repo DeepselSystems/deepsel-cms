@@ -2,7 +2,8 @@
 
 import os
 import shutil
-import subprocess
+
+import subprocess  # nosec B404
 import time
 import logging
 import hashlib
@@ -45,7 +46,7 @@ def setup_themes(force_build=False, force_sync=False):
 
     def run_npm(cmd, cwd, timeout=300):
         """Run npm command through user's interactive shell to inherit PATH."""
-        return subprocess.run(
+        return subprocess.run(  # nosec B603
             [user_shell, "-i", "-c", cmd],
             cwd=cwd,
             capture_output=True,

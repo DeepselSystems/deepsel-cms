@@ -1,5 +1,4 @@
 from typing import List, Dict, Any, Optional, Tuple
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from apps.cms.types import BlogPostListItem
 from deepsel.utils.models_pool import models_pool
@@ -90,7 +89,7 @@ def get_blog_list(
 
         return blog_posts, settings, target_lang
 
-    except Exception as e:
+    except Exception:
         # Return empty list instead of error to avoid breaking the website
         print_exc()
         settings = org_settings.get_public_settings(

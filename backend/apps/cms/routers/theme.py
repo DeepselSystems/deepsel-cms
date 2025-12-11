@@ -1,19 +1,14 @@
 import logging
 import os
 import json
-import subprocess
-import hashlib
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 from db import get_db
 from deepsel.utils.get_current_user import get_current_user
 from deepsel.models.user import UserModel
 from deepsel.utils.models_pool import models_pool
-import shutil
-from traceback import print_exc
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +261,6 @@ def get_theme_file(
     """
     try:
         ThemeFileModel = models_pool.get("theme_file")
-        ThemeFileContentModel = models_pool.get("theme_file_content")
 
         # Read default file from filesystem
         full_path = os.path.join("client_build/themes", theme_name, file_path)
@@ -352,7 +346,6 @@ def trigger_setup_themes(force_sync=False):
         logger.info("Theme setup completed successfully")
     except Exception as e:
         logger.error(f"Error during theme setup: {e}")
-        p
 
 
 @router.post("/file/save")
