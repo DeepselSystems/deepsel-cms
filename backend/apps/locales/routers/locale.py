@@ -1,0 +1,18 @@
+from deepsel.utils.crud_router import CRUDRouter
+from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from deepsel.utils.get_current_user import get_current_user
+from fastapi import Depends
+
+table_name = "locale"
+CRUDSchemas = generate_CRUD_schemas(table_name)
+
+router = CRUDRouter(
+    read_schema=CRUDSchemas.Read,
+    search_schema=CRUDSchemas.Search,
+    table_name=table_name,
+    dependencies=[Depends(get_current_user)],
+    # This model is read only
+    update_route=False,
+    delete_one_route=False,
+    create_route=False,
+)

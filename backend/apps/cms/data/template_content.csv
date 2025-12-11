@@ -1,0 +1,2581 @@
+content,locale/locale_id,template/template_id,string_id,organization/organization_id,system
+"import {useState, useEffect, useRef, useMemo} from 'react';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faChevronDown, faChevronRight} from '@fortawesome/free-solid-svg-icons';
+
+
+function Header({currentPage = null}) {
+  const {t, i18n} = useTranslation(TranslationNamespace.Header);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const langDropdownRef = useRef(null);
+  const {settings: siteSettings} = SitePublicSettingsState();
+  const menus = useMemo(
+    () => siteSettings?.menus?.main || [],
+    [siteSettings?.menus?.main]
+  );
+
+  // Process menu items to use the correct translation based on current language
+  const processedMenus = useMemo(() => {
+    if (!menus || !menus.length) return [];
+
+    function processMenuItem(menu) {
+      const translation = menu.translations[i18n.language];
+      if (!translation) {
+        return null;
+      }
+
+      // Process children recursively and filter out null items
+      const children =
+        menu.children && menu.children.length > 0
+          ? menu.children.map((child) => processMenuItem(child)).filter(Boolean)
+          : [];
+
+      return {
+        id: menu.id,
+        position: menu.position,
+        title: translation?.title,
+        url: translation?.url,
+        open_in_new_tab: translation?.open_in_new_tab,
+        children,
+      };
+    }
+
+    return menus.map((menu) => processMenuItem(menu)).filter(Boolean);
+  }, [menus, i18n.language]);
+
+  const logoLink = useMemo(() => {
+    // If current language is different from default, root link is /{language}
+    return siteSettings?.default_language &&
+      i18n.language !== siteSettings.default_language?.iso_code
+      ? `/${i18n.language}`
+      : '/';
+  }, [siteSettings?.default_language?.iso_code, i18n.language]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        langDropdownRef.current &&
+        !langDropdownRef.current.contains(event.target)
+      ) {
+        setLangDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle language change
+  const changeLanguage = (code) => {
+    let targetPath = null;
+    const {path: currentPath} = parseSlugForLangAndPath(location.pathname);
+
+    // For pages: Use language_alternatives metadata to get language-specific slugs
+    if (currentPage?.language_alternatives) {
+      // Find the target language alternative
+      const targetAlternative = currentPage.language_alternatives.find(
+        (alt) => alt.locale?.iso_code === code
+      );
+
+      if (targetAlternative?.slug) {
+        targetPath = targetAlternative.slug.startsWith('/')
+          ? targetAlternative.slug
+          : `/${targetAlternative.slug}`;
+      }
+    } else if (currentPage?.contents) {
+      // Fallback to contents array (for frontend pages)
+      const targetContent = currentPage.contents.find(
+        (content) => content.locale?.iso_code === code
+      );
+
+      if (targetContent?.slug) {
+        targetPath = targetContent.slug.startsWith('/')
+          ? targetContent.slug
+          : `/${targetContent.slug}`;
+      }
+    }
+
+    // Fallback to current path if no specific content found
+    if (!targetPath) {
+      targetPath = currentPath;
+    }
+
+    // Build final URL
+    const finalUrl =
+      code !== siteSettings?.default_language?.iso_code
+        ? `/${code}${targetPath}`
+        : targetPath;
+
+    i18n.changeLanguage(code);
+    navigate(finalUrl);
+    setLangDropdownOpen(false);
+  };
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  // Check if a menu item should be marked as active
+  const isActive = (menuItem) => {
+    let result;
+    if (menuItem?.url === '/') {
+      result =
+        location.pathname === '/' ||
+        location.pathname === `/${i18n.language}` ||
+        location.pathname === `/${i18n.language}/`;
+    } else {
+      result =
+        location.pathname === menuItem?.url ||
+        location.pathname === `/${i18n.language}${menuItem?.url}` ||
+        location.pathname === `/${i18n.language}${menuItem?.url}/`;
+    }
+    return result;
+  };
+
+  return (
+    <header className=""sticky top-0 z-50 border-b border-gray-200 bg-white"">
+      <div className=""flex items-center justify-between sm:border-b border-gray-200"">
+        <div className=""flex items-center gap-[10px] sm:gap-[16px] pl-4 md:px-4 w-full h-[50px] sm:h-[85px] transition-all duration-500"">
+          <Link
+            to={logoLink}
+            className=""w-[43px] h-[58px] sm:w-[250px] sm:h-[80.6px] overflow-hidden block shrink-0""
+          >
+            {/* Logo or site name */}
+            <div
+              className=""w-[250px] h-[80.6px] bg-cover bg-no-repeat transition-all duration-500""
+              role=""img""
+              aria-label=""eIAM""
+            >
+              <img
+                src=""/images/logo.svg""
+                alt=""Logo""
+                className=""w-full h-full object-contain""
+              />
+            </div>
+          </Link>
+          <div className=""border-l border-l-[#E5E4E2] h-[40px]""></div>
+          <div className=""text-[26px] font-light"">
+            {t('site_title', 'eIAM')}
+          </div>
+          <div className=""font-light text-[18px] text-ellipsis hidden lg:block"">
+            {t(
+              'site_subtitle',
+              'Federal Office of Information Technology, Systems and Telecommunication & Federal Chancellery FCh, Digital Transformation and ICT Governance DTI'
+            )}
+          </div>
+          <div className=""ml-auto"">
+            <WebsiteSearchInput />
+          </div>
+        </div>
+
+        <div className=""flex items-center px-4"">
+          {/* Language Switcher - Desktop */}
+          <div className=""relative mr-4 hidden sm:block"" ref={langDropdownRef}>
+            <button
+              className=""flex items-center space-x-1 text-gray-700 hover:text-gray-900 focus:outline-none cursor-pointer""
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            >
+              <span className=""uppercase"">
+                {i18n.language?.substring(0, 2)}
+              </span>
+              <span className=""sr-only"">
+                {t('language_selector', 'Language')}
+              </span>
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className={`h-3 w-3 transform transition-transform duration-300 ${langDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {/* Language Dropdown */}
+            <div
+              className={`absolute z-50 right-0 mt-2 w-32 origin-top transform overflow-hidden rounded border border-gray-200 bg-white shadow-lg transition-all duration-300 ${langDropdownOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
+            >
+              {siteSettings?.available_languages.map((lang) => (
+                <button
+                  key={lang.id}
+                  className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 cursor-pointer ${i18n.language === lang.iso_code ? 'bg-gray-100 font-medium' : ''}`}
+                  onClick={() => changeLanguage(lang.iso_code)}
+                >
+                  {lang?.iso_code?.substring(0, 2)?.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className=""flex flex-col items-center justify-center space-y-1.5 p-2 focus:outline-none sm:hidden""
+            onClick={toggleMobileMenu}
+            aria-label=""Toggle menu""
+          >
+            <span
+              className={`h-0.5 w-6 bg-gray-800 transition-transform duration-300 ${mobileMenuOpen ? 'translate-y-2 rotate-45' : ''}`}
+            ></span>
+            <span
+              className={`h-0.5 w-6 bg-gray-800 transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}
+            ></span>
+            <span
+              className={`h-0.5 w-6 bg-gray-800 transition-transform duration-300 ${mobileMenuOpen ? '-translate-y-2 -rotate-45' : ''}`}
+            ></span>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop Navigation */}
+      <nav className=""navigation hidden sm:block"">
+        <ul className=""px-0 flex overflow-x-auto gap-[24px]"">
+          {processedMenus.map((item) => (
+            <li
+              key={item.id}
+              className={`group relative border-b-[3px] ${isActive(item) ? 'border-[#e53940]' : 'border-white hover:border-[#e53940] '}`}
+            >
+              <Link
+                to={item.url}
+                className={`block px-4 py-3 text-gray-800 hover:text-primary-600 cursor-pointer ${isActive(item) ? 'font-medium' : ''}`}
+                target={item.open_in_new_tab ? '_blank' : ''}
+                rel={item.open_in_new_tab ? 'noopener noreferrer' : ''}
+              >
+                {item.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Mobile Navigation */}
+      <div
+        className={`navigation-mobile border-t border-t-[#dfe4e9] fixed inset-0 top-[50px] z-40 transform overflow-y-auto bg-white transition-transform duration-300 sm:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Mobile Language Switcher */}
+        <div className=""border-b border-gray-200 p-4"">
+          <div className=""relative"">
+            <button
+              className=""flex items-center space-x-1 text-gray-700 hover:text-gray-900 focus:outline-none cursor-pointer""
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            >
+              <span className=""uppercase"">
+                {i18n.language?.substring(0, 2)}
+              </span>
+              <span className=""sr-only"">
+                {t('language_selector', 'Language')}
+              </span>
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className={`h-3 w-3 transform transition-transform duration-300 ${langDropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {/* Mobile Language Dropdown */}
+            <div
+              className={`absolute z-50 right-0 mt-2 w-32 origin-top transform overflow-hidden rounded border border-gray-200 bg-white shadow-lg transition-all duration-300 ${langDropdownOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
+            >
+              {siteSettings?.available_languages.map((lang) => (
+                <button
+                  key={lang.id}
+                  className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 cursor-pointer ${i18n.language === lang.iso_code ? 'bg-gray-100 font-medium' : ''}`}
+                  onClick={() => changeLanguage(lang.iso_code)}
+                >
+                  {lang?.iso_code?.substring(0, 2)?.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu Items */}
+        <MobileNavigation
+          items={processedMenus}
+          isActive={isActive}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
+      </div>
+    </header>
+  );
+}
+
+// Mobile Navigation Component with Accordion-style submenus
+function MobileNavigation({items, isActive, setMobileMenuOpen}) {
+  const [expandedItems, setExpandedItems] = useState({});
+
+  const toggleExpanded = (itemId) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  };
+
+  const handleLinkClick = () => {
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <ul className=""divide-y divide-gray-200"">
+      {items.map((item) => (
+        <li key={item.id}>
+          {item.children && item.children.length > 0 ? (
+            <div>
+              <div className=""flex w-full items-center"">
+                <Link
+                  to={item.url}
+                  className=""flex-grow px-4 py-3 text-left hover:bg-gray-50""
+                  onClick={handleLinkClick}
+                  target={item.open_in_new_tab ? '_blank' : ''}
+                  rel={item.open_in_new_tab ? 'noopener noreferrer' : ''}
+                >
+                  <span
+                    className={
+                      isActive(item) ? 'font-medium text-primary-600' : ''
+                    }
+                  >
+                    {item.title}
+                  </span>
+                </Link>
+                <button
+                  className=""px-0 pr-4 py-3 text-gray-500 focus:outline-none""
+                  onClick={() => toggleExpanded(item.id)}
+                  aria-label=""Toggle submenu""
+                >
+                  <FontAwesomeIcon
+                    icon={
+                      expandedItems[item.id] ? faChevronDown : faChevronRight
+                    }
+                    className=""h-4 w-4""
+                  />
+                </button>
+              </div>
+
+              {expandedItems[item.id] && (
+                <ul className=""bg-gray-50 pl-4"">
+                  {item.children.map((child) => (
+                    <li key={child.id}>
+                      <Link
+                        to={child.url}
+                        className={`block border-b border-[#dfe4e9] w-full px-4 py-2 ${isActive(child.url) ? 'border-l-[3px] border-l-[#e53940] bg-[#f0f4f7] font-medium' : 'hover:border-l-[3px] hover:border-l-[#e53940] hover:bg-[#f0f4f7]'}`}
+                        onClick={handleLinkClick}
+                        target={child.open_in_new_tab ? '_blank' : ''}
+                        rel={child.open_in_new_tab ? 'noopener noreferrer' : ''}
+                      >
+                        {child.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <Link
+              to={item.url}
+              className={`block w-full px-4 py-2 border-b border-[#dfe4e9] hover:bg-[#f0f4f7] hover:border-l-[3px] hover:border-l-[#e53940] ${isActive(item) ? 'border-l-[3px] border-l-[#e53940] font-medium' : ''}`}
+              onClick={handleLinkClick}
+              target={item.open_in_new_tab ? '_blank' : ''}
+              rel={item.open_in_new_tab ? 'noopener noreferrer' : ''}
+            >
+              {item.title}
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+",en_US,Header,Header_en,1,false
+"<div>
+  <h2 class=""text-lg font-bold mb-6"">Betrieben durch die Bundesverwaltung</h2>
+
+  <!-- AGOV -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/agov-mrEXNGWaB6.jpg""
+      alt=""AGOV Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">AGOV</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        Authentifizierungsdienst der Schweizer Behörden – AGOV
+      </p>
+      <p class=""text-sm text-gray-800"">
+        Support AGOV
+        <a
+          href=""https://www.agov.ch/help""
+          class=""text-blue-600 hover:underline""
+          target=""_blank""
+          >www.agov.ch/help</a
+        >
+      </p>
+      <p class=""text-sm text-gray-800"">
+        Weitere Informationen:
+        <a
+          href=""https://www.agov.ch""
+          class=""text-blue-600 hover:underline""
+          target=""_blank""
+          >www.agov.ch</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <!-- edaLogin -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/eda-NnrtsfPNTi.jpg""
+      alt=""edaLogin Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">#edaLogin</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        Eidgenössisches Departement für auswärtige Angelegenheiten (EDA)
+      </p>
+      <p class=""text-sm text-gray-800"">Support:</p>
+      <p class=""text-sm text-gray-800"">
+        E-Mail:
+        <a
+          href=""mailto:helpdesk@eda.admin.ch""
+          class=""text-blue-600 hover:underline""
+          >helpdesk@eda.admin.ch</a
+        >
+      </p>
+      <p class=""text-sm text-gray-800"">
+        Tel:
+        <a
+          href=""tel:+41584631430""
+          class=""text-blue-600 hover:underline""
+          >+41 58 463 14 30</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <!-- CH-LOGIN -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/chlogin-fUgMn3chIf.jpg""
+      alt=""CH-LOGIN Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">CH-LOGIN</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        CH-LOGIN ist ein Anmeldeverfahren, das vom Standarddienst eIAM
+        der Bundesverwaltung bereitgestellt wird (wird durch AGOV ersetzt).
+      </p>
+      <a
+        href=""#""
+        class=""text-blue-600 text-sm hover:underline""
+        target=""_blank""
+        >Support für Endbenutzer</a
+      >
+    </div>
+  </div>
+</div>",de_DE,IDPList,IDPList_de,1,false
+"import React from 'react';
+import clsx from 'clsx';
+import {Box, Input} from '@mantine/core';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faSearch} from '@fortawesome/free-solid-svg-icons';
+import {useTranslation} from 'react-i18next';
+import {useNavigate, useSearchParams} from 'react-router-dom';
+// Tailwind default breakpoints (static to avoid Node.js dependencies)
+const defaultTheme = {
+  screens: {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px'
+  }
+};
+import {useViewportSize} from '@mantine/hooks';
+
+/**
+ * Search input, using for website pages
+ *
+ * @type {React.ForwardRefExoticComponent<
+ * React.PropsWithoutRef<{
+ *   className: string
+ * }> &
+ * React.RefAttributes<unknown>>}
+ */
+const WebsiteSearchInput = React.forwardRef(({className}, ref) => {
+  // Get input id
+  const inputId = React.useId();
+
+  // Translation
+  const {t, i18n} = useTranslation(TranslationNamespace.Header);
+
+  // Navigate
+  const navigate = useNavigate();
+
+  // Get viewport size
+  const {width: viewportWidth} = useViewportSize();
+
+  /**
+   * Whether current screen with is under md (tailwind breakpoint)
+   * @type {boolean}
+   */
+  const isUnderMd = React.useMemo(() => {
+    const widthOfMd = +defaultTheme.screens.md.replace('rem', '');
+    if (isNaN(widthOfMd)) {
+      return false;
+    } else {
+      return viewportWidth < widthOfMd * 16;
+    }
+  }, [viewportWidth]);
+
+  // Search bar expansion
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Search str state
+  const [searchContent, setSearchContent] = React.useState('');
+
+  // Query params
+  const [searchParams] = useSearchParams();
+
+  /**
+   * Handle search
+   *
+   * @type {(function())|*}
+   */
+  const handleSearch = React.useCallback(() => {
+    if (searchContent.trim()) {
+      // Get current language
+      const currentLang = i18n.language || 'en';
+
+      // Navigate to language-specific search results page with search query (always include language prefix)
+      const searchPath = `/${currentLang}/search?${QueryParamKey.SearchQuery}=${encodeURIComponent(searchContent.trim())}`;
+
+      navigate(searchPath);
+    }
+  }, [navigate, searchContent, i18n.language]);
+
+  /**
+   * Handle ref
+   */
+  React.useImperativeHandle(ref, () => ({}));
+
+  /**
+   * Use effect to detect screen width to expand the search input
+   */
+  React.useEffect(() => {
+    setIsExpanded(!isUnderMd);
+  }, [isUnderMd]);
+
+  /**
+   * Use effect once to initialize search query value to input
+   */
+  useEffectOnce(() => {
+    setSearchContent(searchParams.get(QueryParamKey.SearchQuery) || '');
+  });
+
+  return (
+    <>
+      <Box className={clsx('flex flex-row-reverse', className)}>
+        {isUnderMd && (
+          <button
+            onClick={() => setIsExpanded(true)}
+            className={clsx('cursor-pointer transition-all w-auto', {
+              '!w-0 opacity-0': isExpanded,
+            })}
+          >
+            <FontAwesomeIcon icon={faSearch} className=""text-gray-chateau-2"" />
+          </button>
+        )}
+
+        <Input
+          id={inputId}
+          ref={ref}
+          className={clsx('!w-0 !opacity-0 overflow-hidden transition-all', {
+            '!w-32 md:!w-40 !opacity-100': isExpanded,
+          })}
+          classNames={{
+            input: '!rounded-none !border-gray-athens-gray',
+          }}
+          maxLength={100}
+          placeholder={t('search', 'Search')}
+          leftSection={<FontAwesomeIcon icon={faSearch} />}
+          value={searchContent}
+          onChange={({target: {value}}) => setSearchContent(value)}
+          onKeyUp={(event) => {
+            if (event.key === 'Enter') {
+              handleSearch();
+            }
+          }}
+          leftSectionPointerEvents=""auto""
+          leftSectionProps={{
+            ...(isUnderMd && {
+              className: clsx('cursor-pointer !text-gray-chateau-2'),
+              onClick: () => {
+                setIsExpanded(() => false);
+              },
+            }),
+          }}
+        />
+      </Box>
+    </>
+  );
+});
+
+WebsiteSearchInput.displayName = 'WebsiteSearchInput';
+",en_US,WebsiteSearchInput,WebsiteSearchInput_en,1,false
+"<main class=""flex flex-col"">
+  {% include 'CSSBase' %}
+  {% block header %}{% include 'Header' %}{% endblock %}
+  <div class=""max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between py-3 lg:py-6 px-3"">
+    {% block left %}{% include 'LeftSidebar' %}{% endblock %}
+    <article id=""content"" class=""typography relative flex-1 min-w-[200px] mx-auto lg:w-[740px] xl:w-[800px] px-0 sm:px-3 lg:px-6"">
+    {% block content %}{% endblock %}
+    </article>
+    {% block right %}<div class=""invisible w-0 lg:w-[220px] xl:w-[250px]""></div>{% endblock %}
+  </div>
+  {% block footer %}{% include 'Footer' %}{% endblock %}
+<main>",en_US,WebsiteLayout,WebsiteLayout_en,1,false
+"<aside class=""right-sidebar break-words text-wrap text-[12px] lg:text-[14px] bg-[#F0F4F7] border border-[#F0F4F7] px-3 lg:px-6 py-3 lg:py-6 shadow w-full sm:w-[150px] lg:w-[200px] xl:w-[220px] 2xl:w-[260px] sm:shrink-[5]"">
+  <p></p>
+
+  <h2>Websites</h2>
+  <script>s=""https://www.bit.admin.ch""</script>
+  <script src=""js/url.js""></script>
+  <a href=""https://www.bit.admin.ch"" title=""https://www.bit.admin.ch"" target=""_blank"">www.bit.admin.ch</a><br>
+  <script>s=""https://www.bk.admin.ch""</script>
+  <script src=""js/url.js""></script>
+  <a href=""https://www.bk.admin.ch"" title=""https://www.bk.admin.ch"" target=""_blank"">www.bk.admin.ch</a>
+
+  <p></p>
+  <p></p>
+  <h2>Direktzugriff</h2>
+  <p class=""clearing""></p>
+  <span class=""bold"">Öffentlich:</span>
+  <p></p>
+  <p></p>
+
+  <h3>
+    <a target=""_blank"" title=""https://docs.eiam.swiss/?c=eiam"" href=""https://docs.eiam.swiss/?c=eiam"">
+      Neue technische Dokumentation</nobr>
+    </a>
+  </h3>
+  Das BIT hat neue technische Dokumentationen zu eIAM veröffentlicht.
+  <p></p>
+  <p></p>
+
+  <h3>
+    <a href=""index.html?c=bitreleaseplan&amp;l=de"">eIAM-Releaseplan <i class=""ti ti-arrow-narrow-right""></i></a>
+  </h3>
+  Die Release Notes beschreiben Änderungen am eIAM-Dienst und neue Funktionalitäten.
+  <p></p>
+
+  <p><span class=""bold"">Intern:</span></p>
+
+  <h3>
+    <a href=""index.html?c=!forumlist&amp;l=de"">Diskussionsforum <i class=""ti ti-arrow-narrow-right""></i></a>
+  </h3>
+  eIAM – Fragen und Diskussionen, moderiert durch die
+  <span
+    title=""Bundeskanzlei BK, Bereich Digitale Transformation und IKT-Steuerung (DTI)""
+    onclick=""thistitle=this.title;thisinnerHTML=this.innerHTML;this.innerHTML=thistitle;this.title=thisinnerHTML""
+    style=""cursor:pointer;text-decoration-line:underline;text-decoration-style:dotted;text-decoration-color:#aaa;""
+  >
+    BK DTI
+  </span>
+
+  <p></p>
+  <p></p>
+
+  <h3>
+    <a href=""index.html?c=!bkdti!soundingboard&amp;l=de"">Sounding Board <i class=""ti ti-arrow-narrow-right""></i></a>
+  </h3>
+  Beschreibung kommender Releases, P035-Status und Roadmap
+  <p></p>
+  <p></p>
+
+  <h3>
+    <a href=""index.html?c=eiam!dossier&amp;l=de"">eIAM-Dossier <i class=""ti ti-arrow-narrow-right""></i></a>
+  </h3>
+  Neu: Möchten Sie eine Anwendung beschaffen oder an eIAM anbinden? Bitte eröffnen Sie Ihr eIAM-Dossier online.
+  <p></p>
+  <p></p>
+
+  <h3>
+    <a href=""index.html?c=!eiam!calc!2026&amp;l=de"">eIAM-Tarif <i class=""ti ti-arrow-narrow-right""></i></a>
+  </h3>
+  Berechnen Sie Ihre wiederkehrenden Kosten.
+  <p></p>
+  <p></p>
+
+  <a href=""/"">
+    <img
+      style=""width:100%;""
+      title=""eIAM Logo""
+      alt=""eIAM Logo""
+      src=""/attachment/serve/eiamsquid.svg""
+    >
+  </a>
+</aside>",de_DE,HomeRightSidebar,HomeRightSidebar_de,1,true
+"<footer class=""bg-[#263645] px-6 py-2 text-white text-[12px]"">
+   <a name=""contact""></a>Federal Office of Information Technology, Systems and Telecommunication FOITT - eIAM,<br>in cooperation with the Federal Chancellery FCh, Digital Transformation and ICT Governance DTI.<br>Questions and concerns regarding this information offer are 
+   <a target=""_blank"" title=""https://www.bit.admin.ch"" href=""https://www.bit.admin.ch"">
+      accepted by FOITT.
+   </a>
+   
+   <br/>
+
+   <a target=""_blank"" title=""https://www.admin.ch/gov/en/start/terms-and-conditions.html"" href=""https://www.admin.ch/gov/en/start/terms-and-conditions.html"">
+      Legal information</nobr>
+   </a>
+</footer>",en_US,Footer,Footer_en,1,false
+"import {useState, useRef, useEffect, useMemo} from 'react';
+import clsx from 'clsx';
+import {Link} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+
+// Check if a menu item or any of its children is active/current page
+const hasChildActive = (menuItem, currentLanguage, defaultLanguage, windowHref) => {
+  const translation = menuItem.translations?.[currentLanguage];
+  if (!translation) {
+    return false;
+  }
+  // Check if the current menu item is active
+  if (linkIsCurrentPage(translation.url, currentLanguage, defaultLanguage, windowHref)) {
+    return true;
+  }
+
+  // Check if any children are active (recursive)
+  if (menuItem.children && menuItem.children.length > 0) {
+    return menuItem.children.some((child) =>
+      hasChildActive(child, currentLanguage, defaultLanguage, windowHref)
+    );
+  }
+
+  return false;
+};
+
+function LeftMenuItem({menu, index}) {
+  const {i18n} = useTranslation();
+  const currentLanguage = i18n.language;
+  const {settings} = SitePublicSettingsState();
+  const defaultLanguage = settings?.default_language?.iso_code;
+  const hasChildren = menu.children && menu.children.length > 0;
+  const windowHref = window.location.href;
+
+  const hasActiveChild = useMemo(
+    () =>
+      hasChildren &&
+      menu.children.some((child) =>
+        hasChildActive(child, currentLanguage, defaultLanguage, windowHref)
+      ),
+    [hasChildren, menu.children, currentLanguage, defaultLanguage, windowHref]
+  );
+  const translation = menu.translations?.[currentLanguage];
+  const isActive = useMemo(
+    () => linkIsCurrentPage(translation?.url, currentLanguage, defaultLanguage, windowHref),
+    [translation?.url, currentLanguage, defaultLanguage, windowHref]
+  );
+
+  // Local state for this specific menu item only - initialize to open if it has an active child
+  const [isOpen, setIsOpen] = useState(hasActiveChild);
+
+  // Refs for animation elements
+  const caretRef = useRef(null);
+  const contentRef = useRef(null);
+
+  // Handle animations with useEffect
+  useEffect(() => {
+    if (caretRef.current) {
+      caretRef.current.style.transition = 'transform 300ms ease';
+      caretRef.current.style.transform = isOpen
+        ? 'rotate(90deg)'
+        : 'rotate(0deg)';
+    }
+
+    if (contentRef.current && hasChildren) {
+      if (isOpen) {
+        // Get the scroll height to use for max-height
+        const height = contentRef.current.scrollHeight;
+        contentRef.current.style.maxHeight = `${height}px`;
+        contentRef.current.style.opacity = '1';
+      } else {
+        contentRef.current.style.maxHeight = '0px';
+        contentRef.current.style.opacity = '0';
+      }
+    }
+  }, [isOpen, hasChildren]);
+
+  // Toggle this specific menu item only
+  const toggleOpen = (e) => {
+    e.preventDefault();
+    setIsOpen(!isOpen);
+  };
+
+  if (!translation) {
+    return null;
+  }
+
+  return (
+    <div className=""border-b border-gray-aqua-haze"">
+      <div
+        className={clsx(
+          'flex items-center justify-between transition-all border-l-4',
+          isActive
+            ? 'bg-gray-aqua-haze text-primary-main border-primary-main'
+            : hasActiveChild
+              ? 'bg-gray-athens-gray text-primary-main border-primary-main'
+              : 'hover:bg-gray-aqua-haze border-white hover:border-primary-main hover:translate-x-1'
+        )}
+      >
+        <Link
+          to={translation?.url}
+          className={clsx(
+            'flex-1 px-2 !py-4 block text-secondary-text hover:!text-primary-main hover:!no-underline !text-base',
+            isActive || hasActiveChild ? '!text-primary-main' : ''
+          )}
+        >
+          <div className=""font-medium"">{translation?.title}</div>
+        </Link>
+
+        {hasChildren && (
+          <button onClick={toggleOpen} className=""px-3 py-4 focus:outline-none"">
+            <svg
+              ref={caretRef}
+              className=""w-4 h-4""
+              fill=""none""
+              stroke=""currentColor""
+              viewBox=""0 0 24 24""
+              xmlns=""http://www.w3.org/2000/svg""
+            >
+              <path
+                strokeLinecap=""round""
+                strokeLinejoin=""round""
+                strokeWidth={2}
+                d=""M9 5l7 7-7 7""
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {hasChildren && (
+        <div
+          ref={contentRef}
+          style={{
+            overflow: 'hidden',
+            maxHeight: '0px',
+            opacity: '0',
+            transition:
+              'max-height 300ms ease-in-out, opacity 300ms ease-in-out',
+          }}
+        >
+          <div className=""pl-4"">
+            {menu.children.map((childMenu, childIndex) => (
+              <LeftMenuItem
+                key={childIndex}
+                menu={childMenu}
+                index={`${index}-${childIndex}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+",en_US,LeftMenuItem,LeftMenuItem_en,1,false
+"<link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"" />
+<style>
+.typography {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.typography h1 {
+  font-size: 3em;
+  font-weight: 300;
+  line-height: 1.25;
+  letter-spacing: -.5px;
+}
+
+.typography h2 {
+  font-size: 2em;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -.5px;
+  margin-top: 1em;
+}
+
+.typography h3 {
+  font-size: 1.6em;
+  font-weight: 400;
+  line-height: 1.375;
+  letter-spacing: .18px;
+  margin-top: 1em;
+}
+
+.typography h4 {
+  font-size: 1.4em;
+  font-weight: 400;
+  line-height: 1.285715;
+  letter-spacing: .1px;
+}
+
+.typography h5 {
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: .1px;
+}
+
+.typography h6 {
+  font-size: 1em;
+  font-weight: 500;
+  line-height: 1.333333;
+  letter-spacing: .2px;
+}
+
+.typography p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.typography ul,
+.typography ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.typography ul {
+  list-style-type: disc;
+}
+
+.typography ol {
+  list-style-type: decimal;
+}
+
+.typography li {
+  margin-bottom: 0.5rem;
+}
+
+.typography ul ul,
+.typography ol ol,
+.typography ul ol,
+.typography ol ul {
+  margin: 0.5rem 0;
+}
+
+.typography a {
+  color: #069;
+}
+
+.typography a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.typography blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #4b5563;
+}
+
+.typography code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+}
+
+.typography pre {
+  background-color: #f3f4f6;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.typography pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+.typography table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.typography th,
+.typography td {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.typography th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.typography hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+.right-sidebar h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.right-sidebar h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.right-sidebar h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.right-sidebar h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.right-sidebar h5 {
+    font-size: .875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.right-sidebar a {
+    color: #069;
+}
+
+.right-sidebar a:visited {
+    color: inherit;
+}
+
+.right-sidebar a:hover {
+    text-decoration: none;
+    color: #1c2834;
+    transition: color .3s ease;
+}
+
+nav.left-sidebar a {
+    color: inherit;
+    text-decoration: none;
+}
+
+nav.left-sidebar a:visited {
+    color: inherit;
+    text-decoration: none;
+}
+
+footer a {
+    color: white !important;
+    text-decoration: underline !important;
+}
+
+footer a:hover {
+    color: #dfe4e9 !important;
+}
+.youtube-jump-mark-wrapper {
+  background-color: #F5F7FA; /* bg-gray-zumthor */
+  width: 100%;              /* w-full */
+  margin-top: 1rem;         /* my-4 */
+  margin-bottom: 1rem;
+}
+
+.jump-mark-youtube-title {
+  padding-left: 0.5rem;     /* px-2 */
+  padding-right: 0.5rem;
+  margin-top: 0.5rem;       /* my-2 */
+  margin-bottom: 0.5rem;
+  font-weight: 600;         /* font-semibold */
+}
+
+.jump-marks-list {
+  padding-left: 0.5rem;     /* px-2 */
+  padding-right: 0.5rem;
+  padding-top: 0.5rem;      /* py-2 */
+  padding-bottom: 0.5rem;
+}
+
+.jump-marks-title {
+  font-size: 0.875rem;      /* text-sm */
+  font-weight: 500;         /* font-medium */
+  color: #374151;           /* text-gray-700 */
+  margin-bottom: 0.5rem;    /* mb-2 */
+}
+
+.jump-mark-time {
+  color: #2563EB;           /* text-blue-600 */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, ""Liberation Mono"", ""Courier New"", monospace; /* font-mono */
+  font-size: 0.875rem;      /* text-sm */
+  font-weight: 500;         /* font-medium */
+  min-width: 3rem;          /* min-w-12 */
+}
+
+.jump-mark-content {
+  flex: 1;                  /* flex-1 */
+}
+
+.jump-mark-label {
+  font-size: 0.875rem;      /* text-sm */
+  font-weight: 500;         /* font-medium */
+  color: #111827;           /* text-gray-900 */
+}
+
+.jump-mark-description {
+  font-size: 0.75rem;       /* text-xs */
+  color: #4B5563;           /* text-gray-600 */
+  margin-top: 0.25rem;      /* mt-1 */
+}
+
+.jump-mark-item {
+  display: flex;                        /* flex */
+  align-items: flex-start;              /* items-start */
+  gap: 0.75rem;                         /* gap-3 */
+  padding: 0.25rem;                     /* p-1 */
+  border-radius: 0.25rem;               /* rounded */
+  cursor: pointer;                      /* cursor-pointer */
+  border: 1px solid transparent;        /* border border-transparent */
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 150ms;           /* transition-colors */
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.jump-mark-item:hover {
+  background-color: #E2E5EA; /* hover:bg-gray-athens-gray */
+}
+
+.youtube-embed-wrapper {
+  width: 100%;             /* w-full */
+  aspect-ratio: 16 / 9;    /* aspect-video */
+}
+</style>",en_US,CSSBase,CSSBase_en,1,false
+"<div>
+  <h2 class=""text-lg font-bold mb-6"">Operated by the federal administration</h2>
+
+  <!-- AGOV -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/agov-mrEXNGWaB6.jpg""
+      alt=""AGOV Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">AGOV</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        Authentication service of the Swiss authorities - AGOV
+      </p>
+      <p class=""text-sm text-gray-800"">
+        Support AGOV
+        <a
+          href=""https://www.agov.ch/help""
+          class=""text-blue-600 hover:underline""
+          target=""_blank""
+          >www.agov.ch/help</a
+        >
+      </p>
+      <p class=""text-sm text-gray-800"">
+        For further information:
+        <a
+          href=""https://www.agov.ch""
+          class=""text-blue-600 hover:underline""
+          target=""_blank""
+          >www.agov.ch</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <!-- edaLogin -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/eda-NnrtsfPNTi.jpg""
+      alt=""edaLogin Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">#edaLogin</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        Federal Department of Foreign Affairs (FDFA)
+      </p>
+      <p class=""text-sm text-gray-800"">Support:</p>
+      <p class=""text-sm text-gray-800"">
+        E-Mail:
+        <a
+          href=""mailto:helpdesk@eda.admin.ch""
+          class=""text-blue-600 hover:underline""
+          >helpdesk@eda.admin.ch</a
+        >
+      </p>
+      <p class=""text-sm text-gray-800"">
+        Tel:
+        <a
+          href=""tel:+41584631430""
+          class=""text-blue-600 hover:underline""
+          >+41 58 463 14 30</a
+        >
+      </p>
+    </div>
+  </div>
+
+  <!-- CH-LOGIN -->
+  <div class=""flex items-start gap-4 mb-8"">
+    <img
+      src=""/attachment/serve/chlogin-fUgMn3chIf.jpg""
+      alt=""CH-Login Logo""
+      class=""w-[120px] h-[120px] object-contain border rounded bg-white p-2 shadow""
+    />
+    <div>
+      <h3 class=""font-semibold mb-1"">CH-LOGIN</h3>
+      <p class=""text-sm text-gray-800 mb-2"">
+        The CH-LOGIN is a login procedure provided by the standard service eIAM
+        of the federal administration (will be replaced by AGOV).
+      </p>
+      <a
+        href=""#""
+        class=""text-blue-600 text-sm hover:underline""
+        target=""_blank""
+        >Support for end users</a
+      >
+    </div>
+  </div>
+</div>",en_US,IDPList,IDPList_en,1,false
+"import React from 'react';
+import {useTranslation} from 'react-i18next';
+
+const hasActivatedMenu = (menu, currentLanguage, defaultLanguage, windowHref) => {
+  const translation = menu.translations?.[currentLanguage];
+  if (!translation) {
+    return false;
+  }
+  const url = translation.url;
+  if (linkIsCurrentPage(url, currentLanguage, defaultLanguage, windowHref)) {
+    return true;
+  } else {
+    // Check deeper levels
+    for (const menuItem of menu.children || []) {
+      if (hasActivatedMenu(menuItem, currentLanguage, defaultLanguage, windowHref)) {
+        return true;
+      }
+    }
+
+    // If no activated menu found
+    return false;
+  }
+};
+
+function LeftSidebar() {
+  const {settings} = SitePublicSettingsState();
+  const {menus} = settings;
+  const {i18n} = useTranslation();
+  const currentLanguage = i18n.language;
+  const defaultLanguage = settings?.default_language?.iso_code;
+  const windowHref = window.location.href;
+   
+  const processedMenus = menus
+    ? React.useMemo(() => {
+        for (const menu of menus.main) {
+          if (hasActivatedMenu(menu, currentLanguage, defaultLanguage, windowHref)) {
+            return menu.children || [];
+          }
+        }
+        return [];
+      }, [menus.main, currentLanguage, defaultLanguage, windowHref])
+    : [];
+
+  const widthClass = React.useMemo(() => {
+    if (processedMenus.length && processedMenus.length > 0) {
+      return 'w-[150px] lg:w-[200px] lg:w-[220px] xl:w-[240px] 2xl:w-[260px]';
+    }
+    // produce spacer to let main content be in center
+    return 'invisible w-0 lg:w-[200px] lg:w-[220px] xl:w-[240px] 2xl:w-[260px]';
+
+  }, [processedMenus]);
+
+  return (
+    <nav className={`left-sidebar text-sm lg:text-base hidden md:block ${widthClass}`}>
+      {processedMenus.map((menu, index) => (
+        <LeftMenuItem key={index} menu={menu} index={index} />
+      ))}
+    </nav>
+  );
+}
+",en_US,LeftSidebar,LeftSidebar_en,1,false
+"<aside class=""right-sidebar break-words text-wrap text-[12px] lg:text-[14px] bg-[#F0F4F7] border border-[#F0F4F7] px-3 lg:px-6 py-3 lg:py-6 shadow w-full sm:w-[150px] lg:w-[200px] xl:w-[220px] 2xl:w-[260px] sm:shrink-[5]"">
+   <p></p>
+   <h2>Websites</h2>
+   <script>s=""https://www.bit.admin.ch""</script><script src=""js/url.js""></script><a href=""https://www.bit.admin.ch"" title=""https://www.bit.admin.ch"" target=""_blank"">www.bit.admin.ch</a><br><script>s=""https://www.bk.admin.ch""</script><script src=""js/url.js""></script><a href=""https://www.bk.admin.ch"" title=""https://www.bk.admin.ch"" target=""_blank"">www.bk.admin.ch</a>
+   <p></p>
+   <p></p>
+   <h2>Direct access</h2>
+   <p class=""clearing""></p>
+   <span class=""bold"">Public:</span>
+   <p></p>
+   <p></p>
+   <h3>
+      <a target=""_blank"" title=""https://docs.eiam.swiss/?c=eiam"" href=""https://docs.eiam.swiss/?c=eiam"">
+      New technical documentation</nobr>
+      </a>
+   </h3>
+   The FOITT has published new technical documentation on eIAM.
+   <p></p>
+   <p></p>
+   <h3> <a href=""index.html?c=bitreleaseplan&amp;l=en"">eIAM-Release Plan <i class=""ti ti-arrow-narrow-right""></i></a> </h3>
+   The release notes describe changes to the eIAM service and new functionalities.
+   <p></p>
+   <p><span class=""bold"">Internal:</span></p>
+   <h3> <a href=""index.html?c=!forumlist&amp;l=en"">Discussion forum <i class=""ti ti-arrow-narrow-right""></i></a> </h3>
+   eIAM, questions and discussions, moderated by the <span title=""Federal Chancellery FCh, Digital Transformation and ICT Steering Sector (DTI)"" onclick=""thistitle=this.title;thisinnerHTML=this.innerHTML;this.innerHTML=thistitle;this.title=thisinnerHTML"" style=""cursor:pointer;text-decoration-line:underline;text-decoration-style:dotted;text-decoration-color:#aaa;"">FCh DTI</span>
+   <p></p>
+   <p></p>
+   <h3> <a href=""index.html?c=!bkdti!soundingboard&amp;l=en"">Sounding board <i class=""ti ti-arrow-narrow-right""></i></a> </h3>
+   Description of forthcoming releases, P035 status and roadmap
+   <p></p>
+   <p></p>
+   <h3> <a href=""index.html?c=eiam!dossier&amp;l=en"">eIAM dossier <i class=""ti ti-arrow-narrow-right""></i></a> </h3>
+   New: Procuring an application or connecting an application to eIAM? Please open your eIAM dossier online
+   <p></p>
+   <p></p>
+   <h3> <a href=""index.html?c=!eiam!calc!2026&amp;l=en"">eIAM tariff <i class=""ti ti-arrow-narrow-right""></i></a> </h3>
+   Calculate your recurring costs
+   <p></p>
+   <p></p>
+   <a href=""/""><img style=""width:100%;"" title=""eIAM Logo"" alt=""eIAM Logo"" src=""/attachment/serve/eiamsquid.svg""></a>
+</aside>",en_US,HomeRightSidebar,HomeRightSidebar_en,1,true
+"import React, { useState } from ""react"";
+import { Input, Spoiler } from ""@mantine/core"";
+import { FontAwesomeIcon } from ""@fortawesome/react-fontawesome"";
+import { faSearch } from ""@fortawesome/free-solid-svg-icons"";
+
+
+function DescriptionOfServices() {
+  const [query, setQuery] = useState("""");
+
+const servicesData = [
+  {
+    title: ""Service 1: Provision of eIDs"",
+    description: `
+      <p>
+        References to <a href=""#"">eIDs</a> of internal and external 
+        <a href=""#"">IdPs</a>: are provided by eIAM to the connected web 
+        applications and native mobile apps (target applications); 
+        the group of connections this creates is referred to as a 
+        <strong>federated identity</strong>.
+      </p>
+      <p>
+        * Example of an eIAM login in a native mobile app see 
+        <a href=""https://apps.apple.com/ma/app/eiam-..."" target=""_blank"">
+        https://apps.apple.com/ma/app/eiam-...</a> and source code for it 
+        <a href=""https://github.com/eiam-ch/eiam-ios"" target=""_blank"">
+        https://github.com/eiam-ch/eiam-ios</a>
+      </p>
+    `,
+  },
+  {
+    title:
+      ""Service 2: Generation of eIDs (internal IdPs AGOV, CH-LOGIN, SG PKI, Kerberos, MDM)"",
+    description: `
+      <p><strong>AGOV:</strong> eIAM provides the electronic identity 
+      <a href=""https://www.agov.ch"" target=""_blank"">www.agov.ch</a> for citizens 
+      and business representatives in Switzerland and abroad. AGOV identities 
+      are available in self-registered (unverified) and verified quality. 
+      Cantons and their municipalities can use the eIAM identity provider 
+      ""AGOV"" by connecting their applications or IAM systems directly to AGOV; 
+      the Federal Administration uses AGOV exclusively via the IAM system ""eIAM"".
+      </p>
+
+      <p><strong>CH-LOGIN:</strong> CH-LOGIN is the predecessor of AGOV and will 
+      initially be operated in parallel with AGOV, but will be gradually phased out.
+      </p>
+
+      <p><strong>FED-LOGIN via smartcard (SG-PKI):</strong> In addition, Federal 
+      Administration employees and affiliates of the SG PKI (Swiss Government 
+      Public Key Infrastructure) can use the SG PKI electronic IDs in eIAM.
+      </p>
+
+      <p><strong>FED-LOGIN via Kerberos:</strong> The electronic IDs for Federal 
+      Administration employees can be requested by the target applications as 
+      Kerberos tickets in dedicated internal federal networks (instead of the 
+      smartcard certificate source). This request method results in the declared 
+      reliability of the supplied subject identifier properties being downgraded.
+      </p>
+
+      <p><strong>FED-LOGIN without smartcard:</strong> Use of electronic identities 
+      from the SG-PKI by employees of the Federal Administration with username, 
+      password and second factors, also from the Internet.
+      </p>
+    `,
+  },
+];
+
+  const filteredServices = servicesData.filter(
+    (item) =>
+      item.title.toLowerCase().includes(query.toLowerCase()) ||
+      item.description.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div className=""max-w-3xl mx-auto p-4 space-y-6"">
+      <Input
+        icon={<FontAwesomeIcon icon={faSearch} />}
+        placeholder=""Search services...""
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {filteredServices.map((service, index) => (
+        <div key={index} className=""border-b pb-4"">
+          <h2 className=""font-bold text-lg mb-2"">{service.title}</h2>
+          <Spoiler maxHeight={50} showLabel=""Show more"" hideLabel=""Hide"">
+            <div
+              className=""text-gray-700 text-sm space-y-2""
+              dangerouslySetInnerHTML={{ __html: service.description }}
+            />
+          </Spoiler>
+        </div>
+      ))}
+
+      {filteredServices.length === 0 && (
+        <p className=""text-gray-500 italic text-center"">No results found.</p>
+      )}
+    </div>
+  );
+}",en_US,DescriptionOfServices,DescriptionOfServices_en,1,false
+"import React, { useState } from ""react"";
+import { Input, Spoiler } from ""@mantine/core"";
+import { FontAwesomeIcon } from ""@fortawesome/react-fontawesome"";
+import { faSearch } from ""@fortawesome/free-solid-svg-icons"";
+
+function DescriptionOfServices() {
+  const [query, setQuery] = useState("""");
+
+  const servicesData = [
+    {
+      title: ""Dienst 1: Bereitstellung von eIDs"",
+      description: `
+        <p>
+          Verweise auf <a href=""#"">eIDs</a> von internen und externen 
+          <a href=""#"">IdPs</a> werden von eIAM an die verbundenen Webanwendungen 
+          und nativen mobilen Apps (Zielanwendungen) bereitgestellt. 
+          Die Gruppe dieser Verbindungen wird als 
+          <strong>föderierte Identität</strong> bezeichnet.
+        </p>
+        <p>
+          * Ein Beispiel für ein eIAM-Login in einer nativen mobilen App finden Sie unter 
+          <a href=""https://apps.apple.com/ma/app/eiam-..."" target=""_blank"">
+          https://apps.apple.com/ma/app/eiam-...</a> sowie den Quellcode unter 
+          <a href=""https://github.com/eiam-ch/eiam-ios"" target=""_blank"">
+          https://github.com/eiam-ch/eiam-ios</a>.
+        </p>
+      `,
+    },
+    {
+      title:
+        ""Dienst 2: Erzeugung von eIDs (interne IdPs AGOV, CH-LOGIN, SG PKI, Kerberos, MDM)"",
+      description: `
+        <p><strong>AGOV:</strong> eIAM stellt die elektronische Identität 
+        <a href=""https://www.agov.ch"" target=""_blank"">www.agov.ch</a> 
+        für Bürgerinnen und Bürger sowie Unternehmensvertreter in der Schweiz 
+        und im Ausland bereit. AGOV-Identitäten sind in selbstregistrierter 
+        (nicht verifizierter) und verifizierter Qualität verfügbar. 
+        Kantone und Gemeinden können den eIAM-Identitätsanbieter „AGOV“ nutzen, 
+        indem sie ihre Anwendungen oder IAM-Systeme direkt an AGOV anbinden. 
+        Die Bundesverwaltung nutzt AGOV ausschließlich über das IAM-System „eIAM“.
+        </p>
+
+        <p><strong>CH-LOGIN:</strong> CH-LOGIN ist der Vorgänger von AGOV 
+        und wird zunächst parallel zu AGOV betrieben, aber schrittweise 
+        außer Betrieb genommen.
+        </p>
+
+        <p><strong>FED-LOGIN via Smartcard (SG-PKI):</strong> 
+        Darüber hinaus können Mitarbeitende der Bundesverwaltung 
+        und angeschlossene Organisationen der SG PKI (Swiss Government Public Key Infrastructure) 
+        ihre SG PKI-eIDs in eIAM verwenden.
+        </p>
+
+        <p><strong>FED-LOGIN via Kerberos:</strong> 
+        Elektronische IDs für Mitarbeitende der Bundesverwaltung 
+        können von Zielanwendungen als Kerberos-Tickets in speziellen 
+        internen Bundesnetzwerken angefordert werden 
+        (anstelle des Smartcard-Zertifikats). 
+        Dies führt zu einer Herabstufung der zugesicherten Zuverlässigkeit 
+        der bereitgestellten Identitätsmerkmale.
+        </p>
+
+        <p><strong>FED-LOGIN ohne Smartcard:</strong> 
+        Nutzung elektronischer Identitäten der SG-PKI durch Mitarbeitende 
+        der Bundesverwaltung mit Benutzername, Passwort und zweiten Faktoren, 
+        auch über das Internet.
+        </p>
+      `,
+    },
+  ];
+
+  const filteredServices = servicesData.filter(
+    (item) =>
+      item.title.toLowerCase().includes(query.toLowerCase()) ||
+      item.description.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div className=""max-w-3xl mx-auto p-4 space-y-6"">
+      <Input
+        icon={<FontAwesomeIcon icon={faSearch} />}
+        placeholder=""Dienste durchsuchen...""
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      {filteredServices.map((service, index) => (
+        <div key={index} className=""border-b pb-4"">
+          <h2 className=""font-bold text-lg mb-2"">{service.title}</h2>
+          <Spoiler maxHeight={50} showLabel=""Mehr anzeigen"" hideLabel=""Weniger anzeigen"">
+            <div
+              className=""text-gray-700 text-sm space-y-2""
+              dangerouslySetInnerHTML={{ __html: service.description }}
+            />
+          </Spoiler>
+        </div>
+      ))}
+
+      {filteredServices.length === 0 && (
+        <p className=""text-gray-500 italic text-center"">Keine Ergebnisse gefunden.</p>
+      )}
+    </div>
+  );
+}",de_DE,DescriptionOfServices,DescriptionOfServices_de,1,false
+"<footer class=""bg-[#263645] px-6 py-2 text-white text-[12px]"">
+  <a name=""contact""></a>
+  Bundesamt für Informatik und Telekommunikation BIT – eIAM,<br>
+  in Zusammenarbeit mit der Bundeskanzlei BK, Digitale Transformation und IKT-Governance DTI.<br>
+  Fragen und Anliegen zu diesem Informationsangebot werden vom
+  <a
+    target=""_blank""
+    title=""https://www.bit.admin.ch""
+    href=""https://www.bit.admin.ch""
+    class=""hover:underline""
+  >
+    BIT entgegengenommen.
+  </a>
+
+  <br />
+
+  <a
+    target=""_blank""
+    title=""https://www.admin.ch/gov/de/start/rechtliches.html""
+    href=""https://www.admin.ch/gov/de/start/rechtliches.html""
+    class=""hover:underline""
+  >
+    Rechtliche Hinweise
+  </a>
+</footer>",de_DE,Footer,Footer_de,1,false
+"<div style=""text-align:center; margin: 20px 0;"">
+  <h3>Simple Visitor Counter</h3>
+  <p id=""count"">0</p>
+  <button onclick=""document.getElementById('count').innerText++"" 
+          style=""padding: 6px 12px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer;"">
+    Click me
+  </button>
+</div>",en_US,SampleJSCounter,SampleJSCounter_en,1,false
+"import { useState, useEffect } from ""react"";
+import { useLocation, useNavigate, useSearchParams } from ""react-router-dom"";
+import { useTranslation } from ""react-i18next"";
+import { Modal, Tabs } from ""@mantine/core"";
+import { useDisclosure } from ""@mantine/hooks"";
+import { Helmet } from ""react-helmet"";
+
+export default function Login() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const [loginUsername, setLoginUsername] = useState("""");
+  const [loginPassword, setLoginPassword] = useState("""");
+  const [loginOtp, setLoginOtp] = useState("""");
+  const [signupUsername, setSignupUsername] = useState("""");
+  const [signupPassword, setSignupPassword] = useState("""");
+  const [signupPasswordConfirm, setSignupPasswordConfirm] = useState("""");
+  const { notify } = NotificationState((state) => state);
+  const { login, signup, passwordlessLogin } = useAuthentication();
+  const [loading, setLoading] = useState(false);
+
+  // reset password feature
+  const [isOpenModel, setIsOpenModel] = useState(false);
+  const [email, setEmail] = useState("""");
+  const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
+  const [isUseOtpField, setIsUseOtpField] = useState(false);
+  const [
+    isOpenResetPasswordModalToConfig2Fa,
+    setIsOpenResetPasswordModalToConfig2Fa,
+  ] = useState(false);
+  const { organizationId } = OrganizationIdState((state) => state);
+  const { settings: orgPublicSettings } = SitePublicSettingsState();
+
+  // passwordless login feature
+  const [failCount, setFailCount] = useState(0);
+  const [
+    passwordlessModalOpen,
+    { open: openPasswordlessModal, close: closePasswordlessModal },
+  ] = useDisclosure();
+  const { post: requestPasswordlessLogin, loading: passwordlessLoading } =
+    useFetch(""passwordless-login-request"");
+  const searchParams = useSearchParams()[0];
+  const passwordlessToken = searchParams.get(""passwordless"");
+
+  // Set page title
+
+  // on mount, if passwordlessToken is present, try to login
+  useEffect(() => {
+    if (passwordlessToken) {
+      handlePasswordlessLogin();
+    }
+  }, []);
+
+  async function handleLogin(e) {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      const result = await login({
+        username: loginUsername,
+        password: loginPassword,
+        otp: loginOtp,
+      });
+
+      if (result?.is_require_user_config_2fa) {
+        setIsOpenModel(true);
+        setIsOpenResetPasswordModalToConfig2Fa(true);
+        return;
+      }
+
+      notify({
+        message: t(""Logged in successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+
+      if (redirect && redirect.startsWith(""/"")) {
+        // Use the full URL exactly as provided
+        window.location.href = redirect;
+      } else {
+        // Default to admin pages if no redirect
+        navigate(""/admin/pages"");
+      }
+    } catch (err) {
+      if (err?.message === ""Incorrect OTP"" && !isUseOtpField) {
+        notify({
+          message: t(""Please input OTP""),
+          type: ""info"",
+        });
+        setIsUseOtpField(true);
+      } else {
+        setFailCount(failCount + 1);
+        notify({
+          message: err.message,
+          type: ""error"",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSignup(e) {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      await signup(
+        {
+          username: signupUsername,
+          password: signupPassword,
+        },
+        true
+      );
+      notify({
+        message: t(""Signed up successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+
+      if (redirect && redirect.startsWith(""/"")) {
+        // Use the full URL exactly as provided
+        window.location.href = redirect;
+      } else {
+        // Default to admin pages if no redirect
+        navigate(""/admin/pages"");
+      }
+    } catch (err) {
+      notify({
+        message: err.message,
+        type: ""error"",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function closeModal() {
+    setIsOpenModel(false);
+    setEmail("""");
+  }
+
+  async function handleResetPasswordSubmit(e) {
+    e.preventDefault();
+    const isValid = e.target.reportValidity();
+    if (!isValid) {
+      return;
+    }
+    try {
+      setIsPasswordResetLoading(true);
+      const headers = {
+        ""Content-Type"": ""application/json"",
+      };
+      const response = await fetch(`${backendHost}/reset-password-request`, {
+        method: ""POST"",
+        headers,
+        body: JSON.stringify({
+          mixin_id: email,
+        }),
+      });
+      if (response.status !== 200) {
+        const { detail } = await response.json();
+        if (typeof detail === ""string"") {
+          notify({
+            message: detail,
+            type: ""error"",
+          });
+        }
+      } else {
+        notify({
+          type: ""success"",
+          message: t(""Password reset email sent!""),
+        });
+        closeModal();
+      }
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""An error occurred""),
+        type: ""error"",
+      });
+    } finally {
+      setIsPasswordResetLoading(false);
+    }
+  }
+
+  async function handlePasswordlessRequest(e) {
+    e.preventDefault();
+    try {
+      await requestPasswordlessLogin({ mixin_id: email });
+      notify({
+        type: ""success"",
+        message: t(""You login link is on the way!""),
+      });
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""An error occurred""),
+        type: ""error"",
+      });
+    }
+  }
+
+  async function handlePasswordlessLogin() {
+    try {
+      setLoading(true);
+      await passwordlessLogin(passwordlessToken);
+
+      notify({
+        message: t(""Logged in successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+      if (
+        redirect &&
+        redirect.startsWith(""/"") &&
+        !redirect.startsWith(""/admin/"")
+      ) {
+        // For absolute paths outside admin area, use window.location to navigate
+        window.location.href = redirect;
+      } else {
+        // For relative paths or admin paths, use React Router navigate
+        navigate(redirect || ""/"");
+      }
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""Your login link is invalid""),
+        type: ""error"",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>{t(""Login"")}</title>
+      </Helmet>
+      <div className=""flex min-h-screen flex-col"">
+        {/* <WebsiteHeader /> */}
+
+        <main className=""flex-grow py-12"">
+          <div className=""container mx-auto px-4"">
+            <div className=""mx-auto max-w-md"">
+              <Tabs defaultValue=""login"" variant=""outline"" className=""mx-auto"">
+                <Tabs.List justify=""start"">
+                  <Tabs.Tab value=""login"">{t(""Login"")}</Tabs.Tab>
+                  {orgPublicSettings?.allow_public_signup && (
+                    <Tabs.Tab value=""signup"">{t(""Signup"")}</Tabs.Tab>
+                  )}
+                </Tabs.List>
+
+                <Tabs.Panel value=""login"">
+                  <form
+                    className=""flex flex-col gap-2 pt-2""
+                    onSubmit={handleLogin}
+                  >
+                    <TextInput
+                      label={t(`Username`)}
+                      type=""text""
+                      required
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                    />
+                    <TextInput
+                      label={t(`Password`)}
+                      type=""password""
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                    />
+                    {isUseOtpField && (
+                      <TextInput
+                        autoComplete=""one-time-code""
+                        name=""otp""
+                        label={t(`OTP`)}
+                        type=""text""
+                        value={loginOtp}
+                        onChange={(e) => setLoginOtp(e.target.value)}
+                      />
+                    )}
+
+                    <Button type=""submit"" loading={loading} disabled={loading}>
+                      {t(""Login"")}
+                    </Button>
+                    {orgPublicSettings?.is_enabled_google_sign_in && (
+                      <Button
+                        className=""flex items-center""
+                        variant=""light""
+                        onClick={() =>
+                          (window.location.href = `${backendHost}/login/google`)
+                        }
+                      >
+                        <img
+                          src=""/images/google-logo.svg""
+                          alt=""""
+                          className=""h-5 w-5 object-contain""
+                        />
+                        <div className=""ml-4"">{t(""Login with Google"")}</div>
+                      </Button>
+                    )}
+                    {orgPublicSettings?.is_enabled_saml && (
+                      <Button
+                        className=""flex items-center""
+                        variant=""light""
+                        onClick={() => {
+                          const redirect = new URLSearchParams(
+                            location.search
+                          ).get(""redirect"");
+                          const samlUrl = redirect
+                            ? `${backendHost}/login/saml?redirect=${encodeURIComponent(
+                                redirect
+                              )}`
+                            : `${backendHost}/login/saml`;
+                          window.location.href = samlUrl;
+                        }}
+                      >
+                        <div className=""flex items-center justify-center w-5 h-5 bg-blue-600 text-white rounded text-xs font-bold"">
+                          S
+                        </div>
+                        <div className=""ml-4"">{t(""Login with SAML"")}</div>
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        setIsOpenModel(true);
+                        setIsOpenResetPasswordModalToConfig2Fa(false);
+                      }}
+                      variant=""light""
+                    >
+                      {t(""Reset password"")}
+                    </Button>
+
+                    {failCount > 0 && (
+                      <button
+                        className=""mt-2 text-sm text-primary-main underline""
+                        onClick={openPasswordlessModal}
+                      >
+                        {t(""Having trouble? Login quickly with your email"")}
+                      </button>
+                    )}
+                  </form>
+                </Tabs.Panel>
+
+                {orgPublicSettings?.allow_public_signup && (
+                  <Tabs.Panel value=""signup"">
+                    <form
+                      className=""flex flex-col gap-2 pt-2""
+                      onSubmit={handleSignup}
+                    >
+                      <TextInput
+                        label={t(`Username`)}
+                        type=""text""
+                        required
+                        value={signupUsername}
+                        onChange={(e) => setSignupUsername(e.target.value)}
+                      />
+                      <TextInput
+                        label={t(`Password`)}
+                        type=""password""
+                        required
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                      />
+                      <TextInput
+                        label={t(`Confirm Password`)}
+                        type=""password""
+                        required
+                        value={signupPasswordConfirm}
+                        onChange={(e) =>
+                          setSignupPasswordConfirm(e.target.value)
+                        }
+                      />
+                      <Button
+                        type=""submit""
+                        loading={loading}
+                        disabled={loading}
+                      >
+                        {t(""Signup"")}
+                      </Button>
+                    </form>
+                  </Tabs.Panel>
+                )}
+              </Tabs>
+            </div>
+          </div>
+
+          <Modal
+            opened={isOpenModel}
+            onClose={closeModal}
+            title={
+              <div className=""text-lg font-semibold"">
+                {isOpenResetPasswordModalToConfig2Fa
+                  ? t(""Two-Factor-Authentication"")
+                  : t(""Reset Password"")}
+              </div>
+            }
+          >
+            {isOpenResetPasswordModalToConfig2Fa && (
+              <div className=""mb-4"">
+                {t(
+                  ""Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials""
+                )}
+              </div>
+            )}
+            <form
+              onSubmit={handleResetPasswordSubmit}
+              className=""flex items-center gap-2""
+            >
+              <TextInput
+                className=""grow""
+                type=""email""
+                label={t(""Email or Username"")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button
+                type=""submit""
+                loading={isPasswordResetLoading}
+                disabled={isPasswordResetLoading}
+                className=""mt-3 self-end""
+              >
+                {t(""Submit"")}
+              </Button>
+            </form>
+          </Modal>
+
+          <Modal
+            opened={passwordlessModalOpen}
+            onClose={closePasswordlessModal}
+            title={
+              <div className=""text-lg font-semibold"">
+                {t(""Passwordless Login"")}
+              </div>
+            }
+          >
+            <form
+              onSubmit={handlePasswordlessRequest}
+              className=""flex items-center gap-2""
+            >
+              <TextInput
+                className=""grow""
+                type=""email""
+                label={t(""Email or Username"")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button
+                type=""submit""
+                loading={passwordlessLoading}
+                disabled={passwordlessLoading}
+                className=""mt-3 self-end""
+              >
+                {t(""Submit"")}
+              </Button>
+            </form>
+          </Modal>
+        </main>
+
+        {/* <WebsiteFooter /> */}
+      </div>
+    </>
+  );
+}
+",en_US,LoginPage,LoginPage_en,1,false
+"import { useState, useEffect } from ""react"";
+import { useLocation, useNavigate, useSearchParams } from ""react-router-dom"";
+import { useTranslation } from ""react-i18next"";
+import { Modal, Tabs } from ""@mantine/core"";
+import { useDisclosure } from ""@mantine/hooks"";
+import { Helmet } from ""react-helmet"";
+
+export default function Login() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const [loginUsername, setLoginUsername] = useState("""");
+  const [loginPassword, setLoginPassword] = useState("""");
+  const [loginOtp, setLoginOtp] = useState("""");
+  const [signupUsername, setSignupUsername] = useState("""");
+  const [signupPassword, setSignupPassword] = useState("""");
+  const [signupPasswordConfirm, setSignupPasswordConfirm] = useState("""");
+  const { notify } = NotificationState((state) => state);
+  const { login, signup, passwordlessLogin } = useAuthentication();
+  const [loading, setLoading] = useState(false);
+
+  // reset password feature
+  const [isOpenModel, setIsOpenModel] = useState(false);
+  const [email, setEmail] = useState("""");
+  const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
+  const [isUseOtpField, setIsUseOtpField] = useState(false);
+  const [
+    isOpenResetPasswordModalToConfig2Fa,
+    setIsOpenResetPasswordModalToConfig2Fa,
+  ] = useState(false);
+  const { organizationId } = OrganizationIdState((state) => state);
+  const { settings: orgPublicSettings } = SitePublicSettingsState();
+
+  // passwordless login feature
+  const [failCount, setFailCount] = useState(0);
+  const [
+    passwordlessModalOpen,
+    { open: openPasswordlessModal, close: closePasswordlessModal },
+  ] = useDisclosure();
+  const { post: requestPasswordlessLogin, loading: passwordlessLoading } =
+    useFetch(""passwordless-login-request"");
+  const searchParams = useSearchParams()[0];
+  const passwordlessToken = searchParams.get(""passwordless"");
+
+  // Set page title
+
+  // on mount, if passwordlessToken is present, try to login
+  useEffect(() => {
+    if (passwordlessToken) {
+      handlePasswordlessLogin();
+    }
+  }, []);
+
+  async function handleLogin(e) {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      const result = await login({
+        username: loginUsername,
+        password: loginPassword,
+        otp: loginOtp,
+      });
+
+      if (result?.is_require_user_config_2fa) {
+        setIsOpenModel(true);
+        setIsOpenResetPasswordModalToConfig2Fa(true);
+        return;
+      }
+
+      notify({
+        message: t(""Logged in successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+
+      if (redirect && redirect.startsWith(""/"")) {
+        // Use the full URL exactly as provided
+        window.location.href = redirect;
+      } else {
+        // Default to admin pages if no redirect
+        navigate(""/admin/pages"");
+      }
+    } catch (err) {
+      if (err?.message === ""Incorrect OTP"" && !isUseOtpField) {
+        notify({
+          message: t(""Please input OTP""),
+          type: ""info"",
+        });
+        setIsUseOtpField(true);
+      } else {
+        setFailCount(failCount + 1);
+        notify({
+          message: err.message,
+          type: ""error"",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSignup(e) {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      await signup(
+        {
+          username: signupUsername,
+          password: signupPassword,
+        },
+        true
+      );
+      notify({
+        message: t(""Signed up successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+
+      if (redirect && redirect.startsWith(""/"")) {
+        // Use the full URL exactly as provided
+        window.location.href = redirect;
+      } else {
+        // Default to admin pages if no redirect
+        navigate(""/admin/pages"");
+      }
+    } catch (err) {
+      notify({
+        message: err.message,
+        type: ""error"",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function closeModal() {
+    setIsOpenModel(false);
+    setEmail("""");
+  }
+
+  async function handleResetPasswordSubmit(e) {
+    e.preventDefault();
+    const isValid = e.target.reportValidity();
+    if (!isValid) {
+      return;
+    }
+    try {
+      setIsPasswordResetLoading(true);
+      const headers = {
+        ""Content-Type"": ""application/json"",
+      };
+      const response = await fetch(`${backendHost}/reset-password-request`, {
+        method: ""POST"",
+        headers,
+        body: JSON.stringify({
+          mixin_id: email,
+        }),
+      });
+      if (response.status !== 200) {
+        const { detail } = await response.json();
+        if (typeof detail === ""string"") {
+          notify({
+            message: detail,
+            type: ""error"",
+          });
+        }
+      } else {
+        notify({
+          type: ""success"",
+          message: t(""Password reset email sent!""),
+        });
+        closeModal();
+      }
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""An error occurred""),
+        type: ""error"",
+      });
+    } finally {
+      setIsPasswordResetLoading(false);
+    }
+  }
+
+  async function handlePasswordlessRequest(e) {
+    e.preventDefault();
+    try {
+      await requestPasswordlessLogin({ mixin_id: email });
+      notify({
+        type: ""success"",
+        message: t(""You login link is on the way!""),
+      });
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""An error occurred""),
+        type: ""error"",
+      });
+    }
+  }
+
+  async function handlePasswordlessLogin() {
+    try {
+      setLoading(true);
+      await passwordlessLogin(passwordlessToken);
+
+      notify({
+        message: t(""Logged in successfully!""),
+        type: ""success"",
+      });
+      const redirect = new URLSearchParams(location.search).get(""redirect"");
+      if (
+        redirect &&
+        redirect.startsWith(""/"") &&
+        !redirect.startsWith(""/admin/"")
+      ) {
+        // For absolute paths outside admin area, use window.location to navigate
+        window.location.href = redirect;
+      } else {
+        // For relative paths or admin paths, use React Router navigate
+        navigate(redirect || ""/"");
+      }
+    } catch (err) {
+      console.error(err);
+      notify({
+        message: t(""Your login link is invalid""),
+        type: ""error"",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>{t(""Login"")}</title>
+      </Helmet>
+      <div className=""flex min-h-screen flex-col"">
+        {/* <WebsiteHeader /> */}
+
+        <main className=""flex-grow py-12"">
+          <div className=""container mx-auto px-4"">
+            <div className=""mx-auto max-w-md"">
+              <Tabs defaultValue=""login"" variant=""outline"" className=""mx-auto"">
+                <Tabs.List justify=""start"">
+                  <Tabs.Tab value=""login"">{t(""Login"")}</Tabs.Tab>
+                  {orgPublicSettings?.allow_public_signup && (
+                    <Tabs.Tab value=""signup"">{t(""Signup"")}</Tabs.Tab>
+                  )}
+                </Tabs.List>
+
+                <Tabs.Panel value=""login"">
+                  <form
+                    className=""flex flex-col gap-2 pt-2""
+                    onSubmit={handleLogin}
+                  >
+                    <TextInput
+                      label={t(`Username`)}
+                      type=""text""
+                      required
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                    />
+                    <TextInput
+                      label={t(`Password`)}
+                      type=""password""
+                      required
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                    />
+                    {isUseOtpField && (
+                      <TextInput
+                        autoComplete=""one-time-code""
+                        name=""otp""
+                        label={t(`OTP`)}
+                        type=""text""
+                        value={loginOtp}
+                        onChange={(e) => setLoginOtp(e.target.value)}
+                      />
+                    )}
+
+                    <Button type=""submit"" loading={loading} disabled={loading}>
+                      {t(""Login"")}
+                    </Button>
+                    {orgPublicSettings?.is_enabled_google_sign_in && (
+                      <Button
+                        className=""flex items-center""
+                        variant=""light""
+                        onClick={() =>
+                          (window.location.href = `${backendHost}/login/google`)
+                        }
+                      >
+                        <img
+                          src=""/images/google-logo.svg""
+                          alt=""""
+                          className=""h-5 w-5 object-contain""
+                        />
+                        <div className=""ml-4"">{t(""Login with Google"")}</div>
+                      </Button>
+                    )}
+                    {orgPublicSettings?.is_enabled_saml && (
+                      <Button
+                        className=""flex items-center""
+                        variant=""light""
+                        onClick={() => {
+                          const redirect = new URLSearchParams(
+                            location.search
+                          ).get(""redirect"");
+                          const samlUrl = redirect
+                            ? `${backendHost}/login/saml?redirect=${encodeURIComponent(
+                                redirect
+                              )}`
+                            : `${backendHost}/login/saml`;
+                          window.location.href = samlUrl;
+                        }}
+                      >
+                        <div className=""flex items-center justify-center w-5 h-5 bg-blue-600 text-white rounded text-xs font-bold"">
+                          S
+                        </div>
+                        <div className=""ml-4"">{t(""Login with SAML"")}</div>
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => {
+                        setIsOpenModel(true);
+                        setIsOpenResetPasswordModalToConfig2Fa(false);
+                      }}
+                      variant=""light""
+                    >
+                      {t(""Reset password"")}
+                    </Button>
+
+                    {failCount > 0 && (
+                      <button
+                        className=""mt-2 text-sm text-primary-main underline""
+                        onClick={openPasswordlessModal}
+                      >
+                        {t(""Having trouble? Login quickly with your email"")}
+                      </button>
+                    )}
+                  </form>
+                </Tabs.Panel>
+
+                {orgPublicSettings?.allow_public_signup && (
+                  <Tabs.Panel value=""signup"">
+                    <form
+                      className=""flex flex-col gap-2 pt-2""
+                      onSubmit={handleSignup}
+                    >
+                      <TextInput
+                        label={t(`Username`)}
+                        type=""text""
+                        required
+                        value={signupUsername}
+                        onChange={(e) => setSignupUsername(e.target.value)}
+                      />
+                      <TextInput
+                        label={t(`Password`)}
+                        type=""password""
+                        required
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                      />
+                      <TextInput
+                        label={t(`Confirm Password`)}
+                        type=""password""
+                        required
+                        value={signupPasswordConfirm}
+                        onChange={(e) =>
+                          setSignupPasswordConfirm(e.target.value)
+                        }
+                      />
+                      <Button
+                        type=""submit""
+                        loading={loading}
+                        disabled={loading}
+                      >
+                        {t(""Signup"")}
+                      </Button>
+                    </form>
+                  </Tabs.Panel>
+                )}
+              </Tabs>
+            </div>
+          </div>
+
+          <Modal
+            opened={isOpenModel}
+            onClose={closeModal}
+            title={
+              <div className=""text-lg font-semibold"">
+                {isOpenResetPasswordModalToConfig2Fa
+                  ? t(""Two-Factor-Authentication"")
+                  : t(""Reset Password"")}
+              </div>
+            }
+          >
+            {isOpenResetPasswordModalToConfig2Fa && (
+              <div className=""mb-4"">
+                {t(
+                  ""Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials""
+                )}
+              </div>
+            )}
+            <form
+              onSubmit={handleResetPasswordSubmit}
+              className=""flex items-center gap-2""
+            >
+              <TextInput
+                className=""grow""
+                type=""email""
+                label={t(""Email or Username"")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button
+                type=""submit""
+                loading={isPasswordResetLoading}
+                disabled={isPasswordResetLoading}
+                className=""mt-3 self-end""
+              >
+                {t(""Submit"")}
+              </Button>
+            </form>
+          </Modal>
+
+          <Modal
+            opened={passwordlessModalOpen}
+            onClose={closePasswordlessModal}
+            title={
+              <div className=""text-lg font-semibold"">
+                {t(""Passwordless Login"")}
+              </div>
+            }
+          >
+            <form
+              onSubmit={handlePasswordlessRequest}
+              className=""flex items-center gap-2""
+            >
+              <TextInput
+                className=""grow""
+                type=""email""
+                label={t(""Email or Username"")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button
+                type=""submit""
+                loading={passwordlessLoading}
+                disabled={passwordlessLoading}
+                className=""mt-3 self-end""
+              >
+                {t(""Submit"")}
+              </Button>
+            </form>
+          </Modal>
+        </main>
+
+        {/* <WebsiteFooter /> */}
+      </div>
+    </>
+  );
+}
+",de_DE,LoginPage,LoginPage_de,1,false
+"{% extends 'WebsiteLayout' %}
+
+{% block content %}
+<div class=""flex items-center justify-center my-48"">
+  <div class=""text-center px-6"">
+    <h1 class=""mb-8 text-4xl font-bold text-gray-800 md:text-5xl"">
+      404 Not Found
+    </h1>
+    <p class=""mb-8 text-lg text-gray-600"">
+      The page you are looking for does not exist.
+    </p>
+    <a
+      class=""inline-block rounded bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2""
+      href=""/""
+    >
+      Go to Homepage
+    </a>
+  </div>
+</div>
+{% endblock %}
+",en_US,NotFound404,NotFound404_en,1,false
+"{% extends 'WebsiteLayout' %}
+
+{% block content %}
+<div class=""flex items-center justify-center my-48"">
+  <div class=""text-center px-6"">
+    <h1 class=""mb-8 text-4xl font-bold text-gray-800 md:text-5xl"">
+      404 Not Found
+    </h1>
+    <p class=""mb-8 text-lg text-gray-600"">
+      The page you are looking for does not exist.
+    </p>
+    <a
+      class=""inline-block rounded bg-primary-600 px-6 py-3 font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2""
+      href=""/""
+    >
+      Go to Homepage
+    </a>
+  </div>
+</div>
+{% endblock %}
+",de_DE,NotFound404,NotFound404_de,1,false

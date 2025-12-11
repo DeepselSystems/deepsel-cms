@@ -1,0 +1,7 @@
+string_id,name,permissions,is_technical,system
+locales_public_role,Locales Public Role,"[
+    ""currency:read:org"",
+    ""country:read:org"",
+    ""locale:read:org"",
+    ""form_submission:*:*""
+]",true,true

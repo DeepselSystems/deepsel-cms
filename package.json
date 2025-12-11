@@ -1,0 +1,14 @@
+{
+  "name": "deepsel-cms-monorepo",
+  "private": true,
+  "workspaces": [
+    "client",
+    "admin",
+    "themes/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=client",
+    "dev": "npm run dev --workspace=client"
+  }
+}

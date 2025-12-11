@@ -1,0 +1,4 @@
+name,username,hashed_password,email,organization/organization_id,signed_up,string_id
+Admin,admin,$2b$12$DD1Z0g9R4SI08uenHHEGie9aoAhqoDD/IgVy9Tgrkd6L8go.vVEPm,dev+1@deepsel.com,1,True,admin_user
+Super Admin,super,$2b$12$DD1Z0g9R4SI08uenHHEGie9aoAhqoDD/IgVy9Tgrkd6L8go.vVEPm,dev@deepsel.com,1,True,super_user
+Public User,publicuser,"",dev+5@deepsel.com,1,True,public_user

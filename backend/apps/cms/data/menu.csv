@@ -1,0 +1,91 @@
+"string_id","position","json:translations","menu/parent_id","system","organization/organization_id"
+"ListIDP","1","{
+    ""en"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""ListIDPPage_en"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""ListIDPPage_de"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}",,"false","1"
+"DescriptionServices","0","{
+    ""en"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""DescriptionPage_en"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""DescriptionPage_de"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}","KnowHow","false","1"
+"Home","0","{
+    ""en"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""HomePage_en"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""HomePage_de"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}",,"false","1"
+"KnowHow","2","{
+    ""en"": {
+        ""title"": ""eIAM Know-how"",
+        ""url"": """",
+        ""page_content/page_content_id"": ""DescriptionPage_en"",
+        ""use_page_title"": false,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": ""eIAM Know-how"",
+        ""url"": """",
+        ""page_content/page_content_id"": ""DescriptionPage_de"",
+        ""use_page_title"": false,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}",,"false","1"
+FormatExamples,3,"{
+    ""en"": {
+        ""title"": ""Format Examples"",
+        ""url"": """",
+        ""page_content/page_content_id"": ""FormatExamplePage_en"",
+        ""use_page_title"": false,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": ""Format Examples"",
+        ""url"": """",
+        ""page_content/page_content_id"": ""FormatExamplePage_de"",
+        ""use_page_title"": false,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}",,false,1

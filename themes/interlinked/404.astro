@@ -1,0 +1,47 @@
+---
+import type { PageData } from "@deepsel/cms-utils";
+// import Header from "./components/Header.tsx";
+import Footer from "./components/Footer.tsx";
+import "./main.css";
+
+interface Props {
+    pageData: PageData;
+}
+
+const { pageData } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang={pageData.lang || 'en'}>
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>404 - Page Not Found</title>
+    <meta name="description" content="The page you are looking for could not be found." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- <PageDataManager client:load pageData={pageData} /> -->
+    <!-- <Header client:load/> -->
+    <main class="container mx-auto px-4 py-16 text-center">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-6xl font-bold mb-4">404</h1>
+            <h2 class="text-3xl font-semibold mb-6">Page Not Found</h2>
+            <p class="text-lg mb-8 text-gray-600 dark:text-gray-400">
+                The page you are looking for doesn't exist or has been moved.
+            </p>
+            <a 
+                href="/" 
+                class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                Go Back Home
+            </a>
+        </div>
+    </main>
+    <Footer />
+</body>
+</html>

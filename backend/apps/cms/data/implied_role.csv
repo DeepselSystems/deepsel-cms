@@ -1,0 +1,7 @@
+string_id,role/role_id,role/implied_role_id,system
+imply_admin_cms_manager,admin_role,cms_manager_role,true
+imply_super_admin_cms_manager,super_admin_role,cms_manager_role,true
+imply_public_user_cms_public_user,public_role,cms_public_role,true
+imply_website_admin,website_admin_role,user_role,true
+imply_website_editor,website_editor_role,user_role,true
+imply_website_author,website_author_role,user_role,true

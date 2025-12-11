@@ -1,0 +1,2 @@
+string_id,name,mail_username,mail_password,mail_from,mail_port,mail_server,mail_from_name,mail_validate_certs
+1,Default website,dummy,dummy,dummy@dummy.com,1025,stmp.dummy.com,dummy,true

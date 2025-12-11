@@ -1,0 +1,2 @@
+string_id,name,model,method,interval,interval_unit,enabled
+email_campaign_sender,Send Campaign Emails,email_campaign,cron_send_emails_all,1,minutes,true

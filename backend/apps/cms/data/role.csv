@@ -1,0 +1,79 @@
+string_id,name,permissions,system,description
+cms_manager_role,CMS Manager,"[
+    ""blog_post:*:*"",
+    ""blog_post_content:*:*"",
+    ""page_content:*:*"",
+    ""page:*:*"",
+    ""blog_post_content_revision:*:*"",
+    ""page_content_revision:*:*"",
+    ""template:*:*"",
+    ""template_content:*:*"",
+    ""menu:*:*"",
+    ""openrouter_model:*:*"",
+    ""locale:*:*""
+]",true,""
+cms_public_role,CMS Public Role,"[
+    ""blog_post:read:org"",
+    ""blog_post_content:read:org"",
+    ""page_content:read:org"",
+    ""page:read:org"",
+    ""blog_post_content_revision:read:org"",
+    ""page_content_revision:read:org"",
+    ""template:read:org"",
+    ""template_content:read:org"",
+    ""menu:read:org"",
+    ""openrouter_model:read:org"",
+    ""locale:read:org""
+]",true,""
+website_admin_role,Website Administrator,"[
+    ""template_content:*:*"",
+    ""template:*:*"",
+    ""blog_post:*:*"",
+    ""blog_post_content:*:*"",
+    ""page_content:*:*"",
+    ""page:*:*"",
+    ""blog_post_content_revision:*:*"",
+    ""page_content_revision:*:*"",
+    ""template:*:*"",
+    ""template_content:*:*"",
+    ""menu:*:*"",
+    ""form:*:org"",
+    ""form_content:*:*"",
+    ""form_field:*:*"",
+    ""form_submission:*:*"",
+    ""openrouter_model:*:*"",
+    ""locale:*:*"",
+    ""user:*:*"",
+    ""role:*:*"",
+    ""implied_role:*:*"",
+    ""user_role:*:*"",
+    ""organization:*:*""
+]",true,"Can manage all website content and settings."
+website_editor_role,Website Editor,"[
+    ""blog_post:*:*"",
+    ""blog_post_content:*:*"",
+    ""page_content:*:*"",
+    ""page:*:*"",
+    ""blog_post_content_revision:*:*"",
+    ""page_content_revision:*:*"",
+    ""template:*:*"",
+    ""template_content:*:*"",
+    ""menu:*:*"",
+    ""openrouter_model:read:*"",
+    ""locale:read:*"",
+    ""organization:read:*""
+]",true,"Can create create, edit, delete all blog posts, pages, menus, components on this website."
+website_author_role,Website Author,"[
+    ""blog_post:*:own"",
+    ""blog_post_content:*:own"",
+    ""page_content:read:*"",
+    ""page:read:*"",
+    ""blog_post_content_revision:*:*"",
+    ""page_content_revision:*:*"",
+    ""template:read:*"",
+    ""template_content:read:*"",
+    ""menu:read:*"",
+    ""openrouter_model:read:*"",
+    ""locale:read:*"",
+    ""organization:read:*""
+]",true,"Can create, edit, delete own blog posts on this website."

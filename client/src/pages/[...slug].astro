@@ -1,0 +1,52 @@
+---
+import { fetchPageData, parseSlugForLangAndPath } from "@deepsel/cms-utils";
+import type { PageData } from "@deepsel/cms-utils";
+// import getAuthToken from "../utils/getAuthToken";
+
+// Import all theme variants statically
+import DarkmodeIndex from "../../../themes/darkmode/Index.astro";
+import InterlinkedIndex from "../../../themes/interlinked/Index.astro";
+import Darkmode404 from "../../../themes/darkmode/404.astro";
+import Interlinked404 from "../../../themes/interlinked/404.astro";
+
+const { slug = "/" } = Astro.params;
+const { lang, path } = parseSlugForLangAndPath(slug);
+const isPreviewMode = Astro.url.searchParams.get('preview') === 'true';
+// const authToken = getAuthToken(Astro);
+// console.log('authToken', authToken);
+
+const pageData: PageData = await fetchPageData(lang, path, isPreviewMode, null, Astro.request);
+
+// Get theme and default language from pageData
+const selectedTheme = pageData.public_settings?.selected_theme || 'darkmode';
+const defaultLanguageIsoCode = pageData.public_settings?.default_language?.iso_code || null;
+
+// Map of theme components
+const themeMap: Record<string, Record<string, any>> = {
+  'darkmode': {
+    'default': DarkmodeIndex,
+    '404': Darkmode404,
+  },
+  'interlinked': {
+    'default': InterlinkedIndex,
+    '404': Interlinked404,
+  },
+};
+
+// Determine which theme component to use
+let ThemeComponent;
+if (pageData.notFound) {
+  // Use 404 component when page is not found
+  ThemeComponent = themeMap[selectedTheme]?.['404'] || Darkmode404;
+  // Set HTTP status to 404
+  Astro.response.status = 404;
+} else {
+  // Use regular index component for normal pages
+  const isNonDefaultLang = lang && defaultLanguageIsoCode && lang !== defaultLanguageIsoCode;
+  const themeVariant = isNonDefaultLang ? lang : 'default';
+  ThemeComponent = themeMap[selectedTheme]?.[themeVariant] || themeMap[selectedTheme]?.['default'] || DarkmodeIndex;
+}
+
+---
+
+<ThemeComponent pageData={pageData} />

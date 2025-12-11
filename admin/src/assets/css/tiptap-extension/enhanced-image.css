@@ -1,0 +1,11 @@
+.enhanced-image-wrapper {
+  @apply inline-block;
+}
+
+.enhanced-image-description {
+  @apply text-sm text-gray-600 mt-2 italic;
+}
+
+.enhanced-image-wrapper > img {
+  @apply inline;
+}

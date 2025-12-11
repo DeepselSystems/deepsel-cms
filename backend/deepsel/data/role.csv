@@ -1,0 +1,34 @@
+string_id,name,permissions,system,is_technical,system
+super_admin_role,Super Admin,"[
+    ""user:*:*"",
+    ""role:*:*"",
+    ""implied_role:*:*"",
+    ""user_role:*:*"",
+    ""organization:*:*"",
+    ""attachment:*:*"",
+    ""activity:*:*"",
+    ""email_template:*:*"",
+    ""email_out:*:*"",
+    ""cron:*:*""
+]",false,true,true
+admin_role,Admin,"[
+    ""user:*:org"",
+    ""role:*:org"",
+    ""implied_role:*:org"",
+    ""user_role:*:org"",
+    ""organization:*:org"",
+    ""attachment:*:org"",
+    ""activity:*:org"",
+    ""email_template:*:org"",
+    ""email_out:*:org"",
+    ""cron:*:org""
+]",false,false,true
+user_role,User,"[
+    ""user:read:own"",
+    ""user:write:own"",
+    ""implied_role:read:org"",
+    ""organization:read:org"",
+    ""attachment:*:own"",
+    ""activity:*:own""
+]",false,false,true
+public_role,Public User,[],false,true,true

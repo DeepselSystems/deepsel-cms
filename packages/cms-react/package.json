@@ -1,0 +1,94 @@
+{
+  "name": "@deepsel/cms-react",
+  "version": "1.0.0",
+  "description": "React utilities for DeepCMS",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeepselSystems/cms-react.git"
+  },
+  "author": "Tim Tran <tim.tran@deepsel.com> (https://deepsel.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DeepselSystems/cms-react/issues"
+  },
+  "homepage": "https://github.com/DeepselSystems/cms-react#readme",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components/PageDataManager": {
+      "import": "./dist/components/PageDataManager.js",
+      "types": "./dist/components/PageDataManager.d.ts"
+    },
+    "./hooks/useAuthentication": {
+      "import": "./dist/hooks/useAuthentication.js",
+      "types": "./dist/hooks/useAuthentication.d.ts"
+    },
+    "./hooks/useLanguage": {
+      "import": "./dist/hooks/useLanguage.js",
+      "types": "./dist/hooks/useLanguage.d.ts"
+    },
+    "./hooks/useNavigation": {
+      "import": "./dist/hooks/useNavigation.js",
+      "types": "./dist/hooks/useNavigation.d.ts"
+    },
+    "./hooks/usePageData": {
+      "import": "./dist/hooks/usePageData.js",
+      "types": "./dist/hooks/usePageData.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint \"{src,tests}/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"{src,tests}/**/*.{ts,tsx}\" --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepush": "npm run test && npm run build && npm run lint && npm run format:check",
+    "publish": "npm publish --access public"
+  },
+  "keywords": [
+    "cms",
+    "react",
+    "deepsel",
+    "typescript",
+    "helper",
+    "content-management"
+  ],
+  "dependencies": {
+    "@deepsel/cms-utils": "file:/Users/tim/Desktop/deepsel-cms/packages/cms-utils"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.10.0",
+    "@types/react": "^18.3.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vitest": "^0.5.4",
+    "happy-dom": "^20.0.11",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^4.0.8"
+  },
+  "peerDependencies": {
+    "@capacitor/preferences": ">=7.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}
