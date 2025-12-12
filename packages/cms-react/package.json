@@ -1,6 +1,6 @@
 {
   "name": "@deepsel/cms-react",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "React utilities for Deepsel CMS",
   "publishConfig": {
     "access": "public"
