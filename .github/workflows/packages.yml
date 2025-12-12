@@ -91,10 +91,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Update npm
+        if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
+        run: npm install -g npm@latest
+
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish
 
   # cms-react CI
@@ -137,8 +139,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Update npm
+        if: needs.detect-changes.outputs.tagged-package == 'cms-react'
+        run: npm install -g npm@latest
+
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-react'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish

@@ -1,20 +1,16 @@
 {
   "name": "@deepsel/cms-utils",
-  "version": "1.0.0",
-  "description": "Helper utilities for DeepCMS",
+  "version": "1.1.0",
+  "description": "Helper utilities for Deepsel CMS",
   "publishConfig": {
     "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DeepselSystems/cms-utils.git"
   },
   "author": "Tim Tran <tim.tran@deepsel.com> (https://deepsel.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DeepselSystems/cms-utils/issues"
+    "url": "https://github.com/DeepselSystems/deepsel-cms/issues"
   },
-  "homepage": "https://github.com/DeepselSystems/cms-utils#readme",
+  "homepage": "https://github.com/DeepselSystems/deepsel-cms/tree/main/packages/cms-utils#readme",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
