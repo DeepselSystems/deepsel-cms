@@ -60,10 +60,6 @@ jobs:
       contents: read
       id-token: write
 
-    defaults:
-      run:
-        working-directory: packages/cms-utils
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -78,16 +74,16 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace=packages/cms-utils
 
       - name: Check formatting
-        run: npm run format:check
+        run: npm run format:check --workspace=packages/cms-utils
 
       - name: Run tests
-        run: npm test
+        run: npm test --workspace=packages/cms-utils
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace=packages/cms-utils
 
       - name: Update npm
         if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
@@ -95,7 +91,7 @@ jobs:
 
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
-        run: npm publish
+        run: npm publish --workspace=packages/cms-utils
 
   # cms-react CI
   cms-react:
@@ -106,10 +102,6 @@ jobs:
       contents: read
       id-token: write
 
-    defaults:
-      run:
-        working-directory: packages/cms-react
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -124,16 +116,16 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace=packages/cms-react
 
       - name: Check formatting
-        run: npm run format:check
+        run: npm run format:check --workspace=packages/cms-react
 
       - name: Run tests
-        run: npm test
+        run: npm test --workspace=packages/cms-react
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace=packages/cms-react
 
       - name: Update npm
         if: needs.detect-changes.outputs.tagged-package == 'cms-react'
@@ -141,4 +133,4 @@ jobs:
 
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-react'
-        run: npm publish
+        run: npm publish --workspace=packages/cms-react
