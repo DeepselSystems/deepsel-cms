@@ -73,14 +73,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run tests
+        run: npm test --workspace=packages/cms-utils
+
       - name: Lint
         run: npm run lint --workspace=packages/cms-utils
 
       - name: Check formatting
         run: npm run format:check --workspace=packages/cms-utils
-
-      - name: Run tests
-        run: npm test --workspace=packages/cms-utils
 
       - name: Build
         run: npm run build --workspace=packages/cms-utils
@@ -115,14 +115,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build cms-utils (dependency)
+        run: npm run build --workspace=packages/cms-utils
+
+      - name: Run tests
+        run: npm test --workspace=packages/cms-react
+
       - name: Lint
         run: npm run lint --workspace=packages/cms-react
 
       - name: Check formatting
         run: npm run format:check --workspace=packages/cms-react
-
-      - name: Run tests
-        run: npm test --workspace=packages/cms-react
 
       - name: Build
         run: npm run build --workspace=packages/cms-react
