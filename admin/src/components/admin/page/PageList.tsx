@@ -1,5 +1,6 @@
-import React from 'react';
+import {useEffect, useState} from 'react';
 import {DataGrid} from '@mui/x-data-grid';
+import type {GridColDef} from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
@@ -8,8 +9,14 @@ import {useTranslation} from 'react-i18next';
 import i18n from 'i18next';
 import {Helmet} from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
+import OrganizationState from '../../../common/stores/OrganizationState.js';
+import {buildPageUrlWithDomain, buildPagePath} from '../../../utils/domainUtils.js';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
+import {
+  faTriangleExclamation,
+  faPlus,
+  faExternalLinkAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import {Alert} from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -19,14 +26,39 @@ import Checkbox from '../../../common/ui/Checkbox.jsx';
 import {Link} from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
-import FormActionsCell from './components/FormActionsCell/index.jsx';
 
-const FormList = () => {
+type PageLocale = {
+  iso_code?: string;
+  name?: string;
+  emoji_flag?: string;
+};
+
+type PageContent = {
+  id?: number | string;
+  locale_id?: number | string;
+  locale?: PageLocale;
+  title?: string;
+  slug?: string;
+};
+
+type PageRow = {
+  id: number;
+  organization_id?: number | string;
+  contents?: PageContent[];
+  published?: boolean;
+};
+
+export default function PageList() {
   const {t} = useTranslation();
   const {user} = useAuthentication();
   const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
-  const query = useModel('form', {
+  const {settings: siteSettings} = SitePublicSettingsState((state: any) => state);
+  const {organizations} = OrganizationState();
+  const ButtonAny = Button as any;
+
+  const query = useModel(
+    'page',
+    {
     autoFetch: true,
     searchFields: ['contents.title', 'contents.slug'],
     syncPagingParamsWithURL: true,
@@ -40,9 +72,11 @@ const FormList = () => {
           },
         ]
       : [],
-  });
+    } as any
+  ) as any;
+
   const {
-    data: items,
+    data: rawItems,
     loading,
     error,
     page,
@@ -53,11 +87,12 @@ const FormList = () => {
     orderBy,
     setOrderBy,
     setFilters,
-  } = query;
-  const [selectedRows, setSelectedRows] = React.useState([]);
+  } = query as any;
 
-  // Update filters when organizationId changes
-  React.useEffect(() => {
+  const items = (rawItems ?? []) as PageRow[];
+  const [selectedRows, setSelectedRows] = useState<PageRow[]>([]);
+
+  useEffect(() => {
     setFilters(
       organizationId
         ? [
@@ -71,44 +106,32 @@ const FormList = () => {
     );
   }, [organizationId, setFilters]);
 
-  // Function to get the appropriate content based on current language
-  const getContentForCurrentLanguage = (contents) => {
+  const getContentForCurrentLanguage = (
+    contents: PageContent[] | null | undefined
+  ): PageContent | null => {
     if (!contents || contents.length === 0) return null;
 
-    // Get the current language from i18n
     const currentLang = i18n.language;
 
-    // Get the default site language code
     const defaultLangId = siteSettings?.default_language_id;
     const defaultLangContent = contents.find(
       (content) => content.locale_id === defaultLangId
     );
 
-    // Find content based on priority order:
-    // 1. Selected language
-    // 2. Default site language
-    // 3. English (en_US)
-    // 4. First found content
-    let selectedContent;
+    let selectedContent: PageContent | undefined;
 
-    // 1. Try to find content matching the current selected language
     selectedContent = contents.find(
       (content) => content.locale?.iso_code === currentLang
     );
 
-    // 2. If not found, try to find content matching the default site language
     if (!selectedContent && defaultLangContent) {
       selectedContent = defaultLangContent;
     }
 
-    // 3. If still not found, try to find English content
     if (!selectedContent) {
-      selectedContent = contents.find(
-        (content) => content.locale?.iso_code === 'en'
-      );
+      selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
     }
 
-    // 4. If still not found, use the first content
     if (!selectedContent) {
       selectedContent = contents[0];
     }
@@ -116,24 +139,22 @@ const FormList = () => {
     return selectedContent;
   };
 
-  const columns = [
+  const columns: GridColDef[] = [
     {
       field: 'id',
       headerName: '#',
       width: 80,
-      renderCell: (params) => <strong>#{params.value}</strong>,
+      renderCell: (params: any) => <strong>#{params.value}</strong>,
     },
     {
       field: 'contents',
       headerName: t('Title'),
       width: 350,
-      valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+      valueGetter: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <LinkedCell params={params}>{params.value}</LinkedCell>
       ),
     },
@@ -141,13 +162,17 @@ const FormList = () => {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
-      valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
+      valueGetter: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        if (!selectedContent?.slug) return '-';
+        if (!selectedContent?.locale?.iso_code) return '-';
+        return buildPagePath(
+          selectedContent.slug,
+          selectedContent.locale?.iso_code,
+          siteSettings?.default_language
         );
-        return selectedContent.slug;
       },
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <LinkedCell params={params}>{params.value || '-'}</LinkedCell>
       ),
     },
@@ -157,14 +182,21 @@ const FormList = () => {
       width: 120,
       sortable: false,
       filterable: false,
-      renderCell: (params) => {
+      renderCell: (params: any) => {
         const contents = params.row.contents || [];
         if (contents.length === 0) return <span>-</span>;
+
+        const sortedContents = [...contents].sort((a, b) => {
+          const nameA = a.locale?.name || 'Unknown';
+          const nameB = b.locale?.name || 'Unknown';
+          return nameA.localeCompare(nameB);
+        });
+
         return (
           <div className="flex gap-1 flex-wrap">
-            {contents.map((content, index) => (
+            {sortedContents.map((content, index) => (
               <span
-                key={content.id || index}
+                key={(content.id as any) || index}
                 title={content.locale?.name || 'Unknown'}
                 className="text-lg"
               >
@@ -179,23 +211,52 @@ const FormList = () => {
       field: 'published',
       headerName: t('Published'),
       width: 90,
-      renderCell: (params) => (
+      renderCell: (params: any) => (
         <LinkedCell params={params}>
-          <Checkbox checked={params.value} readOnly />
+          <Checkbox checked={Boolean(params.value)} readOnly />
         </LinkedCell>
       ),
     },
     {
       field: 'actions',
-      headerName: t('Actions'),
-      width: 180,
+      headerName: '',
+      width: 70,
       sortable: false,
       filterable: false,
-      renderCell: (params) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <FormActionsCell form={params.row} />
-        </div>
-      ),
+      disableColumnMenu: true,
+      renderCell: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        if (!selectedContent?.slug) return null;
+        if (!selectedContent?.locale?.iso_code) return null;
+
+        const pageUrl = buildPageUrlWithDomain(
+          params.row,
+          selectedContent.slug,
+          selectedContent.locale?.iso_code,
+          siteSettings?.default_language,
+          organizations
+        );
+
+        if (!params.row.published) {
+          return null;
+        }
+
+        return (
+          <div className="flex justify-center">
+            <ButtonAny
+              component="a"
+              href={pageUrl}
+              target="_blank"
+              variant="subtle"
+              size="sm"
+              className="p-1 min-w-0 text-gray-600 hover:text-primary-main"
+              title={t('Go to page')}
+            >
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4" />
+            </ButtonAny>
+          </div>
+        );
+      },
     },
   ];
 
@@ -206,20 +267,25 @@ const FormList = () => {
       </Helmet>
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
-          <H1 className="text-[32px] font-bold text-primary">{t('Forms')}</H1>
+          <H1 className="text-[32px] font-bold text-primary">{t('Pages')}</H1>
           <VisibilityControl
-            roleIds={['super_admin_role', 'admin_role', 'website_admin_role']}
+            roleIds={[
+              'super_admin_role',
+              'admin_role',
+              'website_admin_role',
+              'website_editor_role',
+            ]}
             render={false}
           >
-            <Link to={`/forms/create`}>
-              <Button
+            <Link to={`/pages/create`}>
+              <ButtonAny
                 className={`shadow bg-primary-main text-primary-contrastText`}
                 color={`primary`}
               >
                 <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
                 {t('')}
-                <span className={`hidden sm:inline`}>{t('Create Form')}</span>
-              </Button>
+                <span className={`hidden sm:inline`}>{t('Create Page')}</span>
+              </ButtonAny>
             </Link>
           </VisibilityControl>
         </div>
@@ -230,7 +296,7 @@ const FormList = () => {
           selectedRows={selectedRows}
           setSelectedRows={setSelectedRows}
           allowDelete={
-            user.roles.find((role) =>
+            user.roles.find((role: any) =>
               [
                 'admin_role',
                 'super_admin_role',
@@ -264,9 +330,9 @@ const FormList = () => {
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
           page={page - 1}
-          onPageChange={(newPage) => setPage(newPage + 1)}
+          onPageChange={(newPage: number) => setPage(newPage + 1)}
           rowsPerPageOptions={[20, 30, 50, 100]}
-          disableRowSelectionOnClick
+          disableSelectionOnClick
           checkboxSelection
           className={`!border-0 `}
           sortModel={
@@ -279,7 +345,7 @@ const FormList = () => {
                 ]
               : []
           }
-          onSortModelChange={(model) => {
+          onSortModelChange={(model: any) => {
             if (model.length > 0) {
               setOrderBy({
                 field: model[0].field,
@@ -289,14 +355,14 @@ const FormList = () => {
               setOrderBy(null);
             }
           }}
-          onSelectionModelChange={(ids) => {
-            setSelectedRows(items.filter((item) => ids.includes(item.id)));
+          onSelectionModelChange={(ids: any) => {
+            setSelectedRows(items.filter((item) => (ids || []).includes(item.id)));
           }}
           components={{
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
+          componentsProps={{columnMenu: {query}} as any}
           localeText={{noRowsLabel: t('Nothing here yet.')}}
         />
 
@@ -304,6 +370,4 @@ const FormList = () => {
       </main>
     </>
   );
-};
-
-export default FormList;
+}

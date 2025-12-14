@@ -5,7 +5,7 @@ import ThemeFileEdit from './components/admin/theme/ThemeFileEdit.jsx';
 
 import PageEdit from './components/admin/page/PageEdit.jsx';
 import PageViewComponent from './components/admin/page/PageViewComponent.jsx';
-import PageList from './components/admin/page/PageList.jsx';
+import PageList from './components/admin/page/PageList.tsx';
 
 import MenuTree from './components/admin/menu/MenuTree.jsx';
 import CronCreate from './components/admin/cron/CronCreate.jsx';
@@ -29,11 +29,8 @@ import RoleEdit from './components/admin/role/RoleEdit.jsx';
 import RoleView from './components/admin/role/RoleView.jsx';
 import RoleCreate from './components/admin/role/RoleCreate.jsx';
 import OrganizationLayout from './components/layouts/OrganizationLayout.jsx';
-import EmailLayout from './components/layouts/EmailLayout.jsx';
 import ResetPassword from './components/admin/auth/ResetPassword.jsx';
 import OrganizationSettings from './components/admin/organization/OrganizationSettings.jsx';
-import EmailOutboxList from './components/admin/email_outbox/EmailOutboxList.jsx';
-import EmailOutboxView from './components/admin/email_outbox/EmailOutboxView.jsx';
 import EmailTemplateList from './components/admin/email_template/EmailTemplateList.jsx';
 import EmailTemplateView from './components/admin/email_template/EmailTemplateView.jsx';
 import EmailTemplateCreate from './components/admin/email_template/EmailTemplateCreate.jsx';
@@ -49,15 +46,6 @@ import Media from './components/admin/attachment/Media.jsx';
 import ReactClient from './ReactClient.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
 import PublicAuth from './common/auth/PublicAuth.jsx';
-import FormList from './components/admin/form/FormList.jsx';
-import FormUpsert from './components/admin/form/FormUpsert.jsx';
-import FormView from './components/admin/form/FormView.jsx';
-import FormSubmissionList from './components/admin/form-submission/FormSubmissionList.jsx';
-import FormSubmissionView from './components/admin/form-submission/FormSubmissionView.jsx';
-import CampaignList from './components/admin/campaign/CampaignList.jsx';
-import CampaignCreate from './components/admin/campaign/CampaignCreate.jsx';
-import CampaignView from './components/admin/campaign/CampaignView.jsx';
-import CampaignEdit from './components/admin/campaign/CampaignEdit.jsx';
 
 export default function App(props) {
   return (
@@ -99,18 +87,6 @@ export default function App(props) {
               <Route path="/site-settings" element={<SiteSettings />} />
               <Route path="/sites/new" element={<SiteCreate />} />
               <Route path="/media" element={<Media />} />
-              <Route path="/forms" element={<FormList />} />
-              <Route path="/forms/create" element={<FormUpsert />} />
-              <Route path="/forms/:id" element={<FormView />} />
-              <Route path="/forms/:id/edit" element={<FormUpsert />} />
-              <Route
-                path="/form-submissions"
-                element={<FormSubmissionList />}
-              />
-              <Route
-                path="/form-submissions/:id"
-                element={<FormSubmissionView />}
-              />
             </Route>
 
             <Route element={<OrganizationLayout />}>
@@ -139,29 +115,6 @@ export default function App(props) {
               <Route path="/saml-settings" element={<SamlSetting />} />
             </Route>
 
-            <Route element={<EmailLayout />}>
-              <Route path="/campaigns" element={<CampaignList />} />
-              <Route path="/campaigns/create" element={<CampaignCreate />} />
-              <Route path="/campaigns/:id" element={<CampaignView />} />
-              <Route path="/campaigns/:id/edit" element={<CampaignEdit />} />
-              <Route path="/email_outbox" element={<EmailOutboxList />} />
-              <Route path="/email_outbox/:id" element={<EmailOutboxView />} />
-              <Route
-                path="/email_templates/create"
-                element={<EmailTemplateCreate />}
-              />
-              <Route path="/email_templates" element={<EmailTemplateList />} />
-              <Route
-                path="/email_templates/:id"
-                element={<EmailTemplateView />}
-              />
-              <Route
-                path="/email_templates/:id/edit"
-                element={<EmailTemplateEdit />}
-              />
-
-              <Route path="/smtp_settings" element={<SMTPSettings />} />
-            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

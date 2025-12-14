@@ -9,7 +9,6 @@ import {
   faPalette,
 } from '@fortawesome/free-solid-svg-icons';
 import AppLayout from '../../common/layouts/AppLayout.jsx';
-import {faWpforms} from '@fortawesome/free-brands-svg-icons';
 
 const navbarLinks = [
   {
@@ -49,25 +48,6 @@ const navbarLinks = [
     to: '/manage-users',
     icon: faUser,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-  },
-  {
-    label: 'Forms',
-    icon: faWpforms,
-    roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-    children: [
-      {
-        label: 'Forms',
-        to: '/forms',
-        icon: faWpforms,
-        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-      },
-      {
-        label: 'Submissions',
-        to: '/form-submissions',
-        icon: faNewspaper,
-        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-      },
-    ],
   },
   {
     label: 'Site Settings',
