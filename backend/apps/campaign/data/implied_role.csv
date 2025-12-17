@@ -1,4 +1,0 @@
-string_id,role/role_id,role/implied_role_id,system
-imply_admin_email_campaign_manager,admin_role,email_campaign_manager_role,true
-imply_super_admin_email_campaign_manager,super_admin_role,email_campaign_manager_role,true
-imply_website_admin_email_campaign_manager,website_admin_role,email_campaign_manager_role,true

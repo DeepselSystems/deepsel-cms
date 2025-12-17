@@ -16,7 +16,6 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr
 
 from deepsel.models.organization import OrganizationModel
-from deepsel.models.email_out import EmailOutModel, EmailOutStatus
 from deepsel.utils.email_doser import get_global_email_doser, update_global_limits
 
 logger = logging.getLogger(__name__)
@@ -109,20 +108,6 @@ async def send_email_with_limit(
     else:
         print(f"🔧 BYPASSED rate limiting", flush=True)
 
-    # Create email record
-    email_record = EmailOutModel(
-        subject=subject,
-        recipients=",".join([str(email) for email in to]),
-        content=content,
-        status=EmailOutStatus.SENDING,
-        organization_id=organization_id,
-        email_campaign_id=email_campaign_id,  # Link to campaign if provided
-    )
-    db.add(email_record)
-    db.flush()
-    db.commit()
-    db.refresh(email_record)
-
     try:
         # Create message
         message = MessageSchema(
@@ -159,10 +144,6 @@ async def send_email_with_limit(
                 print(f"✅ DOSER: Send recorded successfully!")
             else:
                 print(f"🔧 DOSER: Bypassed - NOT recording send")
-
-            # Update email record
-            email_record.status = EmailOutStatus.SENT
-            db.commit()
 
             # DOSER DEBUG: Show status AFTER successful send
             post_status = doser.get_current_usage(scope)

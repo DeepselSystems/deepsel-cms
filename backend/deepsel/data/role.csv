@@ -8,7 +8,6 @@ super_admin_role,Super Admin,"[
     ""attachment:*:*"",
     ""activity:*:*"",
     ""email_template:*:*"",
-    ""email_out:*:*"",
     ""cron:*:*""
 ]",false,true,true
 admin_role,Admin,"[
@@ -20,7 +19,6 @@ admin_role,Admin,"[
     ""attachment:*:org"",
     ""activity:*:org"",
     ""email_template:*:org"",
-    ""email_out:*:org"",
     ""cron:*:org""
 ]",false,false,true
 user_role,User,"[
