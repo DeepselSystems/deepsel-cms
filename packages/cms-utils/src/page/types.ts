@@ -66,13 +66,11 @@ export interface PageData {
   id?: number;
   title?: string;
   content?: Content;
+  slug?: string;
   lang: string;
   public_settings: SiteSettings;
   seo_metadata?: SeoMetadata;
   language_alternatives?: LanguageAlternative[];
-  is_frontend_page?: boolean | null;
-  string_id?: string | null;
-  contents?: unknown;
   page_custom_code?: string | null;
   custom_code?: string | null;
   require_login?: boolean;

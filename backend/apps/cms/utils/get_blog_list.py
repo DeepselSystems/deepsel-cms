@@ -56,7 +56,7 @@ def get_blog_list(
             if blog_post.author:
                 author_data = {
                     "id": blog_post.author.id,
-                    "display_name": blog_post.author.display_name,
+                    "display_name": blog_post.author.name,
                     "username": blog_post.author.username,
                     "image": (
                         blog_post.author.image.name if blog_post.author.image else None

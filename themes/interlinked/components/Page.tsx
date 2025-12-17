@@ -6,6 +6,7 @@ import Footer from "./Footer";
 
 
 export default function Page({ pageData }: { pageData: PageData }) {
+  console.log('Page',pageData);
   return (
     <PageDataProvider pageData={pageData}>
       <Header />
