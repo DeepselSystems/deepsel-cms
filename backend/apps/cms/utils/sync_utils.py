@@ -1,7 +1,20 @@
 """Utility functions for syncing directories."""
 
+import hashlib
 import os
 import shutil
+
+
+def _file_hash(filepath, chunk_size=8192):
+    """Compute MD5 hash of entire file in chunks for memory efficiency."""
+    hasher = hashlib.md5(usedforsecurity=False)
+    try:
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(chunk_size), b""):
+                hasher.update(chunk)
+    except (IOError, OSError):
+        return None
+    return hasher.hexdigest()
 
 
 def sync_directory(src, dst, exclude_dirs=None):
@@ -49,13 +62,12 @@ def sync_directory(src, dst, exclude_dirs=None):
             if not os.path.exists(dst_path):
                 should_copy = True
             else:
-                # Compare file modification times and sizes
-                src_stat = os.stat(src_path)
-                dst_stat = os.stat(dst_path)
-                if (
-                    src_stat.st_mtime != dst_stat.st_mtime
-                    or src_stat.st_size != dst_stat.st_size
-                ):
+                # Compare file sizes first (cheap), then hash if sizes match
+                src_size = os.path.getsize(src_path)
+                dst_size = os.path.getsize(dst_path)
+                if src_size != dst_size:
+                    should_copy = True
+                elif _file_hash(src_path) != _file_hash(dst_path):
                     should_copy = True
 
             if should_copy:

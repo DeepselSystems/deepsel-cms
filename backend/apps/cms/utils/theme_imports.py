@@ -41,7 +41,9 @@ def generate_theme_imports(data_dir_path: str):
 
         # Separate language folders from theme folders
         lang_folders = sorted([f for f in all_folders if f in valid_language_codes])
-        theme_folders = sorted([f for f in all_folders if f not in valid_language_codes])
+        theme_folders = sorted(
+            [f for f in all_folders if f not in valid_language_codes]
+        )
 
         # logger.info(f"Theme folders: {theme_folders}")
         # logger.info(f"Language folders: {lang_folders}")
@@ -58,10 +60,14 @@ def generate_theme_imports(data_dir_path: str):
         # Scan all .astro files in each theme folder
         for theme in theme_folders:
             theme_path = os.path.join(themes_dir, theme)
-            astro_files = sorted([
-                f for f in os.listdir(theme_path)
-                if f.endswith(".astro") and os.path.isfile(os.path.join(theme_path, f))
-            ])
+            astro_files = sorted(
+                [
+                    f
+                    for f in os.listdir(theme_path)
+                    if f.endswith(".astro")
+                    and os.path.isfile(os.path.join(theme_path, f))
+                ]
+            )
 
             if theme not in theme_map_entries:
                 theme_map_entries[theme] = {}
@@ -79,18 +85,24 @@ def generate_theme_imports(data_dir_path: str):
             if not os.path.isdir(lang_themes_dir):
                 continue
 
-            lang_themes = sorted([
-                d
-                for d in os.listdir(lang_themes_dir)
-                if os.path.isdir(os.path.join(lang_themes_dir, d))
-            ])
+            lang_themes = sorted(
+                [
+                    d
+                    for d in os.listdir(lang_themes_dir)
+                    if os.path.isdir(os.path.join(lang_themes_dir, d))
+                ]
+            )
 
             for theme in lang_themes:
                 theme_path = os.path.join(lang_themes_dir, theme)
-                astro_files = sorted([
-                    f for f in os.listdir(theme_path)
-                    if f.endswith(".astro") and os.path.isfile(os.path.join(theme_path, f))
-                ])
+                astro_files = sorted(
+                    [
+                        f
+                        for f in os.listdir(theme_path)
+                        if f.endswith(".astro")
+                        and os.path.isfile(os.path.join(theme_path, f))
+                    ]
+                )
 
                 if theme not in theme_map_entries:
                     theme_map_entries[theme] = {}
@@ -187,9 +199,7 @@ def _patch_slug_astro(
             end_line_start = end_line_start + 1
 
         new_content = (
-            content[: start_line_end + 1]
-            + replacement
-            + content[end_line_start:]
+            content[: start_line_end + 1] + replacement + content[end_line_start:]
         )
         return new_content, True
 
@@ -282,7 +292,9 @@ def _patch_slug_astro(
         after_start = updated[theme_map_start.start() :]
         end_rel = after_start.find("};")
         if end_rel == -1:
-            raise ValueError("Could not find end of `themeMap` block in [...slug].astro")
+            raise ValueError(
+                "Could not find end of `themeMap` block in [...slug].astro"
+            )
 
         theme_map_end_abs = theme_map_start.start() + end_rel + len("};")
         updated = (

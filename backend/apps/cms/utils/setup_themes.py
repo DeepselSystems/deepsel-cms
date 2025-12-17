@@ -7,6 +7,8 @@ import subprocess  # nosec B404
 import time
 import logging
 import hashlib
+
+from _pytest.stash import D
 from deepsel.utils.models_pool import models_pool
 from db import get_db_context
 from .hash_utils import hash_file, hash_directory, hash_theme_files
@@ -81,29 +83,22 @@ def setup_themes(force_build=False, force_sync=False):
         # Hash individual folders
         themes_src = "../themes"
         admin_src = "../admin"
+        packages_src = "../packages"
 
-        themes_hash = (
-            hash_directory(path=themes_src, ignored_dirs=SOURCE_HASH_IGNORES)
-            if os.path.exists(themes_src)
-            else None
-        )
-        admin_hash = (
-            hash_directory(path=admin_src, ignored_dirs=SOURCE_HASH_IGNORES)
-            if os.path.exists(admin_src)
-            else None
-        )
-
-        # Hash client folder
-        client_hash = hash_directory(path=client_path, ignored_dirs=SOURCE_HASH_IGNORES)
+        themes_hash = hash_directory(themes_src, SOURCE_HASH_IGNORES)
+        admin_hash = hash_directory(admin_src, SOURCE_HASH_IGNORES)
+        packages_hash = hash_directory(packages_src, SOURCE_HASH_IGNORES)
+        client_hash = hash_directory(client_path, SOURCE_HASH_IGNORES)
 
         # Check what needs syncing
         need_themes_sync = (
             force_sync or previous_state.get("themes_hash") != themes_hash
         )
         need_admin_sync = previous_state.get("admin_hash") != admin_hash
+        need_packages_sync = previous_state.get("packages_hash") != packages_hash
         need_client_sync = previous_state.get("client_hash") != client_hash
 
-        # Sync only changed folders
+        # Sync themes if changed
         if need_themes_sync and os.path.exists(themes_src):
             themes_dst = os.path.join(data_dir, "themes")
             os.makedirs(themes_dst, exist_ok=True)
@@ -112,6 +107,7 @@ def setup_themes(force_build=False, force_sync=False):
         else:
             logger.info("Themes folder unchanged; skipping sync")
 
+        # Sync admin if changed
         if need_admin_sync and os.path.exists(admin_src):
             admin_dst = os.path.join(data_dir, "admin")
             os.makedirs(admin_dst, exist_ok=True)
@@ -119,6 +115,43 @@ def setup_themes(force_build=False, force_sync=False):
             logger.info("Admin folder synced successfully")
         else:
             logger.info("Admin folder unchanged; skipping sync")
+
+        # Sync packages if changed
+        if need_packages_sync and os.path.exists(packages_src):
+            packages_dst = os.path.join(data_dir, "packages")
+            os.makedirs(packages_dst, exist_ok=True)
+            sync_directory(
+                src=packages_src, dst=packages_dst, exclude_dirs=EXCLUDE_DIRS
+            )
+            logger.info("Packages folder synced successfully")
+
+            # Run npm ci and npm run build in each package subfolder
+            for subfolder in os.listdir(packages_dst):
+                subfolder_path = os.path.join(packages_dst, subfolder)
+                if os.path.isdir(subfolder_path) and os.path.exists(
+                    os.path.join(subfolder_path, "package.json")
+                ):
+                    install_result = run_npm("npm install", cwd=subfolder_path)
+                    if install_result.returncode != 0:
+                        logger.error(
+                            f"npm install failed in {subfolder}: {install_result.stderr}"
+                        )
+                        raise RuntimeError(
+                            f"npm install failed in {subfolder}: {install_result.stderr}"
+                        )
+                    logger.info(f"npm install completed in {subfolder}")
+
+                    build_result = run_npm("npm run build", cwd=subfolder_path)
+                    if build_result.returncode != 0:
+                        logger.error(
+                            f"npm run build failed in {subfolder}: {build_result.stderr}"
+                        )
+                        raise RuntimeError(
+                            f"npm run build failed in {subfolder}: {build_result.stderr}"
+                        )
+                    logger.info(f"npm run build completed in {subfolder}")
+        else:
+            logger.info("Packages folder unchanged; skipping sync")
 
         # Sync root package.json and package-lock.json
         root_package_json = "../package.json"
@@ -130,52 +163,6 @@ def setup_themes(force_build=False, force_sync=False):
             shutil.copy2(root_package_lock, os.path.join(data_dir, "package-lock.json"))
             logger.debug("Synced root package-lock.json")
 
-        # Sync packages folder (dev only)
-        if ENVIRONMENT == "dev":
-            packages_src = "../packages"
-            packages_hash = (
-                hash_directory(path=packages_src, ignored_dirs=SOURCE_HASH_IGNORES)
-                if os.path.exists(packages_src)
-                else None
-            )
-            need_packages_sync = previous_state.get("packages_hash") != packages_hash
-
-            if need_packages_sync and os.path.exists(packages_src):
-                packages_dst = os.path.join(data_dir, "packages")
-                os.makedirs(packages_dst, exist_ok=True)
-                sync_directory(
-                    src=packages_src, dst=packages_dst, exclude_dirs=EXCLUDE_DIRS
-                )
-                logger.info("Packages folder synced successfully")
-
-                # Run npm ci and npm run build in each package subfolder
-                for subfolder in os.listdir(packages_dst):
-                    subfolder_path = os.path.join(packages_dst, subfolder)
-                    if os.path.isdir(subfolder_path) and os.path.exists(
-                        os.path.join(subfolder_path, "package.json")
-                    ):
-                        install_result = run_npm("npm install", cwd=subfolder_path)
-                        if install_result.returncode != 0:
-                            logger.error(
-                                f"npm install failed in {subfolder}: {install_result.stderr}"
-                            )
-                            raise RuntimeError(
-                                f"npm install failed in {subfolder}: {install_result.stderr}"
-                            )
-                        logger.info(f"npm install completed in {subfolder}")
-
-                        build_result = run_npm("npm run build", cwd=subfolder_path)
-                        if build_result.returncode != 0:
-                            logger.error(
-                                f"npm run build failed in {subfolder}: {build_result.stderr}"
-                            )
-                            raise RuntimeError(
-                                f"npm run build failed in {subfolder}: {build_result.stderr}"
-                            )
-                        logger.info(f"npm run build completed in {subfolder}")
-            else:
-                logger.info("Packages folder unchanged; skipping sync")
-
         # Sync client folder
         if need_client_sync:
             sync_directory(
@@ -186,18 +173,13 @@ def setup_themes(force_build=False, force_sync=False):
             logger.info("Client folder unchanged; skipping sync")
 
         # Step 2: Reconcile files from DB using SQLAlchemy models (only if themes changed)
-        db_hash = "no_data"
-        need_db_sync = need_themes_sync
-
         with get_db_context() as db:
             ThemeFileModel = models_pool.get("theme_file")
-            # Query all theme files with their contents
             theme_files = db.query(ThemeFileModel).all()
 
             if theme_files:
                 # Calculate hash from database models
                 db_hash = hash_theme_files(theme_files)
-
                 need_db_sync = (
                     need_themes_sync or previous_state.get("db_hash") != db_hash
                 )
@@ -214,21 +196,21 @@ def setup_themes(force_build=False, force_sync=False):
                             if content.lang_code:
                                 # Language version: ensure theme folder exists first
                                 ensure_language_theme_exists(
-                                    content.lang_code,
-                                    theme_file.theme_name,
-                                    client_build_path,
+                                    lang_code=content.lang_code,
+                                    theme_name=theme_file.theme_name,
+                                    data_dir_path=data_dir,
                                 )
                                 file_path = os.path.join(
-                                    client_build_path,
+                                    data_dir,
                                     "themes",
                                     content.lang_code,
                                     theme_file.theme_name,
                                     theme_file.file_path,
                                 )
                             else:
-                                # Default version: client_build/themes/{theme}/...
+                                # Default version: data_dir/themes/{theme}/...
                                 file_path = os.path.join(
-                                    client_build_path,
+                                    data_dir,
                                     "themes",
                                     theme_file.theme_name,
                                     theme_file.file_path,
