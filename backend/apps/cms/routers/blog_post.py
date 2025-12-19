@@ -4,7 +4,7 @@ from deepsel.utils.get_current_user import get_current_user
 from pydantic import BaseModel
 import requests
 import logging
-from fastapi import Depends, HTTPException, Body
+from fastapi import Depends, HTTPException, Body, Request
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.cms.models.organization import CMSSettingsModel
@@ -175,10 +175,10 @@ async def translate_content(
 
 # /blog_post/website/lang
 @router.get("/website/{lang}", response_model=BlogListResponse)
-def get_website_blog_list(lang: str, db: Session = Depends(get_db)):
+def get_website_blog_list(request: Request, lang: str, db: Session = Depends(get_db)):
     return get_blog_list(
+        request=request,
         target_lang=lang,
-        org_settings=None,
         db=db,
         current_user=None,
     )
@@ -186,11 +186,13 @@ def get_website_blog_list(lang: str, db: Session = Depends(get_db)):
 
 # /blog_post/website/lang/slug
 @router.get("/website/{lang}/{slug}", response_model=BlogPostResponse)
-def get_website_blog_post(lang: str, slug: str, db: Session = Depends(get_db)):
+def get_website_blog_post(
+    request: Request, lang: str, slug: str, db: Session = Depends(get_db)
+):
     return get_blog_post(
+        request=request,
         target_lang=lang,
         slug=slug,
-        org_settings=None,
         db=db,
         current_user=None,
     )
