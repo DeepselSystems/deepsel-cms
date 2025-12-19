@@ -1,4 +1,4 @@
-from apps.cms.utils.shared_datatypes import CMSSettingsEncryptedDataReadSSchema
+from apps.cms.types.shared_datatypes import CMSSettingsEncryptedDataReadSSchema
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from deepsel.utils.get_current_user import get_current_user

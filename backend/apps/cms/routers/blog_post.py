@@ -1,17 +1,15 @@
-from apps.cms.utils.shared_datatypes import SEOMetadata
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
-from deepsel.utils.get_current_user import get_current_user, get_current_user_optional
+from deepsel.utils.get_current_user import get_current_user
 from pydantic import BaseModel
 import requests
 import logging
-from fastapi import Depends, HTTPException, Body, Path, Query, Request
-from typing import Dict, Any, Optional, List
+from fastapi import Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.cms.models.organization import CMSSettingsModel
-from apps.cms.utils.domain_detection import detect_domain_from_request
-from deepsel.utils.models_pool import models_pool
+from apps.cms.utils.get_blog_list import get_blog_list, BlogListResponse
+from apps.cms.utils.get_blog_post import get_blog_post, BlogPostResponse
 
 logger = logging.getLogger(__name__)
 
@@ -173,3 +171,26 @@ async def translate_content(
         print(f"Translation error: {str(e)}")
         # In case of any error, return the original content
         return request.content
+
+
+# /blog_post/website/lang
+@router.get("/website/{lang}", response_model=BlogListResponse)
+def get_website_blog_list(lang: str, db: Session = Depends(get_db)):
+    return get_blog_list(
+        target_lang=lang,
+        org_settings=None,
+        db=db,
+        current_user=None,
+    )
+
+
+# /blog_post/website/lang/slug
+@router.get("/website/{lang}/{slug}", response_model=BlogPostResponse)
+def get_website_blog_post(lang: str, slug: str, db: Session = Depends(get_db)):
+    return get_blog_post(
+        target_lang=lang,
+        slug=slug,
+        org_settings=None,
+        db=db,
+        current_user=None,
+    )

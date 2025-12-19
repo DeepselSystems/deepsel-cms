@@ -1,16 +1,9 @@
 from typing import Iterable, Optional
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from deepsel.utils.models_pool import models_pool
+from apps.cms.types.menu import MenuItem
 
-
-class LocalizedMenuItem(BaseModel):
-    id: int
-    position: int
-    title: str
-    url: str
-    open_in_new_tab: bool = False
-    children: list["LocalizedMenuItem"] = Field(default_factory=list)
+LocalizedMenuItem = MenuItem
 
 
 def build_localized_menus(

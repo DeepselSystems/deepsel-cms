@@ -3,15 +3,17 @@ import requests
 import logging
 from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict
+from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException, Body, Path, Query, Request, status
+from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from deepsel.utils.get_current_user import get_current_user, get_current_user_optional
-from fastapi import Depends, HTTPException, Body, Path, Query, Request, status
-from sqlalchemy.orm import Session
-from db import get_db
-from apps.cms.utils.search import search_pages_and_posts, SearchResponse
 from deepsel.utils.models_pool import models_pool
-from apps.cms.utils.get_page_content import get_page_content, PageContentResponse
+from apps.cms.utils.search import search_pages_and_posts, SearchResponse
+from apps.cms.utils.get_page_content import get_page_content
+from apps.cms.types.page import PageContentResponse
+
 
 logger = logging.getLogger(__name__)
 

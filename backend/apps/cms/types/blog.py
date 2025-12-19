@@ -1,10 +1,12 @@
 """Type definitions for blog-related data structures"""
 
-from typing import TypedDict, Optional, List, Dict, Any
-from apps.cms.utils.shared_datatypes import SEOMetadata
+from typing import Optional
+from pydantic import BaseModel
+from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
+from apps.cms.types.public_settings import PublicSettings
 
 
-class AuthorData(TypedDict, total=False):
+class AuthorData(BaseModel):
     """Author data structure for blog posts"""
 
     id: int
@@ -13,22 +15,14 @@ class AuthorData(TypedDict, total=False):
     image: Optional[str]
 
 
-class LocaleData(TypedDict):
-    """Locale data structure"""
-
-    id: int
-    name: str
-    iso_code: str
-
-
-class LanguageAlternative(TypedDict):
+class LanguageAlternative(BaseModel):
     """Language alternative structure"""
 
     slug: str
     locale: LocaleData
 
 
-class BlogPostListItem(TypedDict, total=False):
+class BlogPostListItem(BaseModel):
     """Blog post list item structure"""
 
     id: int
@@ -39,21 +33,3 @@ class BlogPostListItem(TypedDict, total=False):
     publish_date: Optional[str]
     author: Optional[AuthorData]
     lang: str
-
-
-class BlogPostData(TypedDict, total=False):
-    """Complete blog post data structure"""
-
-    id: int
-    title: str
-    content: Any
-    lang: str
-    public_settings: Dict[str, Any]
-    seo_metadata: SEOMetadata
-    custom_code: Optional[str]
-    page_custom_code: Optional[str]
-    require_login: Optional[bool]
-    featured_image_id: Optional[int]
-    publish_date: Optional[str]
-    author: Optional[AuthorData]
-    language_alternatives: List[LanguageAlternative]

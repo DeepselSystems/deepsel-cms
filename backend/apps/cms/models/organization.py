@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.process_menu_item import build_localized_menus, LocalizedMenuItem
 from deepsel.utils import decrypt, encrypt
+from apps.cms.types import PublicSettings
 
 
 logger = logging.getLogger(__name__)
@@ -111,8 +112,7 @@ class CMSSettingsModel(OrganizationModel, __CMSSettingsEncryptedData):
         organization_id: int,
         db: Session,
         lang: str = None,
-        include_special_templates: bool = True,
-    ):
+    ) -> PublicSettings:
         # Call the parent class method to get the base public settings
         public_settings = super().get_public_settings(organization_id, db)
 

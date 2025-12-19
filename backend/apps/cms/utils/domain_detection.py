@@ -1,7 +1,6 @@
 """Domain detection utility for multi-site CMS"""
 
 from fastapi import Request
-import logging
 
 
 def detect_domain_from_request(request: Request) -> str:

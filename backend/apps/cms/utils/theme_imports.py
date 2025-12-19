@@ -18,12 +18,12 @@ logger = logging.getLogger(__name__)
 
 def generate_theme_imports(data_dir_path: str):
     """
-    Generate static imports for all theme variants in [...slug].astro
+    Generate static imports for all theme variants in client/src/themes.js
     This is idempotent and can be called multiple times safely.
     """
     try:
         themes_dir = os.path.join(data_dir_path, "themes")
-        output_file = os.path.join(data_dir_path, "client/src/pages/[...slug].astro")
+        output_file = os.path.join(data_dir_path, "client/src/themes.js")
 
         if not os.path.exists(themes_dir):
             logger.info(f"Themes directory not found: {themes_dir}")
@@ -52,9 +52,10 @@ def generate_theme_imports(data_dir_path: str):
         imports: list[str] = []
         theme_map_entries: dict[str, dict[str, str]] = {}
 
-        def _to_component_name(theme: str, page_key: str, lang_suffix: str = "") -> str:
+        def _to_component_name(theme: str, filename: str, lang_suffix: str = "") -> str:
             theme_part = theme.capitalize().replace("-", "")
-            page_part = page_key.capitalize().replace("-", "")
+            file_base = filename[:-6] if filename.endswith(".astro") else filename
+            page_part = file_base.capitalize().replace("-", "")
             return f"{theme_part}{lang_suffix}{page_part}"
 
         # Scan all .astro files in each theme folder
@@ -74,8 +75,8 @@ def generate_theme_imports(data_dir_path: str):
 
             for astro_file in astro_files:
                 page_key = astro_file[:-6].lower()  # remove .astro, lowercase
-                component_name = _to_component_name(theme, page_key)
-                import_path = f"../../../themes/{theme}/{astro_file}"
+                component_name = _to_component_name(theme, astro_file)
+                import_path = f"../../themes/{theme}/{astro_file}"
                 imports.append(f'import {component_name} from "{import_path}";')
                 theme_map_entries[theme][page_key] = component_name
 
@@ -111,13 +112,15 @@ def generate_theme_imports(data_dir_path: str):
                 for astro_file in astro_files:
                     page_key = astro_file[:-6].lower()
                     map_key = f"{lang}:{page_key}"
-                    component_name = _to_component_name(theme, page_key, lang_suffix)
-                    import_path = f"../../../themes/{lang}/{theme}/{astro_file}"
+                    component_name = _to_component_name(theme, astro_file, lang_suffix)
+                    import_path = f"../../themes/{lang}/{theme}/{astro_file}"
                     imports.append(f'import {component_name} from "{import_path}";')
                     theme_map_entries[theme][map_key] = component_name
 
         # Generate theme map code
-        theme_map_lines = ["const themeMap: Record<string, Record<string, any>> = {"]
+        theme_map_lines = [
+            "export const themeMap: Record<string, Record<string, any>> = {"
+        ]
         for theme, variants in theme_map_entries.items():
             theme_map_lines.append(f"  '{theme}': {{")
             for variant, component_name in variants.items():
@@ -135,31 +138,39 @@ def generate_theme_imports(data_dir_path: str):
             "404", "Interlinked404"
         )
 
-        # Patch existing Astro file instead of regenerating it (keeps it always in sync)
-        if not os.path.exists(output_file):
-            logger.error(f"Target Astro file not found: {output_file}")
-            return
+        # Generate themes.js file content
+        file_content = f"""// THEME_IMPORTS_START (auto-managed)
+{chr(10).join(imports)}
+// THEME_IMPORTS_END
 
-        with open(output_file, "r", encoding="utf-8") as f:
-            existing = f.read()
+// THEME_MAP_START (auto-managed)
+{theme_map_code}
+// THEME_MAP_END
+"""
 
-        updated = _patch_slug_astro(
-            astro_content=existing,
-            import_lines=imports,
-            theme_map_code=theme_map_code,
-            default_theme=default_theme,
-            default_index_component=default_index_component,
-            default_404_component=default_404_component,
-        )
+        # Write or update themes.js file
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        if updated != existing:
-            with open(output_file, "w", encoding="utf-8") as f:
-                f.write(updated)
-            logger.info(
-                f"Updated [...slug].astro dynamic theme sections with {len(imports)} imports"
+        if os.path.exists(output_file):
+            with open(output_file, "r", encoding="utf-8") as f:
+                existing = f.read()
+
+            updated = _patch_themes_ts(
+                content=existing,
+                import_lines=imports,
+                theme_map_code=theme_map_code,
             )
+
+            if updated != existing:
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(updated)
+                logger.info(f"Updated themes.js with {len(imports)} imports")
+            else:
+                logger.info("No changes needed for themes.js")
         else:
-            logger.info("No changes needed for [...slug].astro dynamic theme sections")
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(file_content)
+            logger.info(f"Created themes.js with {len(imports)} imports")
 
     except Exception as e:
         logger.error(f"Error generating theme imports: {e}")
@@ -168,154 +179,49 @@ def generate_theme_imports(data_dir_path: str):
         traceback.print_exc()
 
 
-def _patch_slug_astro(
+def _patch_themes_ts(
     *,
-    astro_content: str,
+    content: str,
     import_lines: list[str],
     theme_map_code: str,
-    default_theme: str,
-    default_index_component: str,
-    default_404_component: str,
 ) -> str:
-    updated = astro_content
+    updated = content
 
     def _replace_between_markers(
-        content: str, start_marker: str, end_marker: str, replacement: str
+        text: str, start_marker: str, end_marker: str, replacement: str
     ) -> tuple[str, bool]:
-        start_idx = content.find(start_marker)
+        start_idx = text.find(start_marker)
         if start_idx == -1:
-            return content, False
-        start_line_end = content.find("\n", start_idx)
+            return text, False
+        start_line_end = text.find("\n", start_idx)
         if start_line_end == -1:
-            return content, False
+            return text, False
 
-        end_idx = content.find(end_marker, start_line_end + 1)
+        end_idx = text.find(end_marker, start_line_end + 1)
         if end_idx == -1:
-            return content, False
-        end_line_start = content.rfind("\n", 0, end_idx)
+            return text, False
+        end_line_start = text.rfind("\n", 0, end_idx)
         if end_line_start == -1:
             end_line_start = end_idx
         else:
             end_line_start = end_line_start + 1
 
-        new_content = (
-            content[: start_line_end + 1] + replacement + content[end_line_start:]
-        )
-        return new_content, True
-
-    fm_delims = list(re.finditer(r"^---\s*$", updated, flags=re.MULTILINE))
-    if len(fm_delims) >= 2:
-        fm_start = fm_delims[0].end()
-        fm_end = fm_delims[1].start()
-        frontmatter = updated[fm_start:fm_end]
-        frontmatter = re.sub(
-            r'^\s*import\s+\w+\s+from\s+"\.\./\.\./\.\./themes/[^\"]+"\s*;\s*\n',
-            "",
-            frontmatter,
-            flags=re.MULTILINE,
-        )
-        updated = updated[:fm_start] + frontmatter + updated[fm_end:]
+        new_text = text[: start_line_end + 1] + replacement + text[end_line_start:]
+        return new_text, True
 
     new_import_block = "\n".join(import_lines) + "\n"
-    updated, used_markers = _replace_between_markers(
+    updated, _ = _replace_between_markers(
         updated,
         "// THEME_IMPORTS_START (auto-managed)",
         "// THEME_IMPORTS_END",
         new_import_block,
     )
-    if not used_markers:
-        updated = re.sub(
-            r'(?:^\s*import\s+\w+\s+from\s+"\.\./\.\./\.\./themes/[^\"]+"\s*;\s*\n)+(?:^\s*\n)*(?=^\s*//\s*Import all theme variants statically.*$)',
-            "",
-            updated,
-            flags=re.MULTILINE,
-        )
 
-        import_anchor_prefix = "// Import all theme variants statically"
-        anchor_match = re.search(
-            r"^\s*//\s*Import all theme variants statically.*$",
-            updated,
-            flags=re.MULTILINE,
-        )
-        if not anchor_match:
-            raise ValueError(
-                "Could not find theme import anchor in [...slug].astro (expected a line starting with: "
-                f"{import_anchor_prefix})"
-            )
-
-        anchor_line_end = updated.find("\n", anchor_match.start())
-        if anchor_line_end == -1:
-            raise ValueError("Unexpected [...slug].astro format: missing newline")
-
-        scan_pos = anchor_line_end + 1
-        import_block_start = scan_pos
-        while True:
-            line_end = updated.find("\n", scan_pos)
-            if line_end == -1:
-                line_end = len(updated)
-            line = updated[scan_pos:line_end]
-            if line.strip() == "":
-                scan_pos = line_end + 1
-                continue
-            if not line.startswith("import "):
-                break
-            scan_pos = line_end + 1
-
-        import_block_end = scan_pos
-        updated = (
-            updated[:import_block_start] + new_import_block + updated[import_block_end:]
-        )
-
-    # 2) Replace selectedTheme default fallback (keeps file compilable as themes change)
-    updated = re.sub(
-        r"(const\s+selectedTheme\s*=\s*pageData\.public_settings\?\.selected_theme\s*\|\|\s*)'[^']*'(\s*;)",
-        rf"\1'{default_theme}'\2",
-        updated,
-        flags=re.MULTILINE,
-    )
-
-    updated, used_theme_map_markers = _replace_between_markers(
+    updated, _ = _replace_between_markers(
         updated,
         "// THEME_MAP_START (auto-managed)",
         "// THEME_MAP_END",
         theme_map_code + "\n",
-    )
-    if not used_theme_map_markers:
-        theme_map_start = re.search(
-            r"^const\s+themeMap:.*=\s*\{$",
-            updated,
-            flags=re.MULTILINE,
-        )
-        if not theme_map_start:
-            raise ValueError("Could not find `themeMap` start in [...slug].astro")
-
-        after_start = updated[theme_map_start.start() :]
-        end_rel = after_start.find("};")
-        if end_rel == -1:
-            raise ValueError(
-                "Could not find end of `themeMap` block in [...slug].astro"
-            )
-
-        theme_map_end_abs = theme_map_start.start() + end_rel + len("};")
-        updated = (
-            updated[: theme_map_start.start()]
-            + theme_map_code
-            + updated[theme_map_end_abs:]
-        )
-
-    # 4) Replace fallback components so they always refer to an imported component
-    updated = re.sub(
-        r"(themeMap\[selectedTheme\]\?\.\['404'\]\s*\|\|\s*themeMap\[selectedTheme\]\?\.\['index'\]\s*\|\|\s*)([A-Za-z0-9_]+)(\s*;)",
-        rf"\1{default_index_component}\3",
-        updated,
-        flags=re.MULTILINE,
-    )
-
-    updated = re.sub(
-        r"(themeMap\[selectedTheme\]\?\.\['index'\]\s*\|\|\s*)([A-Za-z0-9_]+)(\s*;)",
-        rf"\1{default_index_component}\3",
-        updated,
-        flags=re.MULTILINE,
     )
 
     return updated

@@ -1,14 +1,13 @@
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from apps.cms.utils.render_wysiwyg_content import render_wysiwyg_content
-from apps.cms.utils.get_blog_list import get_blog_list
-from apps.cms.utils.get_blog_post import get_blog_post
-from apps.cms.utils.shared_datatypes import SEOMetadata
 import logging
 from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
 from deepsel.utils.models_pool import models_pool
 from pydantic import BaseModel, ConfigDict
-from typing import Any, Optional
+from typing import Optional
+from apps.cms.types.shared_datatypes import SEOMetadata
+from apps.cms.types import PublicSettings
 
 
 logger = logging.getLogger(__name__)
@@ -19,24 +18,18 @@ class PageContentResponse(BaseModel):
 
     id: int
     title: str
-    content: Any = None
+    content: str
     slug: str = None
     lang: str = None
-    public_settings: dict[str, Any]
-    seo_metadata: Optional[SEOMetadata] = None  # SEO metadata for the page
-    language_alternatives: Optional[list[dict]] = (
-        None  # Available language versions with slugs
-    )
+    public_settings: PublicSettings
+    seo_metadata: Optional[SEOMetadata] = None
+    # other languages available for this page
+    language_alternatives: Optional[list[dict]] = None
     # Custom code fields
     page_custom_code: Optional[str] = None
     custom_code: Optional[str] = None
     # Access control
     require_login: Optional[bool] = None
-    # Blog-related fields
-    blog_posts: Optional[list[dict]] = None  # For blog list pages
-    featured_image_id: Optional[int] = None  # For single blog posts
-    publish_date: Optional[str] = None  # For single blog posts
-    author: Optional[dict] = None  # For single blog posts
 
 
 def get_page_content(
@@ -69,48 +62,6 @@ def get_page_content(
 
     # Determine default language
     default_lang = org_settings.default_language.iso_code if org_settings else None
-    target_lang = lang if lang != "default" else default_lang
-
-    # Detect if this is a blog route (starts with /blog)
-    is_blog_route = slug.startswith("/blog")
-
-    if is_blog_route:
-        # Extract the post slug by removing /blog prefix
-        post_slug = slug[5:]  # Remove "/blog" prefix
-
-        # Determine if this is a blog list or single post
-        is_blog_list = not post_slug or post_slug == "/"
-
-        if is_blog_list:
-            # Handle blog list
-            blog_posts, settings, returned_lang = get_blog_list(
-                target_lang=target_lang,
-                org_settings=org_settings,
-                db=db,
-                current_user=current_user,
-            )
-
-            # Return blog list response
-            return PageContentResponse(
-                id=0,  # No page ID for blog list
-                title="Blog",
-                content=None,
-                lang=returned_lang,
-                public_settings=settings,
-                blog_posts=blog_posts,
-            )
-        else:
-            # Handle single blog post
-            blog_post_data = get_blog_post(
-                target_lang=target_lang,
-                post_slug=post_slug,
-                org_settings=org_settings,
-                db=db,
-                current_user=current_user,
-            )
-
-            # Return single blog post response
-            return PageContentResponse(**blog_post_data)
 
     # Find content by language-specific slug
     # Find the locale ID for the requested language

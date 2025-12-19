@@ -1,32 +1,51 @@
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Optional, Any
 from sqlalchemy.orm import Session
-from apps.cms.types import BlogPostListItem
+from pydantic import BaseModel, ConfigDict
+from apps.cms.types import BlogPostListItem, PublicSettings
 from deepsel.utils.models_pool import models_pool
+from apps.cms.utils.domain_detection import detect_domain_from_request
+from fastapi import Request
 from traceback import print_exc
 
 
+class BlogListResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    lang: str = None
+    public_settings: PublicSettings
+    blog_posts: Optional[list[BlogPostListItem]] = None
+    page: int = 1
+    page_size: int = 5
+
+
 def get_blog_list(
+    request: Request,
     target_lang: str,
-    org_settings: Any,
     db: Session,
     current_user: Optional[Any] = None,
-) -> Tuple[List[BlogPostListItem], Dict[str, Any], str]:
+    page: int = 1,
+    page_size: int = 5,
+) -> BlogListResponse:
     """
     Get published blog posts by language for website display.
 
     Args:
         target_lang: Resolved language ISO code (already determined by parent)
-        org_settings: Organization settings
         db: Database session
         current_user: Optional authenticated user
 
     Returns:
-        tuple: (blog_posts, public_settings, target_lang)
+        BlogListResponse: The blog list response object
     """
     try:
         BlogPostModel = models_pool["blog_post"]
         BlogPostContentModel = models_pool["blog_post_content"]
         LocaleModel = models_pool["locale"]
+        OrganizationModel = models_pool["organization"]
+
+        # Detect organization by domain
+        domain: str = detect_domain_from_request(request)
+        org_settings = OrganizationModel.find_organization_by_domain(domain, db)
 
         # Query published blog posts with content in the specified language
         query = (
@@ -41,6 +60,8 @@ def get_blog_list(
                 BlogPostModel.organization_id == org_settings.id,
             )
             .order_by(BlogPostModel.publish_date.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
         )
 
         results = query.all()
@@ -87,7 +108,13 @@ def get_blog_list(
             lang=target_lang,
         )
 
-        return blog_posts, settings, target_lang
+        return BlogListResponse(
+            blog_posts=blog_posts,
+            public_settings=settings,
+            lang=target_lang,
+            page=page,
+            page_size=page_size,
+        )
 
     except Exception:
         # Return empty list instead of error to avoid breaking the website
@@ -97,4 +124,10 @@ def get_blog_list(
             db,
             lang=target_lang,
         )
-        return [], settings, target_lang
+        return BlogListResponse(
+            blog_posts=[],
+            public_settings=settings,
+            lang=target_lang,
+            page=page,
+            page_size=page_size,
+        )

@@ -1,32 +1,58 @@
 from typing import Optional, Any
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from apps.cms.utils.shared_datatypes import SEOMetadata
-from apps.cms.types import BlogPostData
+from pydantic import BaseModel
+from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
+from apps.cms.types.blog import PublicSettings, AuthorData, LanguageAlternative
 from deepsel.utils.models_pool import models_pool
+from apps.cms.utils.domain_detection import detect_domain_from_request
+from fastapi import Request
+
+
+class BlogPostResponse(BaseModel):
+    """Response model for single blog post"""
+
+    id: int
+    title: str
+    content: str
+    lang: str
+    public_settings: PublicSettings
+    seo_metadata: SEOMetadata
+    custom_code: Optional[str] = None
+    page_custom_code: Optional[str] = None
+    require_login: Optional[bool] = None
+    featured_image_id: Optional[int] = None
+    publish_date: Optional[str] = None
+    author: Optional[AuthorData] = None
+    language_alternatives: list[LanguageAlternative]
 
 
 def get_blog_post(
+    request: Request,
     target_lang: str,
     post_slug: str,
-    org_settings: Any,
     db: Session,
     current_user: Optional[Any] = None,
-) -> BlogPostData:
+) -> BlogPostResponse:
     """
     Get blog post content by language and slug.
 
     Args:
+        request: FastAPI request object for domain detection
         target_lang: Resolved language ISO code (already determined by parent)
         post_slug: Blog post slug (without /blog prefix)
-        org_settings: Organization settings
         db: Database session
         current_user: Optional authenticated user
 
     Returns:
-        dict: Blog post data including content, metadata, and settings
+        BlogPostResponse: Blog post data including content, metadata, and settings
     """
     BlogPostModel = models_pool["blog_post"]
+    OrganizationModel = models_pool["organization"]
+
+    # Detect organization by domain
+    domain = detect_domain_from_request(request)
+    org_settings = OrganizationModel.find_organization_by_domain(domain, db)
 
     # Add leading slash if not present (database stores slugs with leading slash)
     post_slug = "/" + post_slug.lstrip("/")
@@ -92,45 +118,45 @@ def get_blog_post(
         allow_indexing=matching_content.seo_metadata_allow_indexing,
     )
 
-    # Convert author to dict if it exists
+    # Convert author to AuthorData if it exists
     author_data = None
     if blog_post.author:
-        author_data = {
-            "id": blog_post.author.id,
-            "display_name": blog_post.author.display_name,
-            "username": blog_post.author.username,
-            "image": blog_post.author.image.name if blog_post.author.image else None,
-        }
+        author_data = AuthorData(
+            id=blog_post.author.id,
+            display_name=blog_post.author.display_name,
+            username=blog_post.author.username,
+            image=blog_post.author.image.name if blog_post.author.image else None,
+        )
 
     # Build language alternatives
     language_alternatives = [
-        {
-            "slug": f"/blog{blog_post.slug}",
-            "locale": {
-                "id": content.locale.id,
-                "name": content.locale.name,
-                "iso_code": content.locale.iso_code,
-            },
-        }
+        LanguageAlternative(
+            slug=f"/blog{blog_post.slug}",
+            locale=LocaleData(
+                id=content.locale.id,
+                name=content.locale.name,
+                iso_code=content.locale.iso_code,
+            ),
+        )
         for content in blog_post.contents
         if content.locale.iso_code != matching_content.locale.iso_code
     ]
 
     # Return blog post data
-    return {
-        "id": blog_post.id,
-        "title": matching_content.title,
-        "content": matching_content.content,
-        "lang": target_lang,
-        "public_settings": settings,
-        "seo_metadata": seo_metadata,
-        "custom_code": matching_content.custom_code,
-        "page_custom_code": blog_post.blog_post_custom_code,
-        "require_login": blog_post.require_login,
-        "featured_image_id": matching_content.featured_image_id,
-        "publish_date": (
+    return BlogPostResponse(
+        id=blog_post.id,
+        title=matching_content.title,
+        content=matching_content.content,
+        lang=target_lang,
+        public_settings=settings,
+        seo_metadata=seo_metadata,
+        custom_code=matching_content.custom_code,
+        page_custom_code=blog_post.blog_post_custom_code,
+        require_login=blog_post.require_login,
+        featured_image_id=matching_content.featured_image_id,
+        publish_date=(
             blog_post.publish_date.isoformat() if blog_post.publish_date else None
         ),
-        "author": author_data,
-        "language_alternatives": language_alternatives,
-    }
+        author=author_data,
+        language_alternatives=language_alternatives,
+    )
