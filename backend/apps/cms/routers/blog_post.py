@@ -16,7 +16,6 @@ from deepsel.utils.get_current_user import get_current_user
 
 table_name = "blog_post"
 CRUDSchemas = generate_CRUD_schemas(table_name)
-CRUDUserSchemas = generate_CRUD_schemas("user")
 
 router = CRUDRouter(
     read_schema=CRUDSchemas.Read,
@@ -57,12 +56,20 @@ async def translate_content(
 
 # /blog_post/website/lang
 @router.get("/website/{lang}", response_model=BlogListResponse)
-def get_website_blog_list(request: Request, lang: str, db: Session = Depends(get_db)):
+def get_website_blog_list(
+    request: Request,
+    lang: str,
+    page: int = 1,
+    page_size: int = 5,
+    db: Session = Depends(get_db),
+):
     return get_blog_list(
         request=request,
         target_lang=lang,
         db=db,
         current_user=None,
+        page=page,
+        page_size=page_size,
     )
 
 
