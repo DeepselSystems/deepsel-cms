@@ -1,21 +1,21 @@
-import {useCallback, useState} from 'react';
-import {NodeViewWrapper} from '@tiptap/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTrash, faPen} from '@fortawesome/free-solid-svg-icons';
-import {modals} from '@mantine/modals';
-import {useTranslation} from 'react-i18next';
-import {EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES} from '../utils.js';
+import { useCallback, useState } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faPen } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
+import { useTranslation } from 'react-i18next';
+import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from '../utils.js';
 import clsx from 'clsx';
 import FilesSelectorModal from './FilesSelectorModal.jsx';
-import {getAttachmentRelativeUrl} from '../../../../utils/index.js';
+import { getAttachmentRelativeUrl } from '../../../../utils/index.js';
 
 /**
  * EditorNodeView component for embed files
  * Displays list of files with download links and delete button on hover
  */
-const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
-  const {t} = useTranslation();
-  const {files} = node.attrs;
+const EditorNodeView = ({ node, deleteNode, updateAttributes }) => {
+  const { t } = useTranslation();
+  const { files } = node.attrs;
 
   // Edit modal state
   const [isEditModalOpened, setIsEditModalOpened] = useState(false);
@@ -31,7 +31,7 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
       setEditingFiles([...files]);
       setIsEditModalOpened(true);
     },
-    [files]
+    [files],
   );
 
   /**
@@ -44,16 +44,14 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
       if (deleteNode) {
         modals.openConfirmModal({
           centered: true,
-          title: (
-            <div className="text-lg font-semibold">{t('Delete Files')}</div>
-          ),
+          title: <div className="text-lg font-semibold">{t('Delete Files')}</div>,
           children: t('Are you sure you want to delete these files?'),
-          labels: {confirm: t('Delete'), cancel: t('Cancel')},
+          labels: { confirm: t('Delete'), cancel: t('Cancel') },
           onConfirm: deleteNode,
         });
       }
     },
-    [deleteNode, t]
+    [deleteNode, t],
   );
 
   if (!files || files.length === 0) {
@@ -72,7 +70,7 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
       <div
         className={clsx(
           'absolute w-full h-full top-0 left-0',
-          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50'
+          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50',
         )}
       />
 
@@ -81,14 +79,14 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
         className={clsx(
           'transition opacity-0 group-hover:opacity-100',
           'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-          'flex gap-2'
+          'flex gap-2',
         )}
       >
         <button
           onClick={handleEditClick}
           className={clsx(
             'group-hover:opacity-100 p-3 rounded bg-gray-ebony text-white bg-opacity-90 flex items-center justify-center',
-            'shadow-lg transition-all duration-200 transform hover:scale-110'
+            'shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Edit Files')}
         >
@@ -98,7 +96,7 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
           onClick={handleDeleteClick}
           className={clsx(
             'p-3 rounded bg-red-500 text-white bg-opacity-90',
-            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110'
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Delete Files')}
         >
@@ -119,9 +117,7 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
                 title={file.name}
               >
                 <span className={EMBED_FILES_CLASSES.FILE_ICON}>📄</span>
-                <span className={EMBED_FILES_CLASSES.FILE_LINK}>
-                  {file.name}
-                </span>
+                <span className={EMBED_FILES_CLASSES.FILE_LINK}>{file.name}</span>
               </a>
             </div>
           );
@@ -138,7 +134,7 @@ const EditorNodeView = ({node, deleteNode, updateAttributes}) => {
         isEditMode={true}
         onUpdate={(updatedFiles) => {
           if (updateAttributes) {
-            updateAttributes({files: updatedFiles});
+            updateAttributes({ files: updatedFiles });
           }
           setIsEditModalOpened(false);
         }}

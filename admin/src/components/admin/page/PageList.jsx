@@ -1,45 +1,42 @@
-import {useState, useEffect} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
-import {
-  buildPageUrlWithDomain,
-  buildPagePath,
-} from '../../../utils/domainUtils.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { buildPageUrlWithDomain, buildPagePath } from '../../../utils/domainUtils.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTriangleExclamation,
   faPlus,
   faExternalLinkAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 
 export default function PageList() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
-  const {organizations} = OrganizationState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
+  const { settings: siteSettings } = SitePublicSettingsState((state) => state);
+  const { organizations } = OrganizationState();
   const query = useModel('page', {
     autoFetch: true,
     searchFields: ['contents.title', 'contents.slug'],
     syncPagingParamsWithURL: true,
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: organizationId
       ? [
           {
@@ -76,7 +73,7 @@ export default function PageList() {
               value: organizationId,
             },
           ]
-        : []
+        : [],
     );
   }, [organizationId, setFilters]);
 
@@ -89,9 +86,7 @@ export default function PageList() {
 
     // Get the default site language code
     const defaultLangId = siteSettings?.default_language_id;
-    const defaultLangContent = contents.find(
-      (content) => content.locale_id === defaultLangId
-    );
+    const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
 
     // Find content based on priority order:
     // 1. Selected language
@@ -101,9 +96,7 @@ export default function PageList() {
     let selectedContent;
 
     // 1. Try to find content matching the current selected language
-    selectedContent = contents.find(
-      (content) => content.locale?.iso_code === currentLang
-    );
+    selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
 
     // 2. If not found, try to find content matching the default site language
     if (!selectedContent && defaultLangContent) {
@@ -112,9 +105,7 @@ export default function PageList() {
 
     // 3. If still not found, try to find English content
     if (!selectedContent) {
-      selectedContent = contents.find(
-        (content) => content.locale?.iso_code === 'en'
-      );
+      selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
     }
 
     // 4. If still not found, use the first content
@@ -137,33 +128,25 @@ export default function PageList() {
       headerName: t('Title'),
       width: 350,
       valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
       valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         if (!selectedContent?.slug) return '-';
         return buildPagePath(
           selectedContent.slug,
           selectedContent.locale?.iso_code,
-          siteSettings?.default_language
+          siteSettings?.default_language,
         );
       },
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value || '-'}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
     },
     {
       field: 'languages',
@@ -215,9 +198,7 @@ export default function PageList() {
       filterable: false,
       disableColumnMenu: true,
       renderCell: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         if (!selectedContent?.slug) return null;
 
         const pageUrl = buildPageUrlWithDomain(
@@ -225,7 +206,7 @@ export default function PageList() {
           selectedContent.slug,
           selectedContent.locale?.iso_code,
           siteSettings?.default_language,
-          organizations
+          organizations,
         );
 
         // Only show button for published pages
@@ -294,7 +275,7 @@ export default function PageList() {
                 'super_admin_role',
                 'website_admin_role',
                 'website_editor_role',
-              ].includes(role.string_id)
+              ].includes(role.string_id),
             ) || false
           }
         />
@@ -354,8 +335,8 @@ export default function PageList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

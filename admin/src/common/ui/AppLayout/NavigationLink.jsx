@@ -1,14 +1,14 @@
-import {useMemo} from 'react';
-import {NavLink} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useLocation, useNavigate} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
+import { useMemo } from 'react';
+import { NavLink } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function NavigationLink(props) {
-  const {link, index, user, opened, toggle, children} = props;
+  const { link, index, user, opened, toggle, children } = props;
   const location = useLocation();
   const navigate = useNavigate();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const userRoleIds = user?.all_roles?.map((rec) => rec.string_id) || [];
 
@@ -20,18 +20,13 @@ export default function NavigationLink(props) {
     return visible;
   }, [link.roleIds, userRoleIds]);
 
-  const isActive = useMemo(
-    () => location.pathname.includes(link.to),
-    [location.pathname, link.to]
-  );
+  const isActive = useMemo(() => location.pathname.includes(link.to), [location.pathname, link.to]);
 
   if (!isVisible) {
     return null;
   }
 
-  const leftSection = link.icon && (
-    <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />
-  );
+  const leftSection = link.icon && <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />;
 
   const commonProps = {
     label: t(link.label),

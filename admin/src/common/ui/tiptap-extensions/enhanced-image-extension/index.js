@@ -1,5 +1,5 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { mergeAttributes, Node } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView.jsx';
 import {
   ENHANCED_IMAGE_ATTRIBUTES,
@@ -112,9 +112,7 @@ export const EnhancedImage = Node.create({
       rounded: {
         default: true,
         parseHTML: (element) => {
-          const rounded = element.getAttribute(
-            ENHANCED_IMAGE_ATTRIBUTES.ROUNDED
-          );
+          const rounded = element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED);
           return rounded !== 'false';
         },
         renderHTML: (attributes) => {
@@ -151,7 +149,7 @@ export const EnhancedImage = Node.create({
         default: '',
         parseHTML: (element) => {
           const descriptionElement = element.querySelector(
-            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`
+            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`,
           );
           return descriptionElement ? descriptionElement.textContent : '';
         },
@@ -170,7 +168,7 @@ export const EnhancedImage = Node.create({
         getAttrs: (element) => {
           const img = element.querySelector('img');
           const descriptionElement = element.querySelector(
-            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`
+            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`,
           );
 
           if (!img) return false;
@@ -180,34 +178,22 @@ export const EnhancedImage = Node.create({
             alt: img.getAttribute('alt'),
             title: img.getAttribute('title'),
             width: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH)
-              ? parseInt(
-                  element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH),
-                  10
-                )
+              ? parseInt(element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH), 10)
               : img.getAttribute('width')
                 ? parseInt(img.getAttribute('width'), 10)
                 : IMAGE_WIDTH_DEFAULT,
             height: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT)
-              ? parseInt(
-                  element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT),
-                  10
-                )
+              ? parseInt(element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT), 10)
               : img.getAttribute('height')
                 ? parseInt(img.getAttribute('height'), 10)
                 : null,
             alignment:
               element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ALIGNMENT) ||
               ENHANCED_IMAGE_ALIGNMENTS.CENTER,
-            rounded:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !==
-              'false',
-            circle:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true',
-            inline:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true',
-            description: descriptionElement
-              ? descriptionElement.textContent
-              : '',
+            rounded: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !== 'false',
+            circle: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true',
+            inline: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true',
+            description: descriptionElement ? descriptionElement.textContent : '',
           };
         },
       },
@@ -216,7 +202,7 @@ export const EnhancedImage = Node.create({
         getAttrs: (element) => {
           const img = element.querySelector('img');
           const descriptionElement = element.querySelector(
-            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`
+            `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`,
           );
 
           if (!img) return false;
@@ -226,42 +212,30 @@ export const EnhancedImage = Node.create({
             alt: img.getAttribute('alt'),
             title: img.getAttribute('title'),
             width: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH)
-              ? parseInt(
-                  element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH),
-                  10
-                )
+              ? parseInt(element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH), 10)
               : img.getAttribute('width')
                 ? parseInt(img.getAttribute('width'), 10)
                 : IMAGE_WIDTH_DEFAULT,
             height: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT)
-              ? parseInt(
-                  element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT),
-                  10
-                )
+              ? parseInt(element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT), 10)
               : img.getAttribute('height')
                 ? parseInt(img.getAttribute('height'), 10)
                 : null,
             alignment:
               element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ALIGNMENT) ||
               ENHANCED_IMAGE_ALIGNMENTS.CENTER,
-            rounded:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !==
-              'false',
-            circle:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true',
-            inline:
-              element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true',
-            description: descriptionElement
-              ? descriptionElement.textContent
-              : '',
+            rounded: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !== 'false',
+            circle: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true',
+            inline: element.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true',
+            description: descriptionElement ? descriptionElement.textContent : '',
           };
         },
       },
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
-    const {description, alignment, rounded, circle, inline} = node.attrs;
+  renderHTML({ node, HTMLAttributes }) {
+    const { description, alignment, rounded, circle, inline } = node.attrs;
 
     // Create image element
     const imgElement = [
@@ -334,9 +308,7 @@ export const EnhancedImage = Node.create({
           node.attrs.width?.toString() || IMAGE_WIDTH_DEFAULT.toString(),
         [ENHANCED_IMAGE_ATTRIBUTES.HEIGHT]: node.attrs.height?.toString() || '',
         [ENHANCED_IMAGE_ATTRIBUTES.DESCRIPTION]: description || '',
-        style:
-          alignmentStyles[alignment] ||
-          alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER],
+        style: alignmentStyles[alignment] || alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER],
       }),
       ...elements,
     ];
@@ -350,7 +322,7 @@ export const EnhancedImage = Node.create({
     return {
       setEnhancedImage:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.insertContent({
             type: this.name,
             attrs: options,
@@ -358,7 +330,7 @@ export const EnhancedImage = Node.create({
         },
       updateEnhancedImage:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.updateAttributes(this.name, options);
         },
     };

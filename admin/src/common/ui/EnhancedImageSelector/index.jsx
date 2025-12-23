@@ -1,6 +1,6 @@
-import {useCallback, useMemo, useState} from 'react';
-import {Modal, Tabs} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { useCallback, useMemo, useState } from 'react';
+import { Modal, Tabs } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import SearchStockImages from './components/SearchStockImages.jsx';
 import InternalImages from './components/InternalImages.jsx';
 import useModel from '../../api/useModel.jsx';
@@ -20,9 +20,9 @@ const Modes = {
  * @returns {JSX.Element}
  * @constructor
  */
-const ModelLabel = ({mode}) => {
+const ModelLabel = ({ mode }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -53,17 +53,17 @@ const EnhancedImageSelector = ({
 }) => {
   // Selected images
   const [internalSelectedImages, setInternalSelectedImages] = useState(
-    /** @type {Array<AttachmentFile>} */ []
+    /** @type {Array<AttachmentFile>} */ [],
   );
   const selectedImages = selectedImagesProp || internalSelectedImages;
   const setSelectedImages = setSelectedImagesProp || setInternalSelectedImages;
   const selectedImagesMap = useMemo(
     () => fromPairs(selectedImages.map((o) => [o.id, o])),
-    [selectedImages]
+    [selectedImages],
   );
 
   // Use useModel to fetch attachments
-  const {get: getAttachmentImages} = useModel('attachment', {
+  const { get: getAttachmentImages } = useModel('attachment', {
     pageSize: null,
     autoFetch: false,
     filters: [
@@ -76,9 +76,7 @@ const EnhancedImageSelector = ({
   });
 
   // Attachment images
-  const [attachmentImages, setAttachmentImages] = useState(
-    /** @type {Array<AttachmentFile>} */ []
-  );
+  const [attachmentImages, setAttachmentImages] = useState(/** @type {Array<AttachmentFile>} */ []);
   const [isImagesLoading, setIsImagesLoading] = useState(true);
 
   /**
@@ -88,7 +86,7 @@ const EnhancedImageSelector = ({
   const fetchAttachmentImages = useCallback(() => {
     setIsImagesLoading(true);
     getAttachmentImages()
-      .then(({data}) => {
+      .then(({ data }) => {
         setAttachmentImages(data);
       })
       .finally(() => {
@@ -109,7 +107,7 @@ const EnhancedImageSelector = ({
         onSelect?.(attachment);
       }
     },
-    [multiple, onSelect, setSelectedImages]
+    [multiple, onSelect, setSelectedImages],
   );
 
   /**
@@ -183,13 +181,9 @@ const EnhancedImageSelector = ({
  * @returns {JSX.Element}
  * @constructor
  */
-const EnhancedImageSelectorModal = ({
-  opened,
-  setOpened = () => {},
-  ...props
-}) => {
+const EnhancedImageSelectorModal = ({ opened, setOpened = () => {}, ...props }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -208,4 +202,4 @@ const EnhancedImageSelectorModal = ({
   );
 };
 
-export {EnhancedImageSelector, EnhancedImageSelectorModal};
+export { EnhancedImageSelector, EnhancedImageSelectorModal };

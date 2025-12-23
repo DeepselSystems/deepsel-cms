@@ -1,8 +1,8 @@
 import React from 'react';
-import {Box, Button, TextInput, Group, Text} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faCheck, faEdit, faRefresh} from '@fortawesome/free-solid-svg-icons';
+import { Box, Button, TextInput, Group, Text } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faEdit, faRefresh } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Render label and description
@@ -13,32 +13,30 @@ import {faCheck, faEdit, faRefresh} from '@fortawesome/free-solid-svg-icons';
  * readonly required?: boolean
  * }>}
  */
-const LabelAndDescription = React.memo(
-  ({label, description, required = false}) => {
-    return (
-      <>
-        {/* Label */}
-        {label && (
-          <Text size="sm" fw={500} mb={0}>
-            {label}{' '}
-            {required && (
-              <Box component="span" className="text-danger-main">
-                {' '}
-                *
-              </Box>
-            )}
-          </Text>
-        )}
-        {/* Description */}
-        {description && (
-          <Text size="xs" c="dimmed" mb={8}>
-            {description}
-          </Text>
-        )}
-      </>
-    );
-  }
-);
+const LabelAndDescription = React.memo(({ label, description, required = false }) => {
+  return (
+    <>
+      {/* Label */}
+      {label && (
+        <Text size="sm" fw={500} mb={0}>
+          {label}{' '}
+          {required && (
+            <Box component="span" className="text-danger-main">
+              {' '}
+              *
+            </Box>
+          )}
+        </Text>
+      )}
+      {/* Description */}
+      {description && (
+        <Text size="xs" c="dimmed" mb={8}>
+          {description}
+        </Text>
+      )}
+    </>
+  );
+});
 
 LabelAndDescription.displayName = 'LabelAndDescription';
 
@@ -62,18 +60,11 @@ LabelAndDescription.displayName = 'LabelAndDescription';
  */
 const SecretInput = React.forwardRef(
   (
-    {
-      truncateSecret,
-      editingValue,
-      setEditingValue,
-      label,
-      description,
-      required = false,
-    },
-    ref
+    { truncateSecret, editingValue, setEditingValue, label, description, required = false },
+    ref,
   ) => {
     // Translation hook for internationalization
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // State to manage edit mode toggle
     const [isEditing, setIsEditing] = React.useState(false);
@@ -112,18 +103,14 @@ const SecretInput = React.forwardRef(
       () => ({
         setDone: handleDoneClick,
       }),
-      [handleDoneClick]
+      [handleDoneClick],
     );
 
     // Render edit mode: input field with done and reset buttons
     if (isEditing) {
       return (
         <Box>
-          <LabelAndDescription
-            required={required}
-            label={label}
-            description={description}
-          />
+          <LabelAndDescription required={required} label={label} description={description} />
 
           <Group gap="sm" className="w-full">
             {/* Input field for editing secret value */}
@@ -131,7 +118,7 @@ const SecretInput = React.forwardRef(
               autoFocus
               required={required}
               value={editingValue}
-              onChange={({target: {value}}) => setEditingValue?.(value)}
+              onChange={({ target: { value } }) => setEditingValue?.(value)}
               placeholder={t('Enter new secret...')}
               className="flex-1"
               size="sm"
@@ -167,11 +154,7 @@ const SecretInput = React.forwardRef(
     // Render view mode: display truncated secret with the edit button
     return (
       <Box>
-        <LabelAndDescription
-          required={required}
-          label={label}
-          description={description}
-        />
+        <LabelAndDescription required={required} label={label} description={description} />
         <Group gap="sm" className="w-full" wrap="nowrap">
           {/*region Display box for truncated secret*/}
           <Box className="flex-1 px-3 py-2 bg-gray-50 rounded-md border border-gray-200 truncate">
@@ -198,7 +181,7 @@ const SecretInput = React.forwardRef(
         </Group>
       </Box>
     );
-  }
+  },
 );
 
 SecretInput.displayName = 'SecretInput';

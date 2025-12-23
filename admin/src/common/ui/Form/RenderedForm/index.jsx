@@ -1,14 +1,14 @@
-import {memo, useCallback, useEffect, useMemo} from 'react';
-import {Alert, Box} from '@mantine/core';
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import { Alert, Box } from '@mantine/core';
 import FieldTypeRenderer from './FieldTypeRenderer.jsx';
 import H1 from '../../H1.jsx';
 import Button from '../../Button.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useFormFieldsData from './useFormFieldsData.js';
 import fromPairs from 'lodash/fromPairs.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faCheckCircle} from '@fortawesome/free-solid-svg-icons';
-import {FormFieldType} from '../../../../constants/form.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { FormFieldType } from '../../../../constants/form.js';
 import clsx from 'clsx';
 
 /**
@@ -21,39 +21,36 @@ import clsx from 'clsx';
  * readonly submissionsRemaining: number | null
  * }>}
  */
-const SubmissionLimitHint = memo(
-  ({formContent, submissionsRemaining = null}) => {
-    // Translation
-    const {t} = useTranslation();
+const SubmissionLimitHint = memo(({ formContent, submissionsRemaining = null }) => {
+  // Translation
+  const { t } = useTranslation();
 
-    return (
-      <Box>
-        {formContent.show_remaining_submissions &&
-          submissionsRemaining !== null && (
-            <>
-              {submissionsRemaining === 0 ? (
-                <Box component="p" className="text-primary-main text-xs">
-                  {t(
-                    'This form has reached its submission limit and is no longer accepting responses.'
-                  )}
-                </Box>
-              ) : (
-                <Box component="p" className="text-gray-pale-sky text-xs">
-                  {t(
-                    'Limited availability: {{submissions_remaining}}/{{max_submissions}} submissions remaining.',
-                    {
-                      submissions_remaining: submissionsRemaining,
-                      max_submissions: formContent.max_submissions || 0,
-                    }
-                  )}
-                </Box>
+  return (
+    <Box>
+      {formContent.show_remaining_submissions && submissionsRemaining !== null && (
+        <>
+          {submissionsRemaining === 0 ? (
+            <Box component="p" className="text-primary-main text-xs">
+              {t(
+                'This form has reached its submission limit and is no longer accepting responses.',
               )}
-            </>
+            </Box>
+          ) : (
+            <Box component="p" className="text-gray-pale-sky text-xs">
+              {t(
+                'Limited availability: {{submissions_remaining}}/{{max_submissions}} submissions remaining.',
+                {
+                  submissions_remaining: submissionsRemaining,
+                  max_submissions: formContent.max_submissions || 0,
+                },
+              )}
+            </Box>
           )}
-      </Box>
-    );
-  }
-);
+        </>
+      )}
+    </Box>
+  );
+});
 SubmissionLimitHint.displayName = 'SubmissionLimitHint';
 
 /**
@@ -76,7 +73,7 @@ const RenderedForm = ({
   initialFieldsData = {},
 }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   /**
    * Get form fields
@@ -94,11 +91,8 @@ const RenderedForm = ({
     () =>
       ['', null, undefined].includes(formContent.max_submissions)
         ? null
-        : Math.max(
-            0,
-            +formContent.max_submissions - (formContent.submissions_count || 0)
-          ),
-    [formContent.max_submissions, formContent.submissions_count]
+        : Math.max(0, +formContent.max_submissions - (formContent.submissions_count || 0)),
+    [formContent.max_submissions, formContent.submissions_count],
   );
 
   /**
@@ -106,13 +100,10 @@ const RenderedForm = ({
    * Note: submissionsRemaining === null, it means no limited
    * @type {boolean}
    */
-  const reachedSubmissionLimit = useMemo(
-    () => submissionsRemaining === 0,
-    [submissionsRemaining]
-  );
+  const reachedSubmissionLimit = useMemo(() => submissionsRemaining === 0, [submissionsRemaining]);
 
   // Form fields data
-  const {formFieldsData, setFieldData, setFormFieldsData} = useFormFieldsData(
+  const { formFieldsData, setFieldData, setFormFieldsData } = useFormFieldsData(
     fromPairs(
       fields.map((field) => [
         field.id || field._id,
@@ -123,8 +114,8 @@ const RenderedForm = ({
           _field: field, // Internal field -> DELETE this when submit to backend
           _error: '', // Internal field -> DELETE this when submit to backend
         },
-      ])
-    )
+      ]),
+    ),
   );
 
   /**
@@ -138,7 +129,7 @@ const RenderedForm = ({
       const fieldData = formFieldsData[fieldId];
 
       // Clear validation hint
-      setFieldData(fieldId, {_error: ''});
+      setFieldData(fieldId, { _error: '' });
 
       // Validating required fields
       if (fieldData._field.required) {
@@ -149,15 +140,12 @@ const RenderedForm = ({
           case FormFieldType.Files:
             // For files field, check if array is empty or null/undefined
             isEmpty =
-              !fieldData.value ||
-              !Array.isArray(fieldData.value) ||
-              fieldData.value.length === 0;
+              !fieldData.value || !Array.isArray(fieldData.value) || fieldData.value.length === 0;
             break;
 
           case FormFieldType.Checkboxes:
             // For checkboxes field, check if array is empty
-            isEmpty =
-              !Array.isArray(fieldData.value) || fieldData.value.length === 0;
+            isEmpty = !Array.isArray(fieldData.value) || fieldData.value.length === 0;
             break;
 
           default:
@@ -215,10 +203,9 @@ const RenderedForm = ({
               field.id || field._id,
               {
                 ...prevState[field.id || field._id],
-                value:
-                  prevState[field.id || field._id].value || getInitValue(field),
+                value: prevState[field.id || field._id].value || getInitValue(field),
               },
-            ])
+            ]),
         ),
       }));
     }
@@ -228,9 +215,7 @@ const RenderedForm = ({
     <>
       <Box className="container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4">
         <Box className="space-y-3">
-          <H1 className="!text-black !break-words !text-center">
-            {formContent.title}
-          </H1>
+          <H1 className="!text-black !break-words !text-center">{formContent.title}</H1>
           <Box component="p" className="text-gray-pale-sky text-xs">
             {formContent.description}
           </Box>
@@ -251,7 +236,7 @@ const RenderedForm = ({
               <FieldTypeRenderer
                 field={field}
                 value={formFieldsData[field.id || field._id]?.value}
-                onChange={(value) => setFieldData(field.id, {value})}
+                onChange={(value) => setFieldData(field.id, { value })}
                 error={formFieldsData[field.id || field._id]?._error}
               />
             </Box>
@@ -271,10 +256,7 @@ const RenderedForm = ({
                 {formContent.enable_public_statistics && (
                   <Box component="span">
                     <Box component="span"> </Box>
-                    <a
-                      className="underline"
-                      href={`${location.href}/statistics`}
-                    >
+                    <a className="underline" href={`${location.href}/statistics`}>
                       {t('Click here to see statistics for this form.')}
                     </a>
                   </Box>

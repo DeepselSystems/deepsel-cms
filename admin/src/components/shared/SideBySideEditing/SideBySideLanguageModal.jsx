@@ -1,11 +1,11 @@
-import {useState} from 'react';
-import {Modal, Checkbox, Group, Text} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { useState } from 'react';
+import { Modal, Checkbox, Group, Text } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import Button from '../../../common/ui/Button.jsx';
 import PropTypes from 'prop-types';
 
-const SideBySideLanguageModal = ({opened, onClose, languages = [], onEdit}) => {
-  const {t} = useTranslation();
+const SideBySideLanguageModal = ({ opened, onClose, languages = [], onEdit }) => {
+  const { t } = useTranslation();
   const [selectedLanguages, setSelectedLanguages] = useState([]);
 
   const handleLanguageToggle = (languageId) => {
@@ -35,14 +35,10 @@ const SideBySideLanguageModal = ({opened, onClose, languages = [], onEdit}) => {
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={
-        <div className="font-bold">
-          {t('Select languages to edit side-by-side')}
-        </div>
-      }
+      title={<div className="font-bold">{t('Select languages to edit side-by-side')}</div>}
       size="xl"
       radius={0}
-      transitionProps={{transition: 'fade', duration: 200}}
+      transitionProps={{ transition: 'fade', duration: 200 }}
     >
       <div className="mb-4">
         <p className="text-sm text-gray-600 mb-4">
@@ -58,9 +54,7 @@ const SideBySideLanguageModal = ({opened, onClose, languages = [], onEdit}) => {
                 className="mr-3"
               />
               <div className="flex items-center">
-                <span className="mr-2 text-lg">
-                  {language.locale?.emoji_flag}
-                </span>
+                <span className="mr-2 text-lg">{language.locale?.emoji_flag}</span>
                 <div>
                   <Text size="sm" className="font-medium">
                     {language.locale?.name}

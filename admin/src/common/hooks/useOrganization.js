@@ -27,9 +27,7 @@ const getOrganizations = (organizations, user) => {
   } else {
     // Regular users can only see their assigned organizations
     const userOrganizationIds = user.organizations.map((o) => o.id);
-    result = organizations.filter((org) =>
-      userOrganizationIds.includes(org.id)
-    );
+    result = organizations.filter((org) => userOrganizationIds.includes(org.id));
   }
   return orderBy(result, (o) => o.id);
 };
@@ -48,15 +46,13 @@ const useOrganization = () => {
   const setOrganizations = OrganizationState((state) => state.setOrganizations);
 
   // Selected organization
-  const {organizationId, setOrganizationId} = OrganizationIdState(
-    (state) => state
-  );
+  const { organizationId, setOrganizationId } = OrganizationIdState((state) => state);
 
   // Logged in user
-  const {user} = useAuthentication();
+  const { user } = useAuthentication();
 
   // Get organization model
-  const {get: getOrganizationsData} = useModel('organization', {
+  const { get: getOrganizationsData } = useModel('organization', {
     autoFetch: false,
     pageSize: null,
   });
@@ -82,7 +78,7 @@ const useOrganization = () => {
         // Refill selected organization
         const filteredOrganizations = getOrganizations(response.data, user);
         const prevSelectedOrganization = filteredOrganizations.find(
-          (organization) => String(organization.id) === String(organizationId)
+          (organization) => String(organization.id) === String(organizationId),
         );
 
         // Be careful if you want to change this condition - it may lead to infinity loop
@@ -93,13 +89,7 @@ const useOrganization = () => {
       .catch(() => {
         setOrganizations([]);
       });
-  }, [
-    getOrganizationsData,
-    organizationId,
-    setOrganizationId,
-    setOrganizations,
-    user,
-  ]);
+  }, [getOrganizationsData, organizationId, setOrganizationId, setOrganizations, user]);
 
   /**
    * Use effect once when initialize

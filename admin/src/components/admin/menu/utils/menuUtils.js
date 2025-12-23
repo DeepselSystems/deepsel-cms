@@ -12,7 +12,7 @@ export const buildMenuTree = (items) => {
 
   // First pass: create a map of all items
   menuItems.forEach((item) => {
-    itemMap[item.id] = {...item, children: []};
+    itemMap[item.id] = { ...item, children: [] };
   });
 
   // Second pass: build the tree structure
@@ -44,7 +44,7 @@ export const buildMenuTree = (items) => {
 
   sortChildrenRecursive(rootItems);
 
-  return {rootItems, itemMap};
+  return { rootItems, itemMap };
 };
 
 /**
@@ -56,8 +56,7 @@ export const buildMenuTree = (items) => {
 export const isChildOf = (item, potentialParentId) => {
   if (!item.children) return false;
   return item.children.some(
-    (child) =>
-      child.id === potentialParentId || isChildOf(child, potentialParentId)
+    (child) => child.id === potentialParentId || isChildOf(child, potentialParentId),
   );
 };
 
@@ -111,8 +110,6 @@ export const getLanguageFlag = (localeCode, locales) => {
  * @returns {string|null} - The default language code or null if not found
  */
 export const getDefaultLanguageCode = (defaultLanguageId, locales) => {
-  const defaultLocale = locales?.find(
-    (locale) => locale.id === defaultLanguageId
-  );
+  const defaultLocale = locales?.find((locale) => locale.id === defaultLanguageId);
   return defaultLocale ? defaultLocale.iso_code : null;
 };

@@ -1,7 +1,7 @@
-export default function ColorDisplay({color, value, className}) {
+export default function ColorDisplay({ color, value, className }) {
   return (
     <div className={`flex items-center ${className}`}>
-      <div className={`rounded-full w-5 h-5`} style={{background: color}} />
+      <div className={`rounded-full w-5 h-5`} style={{ background: color }} />
       <div
         className="ml-1 leading-5"
         style={{

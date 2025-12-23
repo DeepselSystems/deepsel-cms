@@ -1,5 +1,5 @@
 import React from 'react';
-import {useSearchParams} from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import isObjectOrArray from '../utils/isObjectOrArray.js';
 
 /**
@@ -32,7 +32,7 @@ const convertToOriginalType = (value, initialType) => {
   // Warning function
   const printWarning = () => {
     console.warn(
-      `Cannot be converted to original value type. Initial type: ${initialType}, value to convert: ${value}, of type: ${typeof value}`
+      `Cannot be converted to original value type. Initial type: ${initialType}, value to convert: ${value}, of type: ${typeof value}`,
     );
   };
 
@@ -101,9 +101,7 @@ const convertToOriginalType = (value, initialType) => {
  */
 const useSearchParamState = (searchQueryKey, initialValue) => {
   // Detect the type of initial value
-  const initialType = isObjectOrArray(initialValue)
-    ? 'object'
-    : typeof initialValue;
+  const initialType = isObjectOrArray(initialValue) ? 'object' : typeof initialValue;
 
   // Search params
   const [searchParams, setSearchParams] = useSearchParams();
@@ -138,7 +136,7 @@ const useSearchParamState = (searchQueryKey, initialValue) => {
       // Update the local state
       setState(convertToOriginalType(newState, initialType));
     },
-    [initialType, searchQueryKey, searchParams, setSearchParams]
+    [initialType, searchQueryKey, searchParams, setSearchParams],
   );
 
   /**
@@ -150,17 +148,11 @@ const useSearchParamState = (searchQueryKey, initialValue) => {
    */
   React.useEffect(() => {
     // Convert search param to origin type (type of initial value)
-    const paramValue = convertToOriginalType(
-      searchParams.get(searchQueryKey),
-      initialType
-    );
+    const paramValue = convertToOriginalType(searchParams.get(searchQueryKey), initialType);
 
     // Only update page state if the value differs from current state
     setState((prevState) => {
-      if (
-        String(paramValue) !== String(prevState) &&
-        !SearchParamEmptyTypes.includes(paramValue)
-      ) {
+      if (String(paramValue) !== String(prevState) && !SearchParamEmptyTypes.includes(paramValue)) {
         return paramValue;
       } else {
         return prevState;

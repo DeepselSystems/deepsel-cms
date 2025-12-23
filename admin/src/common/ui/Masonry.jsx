@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -8,7 +8,7 @@ import clsx from 'clsx';
  * @param {number} props.columns - Number of columns (default: 3)
  * @param {string} props.className - Additional CSS classes
  */
-const Masonry = ({children, columns = 5, className = ''}) => {
+const Masonry = ({ children, columns = 5, className = '' }) => {
   const containerRef = useRef(null);
   const [columnWrappers, setColumnWrappers] = useState([]);
 
@@ -24,8 +24,8 @@ const Masonry = ({children, columns = 5, className = ''}) => {
     const validItems = items.filter((item) => item != null);
 
     // Distribute items into columns using shortest column first algorithm
-    const cols = Array.from({length: columns}, () => []);
-    const columnHeights = Array.from({length: columns}, () => 0);
+    const cols = Array.from({ length: columns }, () => []);
+    const columnHeights = Array.from({ length: columns }, () => 0);
 
     validItems.forEach((item) => {
       // Find the column with minimum height
@@ -46,14 +46,10 @@ const Masonry = ({children, columns = 5, className = ''}) => {
     <div
       ref={containerRef}
       className={clsx('flex gap-1', className)}
-      style={{alignItems: 'flex-start'}}
+      style={{ alignItems: 'flex-start' }}
     >
       {columnWrappers.map((column, columnIndex) => (
-        <div
-          key={columnIndex}
-          className="flex flex-col gap-3 flex-1"
-          style={{minWidth: 0}}
-        >
+        <div key={columnIndex} className="flex flex-col gap-3 flex-1" style={{ minWidth: 0 }}>
           {column.map((item, itemIndex) => (
             <div key={itemIndex}>{item}</div>
           ))}

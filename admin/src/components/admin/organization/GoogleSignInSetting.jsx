@@ -1,7 +1,7 @@
-import {faCopy, faRotate} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
+import { faCopy, faRotate } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import useModel from '../../../common/api/useModel.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -14,13 +14,13 @@ import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 
 export default function GoogleSignInSetting() {
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {record, setRecord, update, loading} = useModel('organization', {
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { record, setRecord, update, loading } = useModel('organization', {
     id: 1,
     autoFetch: true,
   });
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   useEffect(() => {
     if (record?.is_enabled_google_sign_in && !record.google_redirect_uri) {
@@ -70,10 +70,7 @@ export default function GoogleSignInSetting() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading} />
 
       {record ? (
@@ -126,18 +123,10 @@ export default function GoogleSignInSetting() {
                   }
                   rightSection={
                     <div className="flex items-center gap-2 mr-6">
-                      <button
-                        type="button"
-                        onClick={handleReset}
-                        title={t('Reset to default')}
-                      >
+                      <button type="button" onClick={handleReset} title={t('Reset to default')}>
                         <FontAwesomeIcon icon={faRotate} size="sm" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={handleCopy}
-                        title={t('Copy to clipboard')}
-                      >
+                      <button type="button" onClick={handleCopy} title={t('Copy to clipboard')}>
                         <FontAwesomeIcon icon={faCopy} size="sm" />
                       </button>
                     </div>

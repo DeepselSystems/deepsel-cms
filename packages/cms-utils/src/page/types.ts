@@ -1,11 +1,6 @@
 import type { SiteSettings } from '../types';
 import type { MenuItem } from '../menus/types';
 
-export interface SlugParseResult {
-  lang: string | null;
-  path: string;
-}
-
 export interface Language {
   id: number;
   name: string;

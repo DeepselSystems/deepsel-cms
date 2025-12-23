@@ -1,4 +1,4 @@
-import {useRef, useCallback} from 'react';
+import { useRef, useCallback } from 'react';
 
 /**
  * Custom hook for debouncing function calls
@@ -19,7 +19,7 @@ export function useDebounce(callback, delay) {
         callback(...args);
       }, delay);
     },
-    [callback, delay]
+    [callback, delay],
   );
 
   // Cleanup function to cancel pending timeout
@@ -30,5 +30,5 @@ export function useDebounce(callback, delay) {
     }
   }, []);
 
-  return {debouncedCallback, cancel};
+  return { debouncedCallback, cancel };
 }

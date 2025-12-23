@@ -6,9 +6,7 @@ const srcDir = path.join(__dirname, 'src');
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    path.join(srcDir, '**/*.{astro,html,js,jsx,ts,tsx}')
-  ],
+  content: [path.join(srcDir, '**/*.{astro,html,js,jsx,ts,tsx}')],
   theme: {
     extend: {
       colors: {
@@ -59,8 +57,8 @@ export default {
         green: {
           mantis: '#83BF6E',
         },
-      }
+      },
     },
   },
   plugins: [],
-}
+};

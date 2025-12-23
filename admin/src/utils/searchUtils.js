@@ -27,9 +27,7 @@ export function containsPhrase(text, searchPhrase) {
   const phraseLower = searchPhrase.toLowerCase().trim();
   const normalizedPhrase = normalizeForSearch(phraseLower);
 
-  return (
-    textLower.includes(phraseLower) || normalizedText.includes(normalizedPhrase)
-  );
+  return textLower.includes(phraseLower) || normalizedText.includes(normalizedPhrase);
 }
 
 /**
@@ -44,9 +42,8 @@ export function countPhraseMatches(text, searchPhrase) {
   const normalizedPhrase = normalizeForSearch(phraseLower);
 
   // Count matches in both original and normalized text
-  const originalMatches = (
-    textLower.match(new RegExp(escapeRegExp(phraseLower), 'gi')) || []
-  ).length;
+  const originalMatches = (textLower.match(new RegExp(escapeRegExp(phraseLower), 'gi')) || [])
+    .length;
   const normalizedMatches = (
     normalizedText.match(new RegExp(escapeRegExp(normalizedPhrase), 'gi')) || []
   ).length;

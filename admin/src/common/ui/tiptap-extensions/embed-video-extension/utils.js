@@ -54,9 +54,7 @@ export const initializeEmbedVideos = (container) => {
 
   embedVideoWrappers.forEach((wrapper) => {
     // Apply responsive styles to video container
-    const videoContainer = wrapper.querySelector(
-      `.${EMBED_VIDEO_CLASSES.VIDEO_CONTAINER}`
-    );
+    const videoContainer = wrapper.querySelector(`.${EMBED_VIDEO_CLASSES.VIDEO_CONTAINER}`);
 
     if (videoContainer) {
       // Ensure video container is responsive

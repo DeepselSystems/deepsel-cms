@@ -1,31 +1,29 @@
-import {useState, useCallback} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState, useCallback } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
-import {useLocation} from 'react-router-dom';
-import {Helmet} from 'react-helmet';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import FileDisplay from '../../../common/ui/FileDisplay.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 
-const renderCell = (params) => (
-  <LinkedCell params={params}>{params.value}</LinkedCell>
-);
+const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
 export default function UserList() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
-  const {organizationId} = OrganizationIdState();
+  const { organizationId } = OrganizationIdState();
 
   // Filter function to show only users belonging to the selected organization
   const filterByOrganization = useCallback(
@@ -36,7 +34,7 @@ export default function UserList() {
         user.organizations.length === 0
       );
     },
-    [organizationId]
+    [organizationId],
   );
 
   const query = useModel('user', {
@@ -70,12 +68,7 @@ export default function UserList() {
       width: 200,
       renderCell: (params) => (
         <LinkedCell params={params}>
-          <FileDisplay
-            type="image"
-            src={params.row?.image?.name}
-            width={30}
-            height={30}
-          />
+          <FileDisplay type="image" src={params.row?.image?.name} width={30} height={30} />
         </LinkedCell>
       ),
     },
@@ -83,17 +76,13 @@ export default function UserList() {
       field: 'username',
       headerName: t('Username'),
       width: 200,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'name',
       headerName: t('Name'),
       width: 200,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'roles',
@@ -145,13 +134,7 @@ export default function UserList() {
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
           <H1 className="text-[32px] font-bold text-primary">{t('Users')}</H1>
-          <Link
-            to={
-              location.pathname === `/users`
-                ? `/users/create`
-                : `/manage-users/create`
-            }
-          >
+          <Link to={location.pathname === `/users` ? `/users/create` : `/manage-users/create`}>
             <Button
               className={`shadow bg-primary-main text-primary-contrastText`}
               color={`primary`}
@@ -219,8 +202,8 @@ export default function UserList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

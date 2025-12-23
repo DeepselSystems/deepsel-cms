@@ -1,8 +1,8 @@
-import {useState, useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faSave, faTimes, faPenNib} from '@fortawesome/free-solid-svg-icons';
-import {Tooltip} from '@mantine/core';
+import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSave, faTimes, faPenNib } from '@fortawesome/free-solid-svg-icons';
+import { Tooltip } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
@@ -22,7 +22,7 @@ const SideBySideEditingView = ({
   aiAutoCompleteAvailable = false,
   aiWritingAvailable = false,
 }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [editorRenderKey, setEditorRenderKey] = useState(0);
   const [aiWriterModalOpened, setAiWriterModalOpened] = useState(false);
   const [activeAiWriterContent, setActiveAiWriterContent] = useState(null);
@@ -47,7 +47,7 @@ const SideBySideEditingView = ({
         };
       });
     },
-    [setRecord]
+    [setRecord],
   );
 
   const handleContentInserted = useCallback(() => {
@@ -80,7 +80,7 @@ const SideBySideEditingView = ({
         setRecord(newRecordOrFunction);
       }
     },
-    [setRecord]
+    [setRecord],
   );
 
   return (
@@ -94,7 +94,7 @@ const SideBySideEditingView = ({
           <div className="flex items-center gap-3">
             <Tooltip
               label={t(
-                'Please specify an API key and autocomplete model in Site Settings to use this feature.'
+                'Please specify an API key and autocomplete model in Site Settings to use this feature.',
               )}
               disabled={aiAutoCompleteAvailable}
             >
@@ -102,9 +102,7 @@ const SideBySideEditingView = ({
                 <Switch
                   label={t('AI Autocomplete')}
                   checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                  onChange={(e) =>
-                    onAiAutocompleteChange?.(e.currentTarget.checked)
-                  }
+                  onChange={(e) => onAiAutocompleteChange?.(e.currentTarget.checked)}
                   disabled={!aiAutoCompleteAvailable}
                   size="md"
                 />
@@ -115,7 +113,7 @@ const SideBySideEditingView = ({
                 aiWritingAvailable
                   ? t('AI Writer')
                   : t(
-                      'Please specify an API key and writing model in Site Settings to use this feature.'
+                      'Please specify an API key and writing model in Site Settings to use this feature.',
                     ) || t('AI Writer')
               }
             >
@@ -150,11 +148,7 @@ const SideBySideEditingView = ({
             key={content.id}
             className={`flex-shrink-0 flex flex-col overflow-hidden transition-all duration-200 ${
               selectedLanguageContents.length > 4 ? 'w-96' : 'flex-1'
-            } ${
-              index !== selectedLanguageContents.length - 1
-                ? 'border-r border-gray-200'
-                : ''
-            } ${
+            } ${index !== selectedLanguageContents.length - 1 ? 'border-r border-gray-200' : ''} ${
               focusedContentId === content.id
                 ? 'bg-blue-50 ring-2 ring-blue-300 ring-inset'
                 : 'bg-white hover:bg-gray-50'
@@ -163,16 +157,10 @@ const SideBySideEditingView = ({
             {/* Language Header */}
             <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center">
-                <span className="mr-2 text-lg">
-                  {content.locale?.emoji_flag}
-                </span>
+                <span className="mr-2 text-lg">{content.locale?.emoji_flag}</span>
                 <div>
-                  <div className="font-medium text-gray-900">
-                    {content.locale?.name}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {content.locale?.iso_code}
-                  </div>
+                  <div className="font-medium text-gray-900">{content.locale?.name}</div>
+                  <div className="text-sm text-gray-600">{content.locale?.iso_code}</div>
                 </div>
               </div>
             </div>
@@ -189,10 +177,7 @@ const SideBySideEditingView = ({
                   }}
                   maxLength={255}
                   size="lg"
-                  value={
-                    record.contents.find((c) => c.id === content.id)?.title ||
-                    ''
-                  }
+                  value={record.contents.find((c) => c.id === content.id)?.title || ''}
                   onChange={(e) => {
                     const newTitle = e.target.value;
                     updateContentField(content.id, 'title', newTitle);
@@ -211,15 +196,13 @@ const SideBySideEditingView = ({
                       <ContentEditor
                         key={`editor-${content.id}-${editorRenderKey}`}
                         content={
-                          record.contents.find((c) => c.id === content.id)
-                            ?.content || content.content
+                          record.contents.find((c) => c.id === content.id)?.content ||
+                          content.content
                         }
                         contentId={content.id}
                         setRecord={wrappedSetRecord}
                         onFocus={() => handleContentFocus(content)}
-                        autoCompleteEnabled={
-                          aiAutocompleteEnabled && isAiFeatureAvailable
-                        }
+                        autoCompleteEnabled={aiAutocompleteEnabled && isAiFeatureAvailable}
                       />
                     </div>
                   ) : (

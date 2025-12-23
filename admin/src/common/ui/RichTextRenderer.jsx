@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from 'react';
 import {
   containsYouTubeJumpMarks,
   initializeYouTubeJumpMarks,
@@ -12,7 +12,7 @@ import {
  * A component that safely renders rich text content with nested components
  * while preserving the parent site's styling
  */
-const RichTextRenderer = ({content, className = ''}) => {
+const RichTextRenderer = ({ content, className = '' }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -26,8 +26,7 @@ const RichTextRenderer = ({content, className = ''}) => {
 
     // Initialize YouTube jump marks after content is rendered
     const hasYouTubeJumpMarks =
-      containerRef.current.innerHTML &&
-      containsYouTubeJumpMarks(containerRef.current.innerHTML);
+      containerRef.current.innerHTML && containsYouTubeJumpMarks(containerRef.current.innerHTML);
 
     if (hasYouTubeJumpMarks) {
       initializeYouTubeJumpMarks(containerRef.current);
@@ -64,9 +63,7 @@ const RichTextRenderer = ({content, className = ''}) => {
     });
   };
 
-  return (
-    <div ref={containerRef} className={`rich-text-content ${className}`} />
-  );
+  return <div ref={containerRef} className={`rich-text-content ${className}`} />;
 };
 
 export default RichTextRenderer;

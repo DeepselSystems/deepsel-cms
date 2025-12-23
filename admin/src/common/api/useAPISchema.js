@@ -1,14 +1,14 @@
 import APISchemaState from '../stores/APISchemaState.js';
-import {useMemo, useCallback} from 'react';
+import { useMemo, useCallback } from 'react';
 
 export default function useAPISchema(modelName) {
-  const {APISchema} = APISchemaState();
+  const { APISchema } = APISchemaState();
 
   const createOneResponseSchema = useMemo(() => {
     if (!APISchema || !modelName) return null;
-    const schemaId = APISchema.paths[`/${modelName}`].post.responses[
-      '200'
-    ].content['application/json'].schema.$ref
+    const schemaId = APISchema.paths[`/${modelName}`].post.responses['200'].content[
+      'application/json'
+    ].schema.$ref
       .split('/')
       .pop();
     return APISchema.components.schemas[schemaId];
@@ -16,9 +16,9 @@ export default function useAPISchema(modelName) {
 
   const getOneResponseSchema = useMemo(() => {
     if (!APISchema || !modelName) return null;
-    const schemaId = APISchema.paths[`/${modelName}/{item_id}`].get.responses[
-      '200'
-    ].content['application/json'].schema.$ref
+    const schemaId = APISchema.paths[`/${modelName}/{item_id}`].get.responses['200'].content[
+      'application/json'
+    ].schema.$ref
       .split('/')
       .pop();
     return APISchema.components.schemas[schemaId];
@@ -26,9 +26,9 @@ export default function useAPISchema(modelName) {
 
   const searchResponseSchema = useMemo(() => {
     if (!APISchema || !modelName) return null;
-    const schemaId = APISchema.paths[`/${modelName}/search`].post.responses[
-      '200'
-    ].content['application/json'].schema.$ref
+    const schemaId = APISchema.paths[`/${modelName}/search`].post.responses['200'].content[
+      'application/json'
+    ].schema.$ref
       .split('/')
       .pop();
     return APISchema.components.schemas[schemaId];
@@ -36,9 +36,7 @@ export default function useAPISchema(modelName) {
 
   const searchItemResponseSchema = useMemo(() => {
     if (!searchResponseSchema) return null;
-    const schemaId = searchResponseSchema.properties.data.items.$ref
-      .split('/')
-      .pop();
+    const schemaId = searchResponseSchema.properties.data.items.$ref.split('/').pop();
     return APISchema.components.schemas[schemaId];
   }, [searchResponseSchema]);
 
@@ -50,7 +48,7 @@ export default function useAPISchema(modelName) {
 
       // simple field
       if (field.type) {
-        return [{type: field.type}];
+        return [{ type: field.type }];
       }
 
       // enum field
@@ -64,18 +62,18 @@ export default function useAPISchema(modelName) {
             },
           ];
         }
-        return [{type: refSchema.type}];
+        return [{ type: refSchema.type }];
       }
 
       // multi-type field
       return field.anyOf.map((item) => {
         if (item.type === 'string' && item.format === 'date-time') {
-          return {type: 'date-time'};
+          return { type: 'date-time' };
         }
-        return {type: item.type};
+        return { type: item.type };
       });
     },
-    [getOneResponseSchema]
+    [getOneResponseSchema],
   );
 
   const getSchemaFromRef = useCallback(
@@ -84,7 +82,7 @@ export default function useAPISchema(modelName) {
       const schemaId = ref.split('/').pop();
       return APISchema.components.schemas[schemaId];
     },
-    [APISchema]
+    [APISchema],
   );
 
   return {

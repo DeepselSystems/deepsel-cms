@@ -1,5 +1,5 @@
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFingerprint,
   faAddressBook,
@@ -15,12 +15,12 @@ import H3 from '../../../common/ui/H3.jsx';
 import RecordSelectMulti from '../../../common/ui/RecordSelectMulti.jsx';
 import ReadOnlyField from '../../../common/ui/ReadOnlyField.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
-import {Modal, Tabs, Combobox, Group, CheckIcon} from '@mantine/core';
+import { Modal, Tabs, Combobox, Group, CheckIcon } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import countries from '../../../constants/countries.js';
-import {useState} from 'react';
+import { useState } from 'react';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
@@ -29,44 +29,41 @@ import Button from '../../../common/ui/Button.jsx';
 import FileInput from '../../../common/ui/FileInput.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
-import {useDisclosure} from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import Configure2FaModal from '../../../common/auth/Configure2FaModal.jsx';
 import RecoveryCodesModal from '../../../common/auth/RecoveryCodesModal.jsx';
 import useHash from '../../../common/api/useHash.js';
 
 export default function UserEdit() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {user: currentUser, fetchUser} = useAuthentication();
-  const {id} = useParams();
-  const {hashParams, updateHash} = useHash();
+  const { user: currentUser, fetchUser } = useAuthentication();
+  const { id } = useParams();
+  const { hashParams, updateHash } = useHash();
   const tabFromHash = hashParams.get('tab');
 
   const query = useModel('user', {
     id,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading} = query;
-  const {user} = useAuthentication();
+  const { record, setRecord, update, loading } = query;
+  const { user } = useAuthentication();
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changePasswordLoading, setChangePasswordLoading] = useState(false);
-  const {notify} = NotificationState((state) => state);
-  const {backendHost} = BackendHostURLState((state) => state);
-  const [isOpen2FaModal, {open: open2FaModal, close: close2FaModal}] =
-    useDisclosure();
+  const { notify } = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
+  const [isOpen2FaModal, { open: open2FaModal, close: close2FaModal }] = useDisclosure();
   const [
     isOpenRecoveryCodesModal,
-    {open: openRecoveryCodesModal, close: closeRecoveryCodesModal},
+    { open: openRecoveryCodesModal, close: closeRecoveryCodesModal },
   ] = useDisclosure();
   const [recoveryCodes, setRecoveryCodes] = useState([]);
 
   const canEditRolesAndOrgs =
-    currentUser.roles.find((role) =>
-      ['admin_role', 'super_admin_role'].includes(role.string_id)
-    ) ||
+    currentUser.roles.find((role) => ['admin_role', 'super_admin_role'].includes(role.string_id)) ||
     !['admin_user', 'super_user', 'public_user'].includes(record?.string_id);
 
   async function handleChangePasswordSubmit(e) {
@@ -106,7 +103,7 @@ export default function UserEdit() {
         }),
       });
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         if (Array.isArray(detail) && detail.length) {
           notify({
             message: detail[0].msg,
@@ -171,10 +168,7 @@ export default function UserEdit() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading} />
       {record ? (
         <Card>
@@ -197,19 +191,11 @@ export default function UserEdit() {
             {currentUser.id === record.id && (
               <div className={`flex gap-2`}>
                 <Button onClick={() => setChangePasswordModalOpen(true)}>
-                  <FontAwesomeIcon
-                    icon={faKey}
-                    className="mr-1 h-4 w-4"
-                    size={`sm`}
-                  />
+                  <FontAwesomeIcon icon={faKey} className="mr-1 h-4 w-4" size={`sm`} />
                   {t('Change Password')}
                 </Button>
                 <Button onClick={open2FaModal}>
-                  <FontAwesomeIcon
-                    icon={faShieldHalved}
-                    className="mr-1 h-4 w-4"
-                    size={`sm`}
-                  />
+                  <FontAwesomeIcon icon={faShieldHalved} className="mr-1 h-4 w-4" size={`sm`} />
                   {t('Configure 2FA')}
                 </Button>
               </div>
@@ -264,34 +250,23 @@ export default function UserEdit() {
           <Tabs
             variant="outline"
             defaultValue={tabFromHash || 'contact'}
-            onChange={(value) => updateHash({tab: value})}
+            onChange={(value) => updateHash({ tab: value })}
             className="mt-4"
           >
             <Tabs.List>
               <Tabs.Tab
                 value="contact"
-                leftSection={
-                  <FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />
-                }
+                leftSection={<FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />}
               >
                 {t('Contact Info')}
               </Tabs.Tab>
               <VisibilityControl
-                roleIds={[
-                  'super_admin_role',
-                  'admin_role',
-                  'website_admin_role',
-                ]}
+                roleIds={['super_admin_role', 'admin_role', 'website_admin_role']}
                 render={false}
               >
                 <Tabs.Tab
                   value="access"
-                  leftSection={
-                    <FontAwesomeIcon
-                      icon={faFingerprint}
-                      className="h-4 w-4 "
-                    />
-                  }
+                  leftSection={<FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />}
                 >
                   {t('Access')}
                 </Tabs.Tab>
@@ -302,22 +277,17 @@ export default function UserEdit() {
               roleIds={['super_admin_role', 'admin_role', 'website_admin_role']}
               render={false}
             >
-              <Tabs.Panel
-                value="access"
-                className={`mt-4 flex flex-row gap-10`}
-              >
+              <Tabs.Panel value="access" className={`mt-4 flex flex-row gap-10`}>
                 {canEditRolesAndOrgs ? (
                   <RecordSelectMulti
                     pageSize={null}
                     label={t(`Roles`)}
                     model={`role`}
                     value={record.roles}
-                    onChange={(roles) => setRecord({...record, roles})}
+                    onChange={(roles) => setRecord({ ...record, roles })}
                     filters={
                       currentUser.roles.find((role) =>
-                        ['admin_role', 'super_admin_role'].includes(
-                          role.string_id
-                        )
+                        ['admin_role', 'super_admin_role'].includes(role.string_id),
                       )
                         ? []
                         : [
@@ -343,13 +313,9 @@ export default function UserEdit() {
                             <CheckIcon size={12} />
                           ) : null}
                           <div className="py-1">
-                            <div className="font-semibold text-gray-900">
-                              {option.name}
-                            </div>
+                            <div className="font-semibold text-gray-900">{option.name}</div>
                             {option.description && (
-                              <div className="text-sm text-gray-500">
-                                {option.description}
-                              </div>
+                              <div className="text-sm text-gray-500">{option.description}</div>
                             )}
                           </div>
                         </Group>
@@ -357,18 +323,10 @@ export default function UserEdit() {
                     )}
                   />
                 ) : (
-                  <ReadOnlyField
-                    label={t(`Roles`)}
-                    className={`w-1/2 flex-wrap`}
-                  >
+                  <ReadOnlyField label={t(`Roles`)} className={`w-1/2 flex-wrap`}>
                     <div className={`flex gap-1 items-center flex-wrap`}>
                       {record.roles?.map((role) => (
-                        <Chip
-                          size={`xs`}
-                          key={role.id}
-                          variant="outline"
-                          checked={false}
-                        >
+                        <Chip size={`xs`} key={role.id} variant="outline" checked={false}>
                           {role.name}
                         </Chip>
                       ))}
@@ -381,14 +339,10 @@ export default function UserEdit() {
                     label={t(`Organizations`)}
                     model={`organization`}
                     value={record.organizations}
-                    onChange={(organizations) =>
-                      setRecord({...record, organizations})
-                    }
+                    onChange={(organizations) => setRecord({ ...record, organizations })}
                     filters={
                       currentUser.roles.find((role) =>
-                        ['admin_role', 'super_admin_role'].includes(
-                          role.string_id
-                        )
+                        ['admin_role', 'super_admin_role'].includes(role.string_id),
                       )
                         ? []
                         : currentUser.organizations.length === 0
@@ -397,26 +351,16 @@ export default function UserEdit() {
                               {
                                 field: 'id',
                                 operator: 'in',
-                                value: currentUser.organizations.map(
-                                  (org) => org.id
-                                ),
+                                value: currentUser.organizations.map((org) => org.id),
                               },
                             ]
                     }
                   />
                 ) : (
-                  <ReadOnlyField
-                    label={t(`Organizations`)}
-                    className={`w-1/2 flex-wrap`}
-                  >
+                  <ReadOnlyField label={t(`Organizations`)} className={`w-1/2 flex-wrap`}>
                     <div className={`flex gap-1 items-center flex-wrap`}>
                       {record.organizations?.map((organization) => (
-                        <Chip
-                          size={`xs`}
-                          key={organization.id}
-                          variant="outline"
-                          checked={false}
-                        >
+                        <Chip size={`xs`} key={organization.id} variant="outline" checked={false}>
                           {organization.name}
                         </Chip>
                       ))}
@@ -616,10 +560,7 @@ export default function UserEdit() {
         onClose={closeModal}
         title={<div className={`font-bold`}>{t('Change Password')}</div>}
       >
-        <form
-          onSubmit={handleChangePasswordSubmit}
-          className={`flex flex-col gap-2`}
-        >
+        <form onSubmit={handleChangePasswordSubmit} className={`flex flex-col gap-2`}>
           <PasswordInput
             label={t(`Old password`)}
             value={oldPassword}

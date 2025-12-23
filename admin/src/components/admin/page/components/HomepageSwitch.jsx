@@ -1,6 +1,6 @@
 import React from 'react';
 import Switch from '../../../../common/ui/Switch.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useFetch from '../../../../common/api/useFetch.js';
 import useEffectOnce from '../../../../common/hooks/useEffectOnce.js';
 
@@ -14,20 +14,19 @@ import useEffectOnce from '../../../../common/hooks/useEffectOnce.js';
  * }> &
  * React.RefAttributes<unknown>>}
  */
-const HomepageSwitch = React.forwardRef(({page, setPage}, ref) => {
+const HomepageSwitch = React.forwardRef(({ page, setPage }, ref) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Current homepage state
   const [currentHomepage, setCurrentHomepage] = React.useState(null);
 
   // Loading states
-  const [isCurrentHomepageLoading, setIsCurrentHomageLoading] =
-    React.useState(true);
+  const [isCurrentHomepageLoading, setIsCurrentHomageLoading] = React.useState(true);
   const [hasError, setHasError] = React.useState(false);
 
   // Query fetch current homepage
-  const {post: getCurrentHomepage} = useFetch('page/search', {
+  const { post: getCurrentHomepage } = useFetch('page/search', {
     autoFetch: false,
     params: {},
   });
@@ -62,7 +61,7 @@ const HomepageSwitch = React.forwardRef(({page, setPage}, ref) => {
         ],
       },
     })
-      .then(({data}) => {
+      .then(({ data }) => {
         setCurrentHomepage(data?.[0] || null);
       })
       .catch((error) => {
@@ -98,7 +97,7 @@ const HomepageSwitch = React.forwardRef(({page, setPage}, ref) => {
           onLabel={t('Homepage')}
           offLabel={t('Homepage')}
           checked={!!page.is_homepage}
-          onChange={({currentTarget: {checked}}) =>
+          onChange={({ currentTarget: { checked } }) =>
             setPage((prevState) => ({
               ...prevState,
               is_homepage: checked,

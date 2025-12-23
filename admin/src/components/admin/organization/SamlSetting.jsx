@@ -1,7 +1,7 @@
-import {faCopy, faRotate} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
+import { faCopy, faRotate } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import useModel from '../../../common/api/useModel.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -15,13 +15,13 @@ import TextInput from '../../../common/ui/TextInput.jsx';
 import H2 from '../../../common/ui/H2.jsx';
 
 export default function SamlSetting() {
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {record, setRecord, update, loading} = useModel('organization', {
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { record, setRecord, update, loading } = useModel('organization', {
     id: 1,
     autoFetch: true,
   });
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   useEffect(() => {
     if (record?.is_enabled_saml && !record.saml_sp_entity_id) {
@@ -87,10 +87,7 @@ export default function SamlSetting() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading} />
 
       {record ? (
@@ -169,11 +166,7 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                   }
                   rightSection={
                     <div className="flex items-center gap-2 mr-6">
-                      <button
-                        type="button"
-                        onClick={handleResetSP}
-                        title={t('Reset to default')}
-                      >
+                      <button type="button" onClick={handleResetSP} title={t('Reset to default')}>
                         <FontAwesomeIcon icon={faRotate} size="sm" />
                       </button>
                       <button
@@ -234,7 +227,7 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                 <H2>{t('Attribute Mapping')}</H2>
                 <p className="text-sm text-gray-600 mb-4">
                   {t(
-                    'Configure how SAML attributes from your Identity Provider map to user fields in the application. These attribute names must match exactly what your IdP sends in the SAML response.'
+                    'Configure how SAML attributes from your Identity Provider map to user fields in the application. These attribute names must match exactly what your IdP sends in the SAML response.',
                   )}
                 </p>
 
@@ -242,11 +235,9 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                   label={t('Email Attribute Name')}
                   placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
                   value={record.saml_attribute_mapping?.email || ''}
-                  onChange={(e) =>
-                    handleAttributeMappingChange('email', e.target.value)
-                  }
+                  onChange={(e) => handleAttributeMappingChange('email', e.target.value)}
                   description={t(
-                    "The SAML attribute name that contains the user's email address. Used to match existing users."
+                    "The SAML attribute name that contains the user's email address. Used to match existing users.",
                   )}
                 />
 
@@ -254,12 +245,8 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                   label={t('Name Attribute Name')}
                   placeholder="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
                   value={record.saml_attribute_mapping?.name || ''}
-                  onChange={(e) =>
-                    handleAttributeMappingChange('name', e.target.value)
-                  }
-                  description={t(
-                    "The SAML attribute name that contains the user's display name."
-                  )}
+                  onChange={(e) => handleAttributeMappingChange('name', e.target.value)}
+                  description={t("The SAML attribute name that contains the user's display name.")}
                 />
 
                 <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
@@ -268,8 +255,7 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                   </h4>
                   <div className="text-xs text-gray-700 space-y-1">
                     <div>
-                      <strong>Keycloak:</strong> email, firstName, lastName,
-                      fullName
+                      <strong>Keycloak:</strong> email, firstName, lastName, fullName
                     </div>
                     <div>
                       <strong>Azure AD:</strong>{' '}

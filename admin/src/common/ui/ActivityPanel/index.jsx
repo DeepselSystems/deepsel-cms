@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
-import {useState, useEffect} from 'react';
-import {getActivityUserName, getAttachmentUrl} from '../../utils';
-import {useTranslation} from 'react-i18next';
-import {useDisclosure} from '@mantine/hooks';
+import { useState, useEffect } from 'react';
+import { getActivityUserName, getAttachmentUrl } from '../../utils';
+import { useTranslation } from 'react-i18next';
+import { useDisclosure } from '@mantine/hooks';
 import Button from '../Button';
 import Switch from '../Switch';
 import UserAvatar from '../UserAvatar';
@@ -14,12 +14,12 @@ import CommentedActivity from './CommentedActivity';
 import useModel from '../../api/useModel';
 import useAuthentication from '../../api/useAuthentication';
 import BackendHostURLState from '../../stores/BackendHostURLState';
-import {faList} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { faList } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CommentImages from './CommentImages';
 
 export default function ActivityPanel(props) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const backendHost = BackendHostURLState((state) => state.backendHost);
   const {
     model,
@@ -30,10 +30,10 @@ export default function ActivityPanel(props) {
     canAddComment = true,
     externalUser = false,
   } = props;
-  const {user} = useAuthentication();
+  const { user } = useAuthentication();
   const query = useModel(apiResource, {
     autoFetch: false,
-    orderBy: {field: 'created_at', direction: 'desc'},
+    orderBy: { field: 'created_at', direction: 'desc' },
     pageSize: 200,
     filters: [
       {
@@ -48,17 +48,15 @@ export default function ActivityPanel(props) {
       },
     ],
   });
-  const {data: items, get, create, loading} = query;
+  const { data: items, get, create, loading } = query;
 
   const [isEditing, setIsEditing] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isInternal, setIsInternal] = useState(false);
   const [commentImages, setCommentImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState('');
-  const [
-    isImageViewModalOpened,
-    {open: openImageViewModal, close: closeImageViewModal},
-  ] = useDisclosure(false);
+  const [isImageViewModalOpened, { open: openImageViewModal, close: closeImageViewModal }] =
+    useDisclosure(false);
 
   useEffect(() => {
     get();
@@ -106,15 +104,9 @@ export default function ActivityPanel(props) {
           <RichTextInput
             value={newComment}
             canAddImage={canAddImage}
-            onAddImageOverride={(image) =>
-              setCommentImages([...commentImages, image])
-            }
+            onAddImageOverride={(image) => setCommentImages([...commentImages, image])}
             onChange={(value) => setNewComment(value)}
-            placeholder={
-              isInternal
-                ? t('Write an internal comment...')
-                : t('Write a comment...')
-            }
+            placeholder={isInternal ? t('Write an internal comment...') : t('Write a comment...')}
             autoFocus
           />
 
@@ -176,12 +168,7 @@ export default function ActivityPanel(props) {
         onClick={() => setIsEditing(true)}
         className="flex items-center gap-4 cursor-pointer group"
       >
-        <UserAvatar
-          user={user}
-          backendHost={backendHost}
-          size="md"
-          className="flex-shrink-0"
-        />
+        <UserAvatar user={user} backendHost={backendHost} size="md" className="flex-shrink-0" />
         <div className="flex-1 p-3 text-sm text-gray-500 bg-gray-100 rounded group-hover:bg-gray-50 border border-gray-300">
           {t('Write a comment...')}
         </div>
@@ -232,10 +219,7 @@ export default function ActivityPanel(props) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-gray-900">
-                  {getActivityUserName(
-                    activity.user,
-                    activity.external_user_data
-                  )}
+                  {getActivityUserName(activity.user, activity.external_user_data)}
                 </span>
                 <span className="text-gray-500">
                   {dayjs(activity.created_at).format('HH:mm MM/DD/YYYY')}
@@ -246,9 +230,7 @@ export default function ActivityPanel(props) {
                   </span>
                 )}
               </div>
-              <div className="mt-1 text-sm text-gray-800">
-                {renderActivityContent(activity)}
-              </div>
+              <div className="mt-1 text-sm text-gray-800">{renderActivityContent(activity)}</div>
             </div>
           </div>
         ))}

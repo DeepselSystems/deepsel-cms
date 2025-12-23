@@ -1,6 +1,6 @@
 import NavigationLink from './NavigationLink.jsx';
 
-const NavigationLinks = ({links, user, opened, toggle}) => {
+const NavigationLinks = ({ links, user, opened, toggle }) => {
   const renderNavLinkRecursively = (links) => {
     return links.map((link, index) => (
       <NavigationLink

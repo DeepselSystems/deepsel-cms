@@ -1,7 +1,7 @@
-import {TextInput} from '@mantine/core';
-import {faXmark} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useEffect, useRef, useState} from 'react';
+import { TextInput } from '@mantine/core';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect, useRef, useState } from 'react';
 
 export default function DebounceInput({
   value,

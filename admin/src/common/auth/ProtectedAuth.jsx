@@ -1,14 +1,7 @@
-import {Outlet, useLocation} from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import useAuthentication from '../api/useAuthentication.js';
-import {
-  useEffect,
-  useState,
-  useMemo,
-  memo,
-  createContext,
-  useContext,
-} from 'react';
-import {Preferences} from '@capacitor/preferences';
+import { useEffect, useState, useMemo, memo, createContext, useContext } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import trackingSettings from '../../constants/trackingSettings.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import SpecialTemplateRenderer from '../../components/website/SpecialTemplateRenderer.jsx';
@@ -61,15 +54,10 @@ import backendHost from '../../constants/backendHost.js';
  */
 function ProtectedAuth() {
   const location = useLocation();
-  const {
-    user: currentUser,
-    fetchUserData,
-    saveUserData,
-    login,
-  } = useAuthentication();
+  const { user: currentUser, fetchUserData, saveUserData, login } = useAuthentication();
   const [initialized, setInitialized] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
-  const {settings: siteSettings, setSettings} = SitePublicSettingsState();
+  const { settings: siteSettings, setSettings } = SitePublicSettingsState();
 
   useEffect(() => {
     let cancelled = false;
@@ -81,9 +69,7 @@ function ProtectedAuth() {
         // If site settings are not loaded, try to fetch them
         if (!siteSettings) {
           try {
-            const response = await fetch(
-              `${backendHost}/util/public_settings/1`
-            );
+            const response = await fetch(`${backendHost}/util/public_settings/1`);
             if (response.ok) {
               const settings = await response.json();
               setSettings(settings);
@@ -96,13 +82,13 @@ function ProtectedAuth() {
 
         if (isAuthlessMode && !currentUser) {
           try {
-            await login({username: 'authless', password: 'authless'});
+            await login({ username: 'authless', password: 'authless' });
           } catch (e) {
             console.error('Authless login failed', e);
           }
         } else if (!currentUser) {
           // Try to get user data from storage if available, but don't require it
-          const tokenResult = await Preferences.get({key: 'token'});
+          const tokenResult = await Preferences.get({ key: 'token' });
           const token = tokenResult.value;
 
           if (token) {
@@ -116,8 +102,8 @@ function ProtectedAuth() {
               if (!cancelled) {
                 // Clear invalid token
                 await Promise.all([
-                  Preferences.remove({key: 'token'}),
-                  Preferences.remove({key: 'userData'}),
+                  Preferences.remove({ key: 'token' }),
+                  Preferences.remove({ key: 'userData' }),
                 ]);
               }
             }
@@ -125,12 +111,7 @@ function ProtectedAuth() {
         }
 
         // Set up tracking if user is authenticated
-        if (
-          !cancelled &&
-          currentUser &&
-          trackingSettings.enableXRAY &&
-          window.XRAY
-        ) {
+        if (!cancelled && currentUser && trackingSettings.enableXRAY && window.XRAY) {
           window.XRAY.setCurrentUser(currentUser);
         }
       } finally {
@@ -145,14 +126,7 @@ function ProtectedAuth() {
     return () => {
       cancelled = true;
     };
-  }, [
-    currentUser,
-    fetchUserData,
-    saveUserData,
-    login,
-    siteSettings,
-    setSettings,
-  ]);
+  }, [currentUser, fetchUserData, saveUserData, login, siteSettings, setSettings]);
 
   useEffect(() => {
     if (currentUser && requiresLogin) {
@@ -170,7 +144,7 @@ function ProtectedAuth() {
       requiresLogin,
       redirectPath: location.pathname,
     }),
-    [setRequiresLogin, requiresLogin, location.pathname]
+    [setRequiresLogin, requiresLogin, location.pathname],
   );
 
   if (!initialized) {

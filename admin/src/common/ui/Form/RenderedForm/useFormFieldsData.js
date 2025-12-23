@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import { useCallback, useState } from 'react';
 
 /**
  * Custom hook to manage form fields data
@@ -10,7 +10,7 @@ const useFormFieldsData = (initFormFieldsData = {}) => {
    * Structure: {[filedId]: <Object data of FormSubmissionData>}
    */
   const [formFieldsData, setFormFieldsData] = useState(
-    /**@type {Record<number, FormSubmissionData>}*/ initFormFieldsData
+    /**@type {Record<number, FormSubmissionData>}*/ initFormFieldsData,
   );
 
   /**
@@ -27,7 +27,7 @@ const useFormFieldsData = (initFormFieldsData = {}) => {
     }));
   }, []);
 
-  return {formFieldsData, setFormFieldsData, setFieldData};
+  return { formFieldsData, setFormFieldsData, setFieldData };
 };
 
 export default useFormFieldsData;

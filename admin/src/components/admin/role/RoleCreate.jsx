@@ -1,26 +1,26 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useState} from 'react';
+import { useState } from 'react';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {JsonInput} from '@mantine/core';
-import {useNavigate} from 'react-router-dom';
+import { JsonInput } from '@mantine/core';
+import { useNavigate } from 'react-router-dom';
 import CreateFormActionBar from '../../../common/ui/CreateFormActionBar.jsx';
 import RecordSelectMulti from '../../../common/ui/RecordSelectMulti.jsx';
 import TextArea from '../../../common/ui/TextArea.jsx';
 
 export default function RoleCreate() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [record, setRecord] = useState({
     name: '',
     permissions: '[]',
     implied_roles: [],
   });
   const query = useModel('role');
-  const {create, loading} = query;
-  const {notify} = NotificationState((state) => state);
+  const { create, loading } = query;
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -93,9 +93,7 @@ export default function RoleCreate() {
                 label={t('Implied roles')}
                 placeholder="Select roles"
                 value={record.implied_roles}
-                onChange={(implied_roles) =>
-                  setRecord({...record, implied_roles})
-                }
+                onChange={(implied_roles) => setRecord({ ...record, implied_roles })}
               />
               <JsonInput
                 label="Permissions"

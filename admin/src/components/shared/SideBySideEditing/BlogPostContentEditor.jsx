@@ -1,4 +1,4 @@
-import {useCallback} from 'react';
+import { useCallback } from 'react';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import PropTypes from 'prop-types';
 
@@ -37,7 +37,7 @@ const BlogPostContentEditor = ({
         };
       });
     },
-    [contentId, setRecord]
+    [contentId, setRecord],
   );
 
   return (
@@ -55,8 +55,7 @@ const BlogPostContentEditor = ({
 
 BlogPostContentEditor.propTypes = {
   content: PropTypes.string,
-  contentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
+  contentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   setRecord: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   autoCompleteEnabled: PropTypes.bool,

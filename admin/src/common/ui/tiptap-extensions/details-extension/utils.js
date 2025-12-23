@@ -1,4 +1,4 @@
-import {DETAILS_ANIMATION} from './constants.js';
+import { DETAILS_ANIMATION } from './constants.js';
 
 /**
  * Toggle details element with smooth animation

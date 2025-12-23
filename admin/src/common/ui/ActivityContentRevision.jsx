@@ -1,14 +1,14 @@
-import {useState} from 'react';
-import {Button, Spoiler, Stack, Alert} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faUndo, faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {modals} from '@mantine/modals';
+import { useState } from 'react';
+import { Button, Spoiler, Stack, Alert } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUndo, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
 import NotificationState from '../stores/NotificationState.js';
 import dayjs from 'dayjs';
-import {Preferences} from '@capacitor/preferences';
+import { Preferences } from '@capacitor/preferences';
 import backendHost from '../../constants/backendHost.js';
 
-function RevisionItem({revision, hasWritePermission, onRestore, loading}) {
+function RevisionItem({ revision, hasWritePermission, onRestore, loading }) {
   const sanitizeHtml = (html) => {
     if (!html) return '';
     // Basic sanitization - remove script tags and dangerous attributes
@@ -109,7 +109,7 @@ export default function ActivityContentRevision({
   onContentRestored,
 }) {
   const [loading, setLoading] = useState(false);
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   const handleRestore = async (revision) => {
     if (!hasWritePermission) {
@@ -126,13 +126,13 @@ export default function ActivityContentRevision({
         <Stack spacing="md">
           <Alert icon={<FontAwesomeIcon icon={faExclamationTriangle} />}>
             <div className="text-sm">
-              Restore content for <strong>{currentLanguage}</strong> to this
-              point? This action will replace the existing content.
+              Restore content for <strong>{currentLanguage}</strong> to this point? This action will
+              replace the existing content.
             </div>
           </Alert>
         </Stack>
       ),
-      labels: {confirm: 'Restore', cancel: 'Cancel'},
+      labels: { confirm: 'Restore', cancel: 'Cancel' },
       onConfirm: () => performRestore(revision),
     });
   };
@@ -141,7 +141,7 @@ export default function ActivityContentRevision({
     setLoading(true);
     try {
       // Get auth token
-      const tokenResult = await Preferences.get({key: 'token'});
+      const tokenResult = await Preferences.get({ key: 'token' });
       const headers = {
         'Content-Type': 'application/json',
       };
@@ -189,9 +189,7 @@ export default function ActivityContentRevision({
   if (!revisions?.length) {
     return (
       <div className="p-4 text-center">
-        <div className="text-sm text-gray-500">
-          No revision history available
-        </div>
+        <div className="text-sm text-gray-500">No revision history available</div>
       </div>
     );
   }

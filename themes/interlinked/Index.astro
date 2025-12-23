@@ -4,26 +4,26 @@ import Page from "./components/Page.tsx";
 import "./main.css";
 
 interface Props {
-    pageData: PageData;
+    data: PageData;
 }
 
-const { pageData } = Astro.props;
+const { data } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang={pageData.lang || 'en'}>
+<html lang={data.lang || 'en'}>
 <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
-    <title>{pageData.seo_metadata?.title || ''}</title>
-    <meta name="description" content={pageData.seo_metadata?.description || ''} />
-    <meta name="robots" content={pageData.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
+    <title>{data.seo_metadata?.title || ''}</title>
+    <meta name="description" content={data.seo_metadata?.description || ''} />
+    <meta name="robots" content={data.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <Page client:load pageData={pageData} />
+    <Page client:load pageData={data} />
 </body>
 </html>

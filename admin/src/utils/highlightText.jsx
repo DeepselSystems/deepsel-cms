@@ -8,6 +8,6 @@ export const highlightText = (text, searchInput) => {
       </span>
     ) : (
       part
-    )
+    ),
   );
 };

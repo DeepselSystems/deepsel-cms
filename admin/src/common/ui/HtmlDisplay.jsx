@@ -1,11 +1,6 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 
-export default function HtmlDisplay({
-  content,
-  className = '',
-  width = '100%',
-  height = '500px',
-}) {
+export default function HtmlDisplay({ content, className = '', width = '100%', height = '500px' }) {
   const [iframeSrc, setIframeSrc] = useState('');
 
   useEffect(() => {
@@ -13,7 +8,7 @@ export default function HtmlDisplay({
       setIframeSrc(null);
       return;
     }
-    const blob = new Blob([content], {type: 'text/html'});
+    const blob = new Blob([content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     setIframeSrc(url);
   }, [content]);

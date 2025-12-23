@@ -3,9 +3,8 @@ from fastapi import Body, Depends, HTTPException, Path, Query, Request, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from apps.cms.types.page import PageContentResponse
 from apps.cms.utils.ai_writing import generate_page_content
-from apps.cms.utils.get_page_content import get_page_content
+from apps.cms.utils.get_page_content import get_page_content, PageContentResponse
 from apps.cms.utils.search import SearchResponse, search_pages_and_posts
 from apps.cms.utils.translate_page_content import translate_page_content
 from db import get_db

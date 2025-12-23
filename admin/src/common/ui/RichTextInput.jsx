@@ -1,12 +1,5 @@
 /* eslint-disable react/display-name */
-import {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-} from 'react';
+import { forwardRef, useImperativeHandle, useState, useEffect, useRef, useMemo } from 'react';
 import {
   faPlus,
   faMinus,
@@ -21,10 +14,10 @@ import {
   faAngleDown,
   faCube,
 } from '@fortawesome/free-solid-svg-icons';
-import {faYoutube} from '@fortawesome/free-brands-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useDisclosure} from '@mantine/hooks';
-import {Link, RichTextEditor as MantineRichTextEditor} from '@mantine/tiptap';
+import { faYoutube } from '@fortawesome/free-brands-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useDisclosure } from '@mantine/hooks';
+import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
 import Highlight from '@tiptap/extension-highlight';
 import SubScript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
@@ -42,15 +35,15 @@ import {
   DetailsSummary,
 } from './tiptap-extensions/details-extension/index.js';
 import Placeholder from '@tiptap/extension-placeholder';
-import {useEditor} from '@tiptap/react';
+import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import {AutocompleteExtension} from './tiptap-extensions/autocomplete-extension/index.js';
+import { AutocompleteExtension } from './tiptap-extensions/autocomplete-extension/index.js';
 import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
-import {Menu, Tooltip, Select, Modal, NumberInput, Button} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { Menu, Tooltip, Select, Modal, NumberInput, Button } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import GalleryModal from './GalleryModal.jsx';
-import {RichText} from './tiptap-extensions/richtext-extension';
+import { RichText } from './tiptap-extensions/richtext-extension';
 import Gallery from './tiptap-extensions/gallery-extension';
 import RichTextModal from './RichTextModal.jsx';
 import JumpMarksModal from './tiptap-extensions/youtube-jumpmarks-extension/components/JumpMarksModal.jsx';
@@ -82,40 +75,34 @@ const RichTextInput = forwardRef((props, ref) => {
     autoComplete = false,
     ...others
   } = props;
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {backendHost} = BackendHostURLState();
-  const {settings: siteSettings} = SitePublicSettingsState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { backendHost } = BackendHostURLState();
+  const { settings: siteSettings } = SitePublicSettingsState();
 
-  const [
-    isGalleryModalOpened,
-    {open: openGalleryModal, close: closeGalleryModal},
-  ] = useDisclosure(false);
+  const [isGalleryModalOpened, { open: openGalleryModal, close: closeGalleryModal }] =
+    useDisclosure(false);
 
   const [fontSize, setFontSize] = useState('12'); // Default font size
   const [galleryData, setGalleryData] = useState(null);
   const [richTextData, setRichTextData] = useState(null);
   const [isInsideCollapse, setIsInsideCollapse] = useState(false);
 
-  const [
-    isRichTextModalOpened,
-    {open: openRichTextModal, close: closeRichTextModal},
-  ] = useDisclosure(false);
+  const [isRichTextModalOpened, { open: openRichTextModal, close: closeRichTextModal }] =
+    useDisclosure(false);
 
-  const [isTableModalOpened, {open: openTableModal, close: closeTableModal}] =
+  const [isTableModalOpened, { open: openTableModal, close: closeTableModal }] =
     useDisclosure(false);
   const [tableRows, setTableRows] = useState(3);
   const [tableCols, setTableCols] = useState(3);
 
-  const [
-    isJumpMarksModalOpened,
-    {open: openJumpMarksModal, close: closeJumpMarksModal},
-  ] = useDisclosure(false);
+  const [isJumpMarksModalOpened, { open: openJumpMarksModal, close: closeJumpMarksModal }] =
+    useDisclosure(false);
   const [jumpMarksData, setJumpMarksData] = useState(null);
 
   const [
     isHtmlComponentsModalOpened,
-    {open: openHtmlComponentsModal, close: closeHtmlComponentsModal},
+    { open: openHtmlComponentsModal, close: closeHtmlComponentsModal },
   ] = useDisclosure(false);
 
   // Check if AI features are available
@@ -140,7 +127,7 @@ const RichTextInput = forwardRef((props, ref) => {
         Superscript,
         SubScript,
         Highlight,
-        TextAlign.configure({types: ['heading', 'paragraph']}),
+        TextAlign.configure({ types: ['heading', 'paragraph'] }),
         EnhancedImage,
         Youtube,
         YoutubeJumpMarks,
@@ -174,13 +161,13 @@ const RichTextInput = forwardRef((props, ref) => {
           : []),
       ],
       content,
-      onUpdate({editor}) {
+      onUpdate({ editor }) {
         if (editor) {
           onChange(editor.getHTML());
         }
       },
     },
-    [isAIAvailable, backendHost, user?.token]
+    [isAIAvailable, backendHost, user?.token],
   );
 
   // Update editorRef when editor is created
@@ -192,10 +179,7 @@ const RichTextInput = forwardRef((props, ref) => {
   useEffect(() => {
     if (editor) {
       const handleUpdate = () => {
-        console.log(
-          'RichTextInput content updated:',
-          editor.getText().substring(0, 50)
-        );
+        console.log('RichTextInput content updated:', editor.getText().substring(0, 50));
       };
 
       editor.on('update', handleUpdate);
@@ -225,9 +209,9 @@ const RichTextInput = forwardRef((props, ref) => {
     const checkIfInsideCollapse = () => {
       if (!editor) return false;
 
-      const {state} = editor;
-      const {selection} = state;
-      const {$from} = selection;
+      const { state } = editor;
+      const { selection } = state;
+      const { $from } = selection;
 
       // Walk up the node tree to check if we're inside a details element
       for (let depth = $from.depth; depth > 0; depth--) {
@@ -265,7 +249,7 @@ const RichTextInput = forwardRef((props, ref) => {
 
     // Add event listener for gallery edit events
     const handleEditGallery = (event) => {
-      const {galleryId, config, attachments, updateGallery} = event.detail;
+      const { galleryId, config, attachments, updateGallery } = event.detail;
       setGalleryData({
         galleryId,
         config,
@@ -277,7 +261,7 @@ const RichTextInput = forwardRef((props, ref) => {
 
     // Add event listener for rich text edit events
     const handleEditRichText = (event) => {
-      const {richtextId, config, content, updateRichText} = event.detail;
+      const { richtextId, config, content, updateRichText } = event.detail;
       // Ensure we're setting the content properly
       setRichTextData({
         richtextId,
@@ -301,22 +285,22 @@ const RichTextInput = forwardRef((props, ref) => {
 
   // Font size options
   const fontSizeOptions = [
-    {value: '8', label: '8'},
-    {value: '9', label: '9'},
-    {value: '10', label: '10'},
-    {value: '11', label: '11'},
-    {value: '12', label: '12'},
-    {value: '14', label: '14'},
-    {value: '16', label: '16'},
-    {value: '18', label: '18'},
-    {value: '20', label: '20'},
-    {value: '22', label: '22'},
-    {value: '24', label: '24'},
-    {value: '26', label: '26'},
-    {value: '28', label: '28'},
-    {value: '36', label: '36'},
-    {value: '48', label: '48'},
-    {value: '72', label: '72'},
+    { value: '8', label: '8' },
+    { value: '9', label: '9' },
+    { value: '10', label: '10' },
+    { value: '11', label: '11' },
+    { value: '12', label: '12' },
+    { value: '14', label: '14' },
+    { value: '16', label: '16' },
+    { value: '18', label: '18' },
+    { value: '20', label: '20' },
+    { value: '22', label: '22' },
+    { value: '24', label: '24' },
+    { value: '26', label: '26' },
+    { value: '28', label: '28' },
+    { value: '36', label: '36' },
+    { value: '48', label: '48' },
+    { value: '72', label: '72' },
   ];
 
   // Apply font size
@@ -346,17 +330,8 @@ const RichTextInput = forwardRef((props, ref) => {
       `}</style>
 
       <div className={`flex flex-col`}>
-        <MantineRichTextEditor
-          editor={editor}
-          variant={variant}
-          className={`w-full`}
-          {...others}
-        >
-          <MantineRichTextEditor.Toolbar
-            sticky
-            stickyOffset={60}
-            className="!z-50"
-          >
+        <MantineRichTextEditor editor={editor} variant={variant} className={`w-full`} {...others}>
+          <MantineRichTextEditor.Toolbar sticky stickyOffset={60} className="!z-50">
             <MantineRichTextEditor.ControlsGroup>
               <MantineRichTextEditor.Bold />
               <MantineRichTextEditor.Italic />
@@ -406,20 +381,12 @@ const RichTextInput = forwardRef((props, ref) => {
                 <Tooltip label={t('Add Column Before')}>
                   <button
                     type="button"
-                    onClick={() =>
-                      editor.chain().focus().addColumnBefore().run()
-                    }
+                    onClick={() => editor.chain().focus().addColumnBefore().run()}
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faArrowLeft}
-                      className="text-[#808496] text-xs"
-                    />
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faArrowLeft} className="text-[#808496] text-xs" />
+                    <FontAwesomeIcon icon={faPlus} className="text-[#808496] text-xs" />
                     <span className="text-[#808496] text-xs">Col</span>
                   </button>
                 </Tooltip>
@@ -427,22 +394,14 @@ const RichTextInput = forwardRef((props, ref) => {
                 <Tooltip label={t('Add Column After')}>
                   <button
                     type="button"
-                    onClick={() =>
-                      editor.chain().focus().addColumnAfter().run()
-                    }
+                    onClick={() => editor.chain().focus().addColumnAfter().run()}
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faPlus} className="text-[#808496] text-xs" />
                     <span className="text-[#808496] text-xs">Col</span>
 
-                    <FontAwesomeIcon
-                      icon={faArrowRight}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faArrowRight} className="text-[#808496] text-xs" />
                   </button>
                 </Tooltip>
 
@@ -453,10 +412,7 @@ const RichTextInput = forwardRef((props, ref) => {
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faTrash}
-                      className="text-red-500 text-xs"
-                    />
+                    <FontAwesomeIcon icon={faTrash} className="text-red-500 text-xs" />
                     <span className="text-red-500 text-xs">Col</span>
                   </button>
                 </Tooltip>
@@ -468,16 +424,10 @@ const RichTextInput = forwardRef((props, ref) => {
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faPlus} className="text-[#808496] text-xs" />
 
                     <span className="text-[#808496] text-xs">Row</span>
-                    <FontAwesomeIcon
-                      icon={faArrowUp}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faArrowUp} className="text-[#808496] text-xs" />
                   </button>
                 </Tooltip>
 
@@ -488,16 +438,10 @@ const RichTextInput = forwardRef((props, ref) => {
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faPlus} className="text-[#808496] text-xs" />
 
                     <span className="text-[#808496] text-xs">Row</span>
-                    <FontAwesomeIcon
-                      icon={faArrowDown}
-                      className="text-[#808496] text-xs"
-                    />
+                    <FontAwesomeIcon icon={faArrowDown} className="text-[#808496] text-xs" />
                   </button>
                 </Tooltip>
 
@@ -508,10 +452,7 @@ const RichTextInput = forwardRef((props, ref) => {
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faTrash}
-                      className="text-red-500 text-xs"
-                    />
+                    <FontAwesomeIcon icon={faTrash} className="text-red-500 text-xs" />
                     <span className="text-red-500 text-xs">Row</span>
                   </button>
                 </Tooltip>
@@ -523,10 +464,7 @@ const RichTextInput = forwardRef((props, ref) => {
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faTimes}
-                      className="text-red-500 text-xs"
-                    />
+                    <FontAwesomeIcon icon={faTimes} className="text-red-500 text-xs" />
                     <span className="text-red-500 text-xs">Table</span>
                   </button>
                 </Tooltip>
@@ -601,10 +539,7 @@ const RichTextInput = forwardRef((props, ref) => {
             {canAddImage && (
               <MantineRichTextEditor.ControlsGroup>
                 {/* Insert Image Button */}
-                <EnhancedImageButton
-                  editor={editor}
-                  onAddImageOverride={onAddImageOverride}
-                />
+                <EnhancedImageButton editor={editor} onAddImageOverride={onAddImageOverride} />
 
                 {/* Insert Gallery Button */}
                 <Menu shadow="md" width={200} position="bottom-start">
@@ -619,10 +554,7 @@ const RichTextInput = forwardRef((props, ref) => {
                         className="w-[26px] h-[26px] flex justify-center items-center
                                                   rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <FontAwesomeIcon
-                          icon={faImages}
-                          className="text-[#808496]"
-                        />
+                        <FontAwesomeIcon icon={faImages} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                   </Menu.Target>
@@ -650,10 +582,7 @@ const RichTextInput = forwardRef((props, ref) => {
                         className="w-[26px] h-[26px] flex justify-center items-center
                                                   rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <FontAwesomeIcon
-                          icon={faTable}
-                          className="text-[#808496]"
-                        />
+                        <FontAwesomeIcon icon={faTable} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                   </Menu.Target>
@@ -717,10 +646,7 @@ const RichTextInput = forwardRef((props, ref) => {
                       openJumpMarksModal();
                     }}
                   >
-                    <FontAwesomeIcon
-                      icon={faYoutube}
-                      className="text-[#808496]"
-                    />
+                    <FontAwesomeIcon icon={faYoutube} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -736,15 +662,12 @@ const RichTextInput = forwardRef((props, ref) => {
                           .chain()
                           .focus()
                           .insertContent(
-                            `<details><summary>${t('Click to expand')}</summary><div data-type="details-content"><p>${t('Add your content here...')}</p></div></details>`
+                            `<details><summary>${t('Click to expand')}</summary><div data-type="details-content"><p>${t('Add your content here...')}</p></div></details>`,
                           )
                           .run();
                       }}
                     >
-                      <FontAwesomeIcon
-                        icon={faAngleDown}
-                        className="text-[#808496]"
-                      />
+                      <FontAwesomeIcon icon={faAngleDown} className="text-[#808496]" />
                     </button>
                   </Tooltip>
                 )}

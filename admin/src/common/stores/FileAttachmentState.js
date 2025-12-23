@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import debounce from 'lodash/debounce';
 
 const FileAttachmentState = create((setState, getState) => {
@@ -16,13 +16,13 @@ const FileAttachmentState = create((setState, getState) => {
 
     // call api to get uploadSizeLimit
     try {
-      setState({isFetchingUploadSizeLimit: true});
+      setState({ isFetchingUploadSizeLimit: true });
       const uploadSizeLimit = await Promise.resolve(apiFunc());
-      setState({uploadSizeLimit});
+      setState({ uploadSizeLimit });
     } catch (e) {
       console.log(e);
     } finally {
-      setState({isFetchingUploadSizeLimit: false});
+      setState({ isFetchingUploadSizeLimit: false });
     }
   };
 

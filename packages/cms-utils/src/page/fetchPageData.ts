@@ -5,11 +5,10 @@ import type { PageData } from './types';
  * Fetches page data from the backend by language and slug
  */
 export async function fetchPageData(
-  lang: string | null,
   slug: string,
-  isPreview: boolean = false,
-  authToken: string | null = null,
-  astroRequest: Request | null = null,
+  lang?: string,
+  astroRequest?: Request,
+  authToken?: string,
   backendHost: string = 'http://localhost:8000',
 ): Promise<PageData> {
   try {
@@ -21,16 +20,15 @@ export async function fetchPageData(
     }
 
     // Determine the URL based on whether a language is provided
-    let url;
-    if (lang && lang !== 'default') {
-      url = `${backendHost}/page/website/${lang}${formattedSlug}`;
-    } else {
-      url = `${backendHost}/page/website/default${formattedSlug}`;
-    }
+    const langPrefix = lang || 'default';
+    let url = `${backendHost}/page/website/${langPrefix}${formattedSlug}`;
 
     // Add preview parameter if enabled
-    if (isPreview) {
-      url += '?preview=true';
+    if (astroRequest) {
+      const previewParam = new URL(astroRequest.url).searchParams.get('preview');
+      if (previewParam === 'true') {
+        url += `?preview=true`;
+      }
     }
 
     // Prepare fetch options
@@ -46,8 +44,8 @@ export async function fetchPageData(
 
     // Server-side: Extract hostname from Astro request
     if (astroRequest) {
-      const url = new URL(astroRequest.url);
-      hostname = url.hostname;
+      const requestUrl = new URL(astroRequest.url);
+      hostname = requestUrl.hostname;
     }
     // Client-side: Extract hostname from window
     else if (typeof window !== 'undefined') {

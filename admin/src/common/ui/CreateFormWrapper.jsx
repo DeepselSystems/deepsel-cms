@@ -26,9 +26,7 @@ export default function CreateFormWrapper(props) {
       />
 
       {cardMode ? (
-        <Card className={modalMode && 'border-none shadow-none !p-0'}>
-          {children}
-        </Card>
+        <Card className={modalMode && 'border-none shadow-none !p-0'}>{children}</Card>
       ) : (
         children
       )}

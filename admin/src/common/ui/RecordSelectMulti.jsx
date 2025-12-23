@@ -1,20 +1,13 @@
-import {useTranslation} from 'react-i18next';
-import {useState, useEffect, useMemo, useCallback} from 'react';
-import {
-  CheckIcon,
-  Combobox,
-  Group,
-  Pill,
-  PillsInput,
-  useCombobox,
-} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { CheckIcon, Combobox, Group, Pill, PillsInput, useCombobox } from '@mantine/core';
 import useModel from '../api/useModel.jsx';
-import {useShallowEffect} from '@mantine/hooks';
+import { useShallowEffect } from '@mantine/hooks';
 import isEqualWith from 'lodash/isEqualWith';
 import isEqual from 'lodash/isEqual';
 
 export default function RecordSelectMulti(props) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     label,
     placeholder,
@@ -29,7 +22,7 @@ export default function RecordSelectMulti(props) {
     filters = [],
     slots,
   } = props;
-  const {data, searchTerm, setSearchTerm} = useModel(model, {
+  const { data, searchTerm, setSearchTerm } = useModel(model, {
     autoFetch: true,
     pageSize,
     searchFields,
@@ -47,9 +40,7 @@ export default function RecordSelectMulti(props) {
    */
   useEffect(() => {
     setValue((prevState) => {
-      return isEqualWith(prevState, initialValue, (value, other) =>
-        isEqual(value, other)
-      )
+      return isEqualWith(prevState, initialValue, (value, other) => isEqual(value, other))
         ? prevState
         : initialValue;
     });
@@ -69,9 +60,7 @@ export default function RecordSelectMulti(props) {
   const handleValueSelect = useCallback((itemToAdd) => {
     setValue((prevState) => {
       const newValue = [...(prevState || [])];
-      const existedItemIdx = newValue.findIndex(
-        (o) => String(o.id) === String(itemToAdd.id)
-      );
+      const existedItemIdx = newValue.findIndex((o) => String(o.id) === String(itemToAdd.id));
       if (newValue[existedItemIdx]) {
         newValue.splice(existedItemIdx, 1);
       } else {
@@ -87,9 +76,7 @@ export default function RecordSelectMulti(props) {
    */
   const handleValueRemove = useCallback((itemToRemove) => {
     setValue((prevState) => {
-      return (prevState || []).filter(
-        (item) => String(item.id) !== String(itemToRemove.id)
-      );
+      return (prevState || []).filter((item) => String(item.id) !== String(itemToRemove.id));
     });
   }, []);
 
@@ -100,46 +87,32 @@ export default function RecordSelectMulti(props) {
   const selectedValues = useMemo(
     () =>
       value?.map((item) => (
-        <Pill
-          key={item.id}
-          withRemoveButton
-          onRemove={() => handleValueRemove(item)}
-        >
+        <Pill key={item.id} withRemoveButton onRemove={() => handleValueRemove(item)}>
           <div className="flex gap-2 items-center">
             {slots?.preOptionItem && slots.preOptionItem(item)}
             {item[displayField]}
           </div>
         </Pill>
       )),
-    [displayField, handleValueRemove, slots, value]
+    [displayField, handleValueRemove, slots, value],
   );
 
   const options = data.map((item) =>
     renderOption ? (
       renderOption(item, value)
     ) : (
-      <Combobox.Option
-        value={item}
-        key={item.id}
-        active={value?.includes(item)}
-      >
+      <Combobox.Option value={item} key={item.id} active={value?.includes(item)}>
         <Group gap="sm">
-          {value?.find((v) => v.id === item.id) ? (
-            <CheckIcon size={12} />
-          ) : null}
+          {value?.find((v) => v.id === item.id) ? <CheckIcon size={12} /> : null}
           {slots?.preOptionItem && slots.preOptionItem(item)}
           <span>{item[displayField]}</span>
         </Group>
       </Combobox.Option>
-    )
+    ),
   );
 
   return (
-    <Combobox
-      store={combobox}
-      onOptionSubmit={handleValueSelect}
-      withinPortal={false}
-    >
+    <Combobox store={combobox} onOptionSubmit={handleValueSelect} withinPortal={false}>
       <Combobox.DropdownTarget>
         <PillsInput onClick={() => combobox.openDropdown()} label={label}>
           <Pill.Group>
@@ -170,11 +143,7 @@ export default function RecordSelectMulti(props) {
 
       <Combobox.Dropdown>
         <Combobox.Options className="max-h-[200px] overflow-y-auto">
-          {options.length > 0 ? (
-            options
-          ) : (
-            <Combobox.Empty>{t('Nothing found...')}</Combobox.Empty>
-          )}
+          {options.length > 0 ? options : <Combobox.Empty>{t('Nothing found...')}</Combobox.Empty>}
         </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>

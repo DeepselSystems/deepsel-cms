@@ -1,13 +1,13 @@
-import {Menu} from '@mantine/core';
-import {Link} from 'react-router-dom';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useTranslation} from 'react-i18next';
+import { Menu } from '@mantine/core';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
 import H3 from '../H3.jsx';
 import useAuthentication from '../../api/useAuthentication.js';
 
-const AppsDropdown = ({apps, showApps}) => {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
+const AppsDropdown = ({ apps, showApps }) => {
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
 
   if (!showApps) return null;
 
@@ -24,8 +24,7 @@ const AppsDropdown = ({apps, showApps}) => {
           <H3>{t('Apps')}</H3>
           <div className="flex gap-3 flex-wrap justify-center">
             {apps.map((link, index) => {
-              const userRoleIds =
-                user?.all_roles?.map((rec) => rec.string_id) || [];
+              const userRoleIds = user?.all_roles?.map((rec) => rec.string_id) || [];
               const isVisible = link.roleIds
                 ? link.roleIds.some((roleId) => userRoleIds.includes(roleId))
                 : true;

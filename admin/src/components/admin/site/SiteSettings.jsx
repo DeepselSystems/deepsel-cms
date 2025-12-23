@@ -1,22 +1,16 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import H2 from '../../../common/ui/H2.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
-import {useState, useEffect} from 'react';
-import {
-  LoadingOverlay,
-  Select,
-  MultiSelect,
-  Text,
-  TagsInput,
-} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react';
+import { LoadingOverlay, Select, MultiSelect, Text, TagsInput } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faLanguage,
   faRobot,
@@ -28,7 +22,7 @@ import {
   faDownload,
   faUpload,
 } from '@fortawesome/free-solid-svg-icons';
-import {Button, Modal, FileInput, Group, Alert} from '@mantine/core';
+import { Button, Modal, FileInput, Group, Alert } from '@mantine/core';
 import Switch from '../../../common/ui/Switch.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
@@ -36,7 +30,7 @@ import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SecretInput from '../../../common/ui/SecretInput.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
@@ -44,16 +38,16 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
 
 export default function SiteSettings() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {backendHost} = BackendHostURLState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
+  const { backendHost } = BackendHostURLState();
   const query = useModel('organization', {
     id: organizationId, // Use the selected organization ID without fallback
     autoFetch: !!organizationId, // Only auto-fetch if organizationId exists
   });
-  const {record, setRecord, update, loading: orgLoading} = query;
-  const {notify} = NotificationState((state) => state);
+  const { record, setRecord, update, loading: orgLoading } = query;
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -91,7 +85,7 @@ export default function SiteSettings() {
           headers: {
             Authorization: `Bearer ${user?.token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -186,7 +180,7 @@ export default function SiteSettings() {
   const [openrouterApiKeyEditing, setOpenrouterApiKeyEditing] = useState('');
 
   // Fetch locales
-  const {data: locales, loading: localesLoading} = useModel('locale', {
+  const { data: locales, loading: localesLoading } = useModel('locale', {
     autoFetch: true,
     pageSize: null, // Get all locales
   });
@@ -195,7 +189,7 @@ export default function SiteSettings() {
   const [localeOptions, setLocaleOptions] = useState([]);
 
   // Fetch openrouter models for default values
-  const {data: openRouterModels} = useModel('openrouter_model', {
+  const { data: openRouterModels } = useModel('openrouter_model', {
     autoFetch: true,
     pageSize: 1000,
   });
@@ -216,14 +210,10 @@ export default function SiteSettings() {
     if (!openRouterModels || !record) return;
 
     const translationModel = openRouterModels.find(
-      (model) => model.string_id === 'google/gemini-flash-1.5-8b'
+      (model) => model.string_id === 'google/gemini-flash-1.5-8b',
     );
-    const writingModel = openRouterModels.find(
-      (model) => model.string_id === 'openai/gpt-5'
-    );
-    const autocompleteModel = openRouterModels.find(
-      (model) => model.string_id === 'openai/gpt-4'
-    );
+    const writingModel = openRouterModels.find((model) => model.string_id === 'openai/gpt-5');
+    const autocompleteModel = openRouterModels.find((model) => model.string_id === 'openai/gpt-4');
 
     let shouldUpdate = false;
     const updates = {};
@@ -301,24 +291,17 @@ export default function SiteSettings() {
       if (
         record.default_language_id &&
         record.available_languages &&
-        !record.available_languages.some(
-          (lang) => lang.id === record.default_language_id
-        )
+        !record.available_languages.some((lang) => lang.id === record.default_language_id)
       ) {
         // Find the locale object for the default language
-        const defaultLocale = locales.find(
-          (l) => l.id === record.default_language_id
-        );
+        const defaultLocale = locales.find((l) => l.id === record.default_language_id);
         if (defaultLocale) {
           const defaultLangObject = {
             id: defaultLocale.id,
             name: defaultLocale.name,
             iso_code: defaultLocale.iso_code,
           };
-          const updatedAvailableLanguages = [
-            ...record.available_languages,
-            defaultLangObject,
-          ];
+          const updatedAvailableLanguages = [...record.available_languages, defaultLangObject];
 
           await update({
             ...record,
@@ -364,9 +347,7 @@ export default function SiteSettings() {
         <Card className={`shadow-none border-none text-center p-8`}>
           <H1>{t('Site Settings')}</H1>
           <div className="mt-4 text-gray-500">
-            {t(
-              'Please select a website from the dropdown above to manage its settings.'
-            )}
+            {t('Please select a website from the dropdown above to manage its settings.')}
           </div>
         </Card>
       </div>
@@ -374,10 +355,7 @@ export default function SiteSettings() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading || orgLoading || localesLoading} />
 
       {record ? (
@@ -408,7 +386,7 @@ export default function SiteSettings() {
             <TagsInput
               label={t('Domains')}
               description={t(
-                'Enter the domains for this website (e.g., example.com, subdomain.example.com). Use * for wildcard (catch-all). Press Enter to add each domain.'
+                'Enter the domains for this website (e.g., example.com, subdomain.example.com). Use * for wildcard (catch-all). Press Enter to add each domain.',
               )}
               placeholder={t('Enter domain and press Enter')}
               value={record.domains || ['*']}
@@ -434,16 +412,10 @@ export default function SiteSettings() {
 
               <MultiSelect
                 label={t('Available Languages')}
-                description={t(
-                  'Select languages that will be available on your site'
-                )}
+                description={t('Select languages that will be available on your site')}
                 placeholder={t('Select languages')}
                 data={localeOptions}
-                value={
-                  record?.available_languages?.map((lang) =>
-                    lang.id.toString()
-                  ) || []
-                }
+                value={record?.available_languages?.map((lang) => lang.id.toString()) || []}
                 onChange={handleAvailableLanguagesChange}
                 className="mb-4"
                 required
@@ -478,7 +450,7 @@ export default function SiteSettings() {
 
             <Text c="dimmed" size="sm" className="mb-2">
               {t(
-                'Configure AI-powered content generation and translation features. Requires an OpenRouter API key to function.'
+                'Configure AI-powered content generation and translation features. Requires an OpenRouter API key to function.',
               )}
             </Text>
 
@@ -486,9 +458,7 @@ export default function SiteSettings() {
               <div>
                 <Switch
                   label={t('Auto-translate Pages')}
-                  description={t(
-                    'Automatically translate page content when adding new languages'
-                  )}
+                  description={t('Automatically translate page content when adding new languages')}
                   checked={record.auto_translate_pages || false}
                   onChange={(event) =>
                     setRecord({
@@ -502,7 +472,7 @@ export default function SiteSettings() {
                 <Switch
                   label={t('Auto-translate Blog Posts')}
                   description={t(
-                    'Automatically translate blog post content when adding new languages'
+                    'Automatically translate blog post content when adding new languages',
                   )}
                   checked={record.auto_translate_posts || false}
                   onChange={(event) =>
@@ -517,11 +487,7 @@ export default function SiteSettings() {
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <FontAwesomeIcon
-                    icon={faKey}
-                    className="text-gray-500"
-                    size="sm"
-                  />
+                  <FontAwesomeIcon icon={faKey} className="text-gray-500" size="sm" />
                   <Text size="sm" weight={500}>
                     {t('API Keys')}
                   </Text>
@@ -530,7 +496,7 @@ export default function SiteSettings() {
                 <SecretInput
                   label={t('OpenRouter API Key')}
                   description={t(
-                    'API key for AI-powered translation and content generation features'
+                    'API key for AI-powered translation and content generation features',
                   )}
                   truncateSecret={record.openrouter_api_key_truncated}
                   editingValue={openrouterApiKeyEditing}
@@ -543,9 +509,7 @@ export default function SiteSettings() {
                   pageSize={1000}
                   searchFields={['string_id', 'name']}
                   label={t('Translation model')}
-                  description={t(
-                    'AI model used for translating content between languages'
-                  )}
+                  description={t('AI model used for translating content between languages')}
                   placeholder={t('Select a AI model')}
                   value={record?.ai_translation_model_id}
                   onChange={(value) =>
@@ -582,9 +546,7 @@ export default function SiteSettings() {
                   pageSize={1000}
                   searchFields={['string_id', 'name']}
                   label={t('Autocomplete model')}
-                  description={t(
-                    'AI model used for text autocomplete and suggestions'
-                  )}
+                  description={t('AI model used for text autocomplete and suggestions')}
                   placeholder={t('Select a AI model')}
                   value={record?.ai_autocomplete_model_id}
                   onChange={(value) =>
@@ -620,7 +582,7 @@ export default function SiteSettings() {
 
             <Text c="dimmed" size="sm" className="ml-1">
               {t(
-                'Enable the website AI assistant in a popup chat box to help users with their queries and provide support.'
+                'Enable the website AI assistant in a popup chat box to help users with their queries and provide support.',
               )}
             </Text>
 
@@ -628,9 +590,7 @@ export default function SiteSettings() {
               <div>
                 <Switch
                   label={t('Enabled')}
-                  description={t(
-                    'Show AI assistant chat widget on website pages'
-                  )}
+                  description={t('Show AI assistant chat widget on website pages')}
                   checked={record.show_chatbox || false}
                   onChange={(event) =>
                     setRecord({
@@ -708,15 +668,12 @@ export default function SiteSettings() {
 
             <Text c="dimmed" size="sm" className="ml-1">
               {t(
-                'Inject custom code (HTML, CSS, or JavaScript) on every page, inserted before the closing </body> tag.'
+                'Inject custom code (HTML, CSS, or JavaScript) on every page, inserted before the closing </body> tag.',
               )}
             </Text>
 
             <div>
-              <div
-                className="border border-gray-300 rounded"
-                style={{height: '200px'}}
-              >
+              <div className="border border-gray-300 rounded" style={{ height: '200px' }}>
                 <Editor
                   className="w-full h-full rounded shadow"
                   value={record.website_custom_code || ''}
@@ -726,9 +683,7 @@ export default function SiteSettings() {
                       website_custom_code: code,
                     })
                   }
-                  highlight={(code) =>
-                    highlight(code, languages.markup, 'html')
-                  }
+                  highlight={(code) => highlight(code, languages.markup, 'html')}
                   padding={10}
                   style={{
                     fontSize: 12,
@@ -749,7 +704,7 @@ export default function SiteSettings() {
 
             <Text c="dimmed" size="sm" className="ml-1">
               {t(
-                'Export your site content (Pages, Blog Posts, Menus, Attachments) as a ZIP file or restore from a previous backup.'
+                'Export your site content (Pages, Blog Posts, Menus, Attachments) as a ZIP file or restore from a previous backup.',
               )}
             </Text>
 
@@ -790,7 +745,7 @@ export default function SiteSettings() {
         <div className="flex flex-col gap-4">
           <Alert color="red" title={t('Warning')}>
             {t(
-              'Restoring a backup will overwrite existing content with the same IDs. This action cannot be undone. Please make sure you have a current backup before proceeding.'
+              'Restoring a backup will overwrite existing content with the same IDs. This action cannot be undone. Please make sure you have a current backup before proceeding.',
             )}
           </Alert>
 

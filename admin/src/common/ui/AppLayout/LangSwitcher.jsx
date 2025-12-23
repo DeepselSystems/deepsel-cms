@@ -1,18 +1,15 @@
-import {useTranslation} from 'react-i18next';
-import {Menu} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Menu } from '@mantine/core';
 import SitePublicSettingsState from '../../stores/SitePublicSettingsState.js';
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 
 export default function LangSwitcher() {
-  const {i18n} = useTranslation();
-  const {settings} = SitePublicSettingsState();
+  const { i18n } = useTranslation();
+  const { settings } = SitePublicSettingsState();
 
   const currentLocale = useMemo(
-    () =>
-      settings?.available_languages?.find(
-        (lang) => lang.iso_code === i18n.language
-      ),
-    [settings, i18n.language]
+    () => settings?.available_languages?.find((lang) => lang.iso_code === i18n.language),
+    [settings, i18n.language],
   );
 
   return (
@@ -26,10 +23,7 @@ export default function LangSwitcher() {
           ?.filter((lang) => lang.iso_code !== i18n.language)
           .map((lang) => (
             <Menu.Item key={lang.name}>
-              <div
-                className={'text-[14px]'}
-                onClick={() => i18n.changeLanguage(lang.iso_code)}
-              >
+              <div className={'text-[14px]'} onClick={() => i18n.changeLanguage(lang.iso_code)}>
                 {lang.emoji_flag} {lang.name}
               </div>
             </Menu.Item>

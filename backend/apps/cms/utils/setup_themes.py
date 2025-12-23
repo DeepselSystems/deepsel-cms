@@ -133,21 +133,25 @@ def setup_themes(force_build=False, force_sync=False):
                 ):
                     install_result = run_npm("npm install", cwd=subfolder_path)
                     if install_result.returncode != 0:
+                        error_output = (
+                            install_result.stdout + "\n" + install_result.stderr
+                        )
                         logger.error(
-                            f"npm install failed in {subfolder}: {install_result.stderr}"
+                            f"npm install failed in {subfolder}: {error_output}"
                         )
                         raise RuntimeError(
-                            f"npm install failed in {subfolder}: {install_result.stderr}"
+                            f"npm install failed in {subfolder}: {error_output}"
                         )
                     logger.info(f"npm install completed in {subfolder}")
 
                     build_result = run_npm("npm run build", cwd=subfolder_path)
                     if build_result.returncode != 0:
+                        error_output = build_result.stdout + "\n" + build_result.stderr
                         logger.error(
-                            f"npm run build failed in {subfolder}: {build_result.stderr}"
+                            f"npm run build failed in {subfolder}: {error_output}"
                         )
                         raise RuntimeError(
-                            f"npm run build failed in {subfolder}: {build_result.stderr}"
+                            f"npm run build failed in {subfolder}: {error_output}"
                         )
                     logger.info(f"npm run build completed in {subfolder}")
         else:
@@ -270,9 +274,10 @@ def setup_themes(force_build=False, force_sync=False):
             install_result = run_npm("npm install", cwd=data_dir)
 
             if install_result.returncode != 0:
-                logger.error(f"npm install failed: {install_result.stderr}")
+                error_output = install_result.stdout + "\n" + install_result.stderr
+                logger.error(f"npm install failed: {error_output}")
                 raise RuntimeError(
-                    f"npm install failed with exit code {install_result.returncode}: {install_result.stderr}"
+                    f"npm install failed with exit code {install_result.returncode}: {error_output}"
                 )
             else:
                 logger.info("npm install completed successfully")
@@ -285,9 +290,10 @@ def setup_themes(force_build=False, force_sync=False):
             build_result = run_npm("npm run build", cwd=data_dir, timeout=600)
 
             if build_result.returncode != 0:
-                logger.error(f"Client build failed: {build_result.stderr}")
+                error_output = build_result.stdout + "\n" + build_result.stderr
+                logger.error(f"Client build failed: {error_output}")
                 raise RuntimeError(
-                    f"npm build failed with exit code {build_result.returncode}: {build_result.stderr}"
+                    f"npm build failed with exit code {build_result.returncode}: {error_output}"
                 )
             else:
                 logger.info("Client build completed successfully")

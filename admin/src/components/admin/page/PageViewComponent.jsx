@@ -1,23 +1,20 @@
-import {useState, useEffect, useMemo} from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   faExternalLinkAlt,
   faDesktop,
   faTabletAlt,
   faMobileAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {LoadingOverlay, Tabs, Tooltip} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useParams} from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { LoadingOverlay, Tabs, Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
-import {
-  buildPageUrlWithDomain,
-  buildFullUrl,
-} from '../../../utils/domainUtils.js';
+import { buildPageUrlWithDomain, buildFullUrl } from '../../../utils/domainUtils.js';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
@@ -26,15 +23,15 @@ import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
 
 export default function PageViewComponent() {
-  const {t} = useTranslation();
-  const {id} = useParams();
-  const query = useModel('page', {id, autoFetch: true});
-  const {record, update, getOne} = query;
-  const {notify} = NotificationState();
-  const {settings: siteSettings} = SitePublicSettingsState();
-  const {organizations} = OrganizationState();
-  const {user} = useAuthentication();
-  const {data: locales} = useModel('locale', {
+  const { t } = useTranslation();
+  const { id } = useParams();
+  const query = useModel('page', { id, autoFetch: true });
+  const { record, update, getOne } = query;
+  const { notify } = NotificationState();
+  const { settings: siteSettings } = SitePublicSettingsState();
+  const { organizations } = OrganizationState();
+  const { user } = useAuthentication();
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -68,9 +65,7 @@ export default function PageViewComponent() {
   // Get the currently selected content using useMemo for performance
   const currentContent = useMemo(() => {
     if (!record?.contents || !activeContentTab) return null;
-    return record.contents.find(
-      (content) => String(content.id) === activeContentTab
-    );
+    return record.contents.find((content) => String(content.id) === activeContentTab);
   }, [record?.contents, activeContentTab]);
 
   // Get the URL for the current content
@@ -81,14 +76,9 @@ export default function PageViewComponent() {
       currentContent.slug,
       currentContent.locale?.iso_code,
       siteSettings?.default_language?.iso_code,
-      organizations
+      organizations,
     );
-  }, [
-    currentContent,
-    record,
-    siteSettings?.default_language?.iso_code,
-    organizations,
-  ]);
+  }, [currentContent, record, siteSettings?.default_language?.iso_code, organizations]);
 
   // Get the full URL for iframe preview
   const getPreviewUrl = (content) => {
@@ -97,8 +87,7 @@ export default function PageViewComponent() {
 
     // Build path with language prefix
     const isDefaultLanguage =
-      localeIsoCode?.toLowerCase() ===
-      siteSettings?.default_language?.iso_code?.toLowerCase();
+      localeIsoCode?.toLowerCase() === siteSettings?.default_language?.iso_code?.toLowerCase();
     let path;
 
     if (isDefaultLanguage) {
@@ -153,12 +142,8 @@ export default function PageViewComponent() {
           <form className="pt-4">
             <div className={`flex gap-4 mb-4 justify-between`}>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">
-                  {currentContent?.title || t('Page')}
-                </h1>
-                <div className="text-gray-500 text-sm">
-                  {currentContent?.slug || record.slug}
-                </div>
+                <h1 className="text-3xl font-bold">{currentContent?.title || t('Page')}</h1>
+                <div className="text-gray-500 text-sm">{currentContent?.slug || record.slug}</div>
               </div>
               <div className="flex items-center gap-2">
                 <VisibilityControl
@@ -190,10 +175,7 @@ export default function PageViewComponent() {
                     href={currentPageUrl}
                     target="_blank"
                   >
-                    <FontAwesomeIcon
-                      icon={faExternalLinkAlt}
-                      className="h-4 w-4 mr-2"
-                    />
+                    <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4 mr-2" />
                     {t('Go to page')}
                   </Button>
                 )}
@@ -204,8 +186,8 @@ export default function PageViewComponent() {
               <LoadingOverlay
                 visible={false}
                 zIndex={1000}
-                overlayProps={{radius: 'sm', blur: 2}}
-                loaderProps={{type: 'bars'}}
+                overlayProps={{ radius: 'sm', blur: 2 }}
+                loaderProps={{ type: 'bars' }}
               />
 
               {record.contents?.length > 0 ? (
@@ -221,13 +203,8 @@ export default function PageViewComponent() {
                       .map((content) => (
                         <div key={content.id} className="relative group">
                           <Tooltip label={t('View Content')}>
-                            <Tabs.Tab
-                              value={String(content.id)}
-                              className="mr-1 mb-1"
-                            >
-                              <span className="mr-1">
-                                {getLanguageFlag(content.locale_id)}
-                              </span>
+                            <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                              <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
                               {getLanguageName(content.locale_id)}
                             </Tabs.Tab>
                           </Tooltip>
@@ -245,11 +222,7 @@ export default function PageViewComponent() {
                             {/* Device Icons - Left Side */}
                             <div className="flex items-center gap-1">
                               <Button
-                                variant={
-                                  previewDevice === 'desktop'
-                                    ? 'filled'
-                                    : 'subtle'
-                                }
+                                variant={previewDevice === 'desktop' ? 'filled' : 'subtle'}
                                 size="sm"
                                 onClick={() => setPreviewDevice('desktop')}
                                 className="px-2"
@@ -257,11 +230,7 @@ export default function PageViewComponent() {
                                 <FontAwesomeIcon icon={faDesktop} />
                               </Button>
                               <Button
-                                variant={
-                                  previewDevice === 'tablet'
-                                    ? 'filled'
-                                    : 'subtle'
-                                }
+                                variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
                                 size="sm"
                                 onClick={() => setPreviewDevice('tablet')}
                                 className="px-2"
@@ -269,11 +238,7 @@ export default function PageViewComponent() {
                                 <FontAwesomeIcon icon={faTabletAlt} />
                               </Button>
                               <Button
-                                variant={
-                                  previewDevice === 'mobile'
-                                    ? 'filled'
-                                    : 'subtle'
-                                }
+                                variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
                                 size="sm"
                                 onClick={() => setPreviewDevice('mobile')}
                                 className="px-2"
@@ -287,7 +252,7 @@ export default function PageViewComponent() {
                         {/* Preview Container */}
                         <div
                           className="h-full flex items-center justify-center bg-gray-100 rounded-lg"
-                          style={{height: '600px'}}
+                          style={{ height: '600px' }}
                         >
                           <div
                             className="bg-white shadow-lg transition-all duration-300"
@@ -312,7 +277,7 @@ export default function PageViewComponent() {
                             <iframe
                               src={getPreviewUrl(content)}
                               className="w-full h-full border border-gray-300 !shadow"
-                              style={{borderRadius: '8px'}}
+                              style={{ borderRadius: '8px' }}
                               sandbox="allow-same-origin allow-scripts allow-forms allow-links allow-presentation"
                               // onLoad={(e) => {
                               //   // Send preview data once iframe is loaded
@@ -347,16 +312,12 @@ export default function PageViewComponent() {
                         {/* Revision History Section - Always visible below preview */}
                         {content.revisions && content.revisions.length > 0 && (
                           <div className="mt-8 p-4">
-                            <h3 className="text-lg font-semibold mb-4">
-                              {t('Revisions')}
-                            </h3>
+                            <h3 className="text-lg font-semibold mb-4">{t('Revisions')}</h3>
                             <ActivityContentRevision
                               revisions={content.revisions}
                               contentType="page_content"
                               contentId={content.id}
-                              currentLanguage={getLanguageName(
-                                content.locale_id
-                              )}
+                              currentLanguage={getLanguageName(content.locale_id)}
                               hasWritePermission={hasWritePermission}
                               onContentRestored={async () => {
                                 await getOne(id);
@@ -368,9 +329,7 @@ export default function PageViewComponent() {
                     ))}
                 </Tabs>
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  {t('Nothing here yet.')}
-                </div>
+                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
               )}
             </div>
           </form>

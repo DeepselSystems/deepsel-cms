@@ -1,5 +1,5 @@
 import { usePageData } from '../contexts/PageDataContext';
-import { fetchPageData, parseSlugForLangAndPath } from '@deepsel/cms-utils';
+import { fetchPageData, parseSlug } from '@deepsel/cms-utils';
 
 export function useNavigation() {
   const { setPageData } = usePageData();
@@ -7,10 +7,10 @@ export function useNavigation() {
   const navigate = async (url: string) => {
     try {
       // Parse the URL to get language and path
-      const { lang, path } = parseSlugForLangAndPath(url);
+      const { lang, path } = parseSlug(url);
 
       // Fetch new page data
-      const newPageData = await fetchPageData(lang, path);
+      const newPageData = await fetchPageData(path, lang);
 
       if ('error' in newPageData || 'notFound' in newPageData) {
         // Handle error or 404 - fallback to regular navigation

@@ -1,9 +1,9 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
-const initialState = {user: null};
+const initialState = { user: null };
 
 export default create((set) => ({
   ...initialState,
-  setUser: (user) => set(() => ({user})),
-  logout: () => set(() => ({user: null})),
+  setUser: (user) => set(() => ({ user })),
+  logout: () => set(() => ({ user: null })),
 }));

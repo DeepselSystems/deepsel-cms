@@ -1,10 +1,10 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import ChooseAttachmentModal from '../../../ChooseAttachmentModal.jsx';
-import {getAttachmentRelativeUrl} from '../../../../utils/index.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Box, Tooltip} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {faVolumeUp} from '@fortawesome/free-solid-svg-icons';
+import { getAttachmentRelativeUrl } from '../../../../utils/index.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Box, Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Button to insert audio into the editor
@@ -15,9 +15,9 @@ import {faVolumeUp} from '@fortawesome/free-solid-svg-icons';
  * @returns {JSX.Element}
  * @constructor
  */
-const EmbedAudioButton = ({editor, children}) => {
+const EmbedAudioButton = ({ editor, children }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Model visibility state
   const [isAttachmentModalOpened, setAttachmentModalOpened] = useState(false);
@@ -31,9 +31,7 @@ const EmbedAudioButton = ({editor, children}) => {
             onClick={() => setAttachmentModalOpened(true)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
-            {children || (
-              <FontAwesomeIcon icon={faVolumeUp} className="text-[#808496]" />
-            )}
+            {children || <FontAwesomeIcon icon={faVolumeUp} className="text-[#808496]" />}
           </button>
         </Tooltip>
 
@@ -47,7 +45,7 @@ const EmbedAudioButton = ({editor, children}) => {
           ]}
           filterFunc={(attachments) =>
             attachments.filter((attachment) =>
-              attachment.content_type.toLowerCase().startsWith('audio')
+              attachment.content_type.toLowerCase().startsWith('audio'),
             )
           }
           isOpen={isAttachmentModalOpened}

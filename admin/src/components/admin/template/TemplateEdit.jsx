@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef, useMemo, useCallback} from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   faPlus,
   faTrash,
@@ -10,11 +10,11 @@ import {
   faCog,
   faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {LoadingOverlay, Modal, Tabs, Tooltip, Menu} from '@mantine/core';
-import {modals} from '@mantine/modals';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import useMultiLangTemplateContent from '../../../common/hooks/useMultiLangTemplateContent.js';
 import useResizablePanel from '../../../common/hooks/useResizablePanel.js';
@@ -30,27 +30,26 @@ import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
-import {Preferences} from '@capacitor/preferences';
+import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 
-export default function TemplateEdit({onSuccess}) {
-  const {t} = useTranslation();
+export default function TemplateEdit({ onSuccess }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {id} = useParams();
-  const {notify} = NotificationState();
-  const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState();
-  const {backendHost} = BackendHostURLState();
-  const {setShowBackButton} = ShowHeaderBackButtonState();
-  const {setNavigationConfirmation, clearNavigationConfirmation} =
-    NavigationConfirmationState();
-  const {isCollapsed, temporaryCollapse, clearTemporaryOverride} = useSidebar();
+  const { id } = useParams();
+  const { notify } = NotificationState();
+  const { organizationId } = OrganizationIdState();
+  const { settings: siteSettings } = SitePublicSettingsState();
+  const { backendHost } = BackendHostURLState();
+  const { setShowBackButton } = ShowHeaderBackButtonState();
+  const { setNavigationConfirmation, clearNavigationConfirmation } = NavigationConfirmationState();
+  const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
 
   // Determine if this is create mode (no id) or edit mode (has id)
   const isCreateMode = !id;
@@ -64,14 +63,14 @@ export default function TemplateEdit({onSuccess}) {
   });
 
   // Single useModel query for both modes
-  const query = useModel('template', {id, autoFetch: !!id});
+  const query = useModel('template', { id, autoFetch: !!id });
 
   // Use create record for create mode, query record for edit mode
   const record = isCreateMode ? createRecord : query.record;
   const setRecord = isCreateMode ? setCreateRecord : query.setRecord;
-  const {update, create, loading} = query;
+  const { update, create, loading } = query;
 
-  const {data: locales} = useModel('locale', {
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -109,10 +108,10 @@ export default function TemplateEdit({onSuccess}) {
    */
   const activeContent = useMemo(
     () => record?.contents?.find((c) => String(c.id) === activeContentTab),
-    [activeContentTab, record?.contents]
+    [activeContentTab, record?.contents],
   );
 
-  const {width, handleMouseDown, isResizing} = useResizablePanel({
+  const { width, handleMouseDown, isResizing } = useResizablePanel({
     initialWidth: 700,
     minWidth: 300,
     maxWidth: window.innerWidth - 200,
@@ -154,20 +153,16 @@ export default function TemplateEdit({onSuccess}) {
     (callback) => {
       if (hasUnsavedChanges && !isSaving) {
         modals.openConfirmModal({
-          title: (
-            <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>
-          ),
-          children: t(
-            'You have unsaved changes. Are you sure you want to leave without saving?'
-          ),
-          labels: {confirm: t('Leave'), cancel: t('Stay')},
+          title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
+          children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
+          labels: { confirm: t('Leave'), cancel: t('Stay') },
           onConfirm: callback,
         });
       } else {
         callback();
       }
     },
-    [hasUnsavedChanges, isSaving, t]
+    [hasUnsavedChanges, isSaving, t],
   );
 
   // Capture initial sidebar state and auto-collapse on mount
@@ -222,7 +217,7 @@ export default function TemplateEdit({onSuccess}) {
 
   const hasTemplateName = Boolean(record?.name?.trim());
   const templateNameDescription = t(
-    'Must start with a capital letter and contain only letters, numbers, and underscores'
+    'Must start with a capital letter and contain only letters, numbers, and underscores',
   );
   const templateNamePlaceholder = t('Enter Template Name *');
 
@@ -259,13 +254,7 @@ export default function TemplateEdit({onSuccess}) {
       type: 'template',
       renderingError: renderingError,
     };
-  }, [
-    currentContent,
-    record?.id,
-    record?.name,
-    renderedContent,
-    renderingError,
-  ]);
+  }, [currentContent, record?.id, record?.name, renderedContent, renderingError]);
 
   // Listen for iframe ready signal
   useEffect(() => {
@@ -286,7 +275,7 @@ export default function TemplateEdit({onSuccess}) {
                 type: 'TEMPLATE_PREVIEW_DATA',
                 data: queuedPreviewDataRef.current,
               },
-              '*'
+              '*',
             );
             queuedPreviewDataRef.current = null;
           } catch (error) {
@@ -312,7 +301,7 @@ export default function TemplateEdit({onSuccess}) {
               type: 'TEMPLATE_PREVIEW_DATA',
               data: previewData,
             },
-            '*'
+            '*',
           );
         } catch (error) {
           console.error('Error sending postMessage to iframe:', error);
@@ -397,7 +386,7 @@ export default function TemplateEdit({onSuccess}) {
       // Get the content that matches the current locale
       const currentLocaleId = activeContent.locale_id;
       const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId
+        (content) => content.locale_id === currentLocaleId,
       );
       const templateName = template.name;
       const includeText = `{% include '${templateName}' %}`;
@@ -413,7 +402,7 @@ export default function TemplateEdit({onSuccess}) {
       // Get the content that matches the current locale
       const currentLocaleId = activeContent.locale_id;
       const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId
+        (content) => content.locale_id === currentLocaleId,
       );
       const templateName = template.name;
       const extendsText = `{% extends '${templateName}' %}`;
@@ -442,8 +431,8 @@ export default function TemplateEdit({onSuccess}) {
     const variables = [];
 
     // Basic organization info
-    variables.push({name: 'Organization ID', path: 'settings.id'});
-    variables.push({name: 'Organization Name', path: 'settings.name'});
+    variables.push({ name: 'Organization ID', path: 'settings.id' });
+    variables.push({ name: 'Organization Name', path: 'settings.name' });
 
     // Language settings
     if (siteSettings.default_language) {
@@ -463,7 +452,7 @@ export default function TemplateEdit({onSuccess}) {
 
     // Domain settings
     if (siteSettings.domains) {
-      variables.push({name: 'Domains', path: 'settings.domains'});
+      variables.push({ name: 'Domains', path: 'settings.domains' });
     }
 
     // Feature flags
@@ -471,8 +460,8 @@ export default function TemplateEdit({onSuccess}) {
       name: 'Show Post Author',
       path: 'settings.show_post_author',
     });
-    variables.push({name: 'Show Post Date', path: 'settings.show_post_date'});
-    variables.push({name: 'Show Chatbox', path: 'settings.show_chatbox'});
+    variables.push({ name: 'Show Post Date', path: 'settings.show_post_date' });
+    variables.push({ name: 'Show Chatbox', path: 'settings.show_chatbox' });
     variables.push({
       name: 'Auto Translate Pages',
       path: 'settings.auto_translate_pages',
@@ -506,7 +495,7 @@ export default function TemplateEdit({onSuccess}) {
 
     // Menus
     if (siteSettings.menus?.main) {
-      variables.push({name: 'Main Menu', path: 'settings.menus.main'});
+      variables.push({ name: 'Main Menu', path: 'settings.menus.main' });
     }
 
     return variables;
@@ -519,8 +508,8 @@ export default function TemplateEdit({onSuccess}) {
 
       try {
         setRenderingError(null);
-        const tokenResult = await Preferences.get({key: 'token'});
-        const headers = {'Content-Type': 'application/json'};
+        const tokenResult = await Preferences.get({ key: 'token' });
+        const headers = { 'Content-Type': 'application/json' };
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
@@ -549,7 +538,7 @@ export default function TemplateEdit({onSuccess}) {
         return content; // Return original content as fallback
       }
     },
-    [backendHost, organizationId]
+    [backendHost, organizationId],
   );
 
   // Render content whenever it changes
@@ -563,11 +552,7 @@ export default function TemplateEdit({onSuccess}) {
     const trimmedName = record?.name?.trim() || '';
     const previewName = trimmedName || `preview_${record?.id || 'temp'}`;
     const lang = activeContent.locale?.iso_code || null;
-    renderTemplateContent(
-      activeContent.content,
-      previewName,
-      lang
-    ).then((rendered) => {
+    renderTemplateContent(activeContent.content, previewName, lang).then((rendered) => {
       setRenderedContent(rendered);
     });
   }, [
@@ -597,7 +582,7 @@ export default function TemplateEdit({onSuccess}) {
         if (!/^[A-Z][a-zA-Z0-9_]*$/.test(record.name)) {
           notify({
             message: t(
-              'Template name must start with a capital letter and contain only letters, numbers, and underscores'
+              'Template name must start with a capital letter and contain only letters, numbers, and underscores',
             ),
             type: 'error',
           });
@@ -638,7 +623,7 @@ export default function TemplateEdit({onSuccess}) {
         }
       } catch (error) {
         console.error(error);
-        notify({message: error.message, type: 'error'});
+        notify({ message: error.message, type: 'error' });
       } finally {
         setIsSaving(false);
       }
@@ -657,7 +642,7 @@ export default function TemplateEdit({onSuccess}) {
       navigate,
       id,
       organizationId,
-    ]
+    ],
   );
 
   return (!loading && record) || isCreateMode ? (
@@ -666,7 +651,7 @@ export default function TemplateEdit({onSuccess}) {
         {/* Form Section - Left Side */}
         <form
           className="overflow-y-auto px-2 pb-2"
-          style={{width: `${width}px`, flexShrink: 0}}
+          style={{ width: `${width}px`, flexShrink: 0 }}
           onSubmit={handleSubmit}
         >
           {/* Title and Controls */}
@@ -692,7 +677,7 @@ export default function TemplateEdit({onSuccess}) {
                   error={
                     record?.name && !/^[A-Z][a-zA-Z0-9_]*$/.test(record.name)
                       ? t(
-                          'Template name must start with a capital letter and contain only letters, numbers, and underscores'
+                          'Template name must start with a capital letter and contain only letters, numbers, and underscores',
                         )
                       : null
                   }
@@ -706,8 +691,8 @@ export default function TemplateEdit({onSuccess}) {
             <LoadingOverlay
               visible={loading}
               zIndex={1000}
-              overlayProps={{radius: 'sm', blur: 2}}
-              loaderProps={{type: 'bars'}}
+              overlayProps={{ radius: 'sm', blur: 2 }}
+              loaderProps={{ type: 'bars' }}
             />
 
             <Tabs
@@ -730,13 +715,8 @@ export default function TemplateEdit({onSuccess}) {
                       closeDelay={400}
                     >
                       <Menu.Target>
-                        <Tabs.Tab
-                          value={String(content.id)}
-                          className="mr-1 mb-1"
-                        >
-                          <span className="mr-1">
-                            {content.locale?.emoji_flag}
-                          </span>
+                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <span className="mr-1">{content.locale?.emoji_flag}</span>
                           {content.locale?.name}
                         </Tabs.Tab>
                       </Menu.Target>
@@ -779,10 +759,10 @@ export default function TemplateEdit({onSuccess}) {
                           label={t('404 Page')}
                           description={t('Mark this template as the site 404')}
                           checked={Boolean(record?.is_404)}
-                          onChange={({currentTarget}) => {
+                          onChange={({ currentTarget }) => {
                             const isChecked = currentTarget.checked;
                             setRecord((prev) => {
-                              const next = {...(prev || {})};
+                              const next = { ...(prev || {}) };
                               next.is_404 = isChecked;
                               if (isChecked) {
                                 next.is_login = false;
@@ -793,14 +773,12 @@ export default function TemplateEdit({onSuccess}) {
                         />
                         <Switch
                           label={t('Login Page')}
-                          description={t(
-                            'Mark this template as the login page'
-                          )}
+                          description={t('Mark this template as the login page')}
                           checked={Boolean(record?.is_login)}
-                          onChange={({currentTarget}) => {
+                          onChange={({ currentTarget }) => {
                             const isChecked = currentTarget.checked;
                             setRecord((prev) => {
-                              const next = {...(prev || {})};
+                              const next = { ...(prev || {}) };
                               next.is_login = isChecked;
                               if (isChecked) {
                                 next.is_404 = false;
@@ -815,8 +793,7 @@ export default function TemplateEdit({onSuccess}) {
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-medium text-gray-700">
-                          {t('Template Content')}{' '}
-                          <span className="text-red-500">*</span>
+                          {t('Template Content')} <span className="text-red-500">*</span>
                         </label>
                         <div className="flex gap-2">
                           <Button
@@ -837,11 +814,7 @@ export default function TemplateEdit({onSuccess}) {
                             <FontAwesomeIcon icon={faCog} className="mr-1" />
                             {t('Use Variables')}
                           </Button>
-                          <Tooltip
-                            label={t(
-                              'Learn more about Jinja templating syntax'
-                            )}
-                          >
+                          <Tooltip label={t('Learn more about Jinja templating syntax')}>
                             <Button
                               size="xs"
                               variant="light"
@@ -861,42 +834,33 @@ export default function TemplateEdit({onSuccess}) {
                         <Editor
                           className="w-full min-h-[400px]"
                           value={content.content || ''}
-                          onValueChange={(code) =>
-                            updateContentField(content.id, 'content', code)
-                          }
+                          onValueChange={(code) => updateContentField(content.id, 'content', code)}
                           highlight={(code) => {
                             // Use HTML/markup highlighting for templates
-                            return highlight(
-                              code,
-                              languages.markup,
-                              'markup'
-                            );
+                            return highlight(code, languages.markup, 'markup');
                           }}
                           padding={12}
                           style={{
                             fontSize: 14,
                             backgroundColor: '#f8f9fa',
-                            fontFamily:
-                              '"Fira code", "Fira Mono", "Consolas", monospace',
+                            fontFamily: '"Fira code", "Fira Mono", "Consolas", monospace',
                             lineHeight: '1.5',
                           }}
                           placeholder={t(
-                            'Enter your Jinja2 template content here...\n\nExample:\n<h1>{{ title }}</h1>\n{% for item in items %}\n  <p>{{ item.name }}</p>\n{% endfor %}'
+                            'Enter your Jinja2 template content here...\n\nExample:\n<h1>{{ title }}</h1>\n{% for item in items %}\n  <p>{{ item.name }}</p>\n{% endfor %}',
                           )}
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
                         {t(
-                          'Use Jinja2 syntax for dynamic content. Variables and template tags will be highlighted.'
+                          'Use Jinja2 syntax for dynamic content. Variables and template tags will be highlighted.',
                         )}
                       </p>
                     </div>
                   </Tabs.Panel>
                 ))
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  {t('Nothing here yet.')}
-                </div>
+                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
               )}
             </Tabs>
           </div>
@@ -906,7 +870,7 @@ export default function TemplateEdit({onSuccess}) {
         <div
           className="hover:bg-blue-200 cursor-col-resize transition-colors"
           onMouseDown={handleMouseDown}
-          style={{cursor: 'col-resize', flexShrink: 0, width: '4px'}}
+          style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
           title="Drag to resize"
         />
 
@@ -914,7 +878,7 @@ export default function TemplateEdit({onSuccess}) {
         <form
           onSubmit={handleSubmit}
           className="flex-1 relative flex flex-col"
-          style={{minWidth: 0}}
+          style={{ minWidth: 0 }}
         >
           {/* Preview Header */}
           <div className="flex-shrink-0 px-4 py-2">
@@ -949,12 +913,7 @@ export default function TemplateEdit({onSuccess}) {
 
               {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
               <div className="flex items-center gap-3">
-                <Button
-                  type="submit"
-                  variant="filled"
-                  size="sm"
-                  loading={loading}
-                >
+                <Button type="submit" variant="filled" size="sm" loading={loading}>
                   <FontAwesomeIcon icon={faSave} className="mr-2" />
                   {t('Save')}
                 </Button>
@@ -1004,9 +963,7 @@ export default function TemplateEdit({onSuccess}) {
                   <div className="flex items-center justify-center h-full text-gray-500">
                     <div className="text-center">
                       <p>{t('No content selected')}</p>
-                      <p className="text-sm mt-1">
-                        {t('Select a language tab to preview')}
-                      </p>
+                      <p className="text-sm mt-1">{t('Select a language tab to preview')}</p>
                     </div>
                   </div>
                 )}
@@ -1023,7 +980,7 @@ export default function TemplateEdit({onSuccess}) {
         title={<div className="font-bold">{t('Add Content')}</div>}
         size="md"
         radius={0}
-        transitionProps={{transition: 'fade', duration: 200}}
+        transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-4">
@@ -1060,11 +1017,7 @@ export default function TemplateEdit({onSuccess}) {
           />
 
           <div className="flex justify-end mt-4">
-            <Button
-              variant="outline"
-              onClick={closeAddContentModal}
-              className="mr-2"
-            >
+            <Button variant="outline" onClick={closeAddContentModal} className="mr-2">
               {t('Cancel')}
             </Button>
             <Button
@@ -1085,20 +1038,16 @@ export default function TemplateEdit({onSuccess}) {
         title={<div className="font-bold">{t('Available Templates')}</div>}
         size="lg"
         radius={0}
-        transitionProps={{transition: 'fade', duration: 200}}
+        transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-4">
-            {t('Choose how to use each template:')}
-          </p>
+          <p className="text-sm text-gray-600 mb-4">{t('Choose how to use each template:')}</p>
           <div className="text-xs text-gray-500 mb-4 space-y-1">
             <div>
-              <strong>{t('Include')}:</strong>{' '}
-              {t('Embeds template content at current position')}
+              <strong>{t('Include')}:</strong> {t('Embeds template content at current position')}
             </div>
             <div>
-              <strong>{t('Extends')}:</strong>{' '}
-              {t('Uses template as base layout (added at top)')}
+              <strong>{t('Extends')}:</strong> {t('Uses template as base layout (added at top)')}
             </div>
           </div>
 
@@ -1112,39 +1061,28 @@ export default function TemplateEdit({onSuccess}) {
               const currentLocaleId = activeContent?.locale_id;
 
               // Filter templates to exclude current one AND only show templates with content in the same locale
-              const filteredTemplates = templatesQuery.data.filter(
-                (template) => {
-                  // Exclude current template
-                  if (template.id === record?.id) return false;
+              const filteredTemplates = templatesQuery.data.filter((template) => {
+                // Exclude current template
+                if (template.id === record?.id) return false;
 
-                  // Only show templates that have content in the current locale
-                  return template.contents?.some(
-                    (content) => content.locale_id === currentLocaleId
-                  );
-                }
-              );
+                // Only show templates that have content in the current locale
+                return template.contents?.some((content) => content.locale_id === currentLocaleId);
+              });
 
               return filteredTemplates.length > 0 ? (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {filteredTemplates.map((template) => {
                     // Get the content that matches the current locale
                     const matchingContent = template.contents?.find(
-                      (content) => content.locale_id === currentLocaleId
+                      (content) => content.locale_id === currentLocaleId,
                     );
-                    const displayName =
-                      matchingContent?.name || template.name || 'Untitled';
-                    const templateName =
-                      matchingContent?.name || template.name || '';
+                    const displayName = matchingContent?.name || template.name || 'Untitled';
+                    const templateName = matchingContent?.name || template.name || '';
 
                     return (
-                      <div
-                        key={template.id}
-                        className="p-3 border border-gray-200 rounded-md"
-                      >
+                      <div key={template.id} className="p-3 border border-gray-200 rounded-md">
                         <div className="font-medium">{displayName}</div>
-                        <div className="text-sm text-gray-500 font-mono mb-2">
-                          {templateName}
-                        </div>
+                        <div className="text-sm text-gray-500 font-mono mb-2">{templateName}</div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => insertTemplateInclude(template)}
@@ -1171,9 +1109,7 @@ export default function TemplateEdit({onSuccess}) {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <div className="text-gray-500">
-                    {t('No other templates available')}
-                  </div>
+                  <div className="text-gray-500">{t('No other templates available')}</div>
                 </div>
               );
             })()
@@ -1192,7 +1128,7 @@ export default function TemplateEdit({onSuccess}) {
         title={<div className="font-bold">{t('Available Variables')}</div>}
         size="lg"
         radius={0}
-        transitionProps={{transition: 'fade', duration: 200}}
+        transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-4">
@@ -1208,12 +1144,9 @@ export default function TemplateEdit({onSuccess}) {
                   onClick={() => insertVariable(variable.path)}
                 >
                   <div className="font-medium">{variable.name}</div>
-                  <div className="text-sm text-gray-500 font-mono">
-                    {variable.path}
-                  </div>
+                  <div className="text-sm text-gray-500 font-mono">{variable.path}</div>
                   <div className="text-xs text-blue-600 mt-1">
-                    {t('Click to insert')}:{' '}
-                    <code>{'{{ ' + variable.path + ' }}'}</code>
+                    {t('Click to insert')}: <code>{'{{ ' + variable.path + ' }}'}</code>
                   </div>
                 </div>
               ))}

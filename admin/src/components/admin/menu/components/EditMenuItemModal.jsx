@@ -1,13 +1,8 @@
-import {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faPencil,
-  faSave,
-  faPlus,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
-import {Modal, Tabs, Menu, Tooltip} from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPencil, faSave, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Tabs, Menu, Tooltip } from '@mantine/core';
 import RecordSelect from '../../../../common/ui/RecordSelect.jsx';
 import SitePublicSettingsState from '../../../../common/stores/SitePublicSettingsState.js';
 import Button from '../../../../common/ui/Button.jsx';
@@ -23,9 +18,9 @@ const EditMenuItemModal = ({
   onSave, // callback function to handle save (create or update)
   parentId = null, // for adding child items
 }) => {
-  const {t} = useTranslation();
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
-  const {organizationId} = OrganizationIdState();
+  const { t } = useTranslation();
+  const { settings: siteSettings } = SitePublicSettingsState((state) => state);
+  const { organizationId } = OrganizationIdState();
 
   const isEditMode = !!editingItem;
 
@@ -37,16 +32,15 @@ const EditMenuItemModal = ({
   const [isSaving, setIsSaving] = useState(false);
 
   // Fetch locales
-  const {data: locales} = useModel('locale', {
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
 
   // Get default language name from locales
   const defaultLanguageName =
-    locales?.find(
-      (locale) => locale.iso_code === siteSettings?.default_language?.iso_code
-    )?.name || t('Default');
+    locales?.find((locale) => locale.iso_code === siteSettings?.default_language?.iso_code)?.name ||
+    t('Default');
 
   // Initialize form values when modal opens
   useEffect(() => {
@@ -105,12 +99,7 @@ const EditMenuItemModal = ({
         }
       }
     }
-  }, [
-    opened,
-    isEditMode,
-    editingItem,
-    siteSettings?.default_language?.iso_code,
-  ]);
+  }, [opened, isEditMode, editingItem, siteSettings?.default_language?.iso_code]);
 
   const handleDeleteTranslation = (isoCode) => {
     // Don't allow deleting the default language
@@ -119,15 +108,14 @@ const EditMenuItemModal = ({
     }
 
     // Remove the translation
-    const updatedTranslations = {...translations};
+    const updatedTranslations = { ...translations };
     delete updatedTranslations[isoCode];
     setTranslations(updatedTranslations);
 
     // Switch to default language tab if we deleted the active tab
     if (activeTranslationTab === isoCode) {
       setActiveTranslationTab(
-        siteSettings?.default_language?.iso_code ||
-          Object.keys(updatedTranslations)[0]
+        siteSettings?.default_language?.iso_code || Object.keys(updatedTranslations)[0],
       );
     }
   };
@@ -175,53 +163,48 @@ const EditMenuItemModal = ({
           radius="lg"
         >
           <Tabs.List className="mb-4 flex-wrap">
-            {Object.entries(translations || {}).map(
-              ([isoCode, translation]) => {
-                const locale = locales?.find((l) => l.iso_code === isoCode);
-                const isDefaultLanguage =
-                  isoCode === siteSettings?.default_language?.iso_code;
-                return (
-                  <div key={isoCode} className="relative group">
-                    <Menu
-                      shadow="md"
-                      width={150}
-                      position="bottom-end"
-                      withArrow
-                      radius="md"
-                      trigger="hover"
-                      openDelay={100}
-                      closeDelay={400}
-                    >
-                      <Menu.Target>
-                        <Tabs.Tab value={isoCode} className="mr-1 mb-1">
-                          <span className="mr-1">{locale?.emoji_flag}</span>
-                          {locale?.name}
-                          {isDefaultLanguage && (
-                            <span className="ml-1 text-xs opacity-70">
-                              ({t('Default')})
-                            </span>
-                          )}
-                        </Tabs.Tab>
-                      </Menu.Target>
-                      {!isDefaultLanguage && (
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            color="red"
-                            leftSection={<FontAwesomeIcon icon={faTrash} />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTranslation(isoCode);
-                            }}
-                          >
-                            {t('Remove')}
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      )}
-                    </Menu>
-                  </div>
-                );
-              }
-            )}
+            {Object.entries(translations || {}).map(([isoCode, translation]) => {
+              const locale = locales?.find((l) => l.iso_code === isoCode);
+              const isDefaultLanguage = isoCode === siteSettings?.default_language?.iso_code;
+              return (
+                <div key={isoCode} className="relative group">
+                  <Menu
+                    shadow="md"
+                    width={150}
+                    position="bottom-end"
+                    withArrow
+                    radius="md"
+                    trigger="hover"
+                    openDelay={100}
+                    closeDelay={400}
+                  >
+                    <Menu.Target>
+                      <Tabs.Tab value={isoCode} className="mr-1 mb-1">
+                        <span className="mr-1">{locale?.emoji_flag}</span>
+                        {locale?.name}
+                        {isDefaultLanguage && (
+                          <span className="ml-1 text-xs opacity-70">({t('Default')})</span>
+                        )}
+                      </Tabs.Tab>
+                    </Menu.Target>
+                    {!isDefaultLanguage && (
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          color="red"
+                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTranslation(isoCode);
+                          }}
+                        >
+                          {t('Remove')}
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    )}
+                  </Menu>
+                </div>
+              );
+            })}
 
             <Tooltip label={t('Add Language')}>
               <Tabs.Tab
@@ -284,8 +267,7 @@ const EditMenuItemModal = ({
 
                   {/* Manual Title Input (shown when not using page title or using custom URL) */}
                   {(translation.use_custom_url ||
-                    (translation.page_content_id &&
-                      translation.use_page_title === false)) && (
+                    (translation.page_content_id && translation.use_page_title === false)) && (
                     <TextInput
                       label={`${t('Menu Title')} (${locale?.name})`}
                       placeholder={t('Enter custom menu title')}
@@ -307,9 +289,7 @@ const EditMenuItemModal = ({
                   {translation.use_custom_url && (
                     <TextInput
                       label={`${t('Custom URL')} (${locale?.name})`}
-                      placeholder={t(
-                        'Enter custom URL or leave blank for no link'
-                      )}
+                      placeholder={t('Enter custom URL or leave blank for no link')}
                       value={translation.url || ''}
                       onChange={(e) => {
                         setTranslations((prev) => ({
@@ -320,9 +300,7 @@ const EditMenuItemModal = ({
                           },
                         }));
                       }}
-                      description={t(
-                        'Enter the URL this menu item should link to'
-                      )}
+                      description={t('Enter the URL this menu item should link to')}
                     />
                   )}
 
@@ -341,9 +319,7 @@ const EditMenuItemModal = ({
                         }));
                       }}
                       label={t('Use page title as menu title')}
-                      description={t(
-                        "When enabled, the menu will use the selected page's title"
-                      )}
+                      description={t("When enabled, the menu will use the selected page's title")}
                     />
                   )}
 
@@ -357,17 +333,13 @@ const EditMenuItemModal = ({
                         [isoCode]: {
                           ...prev[isoCode],
                           use_custom_url: checked,
-                          page_content_id: checked
-                            ? null
-                            : prev[isoCode]?.page_content_id,
+                          page_content_id: checked ? null : prev[isoCode]?.page_content_id,
                           url: checked ? prev[isoCode]?.url || '' : '',
                         },
                       }));
                     }}
                     label={t('Use custom URL')}
-                    description={t(
-                      'Enable to enter a custom URL instead of selecting a page'
-                    )}
+                    description={t('Enable to enter a custom URL instead of selecting a page')}
                   />
 
                   {/* Open in New Tab Checkbox (per translation) */}
@@ -423,10 +395,7 @@ const EditMenuItemModal = ({
                     value: [
                       // Filter out languages that already have translations
                       ...Object.keys(translations || {})
-                        .map(
-                          (isoCode) =>
-                            locales?.find((l) => l.iso_code === isoCode)?.id
-                        )
+                        .map((isoCode) => locales?.find((l) => l.iso_code === isoCode)?.id)
                         .filter(Boolean),
                     ].filter(Boolean),
                   },
@@ -446,9 +415,7 @@ const EditMenuItemModal = ({
                 </Button>
                 <Button
                   onClick={() => {
-                    const locale = locales?.find(
-                      (l) => l.id === selectedLocaleId
-                    );
+                    const locale = locales?.find((l) => l.id === selectedLocaleId);
                     if (locale) {
                       setTranslations({
                         ...translations,
@@ -483,9 +450,7 @@ const EditMenuItemModal = ({
           </Button>
           <Button
             onClick={handleSave}
-            leftSection={
-              <FontAwesomeIcon icon={editingItem ? faPencil : faSave} />
-            }
+            leftSection={<FontAwesomeIcon icon={editingItem ? faPencil : faSave} />}
             disabled={isSaving}
             loading={isSaving}
           >

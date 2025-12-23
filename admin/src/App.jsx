@@ -17,7 +17,7 @@ import BlogPostEdit from './components/admin/blog_post/BlogPostEdit.jsx';
 import BlogPostView from './components/admin/blog_post/BlogPostView.jsx';
 import BlogPostList from './components/admin/blog_post/BlogPostList.jsx';
 import CMSLayout from './components/layouts/CMSLayout.jsx';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Login from './components/admin/auth/Login.jsx';
 import ResetPasswordConfirmation from './components/admin/auth/ResetPasswordConfirmation.jsx';
 import UserList from './components/admin/user/UserList.jsx';
@@ -100,21 +100,14 @@ export default function App(props) {
               <Route path="/roles/:id" element={<RoleView />} />
               <Route path="/roles/create" element={<RoleCreate />} />
 
-              <Route
-                path="/organization-settings"
-                element={<OrganizationSettings />}
-              />
+              <Route path="/organization-settings" element={<OrganizationSettings />} />
               <Route path="/crons" element={<CronList />} />
               <Route path="/crons/create" element={<CronCreate />} />
               <Route path="/crons/:id/edit" element={<CronEdit />} />
               <Route path="/crons/:id" element={<CronView />} />
-              <Route
-                path="/google-sign-in-settings"
-                element={<GoogleSignInSetting />}
-              />
+              <Route path="/google-sign-in-settings" element={<GoogleSignInSetting />} />
               <Route path="/saml-settings" element={<SamlSetting />} />
             </Route>
-
           </Route>
         </Routes>
       </BrowserRouter>

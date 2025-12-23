@@ -1,4 +1,4 @@
-import {useState, useCallback, useEffect} from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * Custom hook for handling resizable panel functionality
@@ -25,7 +25,7 @@ export default function useResizablePanel({
       setDragStartWidth(width);
       e.preventDefault();
     },
-    [width]
+    [width],
   );
 
   const handleMouseMove = useCallback(
@@ -40,7 +40,7 @@ export default function useResizablePanel({
         setWidth(newWidth);
       }
     },
-    [isResizing, dragStartX, dragStartWidth, minWidth, maxWidth]
+    [isResizing, dragStartX, dragStartWidth, minWidth, maxWidth],
   );
 
   const handleMouseUp = useCallback((e) => {

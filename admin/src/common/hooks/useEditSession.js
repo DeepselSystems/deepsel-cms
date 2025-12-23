@@ -1,5 +1,5 @@
-import {useEffect, useRef, useState} from 'react';
-import {Preferences} from '@capacitor/preferences';
+import { useEffect, useRef, useState } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import useAuthentication from '../api/useAuthentication.js';
 
@@ -7,8 +7,8 @@ import useAuthentication from '../api/useAuthentication.js';
  * Hook for managing WebSocket edit sessions for parallel edit detection
  */
 export default function useEditSession(recordType, recordId, contentId = null) {
-  const {backendHost} = BackendHostURLState();
-  const {user} = useAuthentication();
+  const { backendHost } = BackendHostURLState();
+  const { user } = useAuthentication();
   const [isConnected, setIsConnected] = useState(false);
   const [parallelEditWarning, setParallelEditWarning] = useState(null);
   const [isWebSocketSupported, setIsWebSocketSupported] = useState(true);
@@ -22,13 +22,11 @@ export default function useEditSession(recordType, recordId, contentId = null) {
 
     try {
       // Get auth token
-      const tokenResult = await Preferences.get({key: 'token'});
+      const tokenResult = await Preferences.get({ key: 'token' });
       if (!tokenResult?.value) return;
 
       // Create WebSocket URL
-      const wsHost = backendHost
-        .replace('http://', 'ws://')
-        .replace('https://', 'wss://');
+      const wsHost = backendHost.replace('http://', 'ws://').replace('https://', 'wss://');
       const params = new URLSearchParams({
         record_type: recordType,
         record_id: recordId.toString(),
@@ -51,7 +49,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
         // Send heartbeat every 30 seconds
         const heartbeatInterval = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({type: 'heartbeat'}));
+            ws.send(JSON.stringify({ type: 'heartbeat' }));
           } else {
             clearInterval(heartbeatInterval);
           }
@@ -90,14 +88,8 @@ export default function useEditSession(recordType, recordId, contentId = null) {
         wsRef.current = null;
 
         // Attempt to reconnect if not a normal closure
-        if (
-          event.code !== 1000 &&
-          reconnectAttemptsRef.current < maxReconnectAttempts
-        ) {
-          const delay = Math.min(
-            1000 * Math.pow(2, reconnectAttemptsRef.current),
-            30000
-          );
+        if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
 
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
@@ -135,7 +127,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
             record_type: recordType,
             record_id: recordId,
             content_id: contentId,
-          })
+          }),
         );
 
         // Give a moment for the message to be sent
@@ -169,14 +161,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
     return () => {
       disconnect();
     };
-  }, [
-    recordType,
-    recordId,
-    contentId,
-    backendHost,
-    user,
-    isWebSocketSupported,
-  ]);
+  }, [recordType, recordId, contentId, backendHost, user, isWebSocketSupported]);
 
   // Handle page unload/tab close
   useEffect(() => {
@@ -191,7 +176,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
               record_id: recordId,
               content_id: contentId,
               user_id: user.id,
-            })
+            }),
           );
         } catch (error) {
           // Failed to send beacon

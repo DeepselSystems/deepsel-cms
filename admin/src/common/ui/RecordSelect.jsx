@@ -1,19 +1,12 @@
-import {useTranslation} from 'react-i18next';
-import {useEffect, useState} from 'react';
-import {
-  InputBase,
-  Combobox,
-  useCombobox,
-  CloseButton,
-  Modal,
-  ScrollArea,
-} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
+import { InputBase, Combobox, useCombobox, CloseButton, Modal, ScrollArea } from '@mantine/core';
 import useModel from '../api/useModel.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 export default function RecordSelect(props) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     label,
     description,
@@ -34,7 +27,7 @@ export default function RecordSelect(props) {
     ...otherProps
   } = props;
   const CreateView = createView;
-  const {data, searchTerm, setSearchTerm} = useModel(model, {
+  const { data, searchTerm, setSearchTerm } = useModel(model, {
     autoFetch: true,
     pageSize,
     searchFields,
@@ -81,27 +74,16 @@ export default function RecordSelect(props) {
       // check if integer
       if (!isNaN(initialValue)) {
         initialRecord = initialRecordQuery.record;
-      } else if (
-        typeof initialValue === 'string' &&
-        initialValue.includes('/')
-      ) {
+      } else if (typeof initialValue === 'string' && initialValue.includes('/')) {
         // this is a string_id
         initialRecord = initialRecordQuery.data[0];
       }
       if (initialRecord) {
-        const displayText = renderValue
-          ? renderValue(initialRecord)
-          : initialRecord[displayField];
+        const displayText = renderValue ? renderValue(initialRecord) : initialRecord[displayField];
         setSearchTerm(displayText);
       }
     }
-  }, [
-    initialValue,
-    initialRecordQuery,
-    displayField,
-    renderValue,
-    setSearchTerm,
-  ]);
+  }, [initialValue, initialRecordQuery, displayField, renderValue, setSearchTerm]);
 
   // Sync internal value with prop changes
   useEffect(() => {
@@ -125,9 +107,7 @@ export default function RecordSelect(props) {
           onChange(val);
           setValue(val);
           const selectedItem = data.find((item) => item.id === val);
-          const displayText = renderValue
-            ? renderValue(selectedItem)
-            : selectedItem[displayField];
+          const displayText = renderValue ? renderValue(selectedItem) : selectedItem[displayField];
           setSearchTerm(displayText);
           combobox.closeDropdown();
         }}
@@ -177,11 +157,7 @@ export default function RecordSelect(props) {
         <Combobox.Dropdown>
           <Combobox.Options>
             <ScrollArea.Autosize type="scroll" mah={300}>
-              {options.length > 0 ? (
-                options
-              ) : (
-                <Combobox.Empty>{t('Nothing found')}</Combobox.Empty>
-              )}
+              {options.length > 0 ? options : <Combobox.Empty>{t('Nothing found')}</Combobox.Empty>}
               {createView && (
                 <button
                   className={`w-full border-t border-gray-border text-primary-main text-left p-2 hover:bg-primary-main hover:text-primary-contrastText rounded-b text-xs font-semibold`}

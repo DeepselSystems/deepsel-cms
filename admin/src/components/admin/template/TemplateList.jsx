@@ -1,32 +1,32 @@
-import {useState, useEffect} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
-import {Helmet} from 'react-helmet';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet';
 
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert, Badge} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert, Badge } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 
 export default function TemplateList() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
   const query = useModel('template', {
     autoFetch: true,
     searchFields: ['name'],
     syncPagingParamsWithURL: true,
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: organizationId
       ? [
           {
@@ -63,7 +63,7 @@ export default function TemplateList() {
               value: organizationId,
             },
           ]
-        : []
+        : [],
     );
   }, [organizationId, setFilters]);
 
@@ -131,10 +131,10 @@ export default function TemplateList() {
         const badges = [];
 
         if (params.row.is_404) {
-          badges.push({key: '404', label: t('404 Page')});
+          badges.push({ key: '404', label: t('404 Page') });
         }
         if (params.row.is_login) {
-          badges.push({key: 'login', label: t('Login Page')});
+          badges.push({ key: 'login', label: t('Login Page') });
         }
 
         if (badges.length === 0) return <span>-</span>;
@@ -165,9 +165,7 @@ export default function TemplateList() {
       </Helmet>
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
-          <H1 className="text-[32px] font-bold text-primary">
-            {t('Templates')}
-          </H1>
+          <H1 className="text-[32px] font-bold text-primary">{t('Templates')}</H1>
           <VisibilityControl
             roleIds={['super_admin_role', 'admin_role', 'website_admin_role']}
             render={false}
@@ -179,9 +177,7 @@ export default function TemplateList() {
               >
                 <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
                 {t('')}
-                <span className={`hidden sm:inline`}>
-                  {t('Create Template')}
-                </span>
+                <span className={`hidden sm:inline`}>{t('Create Template')}</span>
               </Button>
             </Link>
           </VisibilityControl>
@@ -194,9 +190,7 @@ export default function TemplateList() {
           setSelectedRows={setSelectedRows}
           allowDelete={
             user.roles.find((role) =>
-              ['admin_role', 'super_admin_role', 'website_admin_role'].includes(
-                role.string_id
-              )
+              ['admin_role', 'super_admin_role', 'website_admin_role'].includes(role.string_id),
             ) || false
           }
         />
@@ -256,8 +250,8 @@ export default function TemplateList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

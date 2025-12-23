@@ -1,6 +1,6 @@
-import {Box, SimpleGrid, Image, ActionIcon} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faXmark} from '@fortawesome/free-solid-svg-icons';
+import { Box, SimpleGrid, Image, ActionIcon } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 export default function CommentImages({
   images,
@@ -12,10 +12,10 @@ export default function CommentImages({
   if (!images.length) return null;
 
   return (
-    <Box sx={{flex: 1, maxWidth: '70%'}}>
+    <Box sx={{ flex: 1, maxWidth: '70%' }}>
       <SimpleGrid cols={maxColumns} spacing="md">
         {images.map((image, index) => (
-          <Box key={index} sx={{position: 'relative'}}>
+          <Box key={index} sx={{ position: 'relative' }}>
             <Image
               src={image}
               alt=""

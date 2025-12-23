@@ -1,29 +1,29 @@
-import {useEffect, useState} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
-import type {GridColDef} from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
-import {buildPageUrlWithDomain, buildPagePath} from '../../../utils/domainUtils.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { buildPageUrlWithDomain, buildPagePath } from '../../../utils/domainUtils.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faTriangleExclamation,
   faPlus,
   faExternalLinkAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 
@@ -49,20 +49,18 @@ type PageRow = {
 };
 
 export default function PageList() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState((state: any) => state);
-  const {organizations} = OrganizationState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
+  const { settings: siteSettings } = SitePublicSettingsState((state: any) => state);
+  const { organizations } = OrganizationState();
   const ButtonAny = Button as any;
 
-  const query = useModel(
-    'page',
-    {
+  const query = useModel('page', {
     autoFetch: true,
     searchFields: ['contents.title', 'contents.slug'],
     syncPagingParamsWithURL: true,
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: organizationId
       ? [
           {
@@ -72,8 +70,7 @@ export default function PageList() {
           },
         ]
       : [],
-    } as any
-  ) as any;
+  } as any) as any;
 
   const {
     data: rawItems,
@@ -102,27 +99,23 @@ export default function PageList() {
               value: organizationId,
             },
           ]
-        : []
+        : [],
     );
   }, [organizationId, setFilters]);
 
   const getContentForCurrentLanguage = (
-    contents: PageContent[] | null | undefined
+    contents: PageContent[] | null | undefined,
   ): PageContent | null => {
     if (!contents || contents.length === 0) return null;
 
     const currentLang = i18n.language;
 
     const defaultLangId = siteSettings?.default_language_id;
-    const defaultLangContent = contents.find(
-      (content) => content.locale_id === defaultLangId
-    );
+    const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
 
     let selectedContent: PageContent | undefined;
 
-    selectedContent = contents.find(
-      (content) => content.locale?.iso_code === currentLang
-    );
+    selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
 
     if (!selectedContent && defaultLangContent) {
       selectedContent = defaultLangContent;
@@ -154,9 +147,7 @@ export default function PageList() {
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
-      renderCell: (params: any) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params: any) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'slug',
@@ -169,12 +160,10 @@ export default function PageList() {
         return buildPagePath(
           selectedContent.slug,
           selectedContent.locale?.iso_code,
-          siteSettings?.default_language
+          siteSettings?.default_language,
         );
       },
-      renderCell: (params: any) => (
-        <LinkedCell params={params}>{params.value || '-'}</LinkedCell>
-      ),
+      renderCell: (params: any) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
     },
     {
       field: 'languages',
@@ -234,7 +223,7 @@ export default function PageList() {
           selectedContent.slug,
           selectedContent.locale?.iso_code,
           siteSettings?.default_language,
-          organizations
+          organizations,
         );
 
         if (!params.row.published) {
@@ -302,7 +291,7 @@ export default function PageList() {
                 'super_admin_role',
                 'website_admin_role',
                 'website_editor_role',
-              ].includes(role.string_id)
+              ].includes(role.string_id),
             ) || false
           }
         />
@@ -362,8 +351,8 @@ export default function PageList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}} as any}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } } as any}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

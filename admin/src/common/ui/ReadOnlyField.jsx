@@ -46,9 +46,7 @@ export default function ReadOnlyField(props) {
         }}
       >
         {children || value || (
-          <span className={`text-gray-500 text-4xl leading-[0.8] font-[100]`}>
-            -
-          </span>
+          <span className={`text-gray-500 text-4xl leading-[0.8] font-[100]`}>-</span>
         )}
       </div>
     </div>

@@ -1,13 +1,7 @@
-import {Textarea} from '@mantine/core';
-import {useEffect, useRef, useState} from 'react';
+import { Textarea } from '@mantine/core';
+import { useEffect, useRef, useState } from 'react';
 
-export default function DebounceArea({
-  value,
-  onChange,
-  ms = 300,
-  native = false,
-  ...others
-}) {
+export default function DebounceArea({ value, onChange, ms = 300, native = false, ...others }) {
   const [localValue, setLocalValue] = useState(value);
   const timeoutId = useRef(null);
   const isFirstChange = useRef(false);

@@ -1,7 +1,7 @@
-import {useState, useCallback, useRef, useEffect} from 'react';
-import {useDebounce} from './useDebounce.js';
-import {AUTOCOMPLETE_CONSTANTS} from '../constants.js';
-import {isIncompleteSentence} from '../utils.js';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useDebounce } from './useDebounce.js';
+import { AUTOCOMPLETE_CONSTANTS } from '../constants.js';
+import { isIncompleteSentence } from '../utils.js';
 
 /**
  * Custom hook for managing autocomplete functionality
@@ -11,12 +11,12 @@ import {isIncompleteSentence} from '../utils.js';
  * @param {Function} config.onSuggestionUpdate - Callback when suggestion updates
  * @returns {Object} - Autocomplete state and functions
  */
-export function useAutocomplete({backendHost, token, onSuggestionUpdate}) {
+export function useAutocomplete({ backendHost, token, onSuggestionUpdate }) {
   const [suggestion, setSuggestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef(null);
 
-  const {debouncedCallback, cancel} = useDebounce(async (text, position) => {
+  const { debouncedCallback, cancel } = useDebounce(async (text, position) => {
     await fetchSuggestion(text, position);
   }, AUTOCOMPLETE_CONSTANTS.DEBOUNCE_DELAY);
 
@@ -45,21 +45,18 @@ export function useAutocomplete({backendHost, token, onSuggestionUpdate}) {
       try {
         setIsLoading(true);
 
-        const response = await fetch(
-          `${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              text,
-              cursor_position: position,
-            }),
-            signal: abortControllerRef.current.signal,
-          }
-        );
+        const response = await fetch(`${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            text,
+            cursor_position: position,
+          }),
+          signal: abortControllerRef.current.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -83,7 +80,7 @@ export function useAutocomplete({backendHost, token, onSuggestionUpdate}) {
         abortControllerRef.current = null;
       }
     },
-    [backendHost, token, onSuggestionUpdate]
+    [backendHost, token, onSuggestionUpdate],
   );
 
   /**
@@ -95,7 +92,7 @@ export function useAutocomplete({backendHost, token, onSuggestionUpdate}) {
     (text, position) => {
       debouncedCallback(text, position);
     },
-    [debouncedCallback]
+    [debouncedCallback],
   );
 
   /**

@@ -1,5 +1,5 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { mergeAttributes, Node } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView.jsx';
 import {
   EMBED_VIDEO_ATTRIBUTES,
@@ -91,8 +91,8 @@ export const EmbedVideo = Node.create({
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
-    const {src, width, height} = node.attrs;
+  renderHTML({ node, HTMLAttributes }) {
+    const { src, width, height } = node.attrs;
 
     // Create video element
     const videoElement = [
@@ -120,10 +120,8 @@ export const EmbedVideo = Node.create({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         [EMBED_VIDEO_ATTRIBUTES.CONTAINER]: 'true',
         [EMBED_VIDEO_ATTRIBUTES.SRC]: src,
-        [EMBED_VIDEO_ATTRIBUTES.WIDTH]:
-          width?.toString() || VIDEO_WIDTH_DEFAULT.toString(),
-        [EMBED_VIDEO_ATTRIBUTES.HEIGHT]:
-          height?.toString() || VIDEO_HEIGHT_DEFAULT.toString(),
+        [EMBED_VIDEO_ATTRIBUTES.WIDTH]: width?.toString() || VIDEO_WIDTH_DEFAULT.toString(),
+        [EMBED_VIDEO_ATTRIBUTES.HEIGHT]: height?.toString() || VIDEO_HEIGHT_DEFAULT.toString(),
       }),
       ...elements,
     ];
@@ -137,7 +135,7 @@ export const EmbedVideo = Node.create({
     return {
       setEmbedVideo:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!options.src) {
             return false;
           }
@@ -154,7 +152,7 @@ export const EmbedVideo = Node.create({
         },
       updateEmbedVideo:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.updateAttributes(this.name, options);
         },
     };

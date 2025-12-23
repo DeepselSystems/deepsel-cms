@@ -1,6 +1,6 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import backendHost from '../../constants/backendHost.js';
-import {createApiHeaders} from '../../utils/apiUtils.js';
+import { createApiHeaders } from '../../utils/apiUtils.js';
 
 const initialState = {
   history: [],
@@ -13,13 +13,13 @@ const initialState = {
 const ChatBoxState = create((set, get) => ({
   ...initialState,
   setQuestion: (question) => {
-    set({question});
+    set({ question });
   },
   toggleChatbox: () => {
-    set((state) => ({isOpen: !state.isOpen}));
+    set((state) => ({ isOpen: !state.isOpen }));
   },
   closeChatbox: () => {
-    set({isOpen: false});
+    set({ isOpen: false });
   },
   updateStreamingAnswer: (content, sources = null) => {
     set({
@@ -30,7 +30,7 @@ const ChatBoxState = create((set, get) => ({
     });
   },
   completeStreamingAnswer: (onComplete) => {
-    const {streamingAnswer} = get();
+    const { streamingAnswer } = get();
     if (streamingAnswer) {
       const completedAnswer = {
         id: Date.now(),
@@ -55,7 +55,7 @@ const ChatBoxState = create((set, get) => ({
   sendChat: async (message, onComplete) => {
     if (!message.trim()) return;
 
-    set({isLoading: true, streamingAnswer: null});
+    set({ isLoading: true, streamingAnswer: null });
 
     const newQuestion = {
       id: Date.now(),
@@ -105,11 +105,11 @@ const ChatBoxState = create((set, get) => ({
       try {
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const {done, value} = await reader.read();
+          const { done, value } = await reader.read();
 
           if (done) break;
 
-          buffer += decoder.decode(value, {stream: true});
+          buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
 
@@ -124,7 +124,7 @@ const ChatBoxState = create((set, get) => ({
                   streamingSources = data.sources;
                   get().updateStreamingAnswer(
                     get().streamingAnswer?.content || '',
-                    streamingSources
+                    streamingSources,
                   );
                 } else if (data.type === 'done') {
                   get().completeStreamingAnswer(onComplete);

@@ -1,7 +1,7 @@
-import {useState, useEffect} from 'react';
-import {Modal, Button, Card, Text, Badge, Switch} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react';
+import { Modal, Button, Card, Text, Badge, Switch } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheck,
   faTimes,
@@ -33,11 +33,11 @@ export default function ConflictResolutionModal({
   onResolveConflict,
   isLoading,
 }) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Initialize resolved record with ALL contents from both user and server
   const [resolvedRecord, setResolvedRecord] = useState(() => {
-    const initialResolved = {...(userRecord || {})};
+    const initialResolved = { ...(userRecord || {}) };
     const userContents = userRecord?.contents || [];
     const serverContents = serverRecord?.contents || [];
 
@@ -143,7 +143,7 @@ export default function ConflictResolutionModal({
     userContents.forEach((userContent) => {
       const localeId = userContent.locale_id || userContent.locale?.id;
       if (localeId) {
-        languageMap.set(localeId, {userContent, serverContent: null});
+        languageMap.set(localeId, { userContent, serverContent: null });
       }
     });
 
@@ -154,13 +154,13 @@ export default function ConflictResolutionModal({
         if (languageMap.has(localeId)) {
           languageMap.get(localeId).serverContent = serverContent;
         } else {
-          languageMap.set(localeId, {userContent: null, serverContent});
+          languageMap.set(localeId, { userContent: null, serverContent });
         }
       }
     });
 
     // Convert to array and filter only conflicted or new languages
-    languageMap.forEach(({userContent, serverContent}, localeId) => {
+    languageMap.forEach(({ userContent, serverContent }, localeId) => {
       // Only show if:
       // 1. Both versions exist and server has later timestamp (conflicted)
       // 2. Only server version exists (new language added on server)
@@ -171,11 +171,9 @@ export default function ConflictResolutionModal({
       if (userContent && serverContent) {
         // Check if the content actually differs or has newer timestamp
         const serverTimestamp = new Date(
-          serverContent.last_modified_at || serverContent.updated_at
+          serverContent.last_modified_at || serverContent.updated_at,
         );
-        const userTimestamp = new Date(
-          userContent.last_modified_at || userContent.updated_at || 0
-        );
+        const userTimestamp = new Date(userContent.last_modified_at || userContent.updated_at || 0);
 
         if (
           serverTimestamp > userTimestamp ||
@@ -213,7 +211,7 @@ export default function ConflictResolutionModal({
     setResolvedRecord((prev) => {
       const updatedContents = [...(prev.contents || [])];
       const existingIndex = updatedContents.findIndex(
-        (c) => (c.locale_id || c.locale?.id) === localeId
+        (c) => (c.locale_id || c.locale?.id) === localeId,
       );
 
       if (existingIndex >= 0) {
@@ -223,10 +221,10 @@ export default function ConflictResolutionModal({
         };
       } else {
         // Add new content
-        updatedContents.push({...updatedContent, locale_id: localeId});
+        updatedContents.push({ ...updatedContent, locale_id: localeId });
       }
 
-      return {...prev, contents: updatedContents};
+      return { ...prev, contents: updatedContents };
     });
   };
 
@@ -240,11 +238,7 @@ export default function ConflictResolutionModal({
     }
 
     // For pages: content is JSON with ds-value structure
-    if (
-      typeof content === 'object' &&
-      content.main &&
-      content.main['ds-value']
-    ) {
+    if (typeof content === 'object' && content.main && content.main['ds-value']) {
       return content.main['ds-value'];
     }
 
@@ -275,19 +269,12 @@ export default function ConflictResolutionModal({
     return htmlContent;
   };
 
-  const renderLanguageConflict = ({
-    localeId,
-    userContent,
-    serverContent,
-    locale,
-  }) => {
+  const renderLanguageConflict = ({ localeId, userContent, serverContent, locale }) => {
     // Get current resolved content for this language
     // Priority: userContent (user's edits) > resolvedRecord > serverContent
     const currentResolved =
       userContent ||
-      resolvedRecord?.contents?.find(
-        (c) => (c.locale_id || c.locale?.id) === localeId
-      ) ||
+      resolvedRecord?.contents?.find((c) => (c.locale_id || c.locale?.id) === localeId) ||
       serverContent;
 
     // Determine conflict type
@@ -307,8 +294,7 @@ export default function ConflictResolutionModal({
 
         // Compare content
         const userContentText = extractHTMLContent(userContent.content) || '';
-        const serverContentText =
-          extractHTMLContent(serverContent.content) || '';
+        const serverContentText = extractHTMLContent(serverContent.content) || '';
         if (userContentText !== serverContentText) return true;
       }
 
@@ -328,7 +314,7 @@ export default function ConflictResolutionModal({
 
     // Handle toggle changes for single-sided conflicts
     const handleToggleChange = (keep) => {
-      setToggleStates((prev) => ({...prev, [localeId]: keep}));
+      setToggleStates((prev) => ({ ...prev, [localeId]: keep }));
 
       if (keep) {
         // Keep the version - ensure it's in resolved content
@@ -338,10 +324,7 @@ export default function ConflictResolutionModal({
         // Remove the version - remove from resolved content
         setResolvedRecord((prev) => ({
           ...prev,
-          contents:
-            prev.contents?.filter(
-              (c) => (c.locale_id || c.locale?.id) !== localeId
-            ) || [],
+          contents: prev.contents?.filter((c) => (c.locale_id || c.locale?.id) !== localeId) || [],
         }));
       }
     };
@@ -374,11 +357,7 @@ export default function ConflictResolutionModal({
               </Badge>
             )}
             {/* Conflict status indicator */}
-            <Badge
-              size="sm"
-              variant="filled"
-              color={contentHasDifferences ? 'red' : 'green'}
-            >
+            <Badge size="sm" variant="filled" color={contentHasDifferences ? 'red' : 'green'}>
               {contentHasDifferences ? 'Has Differences' : 'No Differences'}
             </Badge>
           </div>
@@ -388,11 +367,7 @@ export default function ConflictResolutionModal({
             <div className="flex items-center gap-2">
               {/* Toggle for single-sided conflicts (only server OR only user version) */}
               <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded">
-                <Text
-                  size="sm"
-                  fw={500}
-                  c={currentToggleState ? 'green' : 'red'}
-                >
+                <Text size="sm" fw={500} c={currentToggleState ? 'green' : 'red'}>
                   {hasServerOnly
                     ? currentToggleState
                       ? t('Keep server version')
@@ -403,9 +378,7 @@ export default function ConflictResolutionModal({
                 </Text>
                 <Switch
                   checked={currentToggleState}
-                  onChange={(event) =>
-                    handleToggleChange(event.currentTarget.checked)
-                  }
+                  onChange={(event) => handleToggleChange(event.currentTarget.checked)}
                   color={currentToggleState ? 'green' : 'red'}
                   size="md"
                 />
@@ -451,17 +424,13 @@ export default function ConflictResolutionModal({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-400 italic">
-                {t('No server version')}
-              </div>
+              <div className="text-center py-8 text-gray-400 italic">{t('No server version')}</div>
             )}
           </div>
 
           {/* Right: Your Version - Editable (always show column) */}
           <div className="border rounded-lg p-4">
-            <h4 className="font-semibold text-blue-700 mb-3">
-              {t('Your Version')}
-            </h4>
+            <h4 className="font-semibold text-blue-700 mb-3">{t('Your Version')}</h4>
 
             {userContent ? (
               <div className="space-y-3">
@@ -473,9 +442,7 @@ export default function ConflictResolutionModal({
                   <input
                     type="text"
                     value={currentResolved?.title || ''}
-                    onChange={(e) =>
-                      updateResolvedContent(localeId, {title: e.target.value})
-                    }
+                    onChange={(e) => updateResolvedContent(localeId, { title: e.target.value })}
                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -491,22 +458,20 @@ export default function ConflictResolutionModal({
                       // Reconstruct content in correct format (string for blog, JSON for page)
                       const reconstructedContent = reconstructContent(
                         htmlValue,
-                        currentResolved?.content
+                        currentResolved?.content,
                       );
                       updateResolvedContent(localeId, {
                         content: reconstructedContent,
                       });
                     }}
                     placeholder={t('Enter content...')}
-                    classNames={{content: 'min-h-[200px]'}}
+                    classNames={{ content: 'min-h-[200px]' }}
                     key={`richtext-${localeId}-${currentResolved?.id}`}
                   />
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-400 italic">
-                {t('No user version')}
-              </div>
+              <div className="text-center py-8 text-gray-400 italic">{t('No user version')}</div>
             )}
           </div>
         </div>
@@ -522,20 +487,14 @@ export default function ConflictResolutionModal({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <FontAwesomeIcon
-            icon={faExclamationTriangle}
-            style={{color: 'orange'}}
-            size="sm"
-          />
-          <span className="text-lg font-bold">
-            {t('Content Conflict Resolution')}
-          </span>
+          <FontAwesomeIcon icon={faExclamationTriangle} style={{ color: 'orange' }} size="sm" />
+          <span className="text-lg font-bold">{t('Content Conflict Resolution')}</span>
         </div>
       }
       size="95%"
       styles={{
-        body: {height: '85vh', overflow: 'hidden'},
-        header: {flexShrink: 0},
+        body: { height: '85vh', overflow: 'hidden' },
+        header: { flexShrink: 0 },
         content: {
           maxWidth: '95vw',
           width: '95vw',
@@ -554,33 +513,23 @@ export default function ConflictResolutionModal({
           {/* Explanation Header */}
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-orange-800">
-              {t(
-                'Content conflicts detected. Review each language version and resolve conflicts.'
-              )}
+              {t('Content conflicts detected. Review each language version and resolve conflicts.')}
             </p>
 
             <div className="mt-2 text-xs text-orange-700">
-              <strong>{t('Last saved by')}:</strong>{' '}
-              {lastModifiedBy || t('Unknown user')} {t('at')}{' '}
+              <strong>{t('Last saved by')}:</strong> {lastModifiedBy || t('Unknown user')} {t('at')}{' '}
               {formatTimestamp(lastModifiedAt)}
             </div>
           </div>
 
           <div className="my-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-2">
-              <FontAwesomeIcon
-                icon={faExclamationTriangle}
-                className="text-blue-600 mt-0.5"
-              />
+              <FontAwesomeIcon icon={faExclamationTriangle} className="text-blue-600 mt-0.5" />
               <div className="flex-1">
-                <h4 className="text-sm font-semibold text-blue-800 mb-1">
-                  {t('AI Analysis')}
-                </h4>
+                <h4 className="text-sm font-semibold text-blue-800 mb-1">{t('AI Analysis')}</h4>
                 <div className="text-sm text-blue-700">
                   {conflictExplanation ? (
-                    <div
-                      dangerouslySetInnerHTML={{__html: conflictExplanation}}
-                    />
+                    <div dangerouslySetInnerHTML={{ __html: conflictExplanation }} />
                   ) : (
                     'Loading AI explanation...'
                   )}
@@ -603,20 +552,11 @@ export default function ConflictResolutionModal({
 
         {/* Action Buttons - Fixed Footer */}
         <div className="flex-shrink-0 flex justify-end gap-2 pt-4 border-t mt-4">
-          <Button
-            variant="outline"
-            color="gray"
-            onClick={onClose}
-            disabled={isLoading}
-          >
+          <Button variant="outline" color="gray" onClick={onClose} disabled={isLoading}>
             <FontAwesomeIcon icon={faTimes} size="sm" className="mr-1" />
             {t('Cancel')}
           </Button>
-          <Button
-            color="green"
-            onClick={handleSaveResolution}
-            loading={isLoading}
-          >
+          <Button color="green" onClick={handleSaveResolution} loading={isLoading}>
             <FontAwesomeIcon icon={faCheck} size="sm" className="mr-1" />
             {t('Resolve & Save')}
           </Button>

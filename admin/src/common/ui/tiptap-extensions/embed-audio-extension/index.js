@@ -1,11 +1,7 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { mergeAttributes, Node } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView.jsx';
-import {
-  EMBED_AUDIO_ATTRIBUTES,
-  EMBED_AUDIO_CLASSES,
-  AUDIO_WIDTH_DEFAULT,
-} from './utils.js';
+import { EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES, AUDIO_WIDTH_DEFAULT } from './utils.js';
 
 /**
  * Embed Audio extension for TipTap
@@ -75,8 +71,8 @@ export const EmbedAudio = Node.create({
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
-    const {src, width} = node.attrs;
+  renderHTML({ node, HTMLAttributes }) {
+    const { src, width } = node.attrs;
 
     // Create audio element
     const audioElement = [
@@ -102,8 +98,7 @@ export const EmbedAudio = Node.create({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true',
         [EMBED_AUDIO_ATTRIBUTES.SRC]: src,
-        [EMBED_AUDIO_ATTRIBUTES.WIDTH]:
-          width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
+        [EMBED_AUDIO_ATTRIBUTES.WIDTH]: width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
       }),
       ...elements,
     ];
@@ -117,7 +112,7 @@ export const EmbedAudio = Node.create({
     return {
       setEmbedAudio:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!options.src) {
             return false;
           }
@@ -132,7 +127,7 @@ export const EmbedAudio = Node.create({
         },
       updateEmbedAudio:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.updateAttributes(this.name, options);
         },
     };

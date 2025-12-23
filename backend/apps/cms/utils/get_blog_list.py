@@ -1,7 +1,8 @@
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
-from apps.cms.types import BlogPostListItem, PublicSettings
+from apps.cms.types.public_settings import PublicSettings
+from apps.cms.types.blog import BlogPostListItem
 from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from fastapi import Request

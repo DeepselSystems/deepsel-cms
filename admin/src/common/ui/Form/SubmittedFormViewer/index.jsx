@@ -1,12 +1,12 @@
 import React from 'react';
-import {Box, Text, Group, Badge, Stack, Alert} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import { Box, Text, Group, Badge, Stack, Alert } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
-import {FormFieldType} from '../../../../constants/form.js';
+import { FormFieldType } from '../../../../constants/form.js';
 import FileDisplay from '../../FileDisplay.jsx';
-import {formatFileSize} from '../../../utils/index.js';
+import { formatFileSize } from '../../../utils/index.js';
 
 /**
  * Component to display a submitted form with read-only data
@@ -16,21 +16,15 @@ import {formatFileSize} from '../../../utils/index.js';
  * @param {boolean} props.showTitle - Whether to show form title and description
  * @returns {JSX.Element}
  */
-const SubmittedFormViewer = ({
-  formContent,
-  submissionData,
-  showTitle = true,
-}) => {
+const SubmittedFormViewer = ({ formContent, submissionData, showTitle = true }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Get fields from submission data (field_snap_short) instead of current form content
   const submissionFields = React.useMemo(() => {
     if (!submissionData) return [];
 
-    const currentFormFieldIds = new Set(
-      formContent?.fields?.map((f) => f.id) || []
-    );
+    const currentFormFieldIds = new Set(formContent?.fields?.map((f) => f.id) || []);
 
     return Object.values(submissionData).map((fieldData) => ({
       ...fieldData.field_snap_short,
@@ -52,11 +46,7 @@ const SubmittedFormViewer = ({
       {/* Form Title and Description */}
       {showTitle && (
         <Box className="space-y-3">
-          <Text
-            size="xl"
-            fw={700}
-            className="text-black break-words text-center"
-          >
+          <Text size="xl" fw={700} className="text-black break-words text-center">
             {formContent.title}
           </Text>
           {formContent.description && (
@@ -132,8 +122,8 @@ const SubmittedFormViewer = ({
  * @param {any} props.value - The submitted value
  * @returns {JSX.Element}
  */
-const SubmittedValueDisplay = ({field, value}) => {
-  const {t} = useTranslation();
+const SubmittedValueDisplay = ({ field, value }) => {
+  const { t } = useTranslation();
 
   if (value === null || value === undefined || value === '') {
     return (
@@ -229,13 +219,8 @@ const SubmittedValueDisplay = ({field, value}) => {
                 : typeof file === 'string'
                   ? file.split('/').pop() || file
                   : t('Unknown file');
-              const fileSize =
-                isFileObject && file.filesize
-                  ? formatFileSize(file.filesize)
-                  : null;
-              const contentType = isFileObject
-                ? file.contentType || file.content_type
-                : null;
+              const fileSize = isFileObject && file.filesize ? formatFileSize(file.filesize) : null;
+              const contentType = isFileObject ? file.contentType || file.content_type : null;
               const fileId = isFileObject ? file.id : null;
 
               // Determine file type for FileDisplay component

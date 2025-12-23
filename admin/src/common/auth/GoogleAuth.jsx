@@ -1,13 +1,13 @@
-import {Preferences} from '@capacitor/preferences';
-import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import { Preferences } from '@capacitor/preferences';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useQuery from '../hooks/useQuery.jsx';
 import useAuthentication from '../api/useAuthentication.js';
 
 export default function GoogleAuth() {
   const query = useQuery();
   const navigate = useNavigate();
-  const {fetchUserData, saveUserData} = useAuthentication();
+  const { fetchUserData, saveUserData } = useAuthentication();
 
   useEffect(() => {
     storeAccessToken();
@@ -33,9 +33,7 @@ export default function GoogleAuth() {
     }
 
     // Navigate to the redirect URL if provided, otherwise go to admin home
-    const redirectUrl = redirect
-      ? decodeURIComponent(redirect)
-      : '/admin/pages';
+    const redirectUrl = redirect ? decodeURIComponent(redirect) : '/admin/pages';
 
     // If redirect URL starts with /admin/, strip the /admin prefix for React Router
     // since we're already in the admin app context (basename="/admin")

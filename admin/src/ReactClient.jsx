@@ -1,7 +1,7 @@
-import {useCallback, useEffect, useMemo} from 'react';
-import {MantineProvider} from '@mantine/core';
-import {ModalsProvider} from '@mantine/modals';
-import {ThemeProvider as MuiThemeProvider} from '@mui/material/styles';
+import { useCallback, useEffect, useMemo } from 'react';
+import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import mantineTheme from './theme/mantineTheme.js';
 import muiTheme from './theme/muiTheme.js';
 import dayjs from 'dayjs';
@@ -11,7 +11,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import duration from 'dayjs/plugin/duration';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import './i18n.js';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import SitePublicSettingsState from './common/stores/SitePublicSettingsState.js';
 
 dayjs.extend(utc);
@@ -31,14 +31,14 @@ import './assets/css/tiptap-extension/enhanced-image.css';
 import './assets/css/tiptap-extension/embed-video.css';
 import './assets/css/tiptap-extension/embed-audio.css';
 import './assets/css/tiptap-extension/embed-files.css';
-import {LocalstorageKey} from './constants/localstorage.js';
+import { LocalstorageKey } from './constants/localstorage.js';
 import useBrowserLanguages from './common/hooks/useBrowserLanguages.js';
 import useEffectOnce from './common/hooks/useEffectOnce.js';
 
 export default function ReactClient(props) {
-  const {children, siteSettings} = props;
-  const {i18n} = useTranslation();
-  const {setSettings} = SitePublicSettingsState();
+  const { children, siteSettings } = props;
+  const { i18n } = useTranslation();
+  const { setSettings } = SitePublicSettingsState();
   const browserLanguages = useBrowserLanguages();
 
   /**
@@ -53,7 +53,7 @@ export default function ReactClient(props) {
    */
   const defaultSiteLanguage = useMemo(
     () => props.siteSettings?.default_language || null,
-    [props.siteSettings?.default_language]
+    [props.siteSettings?.default_language],
   );
 
   /**
@@ -62,7 +62,7 @@ export default function ReactClient(props) {
    */
   const availableSiteLanguages = useMemo(
     () => props.siteSettings?.available_languages || [],
-    [props.siteSettings?.available_languages]
+    [props.siteSettings?.available_languages],
   );
 
   /**
@@ -71,7 +71,7 @@ export default function ReactClient(props) {
    */
   const languageAlternatives = useMemo(
     () => props.initialPageData?.language_alternatives || [],
-    [props.initialPageData?.language_alternatives]
+    [props.initialPageData?.language_alternatives],
   );
 
   /**
@@ -80,9 +80,7 @@ export default function ReactClient(props) {
   const redirectToDefaultLanguageSite = useCallback(() => {
     if (
       defaultSiteLanguage &&
-      languageAlternatives.find(
-        (o) => o.locale.iso_code === defaultSiteLanguage.iso_code
-      )
+      languageAlternatives.find((o) => o.locale.iso_code === defaultSiteLanguage.iso_code)
     ) {
       location.href = `/${defaultSiteLanguage.iso_code}${initialPath}`;
     }
@@ -93,20 +91,13 @@ export default function ReactClient(props) {
    * Prioritize localstorage first, then default site language
    */
   useEffectOnce(() => {
-    const i18NextLangStorage = localStorage.getItem(
-      LocalstorageKey.I18NextLang
-    );
+    const i18NextLangStorage = localStorage.getItem(LocalstorageKey.I18NextLang);
     if (i18NextLangStorage) {
-      if (
-        availableSiteLanguages.find((o) => o.iso_code === i18NextLangStorage)
-      ) {
+      if (availableSiteLanguages.find((o) => o.iso_code === i18NextLangStorage)) {
         i18n.changeLanguage(i18NextLangStorage).then();
       } else {
         if (defaultSiteLanguage) {
-          localStorage.setItem(
-            LocalstorageKey.I18NextLang,
-            defaultSiteLanguage.iso_code
-          );
+          localStorage.setItem(LocalstorageKey.I18NextLang, defaultSiteLanguage.iso_code);
           i18n.changeLanguage(defaultSiteLanguage.iso_code).then();
         }
       }
@@ -122,11 +113,9 @@ export default function ReactClient(props) {
    */
   useEffectOnce(() => {
     // Get lang code in url
-    const langCodeInPathRaw = location.href
-      .split(location.origin)[1]
-      .split('/')[1];
+    const langCodeInPathRaw = location.href.split(location.origin)[1].split('/')[1];
     const langCodeInPath = availableSiteLanguages.find(
-      (o) => o.iso_code.toLowerCase() === langCodeInPathRaw?.toLowerCase()
+      (o) => o.iso_code.toLowerCase() === langCodeInPathRaw?.toLowerCase(),
     )?.iso_code;
 
     if (langCodeInPath) {
@@ -134,18 +123,13 @@ export default function ReactClient(props) {
       i18n.changeLanguage(langCodeInPath).then();
     } else {
       // If the url does not have lang code, check saved lang in localstorage
-      const i18NextLangStorage = localStorage.getItem(
-        LocalstorageKey.I18NextLang
-      );
+      const i18NextLangStorage = localStorage.getItem(LocalstorageKey.I18NextLang);
       if (i18NextLangStorage) {
         // If localstorage has valid lang code, redirect site to that lang
         const languageAlternative = languageAlternatives.find(
-          (o) => o.locale.iso_code === i18NextLangStorage
+          (o) => o.locale.iso_code === i18NextLangStorage,
         );
-        if (
-          languageAlternative &&
-          languageAlternative.locale.iso_code !== i18NextLangStorage
-        ) {
+        if (languageAlternative && languageAlternative.locale.iso_code !== i18NextLangStorage) {
           location.href = `/${languageAlternative.locale.iso_code}${languageAlternative.slug}`;
         }
       } else {
@@ -153,17 +137,14 @@ export default function ReactClient(props) {
         let detectedSiteLanguage = null;
         for (const browserLanguage of browserLanguages) {
           const lowerCaseBrowserLanguage = browserLanguage.toLowerCase();
-          detectedSiteLanguage = availableSiteLanguages.find(
-            (availableSiteLanguage) => {
-              const lowerCaseIsoCode =
-                availableSiteLanguage.iso_code.toLowerCase();
-              return (
-                lowerCaseIsoCode === lowerCaseBrowserLanguage ||
-                lowerCaseIsoCode.includes(lowerCaseBrowserLanguage) ||
-                lowerCaseBrowserLanguage.includes(lowerCaseIsoCode)
-              );
-            }
-          );
+          detectedSiteLanguage = availableSiteLanguages.find((availableSiteLanguage) => {
+            const lowerCaseIsoCode = availableSiteLanguage.iso_code.toLowerCase();
+            return (
+              lowerCaseIsoCode === lowerCaseBrowserLanguage ||
+              lowerCaseIsoCode.includes(lowerCaseBrowserLanguage) ||
+              lowerCaseBrowserLanguage.includes(lowerCaseIsoCode)
+            );
+          });
           if (detectedSiteLanguage) {
             break;
           }
@@ -174,8 +155,7 @@ export default function ReactClient(props) {
           if (props.initialPageData) {
             const detectedLanguageAlternative = languageAlternatives.find(
               (languageAlternative) =>
-                languageAlternative.locale.iso_code ===
-                detectedSiteLanguage.iso_code
+                languageAlternative.locale.iso_code === detectedSiteLanguage.iso_code,
             );
             if (detectedLanguageAlternative) {
               location.href = `/${detectedLanguageAlternative.locale.iso_code}${detectedLanguageAlternative.slug}`;

@@ -1,4 +1,4 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import {
   faUpload,
   faXmark,
@@ -8,13 +8,13 @@ import {
   faCloudArrowUp,
   faImage,
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Group, Text, Modal, Indicator} from '@mantine/core';
-import {Dropzone} from '@mantine/dropzone';
-import React, {useEffect, useRef, useState} from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Group, Text, Modal, Indicator } from '@mantine/core';
+import { Dropzone } from '@mantine/dropzone';
+import React, { useEffect, useRef, useState } from 'react';
 import useModel from '../api/useModel.jsx';
 import useUpload from '../api/useUpload.js';
-import {getAttachmentUrl} from '../utils/index.js';
+import { getAttachmentUrl } from '../utils/index.js';
 import Button from './Button.jsx';
 import Checkbox from './Checkbox.jsx';
 import NotificationState from '../stores/NotificationState.js';
@@ -28,22 +28,10 @@ import useEffectOnce from '../hooks/useEffectOnce.js';
 /**
  * @type {string[]}
  */
-const AcceptedFormat = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/gif',
-  'image/svg',
-];
+const AcceptedFormat = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg'];
 
-function FileImage({
-  file,
-  onClick,
-  isSelectMode,
-  checked = false,
-  isNewUpload = false,
-}) {
-  const {backendHost} = BackendHostURLState((state) => state);
+function FileImage({ file, onClick, isSelectMode, checked = false, isNewUpload = false }) {
+  const { backendHost } = BackendHostURLState((state) => state);
 
   return (
     <Indicator
@@ -76,10 +64,7 @@ function FileImage({
             className="h-[150px] w-full object-cover"
           />
         ) : (
-          <div
-            className="flex items-center justify-center h-[150px] p-2"
-            title={file.name}
-          >
+          <div className="flex items-center justify-center h-[150px] p-2" title={file.name}>
             <FontAwesomeIcon
               icon={faFileLines}
               className={`text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2`}
@@ -117,10 +102,10 @@ const FileAttachmentGroup = React.forwardRef(
       isOpenedDefault = false,
       newUploads = new Set(),
     },
-    ref
+    ref,
   ) => {
     // translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     /**
      * @type {React.MutableRefObject<HTMLElement | null>}
@@ -131,14 +116,14 @@ const FileAttachmentGroup = React.forwardRef(
      * handle ref
      */
     React.useImperativeHandle(ref, () => ({
-      open: ({scrollToBottom} = {scrollToBottom: false}) => {
+      open: ({ scrollToBottom } = { scrollToBottom: false }) => {
         scrollToBottom &&
           setTimeout(
             () =>
               bottomEleRef.current?.scrollIntoView({
                 behavior: 'smooth',
               }),
-            100
+            100,
           );
       },
     }));
@@ -151,9 +136,7 @@ const FileAttachmentGroup = React.forwardRef(
 
         {/*region hint for empty data*/}
         {!files.length && (
-          <div className="py-3 text-center text-gray-400">
-            {t('Nothing here yet.')}
-          </div>
+          <div className="py-3 text-center text-gray-400">{t('Nothing here yet.')}</div>
         )}
         {/*endregion hint for empty data*/}
 
@@ -174,7 +157,7 @@ const FileAttachmentGroup = React.forwardRef(
         {/*endregion file grid*/}
       </div>
     );
-  }
+  },
 );
 FileAttachmentGroup.displayName = 'FileAttachmentGroup';
 FileAttachmentGroup.propTypes = {
@@ -198,8 +181,8 @@ export default function ChooseAttachmentModal(props) {
     extendData = {},
     filterFunc = (attachments) => attachments,
   } = props;
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
   const filters = [
     ...initialFilters,
     {
@@ -227,11 +210,11 @@ export default function ChooseAttachmentModal(props) {
     filters,
   });
 
-  const {uploadFileModel} = useUpload();
+  const { uploadFileModel } = useUpload();
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState(new Set());
-  const {notify} = NotificationState((state) => state);
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { notify } = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
 
   /**
    * @type {React.MutableRefObject<FileAttachmentGroupRef>}
@@ -242,22 +225,17 @@ export default function ChooseAttachmentModal(props) {
 
   // choose attachment store
   const [sessionRecentFiles, setSessionRecentFiles] = React.useState(
-    /** @type {Array<AttachmentFile>} */ []
+    /** @type {Array<AttachmentFile>} */ [],
   );
 
   // Track new uploads since modal was opened
   const [newUploads, setNewUploads] = React.useState(new Set());
 
   // Initialize upload size limit functions
-  const {get: getUploadSizeLimitFunc} = useFetch(
-    'attachment/config/upload_size_limit',
-    {
-      autoFetch: false,
-    }
-  );
-  const fetchUploadSizeLimitState = FileAttachmentState(
-    (state) => state.fetchUploadSizeLimit
-  );
+  const { get: getUploadSizeLimitFunc } = useFetch('attachment/config/upload_size_limit', {
+    autoFetch: false,
+  });
+  const fetchUploadSizeLimitState = FileAttachmentState((state) => state.fetchUploadSizeLimit);
   const uploadSizeLimit = FileAttachmentState((state) => state.uploadSizeLimit);
 
   /**
@@ -286,10 +264,7 @@ export default function ChooseAttachmentModal(props) {
             used_for: 'USER_AVATAR',
           }).toString();
         }
-        const newFiles = await uploadFileModel(
-          `attachment?${params}`,
-          filesArray
-        );
+        const newFiles = await uploadFileModel(`attachment?${params}`, filesArray);
         const filesUpdated = [...files, ...newFiles];
         setFiles(filesUpdated);
         setSessionRecentFiles((prevState) => [...prevState, ...newFiles]);
@@ -299,7 +274,7 @@ export default function ChooseAttachmentModal(props) {
         newFiles.forEach((file) => newUploadsSet.add(file.id));
         setNewUploads(newUploadsSet);
 
-        fileAttachmentGroupRef.current.open({scrollToBottom: true});
+        fileAttachmentGroupRef.current.open({ scrollToBottom: true });
       }
     } catch (err) {
       notify({
@@ -377,9 +352,7 @@ export default function ChooseAttachmentModal(props) {
     <Modal
       opened={isOpen}
       onClose={close}
-      title={
-        <div className={`font-semibold text-lg`}>{t('Select attachment')}</div>
-      }
+      title={<div className={`font-semibold text-lg`}>{t('Select attachment')}</div>}
       size="100%"
     >
       <div className="pt-4">
@@ -392,28 +365,16 @@ export default function ChooseAttachmentModal(props) {
             <Dropzone
               onDrop={handleFileChange}
               accept={
-                type === 'image'
-                  ? AcceptedFormat.map((format) => ({mime: format}))
-                  : undefined
+                type === 'image' ? AcceptedFormat.map((format) => ({ mime: format })) : undefined
               }
               className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
             >
-              <Group
-                justify="center"
-                gap="xl"
-                style={{minHeight: 100, pointerEvents: 'none'}}
-              >
+              <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
                 <Dropzone.Accept>
-                  <FontAwesomeIcon
-                    icon={faCloudArrowUp}
-                    className="text-3xl text-green-500"
-                  />
+                  <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
                 </Dropzone.Accept>
                 <Dropzone.Reject>
-                  <FontAwesomeIcon
-                    icon={faXmark}
-                    className="text-3xl text-red-500"
-                  />
+                  <FontAwesomeIcon icon={faXmark} className="text-3xl text-red-500" />
                 </Dropzone.Reject>
                 <Dropzone.Idle>
                   <FontAwesomeIcon
@@ -471,23 +432,12 @@ export default function ChooseAttachmentModal(props) {
                     variant="subtle"
                     className="px-2 py-1"
                   >
-                    <FontAwesomeIcon
-                      icon={faCheckDouble}
-                      className="mr-1 h-3 w-3"
-                    />
+                    <FontAwesomeIcon icon={faCheckDouble} className="mr-1 h-3 w-3" />
                     {isSelectAll() ? t('Deselect all') : t('Select all')}
                   </Button>
                 )}
-                <Button
-                  onClick={handleToggleEdit}
-                  size="xs"
-                  variant="subtle"
-                  className="px-2 py-1"
-                >
-                  <FontAwesomeIcon
-                    icon={faPenToSquare}
-                    className="mr-1 h-3 w-3"
-                  />
+                <Button onClick={handleToggleEdit} size="xs" variant="subtle" className="px-2 py-1">
+                  <FontAwesomeIcon icon={faPenToSquare} className="mr-1 h-3 w-3" />
                   {t('Toggle edit')}
                 </Button>
               </div>
@@ -496,9 +446,7 @@ export default function ChooseAttachmentModal(props) {
               ref={fileAttachmentGroupRef}
               isOpenedDefault
               title=""
-              files={filterFunc(
-                sortFilesWithNewUploadsFirst(files, newUploads)
-              )}
+              files={filterFunc(sortFilesWithNewUploadsFirst(files, newUploads))}
               isSelectMode={isSelectMode}
               selectedFiles={selectedFiles}
               newUploads={newUploads}

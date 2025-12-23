@@ -1,4 +1,4 @@
-import {useCallback} from 'react';
+import { useCallback } from 'react';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 
@@ -27,22 +27,19 @@ function JSONFieldRenderer({
 
   // Check if this is a container section (object without ds-value property)
   const isContainer =
-    typeof value === 'object' &&
-    value !== null &&
-    !value.hasOwnProperty('ds-value') &&
-    !type;
+    typeof value === 'object' && value !== null && !value.hasOwnProperty('ds-value') && !type;
 
   const handleFieldChange = useCallback(
     (path, newValue) => {
       onFieldChange(path, newValue);
     },
-    [onFieldChange]
+    [onFieldChange],
   );
 
   if (!value) return null;
 
   return (
-    <div key={fullPath} className="mb-4" style={{marginLeft: level * 8}}>
+    <div key={fullPath} className="mb-4" style={{ marginLeft: level * 8 }}>
       {isContainer ? (
         <h3 className="font-semibold text-lg mb-3 text-gray-800">{label}</h3>
       ) : type === 'wysiwyg' ? (
@@ -65,9 +62,7 @@ function JSONFieldRenderer({
         <TextInput
           label={label}
           value={value['ds-value']}
-          onChange={(e) =>
-            handleFieldChange(`${fullPath}.ds-value`, e.target.value)
-          }
+          onChange={(e) => handleFieldChange(`${fullPath}.ds-value`, e.target.value)}
           className="mb-2"
         />
       ) : null}
@@ -118,12 +113,10 @@ export default function JSONPageDataEditor({
 
         if (contentIndex === -1) return prevRecord;
 
-        const contentItem = {...newContents[contentIndex]};
+        const contentItem = { ...newContents[contentIndex] };
 
         // Create deep copy of content to ensure React detects changes
-        const jsonContent = JSON.parse(
-          JSON.stringify(contentItem.content || {})
-        );
+        const jsonContent = JSON.parse(JSON.stringify(contentItem.content || {}));
 
         // Handle nested field paths like "hero.title.ds-value"
         const pathParts = fieldPath.split('.');
@@ -149,14 +142,10 @@ export default function JSONPageDataEditor({
         };
       });
     },
-    [contentId, setRecord]
+    [contentId, setRecord],
   );
 
-  if (
-    !content ||
-    typeof content !== 'object' ||
-    Object.keys(content).length === 0
-  ) {
+  if (!content || typeof content !== 'object' || Object.keys(content).length === 0) {
     return (
       <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
         <p>No content fields defined yet.</p>

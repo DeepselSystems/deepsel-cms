@@ -1,14 +1,14 @@
-import {useState, useEffect, useMemo} from 'react';
-import {useTranslation} from 'react-i18next';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {LoadingOverlay} from '@mantine/core';
+import { LoadingOverlay } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
-import {useDisclosure} from '@mantine/hooks';
-import {Helmet} from 'react-helmet';
+import { useDisclosure } from '@mantine/hooks';
+import { Helmet } from 'react-helmet';
 import H1 from '../../../common/ui/H1.jsx';
 
 // Import components
@@ -16,26 +16,26 @@ import MenuItem from './components/MenuItem.jsx';
 import EditMenuItemModal from './components/EditMenuItemModal.jsx';
 
 // Import utilities
-import {buildMenuTree, isValidUrl} from './utils/menuUtils.js';
+import { buildMenuTree, isValidUrl } from './utils/menuUtils.js';
 
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 
 // Main Menu Tree Component
 export default function MenuTree() {
-  const {t} = useTranslation();
-  const {organizationId} = OrganizationIdState();
-  const {notify} = NotificationState();
+  const { t } = useTranslation();
+  const { organizationId } = OrganizationIdState();
+  const { notify } = NotificationState();
 
   const [menuItems, setMenuItems] = useState([]);
   const [menuItemsMap, setMenuItemsMap] = useState({});
   const [newItemParentId, setNewItemParentId] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
-  const [opened, {open, close}] = useDisclosure(false);
-  const [editOpened, {open: openEdit, close: closeEdit}] = useDisclosure(false);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 
   // Fetch locales
-  const {data: locales} = useModel('locale', {
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null, // Get all locales
   });
@@ -48,7 +48,7 @@ export default function MenuTree() {
   });
 
   // Fetch menu items
-  const {data, loading, error, get, setFilters} = useModel('menu', {
+  const { data, loading, error, get, setFilters } = useModel('menu', {
     autoFetch: true,
     pageSize: null, // Get all menu items
     filters: organizationId
@@ -73,7 +73,7 @@ export default function MenuTree() {
               value: organizationId,
             },
           ]
-        : []
+        : [],
     );
   }, [organizationId, setFilters]);
 
@@ -93,28 +93,25 @@ export default function MenuTree() {
 
   const pageContentsQuery = useModel('page_content', {
     autoFetch: true,
-    filters: [{field: 'id', operator: 'in', value: pageContentIds}],
+    filters: [{ field: 'id', operator: 'in', value: pageContentIds }],
   });
-  const {data: pageContents, setFilters: setPageContentFilters} =
-    pageContentsQuery;
+  const { data: pageContents, setFilters: setPageContentFilters } = pageContentsQuery;
 
   useEffect(() => {
     if (pageContentIds.length > 0) {
-      setPageContentFilters([
-        {field: 'id', operator: 'in', value: pageContentIds},
-      ]);
+      setPageContentFilters([{ field: 'id', operator: 'in', value: pageContentIds }]);
     }
   }, [pageContentIds]);
 
   // Create, update and delete functions
-  const {create, update, deleteWithConfirm} = useModel('menu');
+  const { create, update, deleteWithConfirm } = useModel('menu');
 
   // Update menu items when data changes
   useEffect(() => {
     if (data) {
       // Handle both array and object with data property
       const menuData = Array.isArray(data) ? data : data?.data || [];
-      const {rootItems, itemMap} = buildMenuTree(menuData);
+      const { rootItems, itemMap } = buildMenuTree(menuData);
       setMenuItems(rootItems);
       setMenuItemsMap(itemMap);
     }
@@ -126,9 +123,7 @@ export default function MenuTree() {
       // Get all siblings at this level
       const siblings = data
         .filter((menuItem) =>
-          parentId === null
-            ? menuItem.parent_id === null
-            : menuItem.parent_id === parentId
+          parentId === null ? menuItem.parent_id === null : menuItem.parent_id === parentId,
         )
         .sort((a, b) => a.position - b.position);
 
@@ -161,9 +156,7 @@ export default function MenuTree() {
         .sort((a, b) => a.position - b.position);
 
       // Find the current item's index among siblings
-      const currentIndex = siblings.findIndex(
-        (sibling) => sibling.id === itemId
-      );
+      const currentIndex = siblings.findIndex((sibling) => sibling.id === itemId);
 
       // If already at the top, do nothing
       if (currentIndex <= 0) return;
@@ -188,7 +181,7 @@ export default function MenuTree() {
       await get();
     } catch (error) {
       console.error('Error moving item up:', error);
-      notify({message: t('Failed to move menu item'), type: 'error'});
+      notify({ message: t('Failed to move menu item'), type: 'error' });
     }
   };
 
@@ -204,9 +197,7 @@ export default function MenuTree() {
         .sort((a, b) => a.position - b.position);
 
       // Find the current item's index among siblings
-      const currentIndex = siblings.findIndex(
-        (sibling) => sibling.id === itemId
-      );
+      const currentIndex = siblings.findIndex((sibling) => sibling.id === itemId);
 
       // If already at the bottom, do nothing
       if (currentIndex >= siblings.length - 1 || currentIndex === -1) return;
@@ -231,7 +222,7 @@ export default function MenuTree() {
       await get();
     } catch (error) {
       console.error('Error moving item down:', error);
-      notify({message: t('Failed to move menu item'), type: 'error'});
+      notify({ message: t('Failed to move menu item'), type: 'error' });
     }
   };
 
@@ -244,14 +235,12 @@ export default function MenuTree() {
       const latestData = await get();
 
       // Find the item directly in the data array
-      const menuData = Array.isArray(latestData)
-        ? latestData
-        : latestData?.data || [];
+      const menuData = Array.isArray(latestData) ? latestData : latestData?.data || [];
       const item = menuData.find((item) => item.id === itemId);
 
       if (!item) {
         console.error(`Item with id ${itemId} not found in data array`);
-        notify({message: t('Menu item not found'), type: 'error'});
+        notify({ message: t('Menu item not found'), type: 'error' });
         return false;
       }
 
@@ -275,11 +264,9 @@ export default function MenuTree() {
       console.log(`Reordering siblings at new parent level: ${newParentId}`);
       if (newParentId !== null) {
         // Get items with this parent
-        const newParentItems = menuData.filter(
-          (item) => item.parent_id === newParentId
-        );
+        const newParentItems = menuData.filter((item) => item.parent_id === newParentId);
         // Add our moved item
-        newParentItems.push({...updatedItem, position: 1000});
+        newParentItems.push({ ...updatedItem, position: 1000 });
         // Sort and update positions
         newParentItems.sort((a, b) => a.position - b.position);
 
@@ -292,11 +279,9 @@ export default function MenuTree() {
         }
       } else {
         // Handle root items
-        const rootItems = menuData.filter(
-          (item) => item.parent_id === null && item.id !== itemId
-        );
+        const rootItems = menuData.filter((item) => item.parent_id === null && item.id !== itemId);
         // Add our moved item
-        rootItems.push({...updatedItem, parent_id: null, position: 1000});
+        rootItems.push({ ...updatedItem, parent_id: null, position: 1000 });
         // Sort and update positions
         rootItems.sort((a, b) => a.position - b.position);
 
@@ -315,7 +300,7 @@ export default function MenuTree() {
         if (oldParentId !== null) {
           // Get items with the old parent, excluding the moved item
           const oldParentItems = menuData.filter(
-            (item) => item.parent_id === oldParentId && item.id !== itemId
+            (item) => item.parent_id === oldParentId && item.id !== itemId,
           );
 
           // Sort and update positions
@@ -331,7 +316,7 @@ export default function MenuTree() {
         } else {
           // Handle root items, excluding the moved item
           const rootItems = menuData.filter(
-            (item) => item.parent_id === null && item.id !== itemId
+            (item) => item.parent_id === null && item.id !== itemId,
           );
 
           // Sort and update positions
@@ -352,12 +337,10 @@ export default function MenuTree() {
       console.log('Fresh data after parent change:', freshData);
 
       // Get the actual array of items from the response
-      const menuData2 = Array.isArray(freshData)
-        ? freshData
-        : freshData?.data || [];
+      const menuData2 = Array.isArray(freshData) ? freshData : freshData?.data || [];
 
       // Force rebuild the menu tree with fresh data
-      const {rootItems, itemMap} = buildMenuTree(menuData2);
+      const { rootItems, itemMap } = buildMenuTree(menuData2);
       console.log('New menu tree:', rootItems);
       setMenuItems(rootItems);
       setMenuItemsMap(itemMap);
@@ -371,7 +354,7 @@ export default function MenuTree() {
       return true; // Return success
     } catch (error) {
       console.error('Error changing parent:', error);
-      notify({message: t('Failed to change menu item parent'), type: 'error'});
+      notify({ message: t('Failed to change menu item parent'), type: 'error' });
       return false; // Return failure
     }
   };
@@ -398,25 +381,19 @@ export default function MenuTree() {
 
           // Now reorder siblings using the fresh data
           try {
-            console.log(
-              `Reordering siblings with parent_id: ${parentId} after deletion`
-            );
+            console.log(`Reordering siblings with parent_id: ${parentId} after deletion`);
 
             // Get all siblings at this level from the fresh data
-            const menuData = Array.isArray(freshData)
-              ? freshData
-              : freshData?.data || [];
+            const menuData = Array.isArray(freshData) ? freshData : freshData?.data || [];
             const siblings = menuData
               .filter((menuItem) =>
-                parentId === null
-                  ? menuItem.parent_id === null
-                  : menuItem.parent_id === parentId
+                parentId === null ? menuItem.parent_id === null : menuItem.parent_id === parentId,
               )
               .sort((a, b) => a.position - b.position);
 
             console.log(
               `Found ${siblings.length} siblings to reorder after deletion:`,
-              siblings.map((s) => ({id: s.id, title: s.title}))
+              siblings.map((s) => ({ id: s.id, title: s.title })),
             );
 
             // Update each sibling with a new position
@@ -430,21 +407,18 @@ export default function MenuTree() {
             // Final refresh of data
             await get();
           } catch (reorderError) {
-            console.error(
-              'Error reordering siblings after deletion:',
-              reorderError
-            );
+            console.error('Error reordering siblings after deletion:', reorderError);
             // Don't throw the error, as the deletion was successful
           }
         },
         (error) => {
           console.error('Error deleting item:', error);
-          notify({message: t('Failed to delete menu item'), type: 'error'});
-        }
+          notify({ message: t('Failed to delete menu item'), type: 'error' });
+        },
       );
     } catch (error) {
       console.error('Error deleting item:', error);
-      notify({message: t('Failed to delete menu item'), type: 'error'});
+      notify({ message: t('Failed to delete menu item'), type: 'error' });
     }
   };
 
@@ -480,7 +454,7 @@ export default function MenuTree() {
         // Then reorder all siblings at this level
         await reorderSiblings(data.parent_id);
 
-        notify({message: t('Menu item added successfully'), type: 'success'});
+        notify({ message: t('Menu item added successfully'), type: 'success' });
         setNewItemParentId(null);
       } else if (action === 'update') {
         // Update existing item
@@ -492,13 +466,13 @@ export default function MenuTree() {
           ...data,
         });
 
-        notify({message: t('Menu item updated successfully'), type: 'success'});
+        notify({ message: t('Menu item updated successfully'), type: 'success' });
       }
 
       await get();
     } catch (error) {
       console.error('Error saving menu item:', error);
-      notify({message: t('Failed to save menu item'), type: 'error'});
+      notify({ message: t('Failed to save menu item'), type: 'error' });
     }
   };
 
@@ -526,9 +500,7 @@ export default function MenuTree() {
       <main className="max-w-screen-lg mx-auto pt-4 flex flex-col px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
           <div>
-            <H1 className="text-[32px] font-bold text-primary my-0!">
-              {t('Menu Management')}
-            </H1>
+            <H1 className="text-[32px] font-bold text-primary my-0!">{t('Menu Management')}</H1>
             {/* <p className="text-gray-500 mt-1 mb-3 text-sm">
               {t(
                 'Use "/my-page" for internal links, and "https://example.com" for external links, or leave blank for navigation items without a link.'
@@ -561,11 +533,7 @@ export default function MenuTree() {
         <div className="relative flex-grow overflow-auto">
           <LoadingOverlay visible={loading} />
 
-          {error && (
-            <div className="p-4 bg-red-100 text-red-700 rounded-md mb-4">
-              {error}
-            </div>
-          )}
+          {error && <div className="p-4 bg-red-100 text-red-700 rounded-md mb-4">{error}</div>}
 
           <div className="pt-4">
             {menuItems.length > 0 ? (
@@ -586,9 +554,7 @@ export default function MenuTree() {
               ))
             ) : (
               <div className="text-center py-8 text-gray-500">
-                {loading
-                  ? t('Loading...')
-                  : t('No menu items yet. Add your first menu item!')}
+                {loading ? t('Loading...') : t('No menu items yet. Add your first menu item!')}
               </div>
             )}
           </div>

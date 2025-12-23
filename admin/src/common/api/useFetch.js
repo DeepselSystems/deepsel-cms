@@ -1,23 +1,19 @@
-import {Preferences} from '@capacitor/preferences';
-import {useEffect, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { Preferences } from '@capacitor/preferences';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import backendHost from '../../constants/backendHost.js';
 import useAuthentication from './useAuthentication.js';
 
 export default function useFetch(
   url,
-  {
-    autoFetch = false,
-    params: paramsProp = null,
-    redirectLoginIfUnauthorized = true,
-  } = {}
+  { autoFetch = false, params: paramsProp = null, redirectLoginIfUnauthorized = true } = {},
 ) {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const {setUser} = useAuthentication();
+  const { setUser } = useAuthentication();
   const [params, setParams] = useState(paramsProp);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -28,17 +24,17 @@ export default function useFetch(
     }
   }, [params]);
 
-  async function fetchCommon({method = 'GET', path = url, data}) {
+  async function fetchCommon({ method = 'GET', path = url, data }) {
     try {
       let endpoint = `${backendHost}/${path}`;
-      const headers = {'Content-Type': 'application/json'};
-      const tokenResult = await Preferences.get({key: 'token'});
+      const headers = { 'Content-Type': 'application/json' };
+      const tokenResult = await Preferences.get({ key: 'token' });
 
       if (tokenResult?.value) {
         headers.Authorization = `Bearer ${tokenResult.value}`;
       }
 
-      const fetchOptions = {method, headers};
+      const fetchOptions = { method, headers };
 
       if (method !== 'GET' && data) {
         fetchOptions.body = JSON.stringify(data);
@@ -69,8 +65,8 @@ export default function useFetch(
 
   async function resetAuth() {
     await Promise.all([
-      Preferences.remove({key: 'token'}),
-      Preferences.remove({key: 'userData'}),
+      Preferences.remove({ key: 'token' }),
+      Preferences.remove({ key: 'userData' }),
     ]);
     setUser(null);
     console.log('useFetch.resetAuth redirect to login');
@@ -82,7 +78,7 @@ export default function useFetch(
   async function fetchData() {
     setLoading(true);
     try {
-      const result = await fetchCommon({data: params});
+      const result = await fetchCommon({ data: params });
       if (Array.isArray(result)) {
         setData(result);
       } else {
@@ -101,7 +97,7 @@ export default function useFetch(
     }
   }
 
-  async function post(data, {path} = {}) {
+  async function post(data, { path } = {}) {
     setLoading(true);
     try {
       const result = await fetchCommon({
@@ -116,7 +112,7 @@ export default function useFetch(
     }
   }
 
-  async function put(data, {path} = {}) {
+  async function put(data, { path } = {}) {
     setLoading(true);
     try {
       const result = await fetchCommon({

@@ -1,18 +1,11 @@
-import {useEffect, useState, useRef} from 'react';
-import {Modal, Button, TextInput, ColorInput, NumberInput} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {v4 as uuidv4} from 'uuid';
+import { useEffect, useState, useRef } from 'react';
+import { Modal, Button, TextInput, ColorInput, NumberInput } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { v4 as uuidv4 } from 'uuid';
 import RichTextInput from './RichTextInput';
 
-const RichTextModal = ({
-  isOpen,
-  close,
-  richtextId,
-  initialConfig,
-  initialContent,
-  onSave,
-}) => {
-  const {t} = useTranslation();
+const RichTextModal = ({ isOpen, close, richtextId, initialConfig, initialContent, onSave }) => {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [config, setConfig] = useState({
     maxWidth: null,
@@ -34,16 +27,14 @@ const RichTextModal = ({
           padding: 16,
           borderRadius: 8,
           border: '1px solid #e0e0e0',
-        }
+        },
       );
     }
   }, [initialContent, initialConfig, isOpen]);
 
   const handleSave = () => {
     // Get the HTML content from the rich text editor
-    const htmlContent = richTextRef.current
-      ? richTextRef.current.getHTML()
-      : content;
+    const htmlContent = richTextRef.current ? richTextRef.current.getHTML() : content;
 
     // Generate a new ID if this is a new richtext component
     const id = richtextId || `richtext-${uuidv4()}`;
@@ -88,7 +79,7 @@ const RichTextModal = ({
               label={t('Max Width (px)')}
               placeholder={t('Auto')}
               value={config.maxWidth}
-              onChange={(value) => setConfig({...config, maxWidth: value})}
+              onChange={(value) => setConfig({ ...config, maxWidth: value })}
               min={0}
               step={10}
               allowNegative={false}
@@ -97,23 +88,14 @@ const RichTextModal = ({
             <ColorInput
               label={t('Background Color')}
               value={config.backgroundColor}
-              onChange={(value) =>
-                setConfig({...config, backgroundColor: value})
-              }
+              onChange={(value) => setConfig({ ...config, backgroundColor: value })}
               format="hex"
-              swatches={[
-                '#f5f5f5',
-                '#ffffff',
-                '#f0f8ff',
-                '#fff8e1',
-                '#f1f8e9',
-                '#fce4ec',
-              ]}
+              swatches={['#f5f5f5', '#ffffff', '#f0f8ff', '#fff8e1', '#f1f8e9', '#fce4ec']}
             />
             <NumberInput
               label={t('Padding (px)')}
               value={config.padding}
-              onChange={(value) => setConfig({...config, padding: value})}
+              onChange={(value) => setConfig({ ...config, padding: value })}
               min={0}
               max={48}
               step={2}
@@ -123,7 +105,7 @@ const RichTextModal = ({
             <NumberInput
               label={t('Border Radius (px)')}
               value={config.borderRadius}
-              onChange={(value) => setConfig({...config, borderRadius: value})}
+              onChange={(value) => setConfig({ ...config, borderRadius: value })}
               min={0}
               max={24}
               step={1}
@@ -133,7 +115,7 @@ const RichTextModal = ({
             <TextInput
               label={t('Border')}
               value={config.border}
-              onChange={(e) => setConfig({...config, border: e.target.value})}
+              onChange={(e) => setConfig({ ...config, border: e.target.value })}
               placeholder="1px solid #e0e0e0"
               className="col-span-1 md:col-span-2"
             />

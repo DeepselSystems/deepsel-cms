@@ -1,9 +1,9 @@
 import Details from '@tiptap/extension-details';
 import DetailsContent from '@tiptap/extension-details-content';
 import DetailsSummary from '@tiptap/extension-details-summary';
-import {Plugin, PluginKey} from 'prosemirror-state';
-import {toggleDetailsWithAnimation} from './utils.js';
-import {DETAILS_CLASSES} from './constants.js';
+import { Plugin, PluginKey } from 'prosemirror-state';
+import { toggleDetailsWithAnimation } from './utils.js';
+import { DETAILS_CLASSES } from './constants.js';
 
 /**
  * Enhanced Details extension with smooth animation support
@@ -44,7 +44,7 @@ const EnhancedDetails = Details.extend({
 
                   // Find the content div
                   const contentDiv = detailsElement.querySelector(
-                    'div[data-type="detailsContent"]'
+                    'div[data-type="detailsContent"]',
                   );
 
                   if (contentDiv) {
@@ -64,4 +64,4 @@ const EnhancedDetails = Details.extend({
   },
 });
 
-export {EnhancedDetails, DetailsContent, DetailsSummary};
+export { EnhancedDetails, DetailsContent, DetailsSummary };

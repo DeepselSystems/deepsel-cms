@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import {
   Modal,
   TextInput,
@@ -20,9 +20,9 @@ import {
   faArrowDown,
   faInfoCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useTranslation} from 'react-i18next';
-import {YOUTUBE_REG_EXP} from '../utils.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTranslation } from 'react-i18next';
+import { YOUTUBE_REG_EXP } from '../utils.js';
 
 /**
  * @typedef JumpMarkData
@@ -44,9 +44,9 @@ import {YOUTUBE_REG_EXP} from '../utils.js';
  * @returns {JSX.Element}
  * @constructor
  */
-const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
+const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Form state
   const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -156,10 +156,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
 
     setJumpMarks((prevState) => {
       const newState = [...prevState];
-      [newState[index], newState[newIndex]] = [
-        newState[newIndex],
-        newState[index],
-      ];
+      [newState[index], newState[newIndex]] = [newState[newIndex], newState[index]];
       return newState;
     });
   };
@@ -262,15 +259,11 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
           placeholder={t('Enter title for the video')}
           value={videoTitle}
           onChange={(e) => setVideoTitle(e.target.value)}
-          description={t(
-            'If left empty, no title will be displayed above the video'
-          )}
+          description={t('If left empty, no title will be displayed above the video')}
         />
 
         <Alert icon={<FontAwesomeIcon icon={faInfoCircle} />} color="blue">
-          {t(
-            'Supported formats: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID'
-          )}
+          {t('Supported formats: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID')}
         </Alert>
 
         {/* Show Jump Marks Checkbox */}
@@ -287,11 +280,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
               <Text size="sm" weight={500}>
                 {t('Jump Marks')} ({jumpMarks.length})
               </Text>
-              <Button
-                size="xs"
-                leftIcon={<FontAwesomeIcon icon={faPlus} />}
-                onClick={addJumpMark}
-              >
+              <Button size="xs" leftIcon={<FontAwesomeIcon icon={faPlus} />} onClick={addJumpMark}>
                 {t('Add Jump Mark')}
               </Button>
             </Group>
@@ -303,10 +292,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
             ) : (
               <Stack spacing="xs">
                 {jumpMarks.map((mark, index) => (
-                  <div
-                    key={index}
-                    className="border border-gray-200 rounded-lg p-3 bg-gray-50"
-                  >
+                  <div key={index} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
                     <Group spacing="xs">
                       <TextInput
                         placeholder="0:30"
@@ -322,11 +308,9 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
                       <TextInput
                         placeholder={t('Jump mark title')}
                         value={mark.label}
-                        onChange={(e) =>
-                          updateJumpMark(index, 'label', e.target.value)
-                        }
+                        onChange={(e) => updateJumpMark(index, 'label', e.target.value)}
                         size="xs"
-                        style={{flex: 1}}
+                        style={{ flex: 1 }}
                       />
 
                       <ActionIcon
@@ -345,11 +329,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
                         <FontAwesomeIcon icon={faArrowDown} />
                       </ActionIcon>
 
-                      <ActionIcon
-                        size="sm"
-                        color="red"
-                        onClick={() => removeJumpMark(index)}
-                      >
+                      <ActionIcon size="sm" color="red" onClick={() => removeJumpMark(index)}>
                         <FontAwesomeIcon icon={faTrash} />
                       </ActionIcon>
                     </Group>
@@ -358,9 +338,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
                       hidden
                       placeholder={t('Optional description')}
                       value={mark.description}
-                      onChange={(e) =>
-                        updateJumpMark(index, 'description', e.target.value)
-                      }
+                      onChange={(e) => updateJumpMark(index, 'description', e.target.value)}
                       size="xs"
                       minRows={1}
                       maxRows={3}
@@ -377,9 +355,7 @@ const JumpMarksModal = ({isOpen, onClose, onSave, initialData = null}) => {
         <Button variant="outline" onClick={handleClose}>
           {t('Cancel')}
         </Button>
-        <Button onClick={handleSave}>
-          {initialData ? t('Update') : t('Insert Video')}
-        </Button>
+        <Button onClick={handleSave}>{initialData ? t('Update') : t('Insert Video')}</Button>
       </Box>
     </Modal>
   );

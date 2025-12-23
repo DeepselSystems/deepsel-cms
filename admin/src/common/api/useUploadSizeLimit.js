@@ -1,4 +1,4 @@
-import {useEffect, useState, useRef, useCallback} from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import useFetch from './useFetch.js';
 
 // Global cache to prevent multiple API calls
@@ -11,14 +11,12 @@ let globalPromise = null;
  * @returns {Object} - Upload size limit configuration
  */
 export default function useUploadSizeLimit() {
-  const [uploadSizeLimit, setUploadSizeLimit] = useState(
-    globalUploadConfig?.uploadSizeLimit || 5
-  );
+  const [uploadSizeLimit, setUploadSizeLimit] = useState(globalUploadConfig?.uploadSizeLimit || 5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const hasInitialized = useRef(false);
 
-  const {get} = useFetch('attachment/config/upload_size_limit', {
+  const { get } = useFetch('attachment/config/upload_size_limit', {
     autoFetch: false,
     redirectLoginIfUnauthorized: false,
   });

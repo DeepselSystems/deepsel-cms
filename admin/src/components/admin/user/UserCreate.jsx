@@ -1,34 +1,34 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useState} from 'react';
+import { useState } from 'react';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import RecordSelectMulti from '../../../common/ui/RecordSelectMulti.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import FileInput from '../../../common/ui/FileInput.jsx';
 import CreateFormWrapper from '../../../common/ui/CreateFormWrapper.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faAddressBook, faFingerprint} from '@fortawesome/free-solid-svg-icons';
-import {Tabs} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAddressBook, faFingerprint } from '@fortawesome/free-solid-svg-icons';
+import { Tabs } from '@mantine/core';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import Select from '../../../common/ui/Select.jsx';
 import H3 from '../../../common/ui/H3.jsx';
 import Divider from '../../../common/ui/Divider.jsx';
 import countries from '../../../constants/countries.js';
 import useHash from '../../../common/api/useHash.js';
-import {Combobox, Group, CheckIcon} from '@mantine/core';
+import { Combobox, Group, CheckIcon } from '@mantine/core';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 
 export default function UserCreate(props) {
-  const {modalMode} = props;
-  const {t} = useTranslation();
-  const {user: currentUser} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {organizations} = OrganizationState();
-  const {hashParams, updateHash} = useHash();
+  const { modalMode } = props;
+  const { t } = useTranslation();
+  const { user: currentUser } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
+  const { organizations } = OrganizationState();
+  const { hashParams, updateHash } = useHash();
   const tabFromHash = hashParams.get('tab');
 
   const [record, setRecord] = useState({
@@ -55,14 +55,12 @@ export default function UserCreate(props) {
     website: '',
     company_name: '',
     roles: [],
-    organizations: organizationId
-      ? organizations.filter((org) => org.id === organizationId)
-      : [],
+    organizations: organizationId ? organizations.filter((org) => org.id === organizationId) : [],
   });
   const [loading, setLoading] = useState(false);
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
-  const {create: createUser} = useModel('user');
+  const { create: createUser } = useModel('user');
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -86,11 +84,7 @@ export default function UserCreate(props) {
   }
 
   return (
-    <CreateFormWrapper
-      onSubmit={handleSubmit}
-      modalMode={modalMode}
-      loading={loading}
-    >
+    <CreateFormWrapper onSubmit={handleSubmit} modalMode={modalMode} loading={loading}>
       <div className={`flex items-start justify-between gap-2`}>
         <div className={`flex items-center gap-2`}>
           <FileInput
@@ -156,15 +150,13 @@ export default function UserCreate(props) {
       <Tabs
         variant="outline"
         defaultValue={tabFromHash || 'contact'}
-        onChange={(value) => updateHash({tab: value})}
+        onChange={(value) => updateHash({ tab: value })}
         className="mt-4"
       >
         <Tabs.List>
           <Tabs.Tab
             value="contact"
-            leftSection={
-              <FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />
-            }
+            leftSection={<FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />}
           >
             {t('Contact Info')}
           </Tabs.Tab>
@@ -174,9 +166,7 @@ export default function UserCreate(props) {
           >
             <Tabs.Tab
               value="access"
-              leftSection={
-                <FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />
-              }
+              leftSection={<FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />}
             >
               {t('Access')}
             </Tabs.Tab>
@@ -193,21 +183,17 @@ export default function UserCreate(props) {
               label={t(`Roles`)}
               model={`role`}
               value={record.roles}
-              onChange={(roles) => setRecord({...record, roles})}
+              onChange={(roles) => setRecord({ ...record, roles })}
               filters={
                 currentUser.roles.find((role) =>
-                  ['admin_role', 'super_admin_role'].includes(role.string_id)
+                  ['admin_role', 'super_admin_role'].includes(role.string_id),
                 )
                   ? []
                   : [
                       {
                         field: 'string_id',
                         operator: 'in',
-                        value: [
-                          'website_admin_role',
-                          'website_editor_role',
-                          'website_author_role',
-                        ],
+                        value: ['website_admin_role', 'website_editor_role', 'website_author_role'],
                       },
                     ]
               }
@@ -218,17 +204,11 @@ export default function UserCreate(props) {
                   active={currentValue?.find((r) => r.id === option.id)}
                 >
                   <Group gap="sm">
-                    {currentValue?.find((r) => r.id === option.id) ? (
-                      <CheckIcon size={12} />
-                    ) : null}
+                    {currentValue?.find((r) => r.id === option.id) ? <CheckIcon size={12} /> : null}
                     <div className="py-1">
-                      <div className="font-semibold text-gray-900">
-                        {option.name}
-                      </div>
+                      <div className="font-semibold text-gray-900">{option.name}</div>
                       {option.description && (
-                        <div className="text-sm text-gray-500">
-                          {option.description}
-                        </div>
+                        <div className="text-sm text-gray-500">{option.description}</div>
                       )}
                     </div>
                   </Group>
@@ -240,12 +220,10 @@ export default function UserCreate(props) {
               label={t(`Organizations`)}
               model={`organization`}
               value={record.organizations}
-              onChange={(organizations) =>
-                setRecord({...record, organizations})
-              }
+              onChange={(organizations) => setRecord({ ...record, organizations })}
               filters={
                 currentUser.roles.find((role) =>
-                  ['admin_role', 'super_admin_role'].includes(role.string_id)
+                  ['admin_role', 'super_admin_role'].includes(role.string_id),
                 )
                   ? []
                   : currentUser.organizations.length === 0

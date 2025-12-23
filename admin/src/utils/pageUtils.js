@@ -1,5 +1,5 @@
 import backendHost from '../constants/backendHost';
-import {isValidLanguage} from '../constants/locales';
+import { isValidLanguage } from '../constants/locales';
 
 /**
  * Parses a slug to determine language and path
@@ -25,13 +25,13 @@ export function parseSlugForLangAndPath(slug) {
     path = slugParts.length > 0 ? '/' + slugParts.join('/') : '/';
   }
 
-  return {lang, path};
+  return { lang, path };
 }
 
 /**
  * Fetches page data from the backend by language and slug
  * Handles both regular pages and blog routes (starting with /blog)
- * 
+ *
  * @param {string|null} lang - The language code, null for default language
  * @param {string} slug - The page slug (e.g., "/about", "/blog", "/blog/my-post")
  * @param {boolean} isPreview - Whether this is a preview request (allows unpublished pages)
@@ -44,7 +44,7 @@ export async function fetchPageData(
   slug,
   isPreview = false,
   authToken = null,
-  astroRequest = null
+  astroRequest = null,
 ) {
   try {
     // Format the slug properly
@@ -99,8 +99,8 @@ export async function fetchPageData(
     // If no token provided and we're in browser environment, try Capacitor Preferences
     if (!token && typeof window !== 'undefined') {
       try {
-        const {Preferences} = await import('@capacitor/preferences');
-        const tokenResult = await Preferences.get({key: 'token'});
+        const { Preferences } = await import('@capacitor/preferences');
+        const tokenResult = await Preferences.get({ key: 'token' });
         token = tokenResult.value;
       } catch (e) {
         console.warn('Could not get token from Preferences:', e);
@@ -116,21 +116,17 @@ export async function fetchPageData(
 
     // Handle authentication errors
     if (response.status === 401) {
-      return {error: true, status: 401, message: 'Authentication required'};
+      return { error: true, status: 401, message: 'Authentication required' };
     }
 
     // Only treat actual 404 as not found
     if (response.status === 404) {
-      const {detail} = await response.json();
-      console.log('404', url, {detail});
+      const { detail } = await response.json();
+      console.log('404', url, { detail });
 
       // When page is not found, still fetch menus and site settings
       try {
-        const siteSettings = await fetchPublicSettings(
-          null,
-          astroRequest,
-          lang
-        );
+        const siteSettings = await fetchPublicSettings(null, astroRequest, lang);
         return {
           notFound: true,
           status: 404,
@@ -139,11 +135,8 @@ export async function fetchPageData(
           lang: lang || siteSettings?.default_language?.iso_code || 'en',
         };
       } catch (settingsError) {
-        console.warn(
-          'Could not fetch site settings for 404 page:',
-          settingsError
-        );
-        return {notFound: true, status: 404, detail};
+        console.warn('Could not fetch site settings for 404 page:', settingsError);
+        return { notFound: true, status: 404, detail };
       }
     }
 
@@ -154,11 +147,11 @@ export async function fetchPageData(
       return jsonData;
     } catch (parseError) {
       console.error(`Failed to parse response: ${parseError.message}`);
-      return {error: true, parseError: parseError.message};
+      return { error: true, parseError: parseError.message };
     }
   } catch (error) {
     console.error('Error fetching page data:', error);
-    return {error: true, message: error.message};
+    return { error: true, message: error.message };
   }
 }
 
@@ -190,8 +183,8 @@ export async function fetchFormData(lang, slug, authToken) {
     // If no token provided, and we're in browser environment, try Capacitor Preferences
     if (!token && typeof window !== 'undefined') {
       try {
-        const {Preferences} = await import('@capacitor/preferences');
-        const tokenResult = await Preferences.get({key: 'token'});
+        const { Preferences } = await import('@capacitor/preferences');
+        const tokenResult = await Preferences.get({ key: 'token' });
         token = tokenResult.value;
       } catch (e) {
         console.warn('Could not get token from Preferences:', e);
@@ -207,9 +200,9 @@ export async function fetchFormData(lang, slug, authToken) {
 
     // Only treat actual 404 as not found
     if (response.status === 404) {
-      const {detail} = await response.json();
-      console.warn('404', url, {detail});
-      return {notFound: true, status: 404, detail};
+      const { detail } = await response.json();
+      console.warn('404', url, { detail });
+      return { notFound: true, status: 404, detail };
     }
 
     try {
@@ -217,11 +210,11 @@ export async function fetchFormData(lang, slug, authToken) {
       return await response.json();
     } catch (parseError) {
       console.error(`Failed to parse response: ${parseError.message}`);
-      return {error: true, parseError: parseError.message};
+      return { error: true, parseError: parseError.message };
     }
   } catch (error) {
     console.error('Error fetching page data:', error);
-    return {error: true, message: error.message};
+    return { error: true, message: error.message };
   }
 }
 
@@ -232,11 +225,7 @@ export async function fetchFormData(lang, slug, authToken) {
  * @param {string|null} lang - Optional language parameter
  * @returns {Promise<Object>} - The public settings data
  */
-export async function fetchPublicSettings(
-  orgId = null,
-  astroRequest = null,
-  lang = null
-) {
+export async function fetchPublicSettings(orgId = null, astroRequest = null, lang = null) {
   try {
     let url;
 

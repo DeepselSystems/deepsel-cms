@@ -1,17 +1,9 @@
-import {useMemo, useEffect} from 'react';
-import {faPlus, faTrash, faGear} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  LoadingOverlay,
-  Modal,
-  Tabs,
-  Tooltip,
-  Menu,
-  Drawer,
-} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useMemo, useEffect } from 'react';
+import { faPlus, faTrash, faGear } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
@@ -23,10 +15,7 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import {
-  getAttachmentUrl,
-  mergeContentsWithServerData,
-} from '../../../common/utils/index.js';
+import { getAttachmentUrl, mergeContentsWithServerData } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
@@ -34,7 +23,7 @@ import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.
 import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
@@ -43,7 +32,7 @@ import 'prismjs/themes/prism.css';
 import H3 from '../../../common/ui/H3.jsx';
 import useEditSession from '../../../common/hooks/useEditSession.js';
 import useFetch from '../../../common/api/useFetch.js';
-import {useState} from 'react';
+import { useState } from 'react';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 import SideBySideLanguageModal from '../../shared/SideBySideEditing/SideBySideLanguageModal.jsx';
@@ -52,17 +41,17 @@ import BlogPostContentEditor from '../../shared/SideBySideEditing/BlogPostConten
 import AIWriterModal from '../page/components/AIWriterModal.jsx';
 
 export default function BlogPostEdit() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {id} = useParams();
-  const {notify} = NotificationState((state) => state);
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { id } = useParams();
+  const { notify } = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
 
-  const query = useModel('blog_post', {id, autoFetch: true});
-  const {record, setRecord, update, loading} = query;
+  const query = useModel('blog_post', { id, autoFetch: true });
+  const { record, setRecord, update, loading } = query;
 
-  const {data: locales} = useModel('locale', {
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -102,15 +91,15 @@ export default function BlogPostEdit() {
    */
   const activeContent = useMemo(
     () => record?.contents?.find((c) => String(c.id) === activeContentTab),
-    [activeContentTab, record?.contents]
+    [activeContentTab, record?.contents],
   );
 
   // Edit session management for parallel edit detection
   // Note: Using null for contentId to track blog post level editing (not individual content items)
-  const {parallelEditWarning, clearParallelEditWarning} = useEditSession(
+  const { parallelEditWarning, clearParallelEditWarning } = useEditSession(
     'blog_post',
     id,
-    null // Track at blog post level, not per-content-item
+    null, // Track at blog post level, not per-content-item
   );
 
   // Simple conflict resolution state
@@ -118,14 +107,12 @@ export default function BlogPostEdit() {
   const [isResolvingConflict, setIsResolvingConflict] = useState(false);
   const [editStartTimestamp, setEditStartTimestamp] = useState(null);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
-  const [isResolvingConflictLoading, setIsResolvingConflictLoading] =
-    useState(false);
+  const [isResolvingConflictLoading, setIsResolvingConflictLoading] = useState(false);
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
   const isAiFeatureAvailable =
-    !!siteSettings?.has_openrouter_api_key &&
-    !!siteSettings?.ai_autocomplete_model_id;
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
   const aiRequirementMessage = t(
-    'Please specify an API key and autocomplete model in Site Settings to use this feature.'
+    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
   );
 
   // Side-by-side editing state
@@ -134,12 +121,9 @@ export default function BlogPostEdit() {
   const [selectedLanguageContents, setSelectedLanguageContents] = useState([]);
 
   // Conflict check API
-  const {post: checkConflictAPI} = useFetch(
-    'conflict_resolution/check-conflict',
-    {
-      autoFetch: false,
-    }
-  );
+  const { post: checkConflictAPI } = useFetch('conflict_resolution/check-conflict', {
+    autoFetch: false,
+  });
 
   // Simple conflict resolution functions
   const startEditSession = () => {
@@ -149,15 +133,9 @@ export default function BlogPostEdit() {
   };
 
   // Helper function for re-checking conflicts without updating modal state
-  const recheckConflicts = async (
-    recordType,
-    recordId,
-    userContents = null
-  ) => {
+  const recheckConflicts = async (recordType, recordId, userContents = null) => {
     if (!editStartTimestamp) {
-      throw new Error(
-        'Edit session not started. Call startEditSession() first.'
-      );
+      throw new Error('Edit session not started. Call startEditSession() first.');
     }
 
     try {
@@ -180,22 +158,16 @@ export default function BlogPostEdit() {
         };
       }
 
-      return {hasConflict: false};
+      return { hasConflict: false };
     } catch (error) {
       console.error('Error re-checking for conflicts:', error);
       throw error;
     }
   };
 
-  const checkForConflicts = async (
-    recordType,
-    recordId,
-    userContents = null
-  ) => {
+  const checkForConflicts = async (recordType, recordId, userContents = null) => {
     if (!editStartTimestamp) {
-      throw new Error(
-        'Edit session not started. Call startEditSession() first.'
-      );
+      throw new Error('Edit session not started. Call startEditSession() first.');
     }
 
     try {
@@ -227,7 +199,7 @@ export default function BlogPostEdit() {
         };
       }
 
-      return {hasConflict: false};
+      return { hasConflict: false };
     } catch (error) {
       console.error('Error checking for conflicts:', error);
       throw error;
@@ -267,11 +239,7 @@ export default function BlogPostEdit() {
       };
 
       // Check for conflicts before saving, send processed contents for AI explanation
-      const conflictResult = await checkForConflicts(
-        'blog_post',
-        record.id,
-        processedContents
-      );
+      const conflictResult = await checkForConflicts('blog_post', record.id, processedContents);
 
       if (conflictResult.hasConflict) {
         // Conflict detected - store the record we were trying to save for the modal
@@ -284,11 +252,11 @@ export default function BlogPostEdit() {
       }
 
       await update(recordToSave);
-      notify({message: t('Blog Post updated successfully!'), type: 'success'});
+      notify({ message: t('Blog Post updated successfully!'), type: 'success' });
       navigate(-1);
     } catch (error) {
       console.error(error);
-      notify({message: error.message, type: 'error'});
+      notify({ message: error.message, type: 'error' });
     }
   };
 
@@ -298,20 +266,12 @@ export default function BlogPostEdit() {
       const processedContents = processContentsForSubmit(resolvedData.contents);
 
       // Re-check for conflicts before saving to ensure we have the latest server data
-      const conflictResult = await recheckConflicts(
-        'blog_post',
-        record.id,
-        processedContents
-      );
+      const conflictResult = await recheckConflicts('blog_post', record.id, processedContents);
 
       if (conflictResult.hasConflict) {
         // Check if the server data has changed since the modal was opened
-        const currentServerTimestamp = new Date(
-          conflictResult.lastModifiedAt
-        ).getTime();
-        const modalServerTimestamp = new Date(
-          conflictData?.lastModifiedAt
-        ).getTime();
+        const currentServerTimestamp = new Date(conflictResult.lastModifiedAt).getTime();
+        const modalServerTimestamp = new Date(conflictData?.lastModifiedAt).getTime();
 
         if (currentServerTimestamp > modalServerTimestamp) {
           // Server data has changed - update modal with new data
@@ -325,7 +285,7 @@ export default function BlogPostEdit() {
 
           notify({
             message: t(
-              'Server data has been updated by another user. Please review the new changes.'
+              'Server data has been updated by another user. Please review the new changes.',
             ),
             type: 'warning',
           });
@@ -341,12 +301,9 @@ export default function BlogPostEdit() {
       const recordToSave = serverRecord
         ? {
             ...serverRecord,
-            contents: mergeContentsWithServerData(
-              serverRecord.contents,
-              processedContents
-            ),
+            contents: mergeContentsWithServerData(serverRecord.contents, processedContents),
           }
-        : {...record, contents: processedContents};
+        : { ...record, contents: processedContents };
 
       await update(recordToSave);
 
@@ -364,7 +321,7 @@ export default function BlogPostEdit() {
       navigate(-1);
     } catch (error) {
       console.error(error);
-      notify({message: error.message, type: 'error'});
+      notify({ message: error.message, type: 'error' });
     } finally {
       setIsResolvingConflictLoading(false);
     }
@@ -385,7 +342,7 @@ export default function BlogPostEdit() {
 
   const handleSideBySideEdit = (selectedLanguageIds) => {
     const selectedContents = record.contents.filter((content) =>
-      selectedLanguageIds.includes(content.id)
+      selectedLanguageIds.includes(content.id),
     );
     setSelectedLanguageContents(selectedContents);
     setIsSideBySideMode(true);
@@ -418,14 +375,8 @@ export default function BlogPostEdit() {
           aiFeatureTooltip={aiRequirementMessage}
         />
       ) : (
-        <form
-          className={`max-w-screen-xl m-auto my-[50px] px-[24px]`}
-          onSubmit={handleSubmit}
-        >
-          <EditFormActionBar
-            query={query}
-            loading={loading || isCheckingConflicts}
-          />
+        <form className={`max-w-screen-xl m-auto my-[50px] px-[24px]`} onSubmit={handleSubmit}>
+          <EditFormActionBar query={query} loading={loading || isCheckingConflicts} />
 
           {/* Parallel Edit Warning */}
           <ParallelEditWarning
@@ -444,38 +395,23 @@ export default function BlogPostEdit() {
             </div>
             <div className="flex items-center gap-2">
               {record?.contents?.length > 1 && (
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={openSideBySideModal}
-                  className="px-2"
-                >
+                <Button variant="outline" size="md" onClick={openSideBySideModal} className="px-2">
                   {t('Edit languages side-by-side')}
                 </Button>
               )}
-              <Tooltip
-                label={aiRequirementMessage}
-                disabled={isAiFeatureAvailable}
-              >
+              <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
                 <div className="inline-flex items-center">
                   <Switch
                     label={t('AI Autocomplete')}
                     checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                    onChange={(e) =>
-                      setAiAutocompleteEnabled(e.currentTarget.checked)
-                    }
+                    onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
                     disabled={!isAiFeatureAvailable}
                     size="md"
                   />
                 </div>
               </Tooltip>
               <Tooltip label={t('Settings')}>
-                <Button
-                  variant="subtle"
-                  size="md"
-                  onClick={openSettingsDrawer}
-                  className="px-2"
-                >
+                <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
                   <FontAwesomeIcon icon={faGear} />
                 </Button>
               </Tooltip>
@@ -487,9 +423,7 @@ export default function BlogPostEdit() {
                 classNames={{
                   track: 'px-2',
                 }}
-                onChange={(e) =>
-                  setRecord({...record, published: e.currentTarget.checked})
-                }
+                onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
               />
             </div>
           </div>
@@ -498,8 +432,8 @@ export default function BlogPostEdit() {
             <LoadingOverlay
               visible={loading}
               zIndex={1000}
-              overlayProps={{radius: 'sm', blur: 2}}
-              loaderProps={{type: 'bars'}}
+              overlayProps={{ radius: 'sm', blur: 2 }}
+              loaderProps={{ type: 'bars' }}
             />
 
             <Tabs
@@ -522,13 +456,8 @@ export default function BlogPostEdit() {
                       closeDelay={400}
                     >
                       <Menu.Target>
-                        <Tabs.Tab
-                          value={String(content.id)}
-                          className="mr-1 mb-1"
-                        >
-                          <span className="mr-1">
-                            {getLanguageFlag(content.locale_id)}
-                          </span>
+                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
                           {getLanguageName(content.locale_id)}
                         </Tabs.Tab>
                       </Menu.Target>
@@ -570,18 +499,12 @@ export default function BlogPostEdit() {
                         <TextInput
                           className="w-full"
                           placeholder={t('Title')}
-                          classNames={{input: 'text-[36px]! font-bold! px-0!'}}
+                          classNames={{ input: 'text-[36px]! font-bold! px-0!' }}
                           size="xl"
                           variant="subtle"
                           required
                           value={content.title || ''}
-                          onChange={(e) =>
-                            updateContentField(
-                              content.id,
-                              'title',
-                              e.target.value
-                            )
-                          }
+                          onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
                         />
                       </div>
                     </div>
@@ -591,10 +514,7 @@ export default function BlogPostEdit() {
                         onClick={openSettingsDrawer}
                       >
                         <img
-                          src={getAttachmentUrl(
-                            backendHost,
-                            content.featured_image.name
-                          )}
+                          src={getAttachmentUrl(backendHost, content.featured_image.name)}
                           alt={content.title || 'Featured image'}
                           className="w-full h-auto object-cover rounded-md max-h-[400px]"
                         />
@@ -614,18 +534,14 @@ export default function BlogPostEdit() {
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}
-                        classNames={{content: 'min-h-[1000px]'}}
-                        autoComplete={
-                          aiAutocompleteEnabled && isAiFeatureAvailable
-                        }
+                        classNames={{ content: 'min-h-[1000px]' }}
+                        autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
                       />
                     </div>
                   </Tabs.Panel>
                 ))
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  {t('Nothing here yet.')}
-                </div>
+                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
               )}
             </Tabs>
           </div>
@@ -639,7 +555,7 @@ export default function BlogPostEdit() {
         title={<div className="font-bold">{t('Add Content')}</div>}
         size="md"
         radius={0}
-        transitionProps={{transition: 'fade', duration: 200}}
+        transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-4">
@@ -669,11 +585,7 @@ export default function BlogPostEdit() {
           />
 
           <div className="flex justify-end mt-4">
-            <Button
-              variant="outline"
-              onClick={closeAddContentModal}
-              className="mr-2"
-            >
+            <Button variant="outline" onClick={closeAddContentModal} className="mr-2">
               {t('Cancel')}
             </Button>
             <Button
@@ -694,24 +606,20 @@ export default function BlogPostEdit() {
         title={<div className="font-bold">{t('Settings')}</div>}
         size="md"
         position="right"
-        transitionProps={{transition: 'slide-left', duration: 200}}
+        transitionProps={{ transition: 'slide-left', duration: 200 }}
       >
         <div className="mb-10 space-y-4">
           <AuthorSelector
             value={record.author_id}
-            onChange={(value) =>
-              setRecord((prev) => ({...prev, author_id: value}))
-            }
+            onChange={(value) => setRecord((prev) => ({ ...prev, author_id: value }))}
           />
 
           <DateTimePickerInput
             label={t('Publication Date')}
             placeholder={t('Select publication date')}
             valueFormat="DD MMM YYYY hh:mm A"
-            value={
-              record.publish_date ? new Date(record.publish_date) : new Date()
-            }
-            onChange={(date) => setRecord({...record, publish_date: date})}
+            value={record.publish_date ? new Date(record.publish_date) : new Date()}
+            onChange={(date) => setRecord({ ...record, publish_date: date })}
             className="mb-4"
             clearable={false}
           />
@@ -722,7 +630,7 @@ export default function BlogPostEdit() {
             placeholder={t('Enter URL slug (required)')}
             required
             value={record.slug || ''}
-            onChange={(e) => setRecord({...record, slug: e.target.value})}
+            onChange={(e) => setRecord({ ...record, slug: e.target.value })}
           />
 
           <Switch
@@ -734,12 +642,8 @@ export default function BlogPostEdit() {
             checked={record.require_login || false}
             size="lg"
             label={t('Require Login')}
-            description={t(
-              'When enabled, users must be logged in to view this blog post'
-            )}
-            onChange={(e) =>
-              setRecord({...record, require_login: e.currentTarget.checked})
-            }
+            description={t('When enabled, users must be logged in to view this blog post')}
+            onChange={(e) => setRecord({ ...record, require_login: e.currentTarget.checked })}
           />
 
           {activeContentTab && activeContentTab !== 'add_new' && (
@@ -747,9 +651,7 @@ export default function BlogPostEdit() {
               <div className="pt-4">
                 <h3 className="font-medium mb-2">{t('Content Settings')}</h3>
                 <p className="text-sm text-gray-500 mb-3">
-                  {t(
-                    'These settings apply to the currently selected language content.'
-                  )}
+                  {t('These settings apply to the currently selected language content.')}
                 </p>
 
                 <FileInput
@@ -758,16 +660,8 @@ export default function BlogPostEdit() {
                   value={activeContent?.featured_image?.name}
                   onChange={(file) => {
                     if (activeContent?.id) {
-                      updateContentField(
-                        activeContent.id,
-                        'featured_image',
-                        file
-                      );
-                      updateContentField(
-                        activeContent.id,
-                        'featured_image_id',
-                        file?.id
-                      );
+                      updateContentField(activeContent.id, 'featured_image', file);
+                      updateContentField(activeContent.id, 'featured_image_id', file?.id);
                     }
                   }}
                   type="image"
@@ -778,12 +672,8 @@ export default function BlogPostEdit() {
         </div>
 
         <div className="space-y-10">
-          <SeoMetadataForm
-            pageContent={activeContent}
-            updateContentField={updateContentField}
-          />
-          {(activeContent?.seo_metadata_title ||
-            activeContent?.seo_metadata_description) && (
+          <SeoMetadataForm pageContent={activeContent} updateContentField={updateContentField} />
+          {(activeContent?.seo_metadata_title || activeContent?.seo_metadata_description) && (
             <>
               <SocialCardPreview pageContent={activeContent} />
               <SERPPreviewCardPreview pageContent={activeContent} />
@@ -801,28 +691,19 @@ export default function BlogPostEdit() {
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   {t(
-                    'This code will be injected only for this language version of the blog post, after the content.'
+                    'This code will be injected only for this language version of the blog post, after the content.',
                   )}
                 </p>
-                <div
-                  className="border border-gray-300 rounded"
-                  style={{height: '150px'}}
-                >
+                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
                   <Editor
                     className="w-full h-full"
                     value={activeContent?.custom_code || ''}
                     onValueChange={(code) => {
                       if (activeContent?.id) {
-                        updateContentField(
-                          activeContent.id,
-                          'custom_code',
-                          code
-                        );
+                        updateContentField(activeContent.id, 'custom_code', code);
                       }
                     }}
-                    highlight={(code) =>
-                      highlight(code, languages.markup, 'html')
-                    }
+                    highlight={(code) => highlight(code, languages.markup, 'html')}
                     padding={10}
                     style={{
                       fontSize: 12,
@@ -840,22 +721,15 @@ export default function BlogPostEdit() {
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   {t(
-                    'This code will be injected in all language versions of this blog post, after the content.'
+                    'This code will be injected in all language versions of this blog post, after the content.',
                   )}
                 </p>
-                <div
-                  className="border border-gray-300 rounded"
-                  style={{height: '150px'}}
-                >
+                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
                   <Editor
                     className="w-full h-full"
                     value={record?.blog_post_custom_code || ''}
-                    onValueChange={(code) =>
-                      setRecord({...record, blog_post_custom_code: code})
-                    }
-                    highlight={(code) =>
-                      highlight(code, languages.markup, 'html')
-                    }
+                    onValueChange={(code) => setRecord({ ...record, blog_post_custom_code: code })}
+                    highlight={(code) => highlight(code, languages.markup, 'html')}
                     padding={10}
                     style={{
                       fontSize: 12,

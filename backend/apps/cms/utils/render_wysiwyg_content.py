@@ -76,7 +76,6 @@ def load_jinja2_templates(
         organization_id=organization_id,
         db=db,
         lang=lang,
-        include_special_templates=False,
     )
     context = {
         "settings": settings,

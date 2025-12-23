@@ -1,10 +1,10 @@
-import {Button, Menu, Group, ActionIcon, useMantineTheme} from '@mantine/core';
+import { Button, Menu, Group, ActionIcon, useMantineTheme } from '@mantine/core';
 // import {IconTrash, IconBookmark, IconCalendar, IconChevronDown} from '@tabler/icons-react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronDown} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 export function SplitButton(props) {
-  const {title, children, ...others} = props;
+  const { title, children, ...others } = props;
   const theme = useMantineTheme();
 
   return (
@@ -12,11 +12,7 @@ export function SplitButton(props) {
       <Button className={`!rounded-tr-none !rounded-br-none`} {...others}>
         {title}
       </Button>
-      <Menu
-        transitionProps={{transition: 'pop'}}
-        position="bottom-end"
-        withinPortal
-      >
+      <Menu transitionProps={{ transition: 'pop' }} position="bottom-end" withinPortal>
         <Menu.Target>
           <ActionIcon
             variant="filled"

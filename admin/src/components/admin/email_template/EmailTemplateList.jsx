@@ -1,26 +1,24 @@
-import {useState} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
-import {Helmet} from 'react-helmet';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import dayjs from 'dayjs';
 
-const renderCell = (params) => (
-  <LinkedCell params={params}>{params.value}</LinkedCell>
-);
+const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
 export default function EmailTemplateList() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const query = useModel('email_template', {
     autoFetch: true,
     searchFields: ['name'],
@@ -46,18 +44,14 @@ export default function EmailTemplateList() {
       headerName: t('Name'),
       flex: 2,
       minWidth: 200,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'subject',
       headerName: t('Subject'),
       flex: 3,
       minWidth: 300,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'created_at',
@@ -79,9 +73,7 @@ export default function EmailTemplateList() {
       </Helmet>
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
-          <H1 className="text-[32px] font-bold text-primary">
-            {t('Email Templates')}
-          </H1>
+          <H1 className="text-[32px] font-bold text-primary">{t('Email Templates')}</H1>
           <Link to={`/email_templates/create`}>
             <Button
               className={`shadow bg-primary-main text-primary-contrastText`}
@@ -89,9 +81,7 @@ export default function EmailTemplateList() {
             >
               <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
               {t('')}
-              <span className={`hidden sm:inline`}>
-                {t('Create Email Template')}
-              </span>
+              <span className={`hidden sm:inline`}>{t('Create Email Template')}</span>
             </Button>
           </Link>
         </div>
@@ -152,8 +142,8 @@ export default function EmailTemplateList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

@@ -56,12 +56,7 @@ export function findOrganizationById(organizations, organizationId) {
  * @param {string} fallbackDomain - Fallback domain if organization not found
  * @returns {string} Full URL with correct domain
  */
-export function buildFullUrl(
-  record,
-  path,
-  organizations,
-  fallbackDomain = null
-) {
+export function buildFullUrl(record, path, organizations, fallbackDomain = null) {
   if (!record?.organization_id) {
     // No organization info, use current domain as fallback
     const currentDomain = fallbackDomain || window.location.hostname;
@@ -72,10 +67,7 @@ export function buildFullUrl(
   }
 
   // Find organization and get its domain
-  const organization = findOrganizationById(
-    organizations,
-    record.organization_id
-  );
+  const organization = findOrganizationById(organizations, record.organization_id);
   const domain = getOrganizationDomain(organization, fallbackDomain);
 
   // Determine protocol and port
@@ -99,7 +91,7 @@ export function buildPageUrlWithDomain(
   slug,
   localeIsoCode,
   defaultLanguage,
-  organizations
+  organizations,
 ) {
   if (!slug || !localeIsoCode) return '/';
 
@@ -127,11 +119,7 @@ export function buildPageUrlWithDomain(
  * @param {Array} organizations - Organizations from state
  * @returns {string} Full blog post URL with correct domain
  */
-export function buildBlogPostUrlWithDomain(
-  blogPostRecord,
-  slug,
-  organizations
-) {
+export function buildBlogPostUrlWithDomain(blogPostRecord, slug, organizations) {
   if (!slug) return '/';
 
   const path = `/blog${slug}`;

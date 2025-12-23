@@ -1,19 +1,14 @@
-import {useState, useEffect} from 'react';
-import {Modal, Button, Textarea, Group} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { Modal, Button, Textarea, Group } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Modal component for editing image description
  * Allows users to add or edit optional description text for images
  */
-const DescriptionModal = ({
-  isOpen,
-  onClose,
-  onSave,
-  initialDescription = '',
-}) => {
+const DescriptionModal = ({ isOpen, onClose, onSave, initialDescription = '' }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // State
   const [description, setDescription] = useState(initialDescription);
@@ -68,7 +63,7 @@ const DescriptionModal = ({
             autosize
             autoFocus
             description={t(
-              'This description will appear below the image. Leave empty to hide description.'
+              'This description will appear below the image. Leave empty to hide description.',
             )}
           />
         </div>

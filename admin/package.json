@@ -8,8 +8,8 @@
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
-    "prettier": "prettier --check 'src/**/(*.jsx|*.js|*.tsx|*.ts|*.css|*.scss)'",
-    "prettier:fix": "prettier --write 'src/**/(*.jsx|*.js|*.tsx|*.ts|*.css|*.scss)'",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview"
   },
   "dependencies": {

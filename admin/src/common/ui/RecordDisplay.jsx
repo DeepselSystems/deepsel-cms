@@ -1,6 +1,6 @@
-import {Link} from 'react-router-dom';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faArrowRight} from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 export default function RecordDisplay({
   label,
@@ -28,9 +28,7 @@ export default function RecordDisplay({
         }}
       >
         {children || value}
-        {(children || value) && (
-          <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
-        )}
+        {(children || value) && <FontAwesomeIcon icon={faArrowRight} className="ml-1" />}
       </Link>
     </div>
   );

@@ -1,12 +1,20 @@
-import { isValidLanguageCode } from '../language';
-import type { SlugParseResult } from './types';
+import { isValidLanguageCode } from './isValidLanguageCode';
+import { getPathType } from './getPathType';
+import type { PathType, Pagination } from './getPathType';
+
+export interface SlugParseResult {
+  lang?: string;
+  path: string;
+  pathType: PathType;
+  pagination?: Pagination;
+}
 
 /**
  * Parses a slug to determine language and path
  */
-export function parseSlugForLangAndPath(slug: string | null): SlugParseResult {
+export function parseSlug(slug: string | null): SlugParseResult {
   const slugParts = slug ? slug.split('/').filter(Boolean) : [];
-  let lang = null;
+  let lang: string | undefined;
   let path = '/';
 
   // Check if the first part is a valid language code
@@ -21,5 +29,6 @@ export function parseSlugForLangAndPath(slug: string | null): SlugParseResult {
     path = slugParts.length > 0 ? '/' + slugParts.join('/') : '/';
   }
 
-  return { lang, path };
+  const { pathType, pagination } = getPathType(path);
+  return { lang, path, pathType, pagination };
 }

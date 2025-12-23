@@ -17,6 +17,6 @@ export const TimeFormat = {
 };
 
 export const TimeFormatOptions = [
-  {value: TimeFormat.TWELVE_HOUR, label: '12-hour (AM/PM)'},
-  {value: TimeFormat.TWENTY_FOUR_HOUR, label: '24-hour'},
+  { value: TimeFormat.TWELVE_HOUR, label: '12-hour (AM/PM)' },
+  { value: TimeFormat.TWENTY_FOUR_HOUR, label: '24-hour' },
 ];

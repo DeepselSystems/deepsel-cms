@@ -1,53 +1,45 @@
 ---
-import { fetchPageData, parseSlugForLangAndPath } from "@deepsel/cms-utils";
-import type { PageData } from "@deepsel/cms-utils";
-// import getAuthToken from "../utils/getAuthToken";
-
-// THEME_IMPORTS_START (auto-managed)
-import DarkmodeIndex from "../../../themes/darkmode/index.astro";
-import InterlinkedIndex from "../../../themes/interlinked/index.astro";
-import Darkmode404 from "../../../themes/darkmode/404.astro";
-import Interlinked404 from "../../../themes/interlinked/404.astro";
-// THEME_IMPORTS_END
+import {
+  fetchPageData,
+  parseSlug,
+  fetchBlogList,
+  fetchBlogPost,
+  type PageData,
+  type BlogListData,
+  type BlogPostData,
+} from "@deepsel/cms-utils";
+import {
+  getPageThemeComponent,
+  getBlogListThemeComponent,
+  getBlogPostThemeComponent,
+} from "../utils/getThemeComponent";
 
 const { slug = "/" } = Astro.params;
-const { lang, path } = parseSlugForLangAndPath(slug);
-const isPreviewMode = Astro.url.searchParams.get('preview') === 'true';
-// const authToken = getAuthToken(Astro);
-// console.log('authToken', authToken);
+const { lang, path, pathType, pagination } = parseSlug(slug);
 
-const pageData: PageData = await fetchPageData(lang, path, isPreviewMode, null, Astro.request);
-const selectedTheme = pageData.public_settings?.selected_theme;
-const defaultLanguageIsoCode = pageData.public_settings?.default_language?.iso_code || null;
+let ThemeComponent: any;
+let data: PageData | BlogListData | BlogPostData;
 
-// THEME_MAP_START (auto-managed)
-const themeMap: Record<string, Record<string, any>> = {
-  'darkmode': {
-    'default': DarkmodeIndex,
-    '404': Darkmode404,
-  },
-  'interlinked': {
-    'default': InterlinkedIndex,
-    '404': Interlinked404,
-  },
-};
-// THEME_MAP_END
-
-// Determine which theme component to use based on pageData.slug
-let ThemeComponent;
-if (pageData.notFound) {
-  ThemeComponent = themeMap[selectedTheme]['404'];
-  Astro.response.status = 404;
+if (pathType === "Page") {
+  data = await fetchPageData(path, lang, Astro.request);
+  ThemeComponent = getPageThemeComponent(data, lang);
+} else if (pathType === "BlogList") {
+  data = await fetchBlogList(pagination, lang, Astro.request);
+  ThemeComponent = getBlogListThemeComponent(data, lang);
+} else if (pathType === "BlogPost") {
+  data = await fetchBlogPost(path, lang, Astro.request);
+  ThemeComponent = getBlogPostThemeComponent(data, lang);
 } else {
-  const pageSlug = pageData.slug?.replace(/^\//, '').toLowerCase() || 'index';
-  const isNonDefaultLang = lang && defaultLanguageIsoCode && lang !== defaultLanguageIsoCode;
-  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
-  ThemeComponent =
-    themeMap[selectedTheme][`${langPrefix}${pageSlug}`] ||
-    themeMap[selectedTheme][pageSlug] ||
-    themeMap[selectedTheme]['index']
+  data = await fetchPageData(path, lang, Astro.request);
+  ThemeComponent = getPageThemeComponent(data, lang);
 }
-
 ---
 
-<ThemeComponent pageData={pageData} />
+{
+  pathType === "Page" ? (
+    <ThemeComponent data={data as PageData} />
+  ) : pathType === "BlogList" ? (
+    <ThemeComponent data={data as BlogListData} />
+  ) : // :(pathType === "BlogPost") ? <ThemeComponent data={data as BlogPostData} />
+  null
+}

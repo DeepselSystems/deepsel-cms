@@ -1,22 +1,19 @@
-import {Modal, Button, Table, Text, Loader, Alert} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faExclamationTriangle,
-  faSearch,
-} from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Table, Text, Loader, Alert } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import useModel from '../api/useModel.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import TextInput from './TextInput.jsx';
 
-const HtmlComponentsModal = ({isOpen, onClose, onInsert, currentLocaleId}) => {
-  const {t} = useTranslation();
-  const {organizationId} = OrganizationIdState();
+const HtmlComponentsModal = ({ isOpen, onClose, onInsert, currentLocaleId }) => {
+  const { t } = useTranslation();
+  const { organizationId } = OrganizationIdState();
 
   const query = useModel('template', {
     autoFetch: isOpen,
     searchFields: ['name'],
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: [
       ...(organizationId
         ? [
@@ -39,7 +36,7 @@ const HtmlComponentsModal = ({isOpen, onClose, onInsert, currentLocaleId}) => {
     ],
   });
 
-  const {data: templates, loading, error} = query;
+  const { data: templates, loading, error } = query;
 
   const handleInsertTemplate = (template) => {
     const templateName = template.name || `template_${template.id}`;
@@ -51,11 +48,7 @@ const HtmlComponentsModal = ({isOpen, onClose, onInsert, currentLocaleId}) => {
     <Modal
       opened={isOpen}
       onClose={onClose}
-      title={
-        <div className="text-lg font-semibold">
-          {t('Insert HTML Component')}
-        </div>
-      }
+      title={<div className="text-lg font-semibold">{t('Insert HTML Component')}</div>}
       size="lg"
     >
       <div className="space-y-4">
@@ -64,9 +57,7 @@ const HtmlComponentsModal = ({isOpen, onClose, onInsert, currentLocaleId}) => {
           placeholder={t('Search templates...')}
           value={query.searchTerm || ''}
           onChange={(e) => query.setSearchTerm(e.target.value)}
-          leftSection={
-            <FontAwesomeIcon icon={faSearch} className="text-gray-400" />
-          }
+          leftSection={<FontAwesomeIcon icon={faSearch} className="text-gray-400" />}
         />
 
         {loading && (

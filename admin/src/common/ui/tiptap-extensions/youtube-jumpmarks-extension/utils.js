@@ -1,8 +1,7 @@
 /**
  * YouTube expression string
  */
-export const YOUTUBE_REG_EXP =
-  /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+export const YOUTUBE_REG_EXP = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
 
 /**
  * Constants for YouTube jump marks data attributes
@@ -59,9 +58,7 @@ export const injectYouTubeJumpMarkHandler = () => {
      * @param {number} time - Time in seconds to jump to
      */
     window.handleJumpMarkClick = (element, videoId, time) => {
-      const container = element.closest(
-        `[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}]`
-      );
+      const container = element.closest(`[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}]`);
       if (!container) return;
 
       const iframe = container.querySelector('iframe');
@@ -73,9 +70,7 @@ export const injectYouTubeJumpMarkHandler = () => {
       iframe.src = `${baseUrl}?start=${time}&autoplay=1`;
 
       // Visual feedback - remove active state from all items
-      const allItems = container.querySelectorAll(
-        `.${YOUTUBE_JUMP_MARKS_CLASSES.JUMP_MARK_ITEM}`
-      );
+      const allItems = container.querySelectorAll(`.${YOUTUBE_JUMP_MARKS_CLASSES.JUMP_MARK_ITEM}`);
       allItems.forEach((item) => item.classList.remove('bg-blue-100'));
 
       // Add active state to clicked item
@@ -94,9 +89,7 @@ export const containsYouTubeJumpMarks = (htmlContent) => {
     return false;
   }
 
-  return htmlContent.includes(
-    `${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}="true"`
-  );
+  return htmlContent.includes(`${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}="true"`);
 };
 
 /**
@@ -111,16 +104,14 @@ export const initializeYouTubeJumpMarks = (container) => {
 
   // Find all jump mark items and ensure they have proper click handlers
   const jumpMarkItems = container.querySelectorAll(
-    `.${YOUTUBE_JUMP_MARKS_CLASSES.JUMP_MARK_ITEM}[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.TIME}]`
+    `.${YOUTUBE_JUMP_MARKS_CLASSES.JUMP_MARK_ITEM}[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.TIME}]`,
   );
 
   jumpMarkItems.forEach((item) => {
     // If onclick attribute is missing, add it
     if (!item.getAttribute('onclick')) {
       const time = item.getAttribute(YOUTUBE_JUMP_MARKS_ATTRIBUTES.TIME);
-      const videoContainer = item.closest(
-        `[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}]`
-      );
+      const videoContainer = item.closest(`[${YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER}]`);
 
       if (time && videoContainer) {
         const iframe = videoContainer.querySelector('iframe');
@@ -131,10 +122,7 @@ export const initializeYouTubeJumpMarks = (container) => {
           const videoId = videoIdMatch ? videoIdMatch[1] : '';
 
           if (videoId) {
-            item.setAttribute(
-              'onclick',
-              `handleJumpMarkClick(this, '${videoId}', ${time})`
-            );
+            item.setAttribute('onclick', `handleJumpMarkClick(this, '${videoId}', ${time})`);
           }
         }
       }

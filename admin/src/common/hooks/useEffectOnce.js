@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function useEffectOnce(fn) {
   const ref = useRef(true);

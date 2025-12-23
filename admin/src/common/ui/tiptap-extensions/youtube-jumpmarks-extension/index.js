@@ -1,5 +1,5 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { mergeAttributes, Node } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import {
   getVideoId,
   injectYouTubeJumpMarkHandler,
@@ -54,28 +54,20 @@ export const YoutubeJumpMarks = Node.create({
       title: {
         default: null,
         parseHTML: (element) => {
-          return (
-            element.getAttribute(YOUTUBE_JUMP_MARKS_ATTRIBUTES.TITLE) || null
-          );
+          return element.getAttribute(YOUTUBE_JUMP_MARKS_ATTRIBUTES.TITLE) || null;
         },
       },
       jumpMarks: {
         default: [],
         parseHTML: (element) => {
-          const jumpMarksData = element.getAttribute(
-            YOUTUBE_JUMP_MARKS_ATTRIBUTES.JUMP_MARKS
-          );
+          const jumpMarksData = element.getAttribute(YOUTUBE_JUMP_MARKS_ATTRIBUTES.JUMP_MARKS);
           return jumpMarksData ? JSON.parse(jumpMarksData) : [];
         },
       },
       showJumpMarks: {
         default: true,
         parseHTML: (element) => {
-          return (
-            element.getAttribute(
-              YOUTUBE_JUMP_MARKS_ATTRIBUTES.SHOW_JUMP_MARKS
-            ) !== 'false'
-          );
+          return element.getAttribute(YOUTUBE_JUMP_MARKS_ATTRIBUTES.SHOW_JUMP_MARKS) !== 'false';
         },
       },
     };
@@ -89,7 +81,7 @@ export const YoutubeJumpMarks = Node.create({
     ];
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({ HTMLAttributes }) {
     const embedUrl = getEmbedUrl(HTMLAttributes.src);
     const jumpMarks = HTMLAttributes.jumpMarks || [];
     const showJumpMarks = HTMLAttributes.showJumpMarks !== false;
@@ -97,7 +89,7 @@ export const YoutubeJumpMarks = Node.create({
 
     const iframeElement = [
       'div',
-      {class: 'youtube-embed-wrapper'},
+      { class: 'youtube-embed-wrapper' },
       [
         'iframe',
         mergeAttributes({
@@ -114,7 +106,7 @@ export const YoutubeJumpMarks = Node.create({
     ];
 
     const titleElement = videoTitle
-      ? ['div', {class: 'jump-mark-youtube-title'}, videoTitle]
+      ? ['div', { class: 'jump-mark-youtube-title' }, videoTitle]
       : null;
 
     /**
@@ -172,7 +164,7 @@ export const YoutubeJumpMarks = Node.create({
               ],
               [
                 'div',
-                {class: 'jump-mark-content'},
+                { class: 'jump-mark-content' },
                 [
                   'div',
                   {
@@ -210,8 +202,7 @@ export const YoutubeJumpMarks = Node.create({
       mergeAttributes(this.options.HTMLAttributes, {
         [YOUTUBE_JUMP_MARKS_ATTRIBUTES.CONTAINER]: 'true',
         [YOUTUBE_JUMP_MARKS_ATTRIBUTES.JUMP_MARKS]: JSON.stringify(jumpMarks),
-        [YOUTUBE_JUMP_MARKS_ATTRIBUTES.SHOW_JUMP_MARKS]:
-          showJumpMarks.toString(),
+        [YOUTUBE_JUMP_MARKS_ATTRIBUTES.SHOW_JUMP_MARKS]: showJumpMarks.toString(),
         [YOUTUBE_JUMP_MARKS_ATTRIBUTES.TITLE]: videoTitle,
         src: HTMLAttributes.src,
         width: HTMLAttributes.width,
@@ -229,7 +220,7 @@ export const YoutubeJumpMarks = Node.create({
     return {
       setYoutubeVideoWithJumpMarks:
         (data) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!data.src) {
             return false;
           }

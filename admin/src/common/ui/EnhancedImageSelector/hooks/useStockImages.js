@@ -1,7 +1,7 @@
-import {useState, useCallback, useRef} from 'react';
+import { useState, useCallback, useRef } from 'react';
 import useFetch from '../../../api/useFetch.js';
-import {STOCK_IMAGE_PROVIDERS} from '../constants/stockImages.js';
-import {v4 as uuidv4} from 'uuid';
+import { STOCK_IMAGE_PROVIDERS } from '../constants/stockImages.js';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Custom hook for searching stock images
@@ -19,7 +19,7 @@ const useStockImages = () => {
   const prevSearchStrRef = useRef(searchQuery);
 
   // Pexels images query
-  const {post: fetchPexelsImages} = useFetch('stock-image/search', {
+  const { post: fetchPexelsImages } = useFetch('stock-image/search', {
     autoFetch: false,
   });
 
@@ -42,7 +42,7 @@ const useStockImages = () => {
         query_str: searchQuery,
         provider: STOCK_IMAGE_PROVIDERS.PEXELS,
       })
-        .then(({data}) => {
+        .then(({ data }) => {
           if (data.length) {
             setImages((prevState) => {
               data = data.map((item) => ({
@@ -66,7 +66,7 @@ const useStockImages = () => {
           setLoading(false);
         });
     },
-    [fetchPexelsImages, searchQuery]
+    [fetchPexelsImages, searchQuery],
   );
 
   /**

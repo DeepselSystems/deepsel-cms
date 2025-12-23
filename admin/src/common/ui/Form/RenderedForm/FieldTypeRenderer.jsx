@@ -11,21 +11,21 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
-import {DateInput, DateTimePicker, TimePicker} from '@mantine/dates';
-import {Dropzone} from '@mantine/dropzone';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { DateInput, DateTimePicker, TimePicker } from '@mantine/dates';
+import { Dropzone } from '@mantine/dropzone';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faExclamationTriangle,
   faFile,
   faTrash,
   faUpload,
 } from '@fortawesome/free-solid-svg-icons';
-import {FormFieldType, TimeFormat} from '../../../../constants/form.js';
-import {useTranslation} from 'react-i18next';
+import { FormFieldType, TimeFormat } from '../../../../constants/form.js';
+import { useTranslation } from 'react-i18next';
 import useUploadSizeLimit from '../../../api/useUploadSizeLimit.js';
 import useUpload from '../../../api/useUpload.js';
 import useModel from '../../../api/useModel.jsx';
-import {formatFileSize} from '../../../utils/index.js';
+import { formatFileSize } from '../../../utils/index.js';
 
 /**
  * Renders the appropriate input component based on field type
@@ -37,19 +37,12 @@ import {formatFileSize} from '../../../utils/index.js';
  * @param {(value: any) => void} props.onChange - The form field configuration
  * @returns {JSX.Element}
  */
-const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
+const FieldTypeRenderer = ({ field, value, error = '', onChange = () => {} }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Get fields configurations
-  const {
-    field_type,
-    label,
-    description,
-    placeholder,
-    required,
-    field_config = {},
-  } = field;
+  const { field_type, label, description, placeholder, required, field_config = {} } = field;
 
   // Get common props
   const commonProps = {
@@ -68,7 +61,7 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
           maxLength={field_config.max_length}
           minLength={field_config.min_length}
           value={value || ''}
-          onChange={({target: {value}}) => onChange(value)}
+          onChange={({ target: { value } }) => onChange(value)}
           error={error}
         />
       );
@@ -83,7 +76,7 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
           maxLength={field_config.max_length}
           minLength={field_config.min_length}
           value={value || ''}
-          onChange={({target: {value}}) => onChange(value)}
+          onChange={({ target: { value } }) => onChange(value)}
           error={error}
         />
       );
@@ -115,11 +108,7 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
         >
           <Stack mt="xs" gap="xs" mb="sm">
             {(field_config.options || []).map((option, index) => (
-              <Radio
-                key={option.id || index}
-                value={option.value}
-                label={option.label}
-              />
+              <Radio key={option.id || index} value={option.value} label={option.label} />
             ))}
           </Stack>
         </Radio.Group>
@@ -137,11 +126,7 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
         >
           <Stack mt="xs" gap="xs" mb="sm">
             {(field_config.options || []).map((option, index) => (
-              <Checkbox
-                key={option.id || index}
-                value={option.value}
-                label={option.label}
-              />
+              <Checkbox key={option.id || index} value={option.value} label={option.label} />
             ))}
           </Stack>
         </Checkbox.Group>
@@ -168,16 +153,8 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
         <DateInput
           {...commonProps}
           valueFormat="YYYY-MM-DD"
-          minDate={
-            field_config.min_value
-              ? new Date(field_config.min_value)
-              : undefined
-          }
-          maxDate={
-            field_config.max_value
-              ? new Date(field_config.max_value)
-              : undefined
-          }
+          minDate={field_config.min_value ? new Date(field_config.min_value) : undefined}
+          maxDate={field_config.max_value ? new Date(field_config.max_value) : undefined}
           value={value}
           onChange={(value) => onChange(value)}
           error={error}
@@ -189,9 +166,7 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
         <TimePicker
           {...commonProps}
           withDropdown
-          format={
-            field_config.time_format === TimeFormat.TWELVE_HOUR ? '12h' : '24h'
-          }
+          format={field_config.time_format === TimeFormat.TWELVE_HOUR ? '12h' : '24h'}
           withSeconds={false}
           minutesStep={field_config.step || 15}
           min={field_config.min_value}
@@ -211,16 +186,8 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
               ? 'YYYY-MM-DD hh:mm'
               : 'YYYY-MM-DD HH:mm'
           }
-          minDate={
-            field_config.min_value
-              ? new Date(field_config.min_value)
-              : undefined
-          }
-          maxDate={
-            field_config.max_value
-              ? new Date(field_config.max_value)
-              : undefined
-          }
+          minDate={field_config.min_value ? new Date(field_config.min_value) : undefined}
+          maxDate={field_config.max_value ? new Date(field_config.max_value) : undefined}
           withSeconds={false}
           value={value}
           onChange={(value) => onChange(value)}
@@ -229,19 +196,12 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
       );
 
     case FormFieldType.Files:
-      return (
-        <FilesUploadField
-          field={field}
-          value={value}
-          error={error}
-          onChange={onChange}
-        />
-      );
+      return <FilesUploadField field={field} value={value} error={error} onChange={onChange} />;
 
     default:
       return (
         <Text c="dimmed" fs="italic">
-          {t(' Unsupported field type: {{field_type}}', {field_type})}
+          {t(' Unsupported field type: {{field_type}}', { field_type })}
         </Text>
       );
   }
@@ -257,17 +217,15 @@ const FieldTypeRenderer = ({field, value, error = '', onChange = () => {}}) => {
  * @param {Function} props.onChange - Change handler
  * @returns {JSX.Element}
  */
-const FilesUploadField = ({field, value = [], error, onChange}) => {
-  const {t} = useTranslation();
-  const {uploadSizeLimit} = useUploadSizeLimit();
-  const {uploadFileModel, loading, error: uploadError} = useUpload();
-  const {del: deleteAttachment, loading: deleteLoading} =
-    useModel('attachment');
-  const {label, description, required, field_config = {}} = field;
+const FilesUploadField = ({ field, value = [], error, onChange }) => {
+  const { t } = useTranslation();
+  const { uploadSizeLimit } = useUploadSizeLimit();
+  const { uploadFileModel, loading, error: uploadError } = useUpload();
+  const { del: deleteAttachment, loading: deleteLoading } = useModel('attachment');
+  const { label, description, required, field_config = {} } = field;
 
   const maxFiles = field_config.max_files || 3;
-  const maxFileSize =
-    (field_config.max_file_size || uploadSizeLimit) * 1024 * 1024; // Convert MB to bytes
+  const maxFileSize = (field_config.max_file_size || uploadSizeLimit) * 1024 * 1024; // Convert MB to bytes
   const allowedTypes = field_config.allowed_file_types || 'image/*';
 
   /**
@@ -304,9 +262,7 @@ const FilesUploadField = ({field, value = [], error, onChange}) => {
 
       // Extract file information from response
       // API returns array of file objects with id, name, etc.
-      const uploadedFiles = Array.isArray(uploadResponse)
-        ? uploadResponse
-        : [uploadResponse];
+      const uploadedFiles = Array.isArray(uploadResponse) ? uploadResponse : [uploadResponse];
 
       // Store file objects with necessary information for later use
       const fileObjects = uploadedFiles.map((file) => ({
@@ -361,9 +317,7 @@ const FilesUploadField = ({field, value = [], error, onChange}) => {
     if (typeof file === 'object' && file.name) {
       return file.name;
     }
-    return typeof file === 'string'
-      ? file.split('/').pop() || file
-      : t('Unknown file');
+    return typeof file === 'string' ? file.split('/').pop() || file : t('Unknown file');
   };
 
   const currentFiles = Array.isArray(value) ? value : [];
@@ -397,7 +351,7 @@ const FilesUploadField = ({field, value = [], error, onChange}) => {
           loading={loading}
           className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors"
         >
-          <Group gap="sm" style={{pointerEvents: 'none'}}>
+          <Group gap="sm" style={{ pointerEvents: 'none' }}>
             <Dropzone.Accept>
               <FontAwesomeIcon icon={faUpload} size="lg" />
             </Dropzone.Accept>
@@ -427,12 +381,7 @@ const FilesUploadField = ({field, value = [], error, onChange}) => {
       {currentFiles.length > 0 && (
         <Stack gap="xs">
           {currentFiles.map((file, index) => (
-            <Group
-              key={file.id || index}
-              justify="space-between"
-              p="sm"
-              className="border rounded"
-            >
+            <Group key={file.id || index} justify="space-between" p="sm" className="border rounded">
               <Group gap="sm">
                 <FontAwesomeIcon icon={faFile} />
                 <Box>

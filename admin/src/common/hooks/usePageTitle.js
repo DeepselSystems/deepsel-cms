@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import { useEffect } from 'react';
 
 export default function usePageTitle(title, dependencies = []) {
   useEffect(() => {
@@ -22,5 +22,5 @@ export default function usePageTitle(title, dependencies = []) {
     document.title = title;
   }
 
-  return {setTitle};
+  return { setTitle };
 }

@@ -1,13 +1,8 @@
-import {Avatar} from '@mantine/core';
-import {stringAvatar} from '../utils/avatar';
-import {getAttachmentUrl} from '../utils';
+import { Avatar } from '@mantine/core';
+import { stringAvatar } from '../utils/avatar';
+import { getAttachmentUrl } from '../utils';
 
-export default function UserAvatar({
-  user,
-  externalUserData,
-  backendHost,
-  ...props
-}) {
+export default function UserAvatar({ user, externalUserData, backendHost, ...props }) {
   const getAvatarProps = () => {
     if (externalUserData?.avatar_url) {
       const displayName = externalUserData.name || externalUserData.username;
@@ -28,11 +23,7 @@ export default function UserAvatar({
     }
 
     const displayName =
-      user?.name ||
-      user?.username ||
-      externalUserData?.name ||
-      externalUserData?.username ||
-      '';
+      user?.name || user?.username || externalUserData?.name || externalUserData?.username || '';
     return {
       ...stringAvatar(displayName),
       ...props,

@@ -1,11 +1,11 @@
 import useAuthentication from './useAuthentication.js';
-import {useState} from 'react';
+import { useState } from 'react';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 
 export default function useUpload() {
-  const {user} = useAuthentication();
+  const { user } = useAuthentication();
   const token = user?.token;
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -62,12 +62,12 @@ export default function useUpload() {
 
       const res = await fetch(`${backendHost}/${api}`, {
         method: 'POST',
-        headers: {Authorization: `Bearer ${token}`},
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       if (res.status !== 200) {
-        const {detail} = await res.json();
+        const { detail } = await res.json();
         setError(detail);
         throw new Error(detail);
       }

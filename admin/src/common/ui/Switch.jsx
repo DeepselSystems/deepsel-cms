@@ -1,4 +1,4 @@
-import {Switch as MantineSwitch} from '@mantine/core';
+import { Switch as MantineSwitch } from '@mantine/core';
 
 export default function Switch({
   size = 'md',

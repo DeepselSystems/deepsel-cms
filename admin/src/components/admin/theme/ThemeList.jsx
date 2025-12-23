@@ -1,25 +1,30 @@
-import {useState, useEffect} from 'react';
-import {Helmet} from 'react-helmet';
-import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPalette, faCheck, faEdit} from '@fortawesome/free-solid-svg-icons';
-import {Alert, Card, Badge, SimpleGrid, Loader} from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faTriangleExclamation,
+  faPalette,
+  faCheck,
+  faEdit,
+} from '@fortawesome/free-solid-svg-icons';
+import { Alert, Card, Badge, SimpleGrid, Loader } from '@mantine/core';
 import H1 from '../../../common/ui/H1.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {fetchPublicSettings} from '../../../utils/pageUtils.js';
+import { fetchPublicSettings } from '../../../utils/pageUtils.js';
 
 export default function ThemeList() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {backendHost} = BackendHostURLState();
-  const {user} = useAuthentication();
-  const {settings: siteSettings, setSettings} = SitePublicSettingsState();
-  const {notify} = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState();
+  const { user } = useAuthentication();
+  const { settings: siteSettings, setSettings } = SitePublicSettingsState();
+  const { notify } = NotificationState((state) => state);
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,11 +38,11 @@ export default function ThemeList() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(`${backendHost}/theme/list`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.token}`,
         },
         credentials: 'include',
       });
@@ -59,12 +64,12 @@ export default function ThemeList() {
   const handleSelectTheme = async (folderName) => {
     try {
       setSelectingTheme(folderName);
-      
+
       const response = await fetch(`${backendHost}/theme/select`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.token}`,
         },
         credentials: 'include',
         body: JSON.stringify({ folder_name: folderName }),
@@ -76,13 +81,13 @@ export default function ThemeList() {
       }
 
       const data = await response.json();
-      
+
       // Refresh site settings to get updated selected_theme
       const updatedSettings = await fetchPublicSettings();
       if (updatedSettings) {
         setSettings(updatedSettings);
       }
-      
+
       notify({
         message: data.message || t('Theme selected successfully'),
         type: 'success',
@@ -105,9 +110,7 @@ export default function ThemeList() {
       </Helmet>
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
-          <H1 className="text-[32px] font-bold text-primary">
-            {t('Themes')}
-          </H1>
+          <H1 className="text-[32px] font-bold text-primary">{t('Themes')}</H1>
         </div>
 
         {error && (
@@ -136,14 +139,14 @@ export default function ThemeList() {
             cols={3}
             spacing="lg"
             breakpoints={[
-              {maxWidth: 'md', cols: 2},
-              {maxWidth: 'sm', cols: 1},
+              { maxWidth: 'md', cols: 2 },
+              { maxWidth: 'sm', cols: 1 },
             ]}
           >
             {themes.map((theme) => {
               const isSelected = siteSettings?.selected_theme === theme.folder_name;
               const isSelecting = selectingTheme === theme.folder_name;
-              
+
               return (
                 <Card
                   key={theme.folder_name}
@@ -155,9 +158,7 @@ export default function ThemeList() {
                 >
                   <div className="flex flex-col h-full">
                     <div className="mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {theme.name}
-                      </h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{theme.name}</h3>
                       <div className="flex gap-2 items-center">
                         <Badge color="blue" variant="light" size="sm">
                           v{theme.version}
@@ -170,7 +171,7 @@ export default function ThemeList() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="mt-auto flex gap-2">
                       {isSelected && (
                         <Button

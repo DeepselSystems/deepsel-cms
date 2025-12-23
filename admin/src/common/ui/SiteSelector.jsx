@@ -1,14 +1,14 @@
 import React from 'react';
 import useOrganization from '../hooks/useOrganization.js';
-import {Input, InputBase, Combobox, useCombobox} from '@mantine/core';
-import {useId} from '@mantine/hooks';
-import {useTranslation} from 'react-i18next';
+import { Input, InputBase, Combobox, useCombobox } from '@mantine/core';
+import { useId } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
 import Button from './Button.jsx';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 // Removed _ALL_SITES_SELECTION_KEY since we don't want "All Sites" option
 
@@ -24,18 +24,12 @@ import {faPlus} from '@fortawesome/free-solid-svg-icons';
  *
  * @constructor
  */
-const SiteSelector = ({
-  value,
-  setValue,
-  exceptedIds = [],
-  inputClassNames = {},
-  onAddClick,
-}) => {
+const SiteSelector = ({ value, setValue, exceptedIds = [], inputClassNames = {}, onAddClick }) => {
   // uniq id
   const _id = useId();
 
   // translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // combobox controller
   const combobox = useCombobox({
@@ -43,7 +37,7 @@ const SiteSelector = ({
   });
 
   // organization hook - current sites
-  const {sites} = useOrganization();
+  const { sites } = useOrganization();
 
   /**
    * @type {Dictionary<Organization>}
@@ -56,9 +50,7 @@ const SiteSelector = ({
 
     // Return only the actual sites (no "All Sites" option)
     return fromPairs(
-      sites
-        .filter((site) => !exceptedIds.includes(site.id))
-        .map((site) => [String(site.id), site])
+      sites.filter((site) => !exceptedIds.includes(site.id)).map((site) => [String(site.id), site]),
     );
   }, [sites, exceptedIds]);
 
@@ -92,7 +84,7 @@ const SiteSelector = ({
         setValue(sitesMap[String(siteId)] || null);
       }
     },
-    [sitesMap, setValue]
+    [sitesMap, setValue],
   );
 
   return (
@@ -130,9 +122,7 @@ const SiteSelector = ({
                   </Combobox.Option>
                 ))}
                 {onAddClick && (
-                  <VisibilityControl
-                    roleIds={['super_admin_role', 'admin_role']}
-                  >
+                  <VisibilityControl roleIds={['super_admin_role', 'admin_role']}>
                     <>
                       <div className="border-t border-gray-200 my-1" />
                       <Button

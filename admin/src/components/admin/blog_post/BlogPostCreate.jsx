@@ -1,18 +1,10 @@
-import {useMemo, useState} from 'react';
+import { useMemo, useState } from 'react';
 
-import {faPlus, faTrash, faGear} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  Button,
-  LoadingOverlay,
-  Modal,
-  Tabs,
-  Tooltip,
-  Menu,
-  Drawer,
-} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import { faPlus, faTrash, faGear } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -26,7 +18,7 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import {getAttachmentUrl} from '../../../common/utils/index.js';
+import { getAttachmentUrl } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
@@ -38,22 +30,21 @@ import SideBySideEditingView from '../../shared/SideBySideEditing/SideBySideEdit
 import BlogPostContentEditor from '../../shared/SideBySideEditing/BlogPostContentEditor.jsx';
 import AIWriterModal from '../page/components/AIWriterModal.jsx';
 
-export default function BlogPostCreate({modalMode, onSuccess}) {
-  const {t} = useTranslation();
+export default function BlogPostCreate({ modalMode, onSuccess }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {notify} = NotificationState((state) => state);
-  const {organizationId} = OrganizationIdState();
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
-  const {user} = UserState();
+  const { notify } = NotificationState((state) => state);
+  const { organizationId } = OrganizationIdState();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { settings: siteSettings } = SitePublicSettingsState((state) => state);
+  const { user } = UserState();
 
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
 
   const isAiFeatureAvailable =
-    !!siteSettings?.has_openrouter_api_key &&
-    !!siteSettings?.ai_autocomplete_model_id;
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
   const aiRequirementMessage = t(
-    'Please specify an API key and autocomplete model in Site Settings to use this feature.'
+    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
   );
 
   const [record, setRecord] = useState({
@@ -67,8 +58,8 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
     publish_date: new Date(),
   });
 
-  const {create, blogPostLoading: loading} = useModel('blog_post');
-  const {data: locales} = useModel('locale', {
+  const { create, blogPostLoading: loading } = useModel('blog_post');
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -108,7 +99,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
    */
   const activeContent = useMemo(
     () => record?.contents?.find((c) => String(c.id) === activeContentTab),
-    [activeContentTab, record?.contents]
+    [activeContentTab, record?.contents],
   );
 
   // Side-by-side editing state
@@ -169,11 +160,11 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
         organization_id: organizationId,
       };
       const created = await create(recordWithOrganization);
-      notify({message: 'Blog Post created successfully!', type: 'success'});
+      notify({ message: 'Blog Post created successfully!', type: 'success' });
       onSuccess ? onSuccess(created) : navigate(-1);
     } catch (error) {
       console.error(error);
-      notify({message: error.message, type: 'error'});
+      notify({ message: error.message, type: 'error' });
     }
   };
 
@@ -188,7 +179,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
 
   const handleSideBySideEdit = (selectedLanguageIds) => {
     const selectedContents = record.contents.filter((content) =>
-      selectedLanguageIds.includes(content.id)
+      selectedLanguageIds.includes(content.id),
     );
     setSelectedLanguageContents(selectedContents);
     setIsSideBySideMode(true);
@@ -224,43 +215,26 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
           cardMode={false}
         >
           <div className={`flex justify-between mt-4`}>
-            <div className="text-gray-500 text-sm font-bold uppercase">
-              {t('Create Blog Post')}
-            </div>
+            <div className="text-gray-500 text-sm font-bold uppercase">{t('Create Blog Post')}</div>
             <div className="flex items-center gap-2">
               {record?.contents?.length > 1 && (
-                <Button
-                  variant="outline"
-                  size="md"
-                  onClick={openSideBySideModal}
-                  className="px-2"
-                >
+                <Button variant="outline" size="md" onClick={openSideBySideModal} className="px-2">
                   {t('Edit languages side-by-side')}
                 </Button>
               )}
-              <Tooltip
-                label={aiRequirementMessage}
-                disabled={isAiFeatureAvailable}
-              >
+              <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
                 <div className="inline-flex items-center">
                   <Switch
                     label={t('AI Autocomplete')}
                     checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                    onChange={(e) =>
-                      setAiAutocompleteEnabled(e.currentTarget.checked)
-                    }
+                    onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
                     disabled={!isAiFeatureAvailable}
                     size="md"
                   />
                 </div>
               </Tooltip>
               <Tooltip label={t('Settings')}>
-                <Button
-                  variant="subtle"
-                  size="md"
-                  onClick={openSettingsDrawer}
-                  className="px-2"
-                >
+                <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
                   <FontAwesomeIcon icon={faGear} />
                 </Button>
               </Tooltip>
@@ -272,9 +246,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                 classNames={{
                   track: 'px-2',
                 }}
-                onChange={(e) =>
-                  setRecord({...record, published: e.currentTarget.checked})
-                }
+                onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
               />
             </div>
           </div>
@@ -283,8 +255,8 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
             <LoadingOverlay
               visible={false}
               zIndex={1000}
-              overlayProps={{radius: 'sm', blur: 2}}
-              loaderProps={{type: 'bars'}}
+              overlayProps={{ radius: 'sm', blur: 2 }}
+              loaderProps={{ type: 'bars' }}
             />
 
             <Tabs
@@ -308,13 +280,8 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                       closeDelay={400}
                     >
                       <Menu.Target>
-                        <Tabs.Tab
-                          value={String(content.id)}
-                          className="mr-1 mb-1"
-                        >
-                          <span className="mr-1">
-                            {getLanguageFlag(content.locale_id)}
-                          </span>
+                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
                           {getLanguageName(content.locale_id)}
                         </Tabs.Tab>
                       </Menu.Target>
@@ -355,18 +322,12 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                       <TextInput
                         className="w-full"
                         placeholder={t('Title')}
-                        classNames={{input: 'text-[36px]! font-bold! px-0!'}}
+                        classNames={{ input: 'text-[36px]! font-bold! px-0!' }}
                         size="xl"
                         variant="subtle"
                         required
                         value={content.title || ''}
-                        onChange={(e) =>
-                          updateContentField(
-                            content.id,
-                            'title',
-                            e.target.value
-                          )
-                        }
+                        onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
                       />
                     </div>
                   </div>
@@ -376,10 +337,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                       onClick={openSettingsDrawer}
                     >
                       <img
-                        src={getAttachmentUrl(
-                          backendHost,
-                          content.featured_image.name
-                        )}
+                        src={getAttachmentUrl(backendHost, content.featured_image.name)}
                         alt={content.title || 'Featured image'}
                         className="w-full h-auto object-cover rounded-md max-h-[400px]"
                       />
@@ -394,13 +352,9 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                   <div className="my-4">
                     <RichTextInput
                       content={content.content || ''}
-                      onChange={(value) =>
-                        updateContentField(content.id, 'content', value)
-                      }
-                      classNames={{content: 'min-h-[1000px]'}}
-                      autoComplete={
-                        aiAutocompleteEnabled && isAiFeatureAvailable
-                      }
+                      onChange={(value) => updateContentField(content.id, 'content', value)}
+                      classNames={{ content: 'min-h-[1000px]' }}
+                      autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
                     />
                   </div>
                 </Tabs.Panel>
@@ -425,7 +379,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
         title={<div className="font-bold">{t('Add Content')}</div>}
         size="md"
         radius={0}
-        transitionProps={{transition: 'fade', duration: 200}}
+        transitionProps={{ transition: 'fade', duration: 200 }}
       >
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-4">
@@ -455,11 +409,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
           />
 
           <div className="flex justify-end mt-4">
-            <Button
-              variant="outline"
-              onClick={closeAddContentModal}
-              className="mr-2"
-            >
+            <Button variant="outline" onClick={closeAddContentModal} className="mr-2">
               {t('Cancel')}
             </Button>
             <Button
@@ -480,24 +430,20 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
         title={<div className="font-bold">{t('Settings')}</div>}
         size="md"
         position="right"
-        transitionProps={{transition: 'slide-left', duration: 200}}
+        transitionProps={{ transition: 'slide-left', duration: 200 }}
       >
         <div className="mb-10 space-y-4">
           <AuthorSelector
             value={record.author_id}
-            onChange={(value) =>
-              setRecord((prev) => ({...prev, author_id: value}))
-            }
+            onChange={(value) => setRecord((prev) => ({ ...prev, author_id: value }))}
           />
 
           <DateTimePickerInput
             label={t('Publication Date')}
             placeholder={t('Select publication date')}
             valueFormat="DD MMM YYYY hh:mm A"
-            value={
-              record.publish_date ? new Date(record.publish_date) : new Date()
-            }
-            onChange={(date) => setRecord({...record, publish_date: date})}
+            value={record.publish_date ? new Date(record.publish_date) : new Date()}
+            onChange={(date) => setRecord({ ...record, publish_date: date })}
             className="mb-4"
             clearable={false}
           />
@@ -505,11 +451,9 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
           <TextInput
             className="w-full"
             label={t('Slug')}
-            placeholder={t(
-              'Enter URL slug (will be auto-generated if left empty)'
-            )}
+            placeholder={t('Enter URL slug (will be auto-generated if left empty)')}
             value={record.slug || ''}
-            onChange={(e) => setRecord({...record, slug: e.target.value})}
+            onChange={(e) => setRecord({ ...record, slug: e.target.value })}
           />
 
           {activeContentTab && activeContentTab !== 'add_new' && (
@@ -517,9 +461,7 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
               <div className="pt-4">
                 <h3 className="font-medium mb-2">{t('Content Settings')}</h3>
                 <p className="text-sm text-gray-500 mb-3">
-                  {t(
-                    'These settings apply to the currently selected language content.'
-                  )}
+                  {t('These settings apply to the currently selected language content.')}
                 </p>
 
                 <FileInput
@@ -527,16 +469,8 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
                   label={t('Featured Image')}
                   value={activeContent.featured_image?.name}
                   onChange={(file) => {
-                    updateContentField(
-                      activeContent.id,
-                      'featured_image',
-                      file
-                    );
-                    updateContentField(
-                      activeContent.id,
-                      'featured_image_id',
-                      file?.id
-                    );
+                    updateContentField(activeContent.id, 'featured_image', file);
+                    updateContentField(activeContent.id, 'featured_image_id', file?.id);
                   }}
                   type="image"
                 />
@@ -546,12 +480,8 @@ export default function BlogPostCreate({modalMode, onSuccess}) {
         </div>
 
         <div className="space-y-10">
-          <SeoMetadataForm
-            pageContent={activeContent}
-            updateContentField={updateContentField}
-          />
-          {(activeContent?.seo_metadata_title ||
-            activeContent?.seo_metadata_description) && (
+          <SeoMetadataForm pageContent={activeContent} updateContentField={updateContentField} />
+          {(activeContent?.seo_metadata_title || activeContent?.seo_metadata_description) && (
             <>
               <SocialCardPreview pageContent={activeContent} />
               <SERPPreviewCardPreview pageContent={activeContent} />

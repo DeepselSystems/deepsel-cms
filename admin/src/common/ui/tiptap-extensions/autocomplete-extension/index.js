@@ -9,11 +9,11 @@
  * - Integrates with existing API endpoint
  */
 
-export {default as AutocompleteExtension} from './AutocompleteExtension.js';
-export {useAutocomplete} from './hooks/useAutocomplete.js';
-export {useDebounce} from './hooks/useDebounce.js';
-export {default as TabBadge} from './components/TabBadge.jsx';
-export {AUTOCOMPLETE_CONSTANTS} from './constants.js';
+export { default as AutocompleteExtension } from './AutocompleteExtension.js';
+export { useAutocomplete } from './hooks/useAutocomplete.js';
+export { useDebounce } from './hooks/useDebounce.js';
+export { default as TabBadge } from './components/TabBadge.jsx';
+export { AUTOCOMPLETE_CONSTANTS } from './constants.js';
 export {
   isIncompleteSentence,
   createGhostTextCSS,
@@ -23,4 +23,4 @@ export {
 } from './utils.js';
 
 // Default export for convenience
-export {default} from './AutocompleteExtension.js';
+export { default } from './AutocompleteExtension.js';

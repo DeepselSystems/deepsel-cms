@@ -1,18 +1,9 @@
-export default function ChatAnswerItem({
-  content,
-  sources = [],
-  isStreaming = false,
-}) {
+export default function ChatAnswerItem({ content, sources = [], isStreaming = false }) {
   return (
     <div className="bg-gray-100 rounded-lg p-4">
       <div className="flex items-start space-x-3">
         <div className="w-8 h-8 bg-primary-main rounded-full flex items-center justify-center flex-shrink-0">
-          <svg
-            className="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

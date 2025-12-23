@@ -1,27 +1,22 @@
-import {useTranslation} from 'react-i18next';
-import {faImage} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {useDisclosure} from '@mantine/hooks';
-import {Link, RichTextEditor as MantineRichTextEditor} from '@mantine/tiptap';
+import { useTranslation } from 'react-i18next';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useDisclosure } from '@mantine/hooks';
+import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import SubScript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
-import {useEditor} from '@tiptap/react';
+import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ChooseAttachmentModal from './ChooseAttachmentModal.jsx';
 import Button from './Button.jsx';
 export default function RichTextEditor(props) {
-  const {t} = useTranslation();
-  const {
-    content = '',
-    onSubmit = console.log,
-    autoSubmit = false,
-    ...others
-  } = props;
-  const [isImageModalOpened, {open: openImageModal, close: closeImageModal}] =
+  const { t } = useTranslation();
+  const { content = '', onSubmit = console.log, autoSubmit = false, ...others } = props;
+  const [isImageModalOpened, { open: openImageModal, close: closeImageModal }] =
     useDisclosure(false);
   const editor = useEditor({
     extensions: [
@@ -37,7 +32,7 @@ export default function RichTextEditor(props) {
       Image,
     ],
     content,
-    onUpdate: ({editor}) => {
+    onUpdate: ({ editor }) => {
       if (autoSubmit) {
         onSubmit(editor.getHTML());
       }
@@ -120,7 +115,7 @@ export default function RichTextEditor(props) {
       <ChooseAttachmentModal
         isOpen={isImageModalOpened}
         close={closeImageModal}
-        onChange={({attachUrl}) =>
+        onChange={({ attachUrl }) =>
           editor
             .chain()
             .focus()

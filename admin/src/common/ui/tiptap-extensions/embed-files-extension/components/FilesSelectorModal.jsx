@@ -1,12 +1,12 @@
-import {Modal, Button} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { Modal, Button } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import ChooseAttachmentModal from '../../../ChooseAttachmentModal.jsx';
-import {useState} from 'react';
-import {MAX_FILES_COUNT, getShortUrl} from '../utils.js';
-import {getAttachmentRelativeUrl} from '../../../../utils/index.js';
+import { useState } from 'react';
+import { MAX_FILES_COUNT, getShortUrl } from '../utils.js';
+import { getAttachmentRelativeUrl } from '../../../../utils/index.js';
 import NotificationState from '../../../../stores/NotificationState.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faFile, faTrash, faPlus} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFile, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 
 /**
@@ -33,10 +33,10 @@ const FilesSelectorModal = ({
   onUpdate,
 }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Notification
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
 
   // Modal visibility state
   const [isAttachmentModalOpened, setIsAttachmentModalOpened] = useState(false);
@@ -163,17 +163,11 @@ const FilesSelectorModal = ({
                   <div
                     key={index}
                     className={clsx(
-                      'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200'
+                      'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200',
                     )}
                   >
-                    <FontAwesomeIcon
-                      icon={faFile}
-                      className="text-blue-500 text-lg"
-                    />
-                    <div
-                      className="flex-1 truncate"
-                      title={file.name || shortUrl}
-                    >
+                    <FontAwesomeIcon icon={faFile} className="text-blue-500 text-lg" />
+                    <div className="flex-1 truncate" title={file.name || shortUrl}>
                       {file.name || shortUrl}
                     </div>
                     <button
@@ -208,10 +202,7 @@ const FilesSelectorModal = ({
               <Button variant="subtle" onClick={() => setOpened(false)}>
                 {t('Cancel')}
               </Button>
-              <Button
-                onClick={insertFiles}
-                disabled={selectedFiles.length === 0}
-              >
+              <Button onClick={insertFiles} disabled={selectedFiles.length === 0}>
                 {isEditMode ? t('Update') : t('Insert')}
               </Button>
             </div>

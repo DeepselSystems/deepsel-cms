@@ -1,12 +1,10 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import NotificationState from '../stores/NotificationState.js';
 export default function Notification() {
-  const {t} = useTranslation();
-  const {open, setOpen, message, type, duration} = NotificationState(
-    (state) => state
-  );
+  const { t } = useTranslation();
+  const { open, setOpen, message, type, duration } = NotificationState((state) => state);
   return (
     <Snackbar
       anchorOrigin={{

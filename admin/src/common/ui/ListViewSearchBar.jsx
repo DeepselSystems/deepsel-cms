@@ -1,20 +1,16 @@
-import {useTranslation} from 'react-i18next';
-import {Button as MantineButton} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faArrowsRotate,
-  faXmark,
-  faSearch,
-} from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import { Button as MantineButton } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowsRotate, faXmark, faSearch } from '@fortawesome/free-solid-svg-icons';
 import TextInput from './TextInput.jsx';
 import Button from './Button.jsx';
 import NotificationState from '../stores/NotificationState.js';
 import Chip from '@mui/material/Chip';
-import {operatorLabels} from '../../constants/ormOperators.js';
+import { operatorLabels } from '../../constants/ormOperators.js';
 import Select from './Select.jsx';
 
 export default function ListViewSearchBar(props) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     query,
     allowSearch = true,
@@ -38,7 +34,7 @@ export default function ListViewSearchBar(props) {
     pageSize,
     setPageSize,
   } = query;
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   function handleDelete() {
     deleteWithConfirm(
@@ -46,7 +42,7 @@ export default function ListViewSearchBar(props) {
       () => {
         setSelectedRows([]);
         get();
-      }
+      },
     );
   }
 
@@ -119,7 +115,7 @@ export default function ListViewSearchBar(props) {
           <div className={`flex gap-2 items-center flex-wrap`}>
             {allowSearch && (
               <TextInput
-                classNames={{input: 'shadow-sm'}}
+                classNames={{ input: 'shadow-sm' }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={t(`Search...`)}
@@ -143,8 +139,7 @@ export default function ListViewSearchBar(props) {
               .filter((filter) => !filter.field?.includes('organization_id')) // Hide organization_id filter chips
               .map((filter, index) => {
                 const fieldLabel =
-                  columns?.find((col) => col.field === filter.field)
-                    ?.headerName || filter.field;
+                  columns?.find((col) => col.field === filter.field)?.headerName || filter.field;
 
                 return (
                   <Chip

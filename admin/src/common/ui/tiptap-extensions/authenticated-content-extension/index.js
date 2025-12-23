@@ -1,4 +1,4 @@
-import {mergeAttributes, Node} from '@tiptap/core';
+import { mergeAttributes, Node } from '@tiptap/core';
 import {
   AUTHENTICATED_CONTENT_ATTRIBUTES,
   AUTHENTICATED_CONTENT_CLASSES,
@@ -41,7 +41,7 @@ export const AuthenticatedContent = Node.create({
     ];
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({ HTMLAttributes }) {
     return [
       'div',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
@@ -55,7 +55,7 @@ export const AuthenticatedContent = Node.create({
     return {
       setAuthenticatedContent:
         () =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.insertContent({
             type: this.name,
             content: [

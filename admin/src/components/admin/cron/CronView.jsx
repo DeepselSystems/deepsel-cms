@@ -1,7 +1,7 @@
-import {useState} from 'react';
-import {useParams} from 'react-router-dom';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import Card from '../../../common/ui/Card.jsx';
 import H1 from '../../../common/ui/H1.jsx';
@@ -14,16 +14,16 @@ import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlay} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
 
 export default function CronView() {
-  const {t} = useTranslation();
-  const {id} = useParams();
-  const query = useModel('cron', {id, autoFetch: true});
-  const {record, getOne} = query;
-  const {notify} = NotificationState();
-  const {get: executeCron} = useFetch(`cron/execute/${id}`);
+  const { t } = useTranslation();
+  const { id } = useParams();
+  const query = useModel('cron', { id, autoFetch: true });
+  const { record, getOne } = query;
+  const { notify } = NotificationState();
+  const { get: executeCron } = useFetch(`cron/execute/${id}`);
   const [loading, setLoading] = useState(false);
 
   async function execute() {
@@ -56,11 +56,7 @@ export default function CronView() {
             <div className={`flex justify-between items-center`}>
               <H1>{t('Scheduled Action')}</H1>
               <Button onClick={execute} loading={loading}>
-                <FontAwesomeIcon
-                  icon={faPlay}
-                  className="mr-1 h-3 w-3"
-                  size={`sm`}
-                />
+                <FontAwesomeIcon icon={faPlay} className="mr-1 h-3 w-3" size={`sm`} />
                 Execute Manually
               </Button>
             </div>
@@ -68,10 +64,7 @@ export default function CronView() {
             <div className={`flex gap-4 my-4 flex-wrap`}>
               <ReadOnlyField label={t('Name')} value={record.name} />
               <ReadOnlyField label={t('Interval')} value={record.interval} />
-              <ReadOnlyField
-                label={t('Interval Unit')}
-                value={record.interval_unit}
-              />
+              <ReadOnlyField label={t('Interval Unit')} value={record.interval_unit} />
               <Checkbox label={t('Enabled')} checked={record.enabled} />
             </div>
             <div className={`flex gap-4 my-4 flex-wrap`}>
@@ -84,20 +77,14 @@ export default function CronView() {
                 label={t('Last Run')}
                 value={
                   record?.last_run &&
-                  dayjs
-                    .utc(record.last_run)
-                    .local()
-                    .format('DD/MM/YYYY HH:mm:ss')
+                  dayjs.utc(record.last_run).local().format('DD/MM/YYYY HH:mm:ss')
                 }
               />
               <ReadOnlyField
                 label={t('Next Run')}
                 value={
                   record?.next_run &&
-                  dayjs
-                    .utc(record.next_run)
-                    .local()
-                    .format('DD/MM/YYYY HH:mm:ss')
+                  dayjs.utc(record.next_run).local().format('DD/MM/YYYY HH:mm:ss')
                 }
               />
             </div>

@@ -1,8 +1,8 @@
-import {useDisclosure} from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import QRCode from 'qrcode';
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useFetch from '../../../common/api/useFetch.js';
 import RecoveryCodesModal from '../../../common/auth/RecoveryCodesModal.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
@@ -15,21 +15,19 @@ import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 export default function ResetPassword() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
-  const {notify} = NotificationState((state) => state);
-  const {post} = useFetch('check-2fa-config');
+  const { notify } = NotificationState((state) => state);
+  const { post } = useFetch('check-2fa-config');
   const [urlQrCode, setUrlQrCode] = useState('');
-  const [
-    shouldConfirm2FaWhenChangePassword,
-    setShouldConfirm2FaWhenChangePassword,
-  ] = useState(false);
+  const [shouldConfirm2FaWhenChangePassword, setShouldConfirm2FaWhenChangePassword] =
+    useState(false);
   const [
     isOpenRecoveryCodesModal,
-    {open: openRecoveryCodesModal, close: closeRecoveryCodesModal},
+    { open: openRecoveryCodesModal, close: closeRecoveryCodesModal },
   ] = useDisclosure();
   const [recoveryCodes, setRecoveryCodes] = useState([]);
   const [otp, setOtp] = useState('');
@@ -42,12 +40,11 @@ export default function ResetPassword() {
     try {
       const searchParams = new URLSearchParams(location.search);
       const token = searchParams.get('t');
-      const info2Fa = await post({token});
+      const info2Fa = await post({ token });
       if (!info2Fa) {
         return;
       }
-      const {is_organization_require_2fa, is_already_config_2fa, totp_uri} =
-        info2Fa;
+      const { is_organization_require_2fa, is_already_config_2fa, totp_uri } = info2Fa;
       if (!is_organization_require_2fa && !is_already_config_2fa) {
         setUrlQrCode('');
         setShouldConfirm2FaWhenChangePassword(false);
@@ -61,9 +58,7 @@ export default function ResetPassword() {
         });
         setUrlQrCode(urlQrCode);
       }
-      setShouldConfirm2FaWhenChangePassword(
-        is_organization_require_2fa && !is_already_config_2fa
-      );
+      setShouldConfirm2FaWhenChangePassword(is_organization_require_2fa && !is_already_config_2fa);
     } catch (err) {
       notify({
         message: err.message,
@@ -98,13 +93,12 @@ export default function ResetPassword() {
         body: JSON.stringify({
           token: token,
           new_password: newPassword,
-          should_confirm_2fa_when_change_password:
-            shouldConfirm2FaWhenChangePassword,
+          should_confirm_2fa_when_change_password: shouldConfirm2FaWhenChangePassword,
           crosscheck_otp: otp,
         }),
       });
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         if (typeof detail === 'string') {
           notify({
             message: detail,
@@ -116,7 +110,7 @@ export default function ResetPassword() {
           type: 'success',
           message: t('Password changed successfully!'),
         });
-        const {recovery_codes} = await response.json();
+        const { recovery_codes } = await response.json();
         if (recovery_codes?.length) {
           setRecoveryCodes(recovery_codes);
           openRecoveryCodesModal();
@@ -136,10 +130,7 @@ export default function ResetPassword() {
 
   return (
     <main className={`max-w-screen-xl grow mx-auto pt-4 w-full`}>
-      <form
-        onSubmit={handleResetPassword}
-        className={`flex flex-col gap-2 max-w-[400px] mx-auto`}
-      >
+      <form onSubmit={handleResetPassword} className={`flex flex-col gap-2 max-w-[400px] mx-auto`}>
         <PasswordInput
           label={t(`New password`)}
           value={newPassword}
@@ -156,7 +147,7 @@ export default function ResetPassword() {
           <div className="mt-4">
             <div>
               {t(
-                'Your organization require Two-Factor-Authentication. Please scan the QR below with the Google Authenticator app.'
+                'Your organization require Two-Factor-Authentication. Please scan the QR below with the Google Authenticator app.',
               )}
             </div>
             <img src={urlQrCode} className="w-[200px] h-[200px] mx-auto" />

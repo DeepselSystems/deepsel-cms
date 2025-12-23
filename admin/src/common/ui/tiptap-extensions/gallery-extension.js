@@ -1,6 +1,6 @@
-import {Node, mergeAttributes} from '@tiptap/core';
-import {Plugin, PluginKey} from 'prosemirror-state';
-import {getAttachmentRelativeUrl} from '../../utils/index.js';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { Plugin, PluginKey } from 'prosemirror-state';
+import { getAttachmentRelativeUrl } from '../../utils/index.js';
 
 // Gallery Node Extension for TipTap
 export const Gallery = Node.create({
@@ -47,10 +47,8 @@ export const Gallery = Node.create({
 
             const parsedConfig = configStr
               ? JSON.parse(configStr)
-              : {imagesPerRow: 3, gap: 4, maxWidth: null, rounded: true};
-            const parsedAttachments = attachmentsStr
-              ? JSON.parse(attachmentsStr)
-              : [];
+              : { imagesPerRow: 3, gap: 4, maxWidth: null, rounded: true };
+            const parsedAttachments = attachmentsStr ? JSON.parse(attachmentsStr) : [];
 
             return {
               config: parsedConfig,
@@ -67,7 +65,7 @@ export const Gallery = Node.create({
   },
 
   // Render gallery node to HTML
-  renderHTML({HTMLAttributes, node}) {
+  renderHTML({ HTMLAttributes, node }) {
     // Get the gallery configuration and attachments
     const config = node.attrs.config || {
       imagesPerRow: 3,
@@ -106,9 +104,7 @@ export const Gallery = Node.create({
       'grid-template-columns': `repeat(${config.imagesPerRow}, 1fr)`,
       gap: `${config.gap}px`,
       margin: '1rem 0',
-      ...(config.maxWidth
-        ? {'max-width': `${config.maxWidth}px`, margin: '1rem auto'}
-        : {}),
+      ...(config.maxWidth ? { 'max-width': `${config.maxWidth}px`, margin: '1rem auto' } : {}),
     };
 
     // Convert style object to string
@@ -142,7 +138,7 @@ export const Gallery = Node.create({
     const imageElements = cleanAttachments.map((attachment) => {
       const imageContainer = [
         'div',
-        {class: 'gallery-image-container'},
+        { class: 'gallery-image-container' },
         [
           'img',
           {
@@ -179,7 +175,7 @@ export const Gallery = Node.create({
     return {
       setGallery:
         (attributes) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.insertContent({
             type: this.name,
             attrs: attributes,
@@ -187,7 +183,7 @@ export const Gallery = Node.create({
         },
       updateGallery:
         (attributes) =>
-        ({commands, editor}) => {
+        ({ commands, editor }) => {
           // Find the gallery node and update its attributes
           if (editor.isActive(this.name)) {
             return commands.updateAttributes(this.name, attributes);
@@ -199,20 +195,18 @@ export const Gallery = Node.create({
 
   // Add custom node view
   addNodeView() {
-    return ({node, editor, getPos}) => {
+    return ({ node, editor, getPos }) => {
       const dom = document.createElement('div');
       dom.classList.add('gallery-container');
 
       // Apply styling based on config
-      let config = {imagesPerRow: 3, gap: 4, rounded: true};
+      let config = { imagesPerRow: 3, gap: 4, rounded: true };
       let attachments = [];
 
       // Handle both object and string formats for backward compatibility
       if (node.attrs.config) {
         config =
-          typeof node.attrs.config === 'string'
-            ? JSON.parse(node.attrs.config)
-            : node.attrs.config;
+          typeof node.attrs.config === 'string' ? JSON.parse(node.attrs.config) : node.attrs.config;
       }
 
       if (node.attrs.attachments) {
@@ -309,11 +303,10 @@ export const Gallery = Node.create({
             attachments: node.attrs.attachments,
             updateGallery: (newAttrs) => {
               const pos = getPos();
-              const transaction = editor.view.state.tr.setNodeMarkup(
-                pos,
-                undefined,
-                {...node.attrs, ...newAttrs}
-              );
+              const transaction = editor.view.state.tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                ...newAttrs,
+              });
               editor.view.dispatch(transaction);
             },
           },
@@ -351,7 +344,7 @@ export const Gallery = Node.create({
           }
 
           // Update with new content
-          let updatedConfig = {imagesPerRow: 3, gap: 4, rounded: true};
+          let updatedConfig = { imagesPerRow: 3, gap: 4, rounded: true };
           let updatedAttachments = [];
 
           // Handle both object and string formats for backward compatibility

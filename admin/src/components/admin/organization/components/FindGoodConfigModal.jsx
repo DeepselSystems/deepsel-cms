@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
-import {Modal} from '@mantine/core';
-import {isEmail, isInRange, useForm} from '@mantine/form';
+import React, { useState } from 'react';
+import { Modal } from '@mantine/core';
+import { isEmail, isInRange, useForm } from '@mantine/form';
 import TextInput from '../../../../common/ui/TextInput.jsx';
 import NumberInput from '../../../../common/ui/NumberInput.jsx';
 import Button from '../../../../common/ui/Button.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faFlask} from '@fortawesome/free-solid-svg-icons';
-import {useDisclosure} from '@mantine/hooks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFlask } from '@fortawesome/free-solid-svg-icons';
+import { useDisclosure } from '@mantine/hooks';
 import NotificationState from '../../../../common/stores/NotificationState.js';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useFetch from '../../../../common/api/useFetch.js';
 
 const MaximumSleepInterval = 15; // seconds
@@ -23,24 +23,22 @@ const MaximumSleepInterval = 15; // seconds
  */
 const FindGoodConfigModal = React.forwardRef((props, ref) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Notification
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   // Api model
-  const {post: findConfig, loading: findConfigLoading} = useFetch(
-    'email_template/util/find-good-config'
+  const { post: findConfig, loading: findConfigLoading } = useFetch(
+    'email_template/util/find-good-config',
   );
 
   // Result - good config
   const [findConfigResult, setFindConfigResult] = useState(null);
 
   // Modal visible state
-  const [
-    findConfigModalOpened,
-    {open: openFindConfigModal, close: closeFindConfigModal},
-  ] = useDisclosure(false);
+  const [findConfigModalOpened, { open: openFindConfigModal, close: closeFindConfigModal }] =
+    useDisclosure(false);
 
   // Form state
   const form = useForm({
@@ -52,8 +50,8 @@ const FindGoodConfigModal = React.forwardRef((props, ref) => {
     validate: {
       test_recipient: isEmail('Invalid email'),
       sleep_interval: isInRange(
-        {min: 0, max: MaximumSleepInterval},
-        t(`You must be 0-${MaximumSleepInterval} seconds to register`)
+        { min: 0, max: MaximumSleepInterval },
+        t(`You must be 0-${MaximumSleepInterval} seconds to register`),
       ),
     },
   });
@@ -82,7 +80,7 @@ const FindGoodConfigModal = React.forwardRef((props, ref) => {
         });
       }
     },
-    [findConfig, notify, t]
+    [findConfig, notify, t],
   );
 
   /**
@@ -100,15 +98,10 @@ const FindGoodConfigModal = React.forwardRef((props, ref) => {
         closeOnClickOutside={false}
         opened={findConfigModalOpened}
         onClose={closeFindConfigModal}
-        title={
-          <div className="font-semibold">{t('Find Good Configuration')}</div>
-        }
+        title={<div className="font-semibold">{t('Find Good Configuration')}</div>}
         size="lg"
       >
-        <form
-          onSubmit={form.onSubmit(handleSubmit)}
-          className="flex flex-col gap-2"
-        >
+        <form onSubmit={form.onSubmit(handleSubmit)} className="flex flex-col gap-2">
           <TextInput
             required
             label={t('Recipient Email')}
@@ -121,9 +114,7 @@ const FindGoodConfigModal = React.forwardRef((props, ref) => {
             allowDecimal={false}
             allowNegative={false}
             label={t('Sleep Interval (seconds)')}
-            description={t(
-              'Specify the delay between each configuration test in seconds.'
-            )}
+            description={t('Specify the delay between each configuration test in seconds.')}
             key={form.key('sleep_interval')}
             {...form.getInputProps('sleep_interval')}
           />
@@ -135,7 +126,7 @@ const FindGoodConfigModal = React.forwardRef((props, ref) => {
                   .replace(/\n/g, '<br />')
                   .replace(
                     /Successful configuration:/g,
-                    '<strong>Successful configuration:</strong>'
+                    '<strong>Successful configuration:</strong>',
                   ),
               }}
             />

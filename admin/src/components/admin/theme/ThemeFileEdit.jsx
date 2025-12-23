@@ -1,9 +1,17 @@
-import {useState, useEffect, useMemo, useCallback} from 'react';
-import {faPlus, faTrash, faSave, faChevronRight, faChevronDown, faFile, faFolder} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Tabs, Tooltip, Menu, Modal, Loader} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useParams, useNavigate} from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  faPlus,
+  faTrash,
+  faSave,
+  faChevronRight,
+  faChevronDown,
+  faFile,
+  faFolder,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tabs, Tooltip, Menu, Modal, Loader } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useParams, useNavigate } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
@@ -11,7 +19,7 @@ import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import Button from '../../../common/ui/Button.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
@@ -19,9 +27,9 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-css';
 import 'prismjs/themes/prism.css';
-import {Preferences} from '@capacitor/preferences';
+import { Preferences } from '@capacitor/preferences';
 
-function FileTreeNode({node, onSelectFile, selectedPath, level = 0}) {
+function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
   const [isExpanded, setIsExpanded] = useState(level === 0);
 
   if (node.is_directory) {
@@ -29,7 +37,7 @@ function FileTreeNode({node, onSelectFile, selectedPath, level = 0}) {
       <div>
         <div
           className="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer"
-          style={{paddingLeft: `${level * 16 + 8}px`}}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <FontAwesomeIcon
@@ -62,7 +70,7 @@ function FileTreeNode({node, onSelectFile, selectedPath, level = 0}) {
       className={`flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer ${
         selectedPath === node.path ? 'bg-blue-50' : ''
       }`}
-      style={{paddingLeft: `${level * 16 + 24}px`}}
+      style={{ paddingLeft: `${level * 16 + 24}px` }}
       onClick={() => onSelectFile(node.path)}
     >
       <FontAwesomeIcon icon={faFile} className="mr-2 text-gray-400" size="sm" />
@@ -72,11 +80,11 @@ function FileTreeNode({node, onSelectFile, selectedPath, level = 0}) {
 }
 
 export default function ThemeFileEdit() {
-  const {t} = useTranslation();
-  const {themeName} = useParams();
-  const {notify} = NotificationState();
-  const {backendHost} = BackendHostURLState();
-  const {setShowBackButton} = ShowHeaderBackButtonState();
+  const { t } = useTranslation();
+  const { themeName } = useParams();
+  const { notify } = NotificationState();
+  const { backendHost } = BackendHostURLState();
+  const { setShowBackButton } = ShowHeaderBackButtonState();
 
   const [fileTree, setFileTree] = useState([]);
   const [selectedFilePath, setSelectedFilePath] = useState(null);
@@ -87,7 +95,7 @@ export default function ThemeFileEdit() {
   const [addContentModalOpened, setAddContentModalOpened] = useState(false);
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
 
-  const {data: locales} = useModel('locale', {
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -101,7 +109,7 @@ export default function ThemeFileEdit() {
   useEffect(() => {
     const fetchFileTree = async () => {
       try {
-        const tokenResult = await Preferences.get({key: 'token'});
+        const tokenResult = await Preferences.get({ key: 'token' });
         const headers = {};
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
@@ -119,7 +127,7 @@ export default function ThemeFileEdit() {
         setFileTree(data);
       } catch (error) {
         console.error('Error fetching file tree:', error);
-        notify({message: error.message, type: 'error'});
+        notify({ message: error.message, type: 'error' });
       }
     };
 
@@ -131,19 +139,18 @@ export default function ThemeFileEdit() {
   // Fetch file content when selected
   const fetchFileContent = useCallback(
     async (filePath, options = {}) => {
-      const {preferredContent = null} = options;
+      const { preferredContent = null } = options;
       setLoading(true);
       try {
-        const tokenResult = await Preferences.get({key: 'token'});
+        const tokenResult = await Preferences.get({ key: 'token' });
         const headers = {};
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
 
-        const response = await fetch(
-          `${backendHost}/theme/file/${themeName}/${filePath}`,
-          {headers}
-        );
+        const response = await fetch(`${backendHost}/theme/file/${themeName}/${filePath}`, {
+          headers,
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch file content');
@@ -158,21 +165,19 @@ export default function ThemeFileEdit() {
             if (!preferredContent) return null;
 
             const preferredId = String(preferredContent.id || 0);
-            const byId = data.contents.find(
-              (content) => String(content.id || 0) === preferredId
-            );
+            const byId = data.contents.find((content) => String(content.id || 0) === preferredId);
             if (byId) return String(byId.id || 0);
 
             if (preferredContent.locale_id) {
               const byLocale = data.contents.find(
-                (content) => content.locale_id === preferredContent.locale_id
+                (content) => content.locale_id === preferredContent.locale_id,
               );
               if (byLocale) return String(byLocale.id || 0);
             }
 
             if (preferredContent.lang_code) {
               const byLang = data.contents.find(
-                (content) => content.lang_code === preferredContent.lang_code
+                (content) => content.lang_code === preferredContent.lang_code,
               );
               if (byLang) return String(byLang.id || 0);
             }
@@ -180,20 +185,19 @@ export default function ThemeFileEdit() {
             return null;
           })();
 
-          const nextTab =
-            desiredTab !== null ? desiredTab : String(data.contents[0].id || 0);
+          const nextTab = desiredTab !== null ? desiredTab : String(data.contents[0].id || 0);
           setActiveContentTab(nextTab);
         } else {
           setActiveContentTab(null);
         }
       } catch (error) {
         console.error('Error fetching file content:', error);
-        notify({message: error.message, type: 'error'});
+        notify({ message: error.message, type: 'error' });
       } finally {
         setLoading(false);
       }
     },
-    [themeName, backendHost, notify]
+    [themeName, backendHost, notify],
   );
 
   const handleSelectFile = (filePath) => {
@@ -227,7 +231,7 @@ export default function ThemeFileEdit() {
     setFileData((prev) => ({
       ...prev,
       contents: prev.contents.map((c) =>
-        String(c.id || 0) === String(contentId) ? {...c, [field]: value} : c
+        String(c.id || 0) === String(contentId) ? { ...c, [field]: value } : c,
       ),
     }));
   };
@@ -238,14 +242,14 @@ export default function ThemeFileEdit() {
 
   const handleAddContentSubmit = () => {
     if (!selectedLocaleId) return;
-    
+
     // Find the selected locale
     const locale = locales?.find((l) => l.id === selectedLocaleId);
     if (!locale) return;
 
     // Find default content (the one without lang_code)
     const defaultContent = fileData?.contents?.find((c) => !c.lang_code);
-    
+
     // Create new content with temp ID, cloning from default content
     const newId = `new_${Date.now()}`;
     const newContent = {
@@ -269,13 +273,13 @@ export default function ThemeFileEdit() {
   const handleDeleteContent = (contentId) => {
     setFileData((prev) => {
       const filtered = prev.contents.filter((c) => String(c.id || 0) !== String(contentId));
-      
+
       // Switch to first remaining tab
       if (filtered.length > 0 && String(contentId) === activeContentTab) {
         setActiveContentTab(String(filtered[0].id || 0));
       }
-      
-      return {...prev, contents: filtered};
+
+      return { ...prev, contents: filtered };
     });
   };
 
@@ -284,8 +288,8 @@ export default function ThemeFileEdit() {
 
     setSaving(true);
     try {
-      const tokenResult = await Preferences.get({key: 'token'});
-      const headers = {'Content-Type': 'application/json'};
+      const tokenResult = await Preferences.get({ key: 'token' });
+      const headers = { 'Content-Type': 'application/json' };
       if (tokenResult?.value) {
         headers.Authorization = `Bearer ${tokenResult.value}`;
       }
@@ -313,16 +317,18 @@ export default function ThemeFileEdit() {
       }
 
       notify({
-        message: t('File saved successfully! Site re-build started in background, please wait a few minutes for changes to take effect.'),
+        message: t(
+          'File saved successfully! Site re-build started in background, please wait a few minutes for changes to take effect.',
+        ),
         type: 'success',
       });
 
       // Refresh file content to get updated IDs
       const preferredContent = activeContent || null;
-      await fetchFileContent(fileData.file_path, {preferredContent});
+      await fetchFileContent(fileData.file_path, { preferredContent });
     } catch (error) {
       console.error('Error saving file:', error);
-      notify({message: error.message, type: 'error'});
+      notify({ message: error.message, type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -458,9 +464,7 @@ export default function ThemeFileEdit() {
                     onValueChange={(code) =>
                       updateContentField(activeContent.id || 0, 'content', code)
                     }
-                    highlight={(code) =>
-                      highlight(code, getLanguage(selectedFilePath), 'jsx')
-                    }
+                    highlight={(code) => highlight(code, getLanguage(selectedFilePath), 'jsx')}
                     padding={12}
                     style={{
                       fontSize: 14,

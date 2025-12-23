@@ -65,9 +65,7 @@ export const initializeEmbedFiles = (container) => {
 
   embedFilesWrappers.forEach((wrapper) => {
     // Apply responsive styles to files container
-    const filesContainer = wrapper.querySelector(
-      `.${EMBED_FILES_CLASSES.FILES_CONTAINER}`
-    );
+    const filesContainer = wrapper.querySelector(`.${EMBED_FILES_CLASSES.FILES_CONTAINER}`);
 
     if (filesContainer) {
       // Ensure files container is responsive

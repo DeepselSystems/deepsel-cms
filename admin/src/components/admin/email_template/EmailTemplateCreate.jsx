@@ -1,7 +1,7 @@
-import {highlight, languages} from 'prismjs/components/prism-core.js';
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import { highlight, languages } from 'prismjs/components/prism-core.js';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import Editor from 'react-simple-code-editor';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -12,14 +12,14 @@ import IframeContent from '../../../common/ui/IframeContent.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 
 export default function EmailTemplateCreate(props) {
-  const {t} = useTranslation();
-  const {modalMode, onSuccess} = props;
+  const { t } = useTranslation();
+  const { modalMode, onSuccess } = props;
   const [record, setRecord] = useState({
     name: '',
     content: '',
   });
-  const {create, loading} = useModel('email_template');
-  const {notify} = NotificationState((state) => state);
+  const { create, loading } = useModel('email_template');
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -84,9 +84,7 @@ export default function EmailTemplateCreate(props) {
 
       <H3>{t('Content')}</H3>
       <div className={`grid grid-cols-2 gap-2 my-2`}>
-        <div
-          className={`max-h-[600px] overflow-y-auto border border-gray-border rounded`}
-        >
+        <div className={`max-h-[600px] overflow-y-auto border border-gray-border rounded`}>
           <Editor
             className="w-full min-h-full"
             value={record?.content}

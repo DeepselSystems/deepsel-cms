@@ -40,8 +40,7 @@ export const containsEnhancedImages = (container) => {
   if (!container) return false;
 
   return (
-    container.querySelector(`[${ENHANCED_IMAGE_ATTRIBUTES.CONTAINER}]`) !==
-      null ||
+    container.querySelector(`[${ENHANCED_IMAGE_ATTRIBUTES.CONTAINER}]`) !== null ||
     container.querySelector(`.${ENHANCED_IMAGE_CLASSES.WRAPPER}`) !== null
   );
 };
@@ -61,13 +60,11 @@ export const initializeEnhancedImages = (container) => {
 
   enhancedImageWrappers.forEach((wrapper) => {
     // Check if inline mode is enabled
-    const isInline =
-      wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true';
+    const isInline = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.INLINE) === 'true';
 
     // Apply alignment styles
     const alignment =
-      wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ALIGNMENT) ||
-      ENHANCED_IMAGE_ALIGNMENTS.CENTER;
+      wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ALIGNMENT) || ENHANCED_IMAGE_ALIGNMENTS.CENTER;
 
     if (isInline) {
       // Inline mode: float image to allow text wrapping
@@ -80,8 +77,7 @@ export const initializeEnhancedImages = (container) => {
           'display: inline-block !important; float: left !important; margin: 0 1rem 1rem 0 !important; width: fit-content !important;',
       };
       wrapper.style.cssText =
-        inlineAlignmentStyles[alignment] ||
-        inlineAlignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.LEFT];
+        inlineAlignmentStyles[alignment] || inlineAlignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.LEFT];
     } else {
       // Block mode: standard alignment
       const alignmentStyles = {
@@ -93,16 +89,13 @@ export const initializeEnhancedImages = (container) => {
           'display: block !important; text-align: right !important; margin-left: auto !important; margin-right: 0 !important; width: fit-content !important;',
       };
       wrapper.style.cssText =
-        alignmentStyles[alignment] ||
-        alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER];
+        alignmentStyles[alignment] || alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER];
     }
 
     // Apply border radius and size to image (circle has priority over rounded)
     const img = wrapper.querySelector('img');
-    const isCircle =
-      wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true';
-    const isRounded =
-      wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !== 'false';
+    const isCircle = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.CIRCLE) === 'true';
+    const isRounded = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.ROUNDED) !== 'false';
     const dataWidth = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.WIDTH);
     const dataHeight = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.HEIGHT);
 
@@ -128,15 +121,11 @@ export const initializeEnhancedImages = (container) => {
     }
 
     // Handle description - either existing element or create from data attribute
-    let description = wrapper.querySelector(
-      `.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`
-    );
+    let description = wrapper.querySelector(`.${ENHANCED_IMAGE_CLASSES.DESCRIPTION}`);
 
     // If no description element but has data-description, create it
     if (!description) {
-      const descriptionText = wrapper.getAttribute(
-        ENHANCED_IMAGE_ATTRIBUTES.DESCRIPTION
-      );
+      const descriptionText = wrapper.getAttribute(ENHANCED_IMAGE_ATTRIBUTES.DESCRIPTION);
       if (descriptionText && descriptionText.trim()) {
         description = document.createElement('div');
         description.className = ENHANCED_IMAGE_CLASSES.DESCRIPTION;
@@ -147,12 +136,7 @@ export const initializeEnhancedImages = (container) => {
 
     // Apply styling to description if it exists
     if (description) {
-      description.classList.add(
-        'text-sm',
-        'text-gray-600',
-        'mt-2',
-        'text-center'
-      );
+      description.classList.add('text-sm', 'text-gray-600', 'mt-2', 'text-center');
     }
   });
 };

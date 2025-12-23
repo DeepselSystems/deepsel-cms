@@ -1,19 +1,19 @@
-import {useCallback} from 'react';
-import {NodeViewWrapper} from '@tiptap/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTrash} from '@fortawesome/free-solid-svg-icons';
-import {modals} from '@mantine/modals';
-import {useTranslation} from 'react-i18next';
-import {EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES} from '../utils.js';
+import { useCallback } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
+import { useTranslation } from 'react-i18next';
+import { EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES } from '../utils.js';
 import clsx from 'clsx';
 
 /**
  * EditorNodeView component for embed audio
  * Displays audio player with delete button on hover
  */
-const EditorNodeView = ({node, deleteNode}) => {
-  const {t} = useTranslation();
-  const {src, width} = node.attrs;
+const EditorNodeView = ({ node, deleteNode }) => {
+  const { t } = useTranslation();
+  const { src, width } = node.attrs;
 
   /**
    * Handle delete button click - removes the node
@@ -25,16 +25,14 @@ const EditorNodeView = ({node, deleteNode}) => {
       if (deleteNode) {
         modals.openConfirmModal({
           centered: true,
-          title: (
-            <div className="text-lg font-semibold">{t('Delete Audio')}</div>
-          ),
+          title: <div className="text-lg font-semibold">{t('Delete Audio')}</div>,
           children: t('Are you sure you want to delete this audio?'),
-          labels: {confirm: t('Delete'), cancel: t('Cancel')},
+          labels: { confirm: t('Delete'), cancel: t('Cancel') },
           onConfirm: deleteNode,
         });
       }
     },
-    [deleteNode, t]
+    [deleteNode, t],
   );
 
   return (
@@ -50,7 +48,7 @@ const EditorNodeView = ({node, deleteNode}) => {
       <div
         className={clsx(
           'absolute w-full h-full top-0 left-0',
-          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 z-10'
+          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 z-10',
         )}
       />
 
@@ -58,14 +56,14 @@ const EditorNodeView = ({node, deleteNode}) => {
       <div
         className={clsx(
           'transition opacity-0 group-hover:opacity-100',
-          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10'
+          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10',
         )}
       >
         <button
           onClick={handleDeleteClick}
           className={clsx(
             'p-3 rounded bg-red-500 text-white bg-opacity-90',
-            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110'
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Delete Audio')}
         >

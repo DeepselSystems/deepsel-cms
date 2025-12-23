@@ -1,23 +1,20 @@
 import BackendHostURLState from '../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../common/stores/SitePublicSettingsState.js';
-import {useTranslation} from 'react-i18next';
-import {useMemo} from 'react';
-import {Link} from 'react-router-dom';
-import {getAttachmentUrl} from '../common/utils/index.js';
+import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { getAttachmentUrl } from '../common/utils/index.js';
 
-export default function BlogCard({post, size = 'md'}) {
-  const {backendHost} = BackendHostURLState();
-  const {settings: siteSettings} = SitePublicSettingsState();
-  const {i18n} = useTranslation();
+export default function BlogCard({ post, size = 'md' }) {
+  const { backendHost } = BackendHostURLState();
+  const { settings: siteSettings } = SitePublicSettingsState();
+  const { i18n } = useTranslation();
   const currentLang = i18n.language;
 
   // Find content matching the current selected language
   const content = useMemo(
-    () =>
-      post?.contents?.find(
-        (content) => content.locale?.iso_code === currentLang
-      ),
-    [post, currentLang]
+    () => post?.contents?.find((content) => content.locale?.iso_code === currentLang),
+    [post, currentLang],
   );
 
   if (!content) return null;
@@ -52,9 +49,7 @@ export default function BlogCard({post, size = 'md'}) {
           >
             {content.title}
           </h2>
-          {content.subtitle && (
-            <p className="text-gray-600 mb-3">{content.subtitle}</p>
-          )}
+          {content.subtitle && <p className="text-gray-600 mb-3">{content.subtitle}</p>}
           <div className="flex items-center gap-3 text-gray-500 text-sm mt-3">
             {/* Show publication date if enabled in site settings */}
             {siteSettings?.show_post_date && <span>{formatDate(post)}</span>}

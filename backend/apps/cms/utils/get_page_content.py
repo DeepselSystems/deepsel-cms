@@ -7,7 +7,7 @@ from deepsel.utils.models_pool import models_pool
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from apps.cms.types.shared_datatypes import SEOMetadata
-from apps.cms.types import PublicSettings
+from apps.cms.types.public_settings import PublicSettings
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class PageContentResponse(BaseModel):
 
     id: int
     title: str
-    content: str
+    content: dict[str, dict[str, str]]
     slug: str = None
     lang: str = None
     public_settings: PublicSettings

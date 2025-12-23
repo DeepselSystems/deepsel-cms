@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
 const initialState = {
   settings: null,
@@ -6,7 +6,7 @@ const initialState = {
 
 const SitePublicSettingsState = create((set, get) => ({
   ...initialState,
-  setSettings: (settings) => set({settings}),
+  setSettings: (settings) => set({ settings }),
 }));
 
 export default SitePublicSettingsState;

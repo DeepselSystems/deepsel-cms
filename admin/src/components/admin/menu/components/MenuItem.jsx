@@ -1,6 +1,6 @@
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowUp,
   faArrowDown,
@@ -10,7 +10,7 @@ import {
   faLink,
   faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
-import {Card, Tooltip, Button} from '@mantine/core';
+import { Card, Tooltip, Button } from '@mantine/core';
 import ChangeParentModal from './ChangeParentModal.jsx';
 import VisibilityControl from '../../../../common/auth/VisibilityControl.jsx';
 
@@ -27,7 +27,7 @@ const MenuItem = (props) => {
     locales,
     pageContents,
   } = props;
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [showParentModal, setShowParentModal] = useState(false);
 
@@ -35,8 +35,7 @@ const MenuItem = (props) => {
   const isChildOf = (item, potentialParentId) => {
     if (!item.children) return false;
     return item.children.some(
-      (child) =>
-        child.id === potentialParentId || isChildOf(child, potentialParentId)
+      (child) => child.id === potentialParentId || isChildOf(child, potentialParentId),
     );
   };
 
@@ -62,7 +61,7 @@ const MenuItem = (props) => {
     // If linked to page content, return the URL (should be page_content.slug from backend)
     if (translation.page_content_id) {
       const pageContent = pageContents?.find(
-        (content) => content.id === translation.page_content_id
+        (content) => content.id === translation.page_content_id,
       );
       return pageContent?.slug || '';
     }
@@ -74,13 +73,9 @@ const MenuItem = (props) => {
     const translation = item.translations?.[localeCode];
     if (!translation) return '';
 
-    if (
-      !translation.use_custom_url &&
-      translation.page_content_id &&
-      translation.use_page_title
-    ) {
+    if (!translation.use_custom_url && translation.page_content_id && translation.use_page_title) {
       const pageContent = pageContents?.find(
-        (content) => content.id === translation.page_content_id
+        (content) => content.id === translation.page_content_id,
       );
       return pageContent?.title || '';
     }
@@ -121,12 +116,8 @@ const MenuItem = (props) => {
                       title={getLanguageName(localeCode)}
                     >
                       <div className="flex items-center">
-                        <span className="mr-1">
-                          {getLanguageFlag(localeCode)}
-                        </span>
-                        <span className="mr-1 text-black text-sm font-semibold">
-                          {title}
-                        </span>
+                        <span className="mr-1">{getLanguageFlag(localeCode)}</span>
+                        <span className="mr-1 text-black text-sm font-semibold">{title}</span>
                       </div>
                       <div className="flex items-center">
                         {translation?.open_in_new_tab && (
@@ -135,13 +126,9 @@ const MenuItem = (props) => {
                           </span>
                         )}
                         {path ? (
-                          <span className="text-xs text-primary-main">
-                            {path}
-                          </span>
+                          <span className="text-xs text-primary-main">{path}</span>
                         ) : (
-                          <span className="text-xs text-gray-400 italic">
-                            {t('No link')}
-                          </span>
+                          <span className="text-xs text-gray-400 italic">{t('No link')}</span>
                         )}
                       </div>
                     </div>
@@ -186,12 +173,7 @@ const MenuItem = (props) => {
                 </Button>
               </Tooltip>
               <Tooltip label={t('Edit')} position="top" withArrow>
-                <Button
-                  variant="subtle"
-                  size="xs"
-                  className="mr-1"
-                  onClick={() => editItem(item)}
-                >
+                <Button variant="subtle" size="xs" className="mr-1" onClick={() => editItem(item)}>
                   <FontAwesomeIcon icon={faPencil} />
                 </Button>
               </Tooltip>
@@ -216,12 +198,7 @@ const MenuItem = (props) => {
                 </Button>
               </Tooltip>
               <Tooltip label={t('Delete')} position="top" withArrow>
-                <Button
-                  variant="subtle"
-                  color="red"
-                  size="xs"
-                  onClick={() => deleteItem(item.id)}
-                >
+                <Button variant="subtle" color="red" size="xs" onClick={() => deleteItem(item.id)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </Tooltip>
@@ -263,10 +240,7 @@ const MenuItem = (props) => {
           // Check if child is a descendant of parentId
           const checkDescendant = (item, targetId) => {
             if (item.id === targetId) return true;
-            return (
-              item.children &&
-              item.children.some((child) => checkDescendant(child, targetId))
-            );
+            return item.children && item.children.some((child) => checkDescendant(child, targetId));
           };
           return checkDescendant(child, parentId);
         }}

@@ -1,4 +1,4 @@
-import {AUTOCOMPLETE_CONSTANTS} from './constants.js';
+import { AUTOCOMPLETE_CONSTANTS } from './constants.js';
 
 /**
  * Check if the current sentence is incomplete
@@ -104,8 +104,5 @@ export function debounce(func, wait) {
  * @returns {boolean} - True if key is relevant
  */
 export function isRelevantKey(event) {
-  return [
-    AUTOCOMPLETE_CONSTANTS.KEYS.TAB,
-    AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE,
-  ].includes(event.key);
+  return [AUTOCOMPLETE_CONSTANTS.KEYS.TAB, AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE].includes(event.key);
 }

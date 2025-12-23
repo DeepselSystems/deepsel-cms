@@ -2,17 +2,12 @@
  * Search scoring utilities for calculating relevance
  */
 
-import {countPhraseMatches, extractPageContentText} from './searchUtils.js';
+import { countPhraseMatches, extractPageContentText } from './searchUtils.js';
 
 /**
  * Calculate relevance score for search results
  */
-export function calculateRelevanceScore(
-  item,
-  content,
-  searchQuery,
-  contentType
-) {
+export function calculateRelevanceScore(item, content, searchQuery, contentType) {
   if (!searchQuery) return 0;
 
   let score = 0;

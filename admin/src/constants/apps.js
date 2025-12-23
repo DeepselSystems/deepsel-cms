@@ -1,4 +1,4 @@
-import {faPenRuler} from '@fortawesome/free-solid-svg-icons';
+import { faPenRuler } from '@fortawesome/free-solid-svg-icons';
 
 export default [
   {
@@ -13,5 +13,5 @@ export default [
       'website_author_role',
       'website_editor_role',
     ],
-  }
+  },
 ];

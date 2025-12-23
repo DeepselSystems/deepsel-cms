@@ -1,7 +1,7 @@
-import {useTranslation} from 'react-i18next';
-import {Button, Modal} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faHouse} from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import { Button, Modal } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse } from '@fortawesome/free-solid-svg-icons';
 
 const ChangeParentModal = ({
   opened,
@@ -13,7 +13,7 @@ const ChangeParentModal = ({
   locales,
   pageContents,
 }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const getLanguageFlag = (localeCode) => {
     const locale = locales?.find((locale) => locale.iso_code === localeCode);
@@ -24,13 +24,9 @@ const ChangeParentModal = ({
     const translation = menuItem.translations?.[localeCode];
     if (!translation) return '';
 
-    if (
-      !translation.use_custom_url &&
-      translation.page_content_id &&
-      translation.use_page_title
-    ) {
+    if (!translation.use_custom_url && translation.page_content_id && translation.use_page_title) {
       const pageContent = pageContents?.find(
-        (content) => content.id === translation.page_content_id
+        (content) => content.id === translation.page_content_id,
       );
       return pageContent?.title || '';
     }
@@ -65,10 +61,7 @@ const ChangeParentModal = ({
           </Button>
           <div className="flex flex-wrap justify-start gap-2">
             {allItems
-              .filter(
-                (menuItem) =>
-                  menuItem.id !== item.id && !isChildOf(item, menuItem.id)
-              )
+              .filter((menuItem) => menuItem.id !== item.id && !isChildOf(item, menuItem.id))
               .map((menuItem) => (
                 <div
                   key={menuItem.id}
@@ -88,12 +81,8 @@ const ChangeParentModal = ({
                             key={localeCode}
                             className="flex items-center bg-gray-100 px-2 py-1 rounded"
                           >
-                            <span className="mr-1">
-                              {getLanguageFlag(localeCode)}
-                            </span>
-                            <span className="text-sm font-medium">
-                              {title || t('No title')}
-                            </span>
+                            <span className="mr-1">{getLanguageFlag(localeCode)}</span>
+                            <span className="text-sm font-medium">{title || t('No title')}</span>
                           </div>
                         );
                       })}

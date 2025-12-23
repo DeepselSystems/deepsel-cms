@@ -1,25 +1,25 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import {JsonInput} from '@mantine/core';
+import { JsonInput } from '@mantine/core';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import RecordSelectMulti from '../../../common/ui/RecordSelectMulti.jsx';
 import TextArea from '../../../common/ui/TextArea.jsx';
 
 export default function RoleEdit() {
-  const {t} = useTranslation();
-  const {id} = useParams();
+  const { t } = useTranslation();
+  const { id } = useParams();
   const query = useModel('role', {
     id,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading} = query;
-  const {notify} = NotificationState((state) => state);
+  const { record, setRecord, update, loading } = query;
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -51,10 +51,7 @@ export default function RoleEdit() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading} />
 
       {record ? (
@@ -95,9 +92,7 @@ export default function RoleEdit() {
                 label={t('Implied roles')}
                 placeholder="Select implied roles"
                 value={record.implied_roles}
-                onChange={(implied_roles) =>
-                  setRecord({...record, implied_roles})
-                }
+                onChange={(implied_roles) => setRecord({ ...record, implied_roles })}
               />
               <JsonInput
                 label="Permissions"

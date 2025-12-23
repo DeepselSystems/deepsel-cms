@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import envBackendHost from '../../constants/backendHost.js';
 
 const initialState = {
@@ -9,7 +9,7 @@ export default create((set) => ({
   ...initialState,
   setBackendHost: (backendHost) => {
     localStorage.setItem('backendHost', backendHost);
-    set(() => ({backendHost}));
+    set(() => ({ backendHost }));
   },
-  resetDefault: () => set(() => ({backendHost: envBackendHost})),
+  resetDefault: () => set(() => ({ backendHost: envBackendHost })),
 }));

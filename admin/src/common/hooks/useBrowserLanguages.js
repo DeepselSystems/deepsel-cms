@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 
 /**
  * Get the user's preferred browser languages.
@@ -12,7 +12,7 @@ import {useMemo} from 'react';
  * @param {{fallbackLang: string}} options
  * @returns {Array<string>}  Array of language codes in order of preference.
  */
-const useBrowserLanguages = (options = {fallbackLang: 'en'}) => {
+const useBrowserLanguages = (options = { fallbackLang: 'en' }) => {
   return useMemo(() => {
     try {
       // Try different browser APIs to get language

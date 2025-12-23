@@ -4,16 +4,16 @@ export default createTheme({
   colors: {
     // generated from #000000 with https://mantine.dev/colors-generator/
     primary: [
-      "var(--color-primary-50)",
-      "var(--color-primary-100)",
-      "var(--color-primary-200)",
-      "var(--color-primary-300)",
-      "var(--color-primary-400)",
-      "var(--color-primary-900)",
-      "var(--color-primary-900)",
-      "var(--color-primary-900)",
-      "var(--color-primary-900)",
-      "var(--color-primary-900)",
+      'var(--color-primary-50)',
+      'var(--color-primary-100)',
+      'var(--color-primary-200)',
+      'var(--color-primary-300)',
+      'var(--color-primary-400)',
+      'var(--color-primary-900)',
+      'var(--color-primary-900)',
+      'var(--color-primary-900)',
+      'var(--color-primary-900)',
+      'var(--color-primary-900)',
     ],
     red: [
       '#ffe9e9',

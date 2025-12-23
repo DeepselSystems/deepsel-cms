@@ -1,0 +1,47 @@
+export type PathType = 'BlogList' | 'BlogPost' | 'Page';
+
+export interface Pagination {
+  page?: number;
+  pageSize?: number;
+}
+
+export function getPathType(path: string): { pathType: PathType; pagination?: Pagination } {
+  let pathType: PathType = 'Page';
+  let pagination: Pagination | undefined = undefined;
+
+  if (path.startsWith('blog')) {
+    // split
+    const parts = path.split('/');
+    let pageSize: number | undefined = undefined;
+    // extract query parameters if any
+    const queryString = path.split('?')[1];
+    if (queryString) {
+      const params = new URLSearchParams(queryString);
+      const size = params.get('pageSize');
+      if (size && !isNaN(Number(size))) {
+        pageSize = Number(size);
+      }
+    }
+
+    // check which blog list format, either /blog, /blog/page/2, or /blog/{slug}
+    if (parts.length > 1 && parts[1] !== '') {
+      // /blog/page/2
+      if (parts[1] === 'page' && parts[2] && !isNaN(Number(parts[2]))) {
+        pathType = 'BlogList';
+        pagination = { page: Number(parts[2]), pageSize };
+      }
+      // /blog/{slug}
+      else {
+        pathType = 'BlogPost';
+      }
+    } else {
+      // /blog
+      pathType = 'BlogList';
+      if (pageSize) {
+        pagination = { pageSize };
+      }
+    }
+  }
+
+  return { pathType, pagination };
+}

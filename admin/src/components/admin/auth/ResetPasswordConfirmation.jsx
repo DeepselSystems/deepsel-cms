@@ -1,19 +1,19 @@
-import {useTranslation} from 'react-i18next';
-import {useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import H1 from '../../../common/ui/H1.jsx';
 
 export default function ResetPasswordConfirmation() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const {token} = useParams();
+  const { token } = useParams();
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {notify} = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { notify } = NotificationState((state) => state);
 
   async function handleSubmit(e) {
     setLoading(true);

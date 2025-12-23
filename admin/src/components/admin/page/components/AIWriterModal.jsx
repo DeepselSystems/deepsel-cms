@@ -1,6 +1,6 @@
-import {useState, useEffect} from 'react';
-import {Modal, Textarea} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { Modal, Textarea } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import useAuthentication from '../../../../common/api/useAuthentication.js';
 import useModel from '../../../../common/api/useModel.jsx';
 import NotificationState from '../../../../common/stores/NotificationState.js';
@@ -15,13 +15,13 @@ export default function AIWriterModal({
   updateContentField,
   onContentInserted,
 }) {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {notify} = NotificationState();
-  const {backendHost} = BackendHostURLState();
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { notify } = NotificationState();
+  const { backendHost } = BackendHostURLState();
 
   // Get organization settings for AI models
-  const {record: orgSettings} = useModel('organization', {
+  const { record: orgSettings } = useModel('organization', {
     id: 1,
     autoFetch: true,
   });
@@ -127,7 +127,7 @@ export default function AIWriterModal({
       title={<div className="font-bold">{t('AI Writer')}</div>}
       size="xl"
       radius={0}
-      transitionProps={{transition: 'fade', duration: 200}}
+      transitionProps={{ transition: 'fade', duration: 200 }}
     >
       <div className="space-y-4">
         {/* Model Selection */}
@@ -146,9 +146,7 @@ export default function AIWriterModal({
         {/* Prompt Input */}
         <Textarea
           label={t('Describe your page content')}
-          placeholder={t(
-            'Describe what content you want to generate for this page...'
-          )}
+          placeholder={t('Describe what content you want to generate for this page...')}
           value={aiWriterPrompt}
           onChange={(e) => setAiWriterPrompt(e.target.value)}
           required
@@ -161,9 +159,7 @@ export default function AIWriterModal({
         <div className="flex justify-start">
           <Button
             onClick={handleAiWritePost}
-            disabled={
-              !aiWriterPrompt.trim() || !aiWriterModelId || aiWriterLoading
-            }
+            disabled={!aiWriterPrompt.trim() || !aiWriterModelId || aiWriterLoading}
             loading={aiWriterLoading}
             variant="filled"
           >
@@ -179,7 +175,7 @@ export default function AIWriterModal({
             {/* Result Preview */}
             <div
               className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto"
-              dangerouslySetInnerHTML={{__html: aiWriterResult}}
+              dangerouslySetInnerHTML={{ __html: aiWriterResult }}
             />
 
             {/* Action Buttons */}
@@ -187,11 +183,7 @@ export default function AIWriterModal({
               <Button variant="outline" onClick={() => setAiWriterResult('')}>
                 {t('Clear')}
               </Button>
-              <Button
-                onClick={handleInsertContent}
-                variant="filled"
-                color="green"
-              >
+              <Button onClick={handleInsertContent} variant="filled" color="green">
                 {t('Insert Content')}
               </Button>
             </div>

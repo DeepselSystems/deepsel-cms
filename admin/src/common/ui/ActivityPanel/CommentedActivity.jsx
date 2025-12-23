@@ -1,25 +1,21 @@
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useDisclosure} from '@mantine/hooks';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDisclosure } from '@mantine/hooks';
 import ImageViewModal from '../ImageViewModal';
 import CommentImages from './CommentImages';
 
-export default function CommentedActivity({activity}) {
-  const {t} = useTranslation();
+export default function CommentedActivity({ activity }) {
+  const { t } = useTranslation();
   const [selectedImage, setSelectedImage] = useState('');
-  const [
-    isImageViewModalOpened,
-    {open: openImageViewModal, close: closeImageViewModal},
-  ] = useDisclosure(false);
+  const [isImageViewModalOpened, { open: openImageViewModal, close: closeImageViewModal }] =
+    useDisclosure(false);
 
   return (
     <>
       {activity.is_internal ? t('added an internal comment') : t('commented')}
       <div
         className={`ml-0 mt-1 p-3 rounded ${
-          activity.is_internal
-            ? 'bg-yellow-50 border-2 border-blue-400'
-            : 'bg-gray-100'
+          activity.is_internal ? 'bg-yellow-50 border-2 border-blue-400' : 'bg-gray-100'
         }`}
       >
         <div
@@ -27,7 +23,7 @@ export default function CommentedActivity({activity}) {
           dangerouslySetInnerHTML={{
             __html: activity.content.replace(
               /<a /g,
-              '<a target="_blank" rel="noopener noreferrer" '
+              '<a target="_blank" rel="noopener noreferrer" ',
             ),
           }}
         />

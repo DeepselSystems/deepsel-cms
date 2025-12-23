@@ -1,6 +1,6 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useAPISchema from '../api/useAPISchema.js';
-import {useMemo, useState} from 'react';
+import { useMemo, useState } from 'react';
 import NotificationState from '../stores/NotificationState.js';
 import {
   GridColumnMenuContainer,
@@ -8,31 +8,31 @@ import {
   HideGridColMenuItem,
   SortGridMenuItems,
 } from '@mui/x-data-grid';
-import {Popover} from '@mantine/core';
-import {MenuItem} from '@mui/material';
+import { Popover } from '@mantine/core';
+import { MenuItem } from '@mui/material';
 import Select from './Select.jsx';
 import TextInput from './TextInput.jsx';
 import NumberInput from './NumberInput.jsx';
 import DateTimePickerInput from './DateTimePickerInput.jsx';
 import RadioGroup from './RadioGroup.jsx';
 import Radio from './Radio.jsx';
-import {Button} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus} from '@fortawesome/free-solid-svg-icons';
+import { Button } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import MultiSelect from './MultiSelect.jsx';
 
 export default function DataGridColumnMenu(props) {
-  const {t} = useTranslation();
-  const {hideMenu, currentColumn, open, query} = props;
-  const {modelName, filters, setFilters} = query;
-  const {getFieldColTypes} = useAPISchema(modelName);
+  const { t } = useTranslation();
+  const { hideMenu, currentColumn, open, query } = props;
+  const { modelName, filters, setFilters } = query;
+  const { getFieldColTypes } = useAPISchema(modelName);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [selectedValue, setSelectedValue] = useState('');
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   const colTypes = useMemo(
     () => getFieldColTypes(currentColumn.field),
-    [getFieldColTypes, currentColumn.field]
+    [getFieldColTypes, currentColumn.field],
   );
 
   const availableFilters = useMemo(() => {
@@ -41,51 +41,49 @@ export default function DataGridColumnMenu(props) {
 
     if (types.includes('string')) {
       const toAdd = [
-        {label: 'Contains', operatorValue: 'ilike', valueType: 'string'},
+        { label: 'Contains', operatorValue: 'ilike', valueType: 'string' },
         {
           label: 'One of',
           operatorValue: 'in',
           valueType: 'Array<string>',
         },
-        {label: 'Equals', operatorValue: '=', valueType: 'string'},
-        {label: 'Is not', operatorValue: '!=', valueType: 'string'},
+        { label: 'Equals', operatorValue: '=', valueType: 'string' },
+        { label: 'Is not', operatorValue: '!=', valueType: 'string' },
       ];
       filters = filters.concat(toAdd);
     }
 
     if (types.includes('number') || types.includes('integer')) {
       const toAdd = [
-        {label: 'Equals', operatorValue: '=', valueType: 'number'},
+        { label: 'Equals', operatorValue: '=', valueType: 'number' },
         {
           label: 'One of',
           operatorValue: 'in',
           valueType: 'Array<number>',
         },
-        {label: '>', operatorValue: '>', valueType: 'number'},
-        {label: '>=', operatorValue: '>=', valueType: 'number'},
-        {label: '<', operatorValue: '<', valueType: 'number'},
-        {label: '<=', operatorValue: '<=', valueType: 'number'},
-        {label: 'Is not', operatorValue: '!=', valueType: 'number'},
+        { label: '>', operatorValue: '>', valueType: 'number' },
+        { label: '>=', operatorValue: '>=', valueType: 'number' },
+        { label: '<', operatorValue: '<', valueType: 'number' },
+        { label: '<=', operatorValue: '<=', valueType: 'number' },
+        { label: 'Is not', operatorValue: '!=', valueType: 'number' },
       ];
       filters = filters.concat(toAdd);
     }
 
     if (types.includes('date-time')) {
       const toAdd = [
-        {label: 'Equals', operatorValue: '=', valueType: 'date-time'},
-        {label: '>', operatorValue: '>', valueType: 'date-time'},
-        {label: '>=', operatorValue: '>=', valueType: 'date-time'},
-        {label: '<', operatorValue: '<', valueType: 'date-time'},
-        {label: '<=', operatorValue: '<=', valueType: 'date-time'},
-        {label: 'Is not', operatorValue: '!=', valueType: 'date-time'},
+        { label: 'Equals', operatorValue: '=', valueType: 'date-time' },
+        { label: '>', operatorValue: '>', valueType: 'date-time' },
+        { label: '>=', operatorValue: '>=', valueType: 'date-time' },
+        { label: '<', operatorValue: '<', valueType: 'date-time' },
+        { label: '<=', operatorValue: '<=', valueType: 'date-time' },
+        { label: 'Is not', operatorValue: '!=', valueType: 'date-time' },
       ];
       filters = filters.concat(toAdd);
     }
 
     if (types.includes('boolean')) {
-      const toAdd = [
-        {label: 'Is True / False', operatorValue: '=', valueType: 'boolean'},
-      ];
+      const toAdd = [{ label: 'Is True / False', operatorValue: '=', valueType: 'boolean' }];
       filters = filters.concat(toAdd);
     }
 
@@ -118,8 +116,8 @@ export default function DataGridColumnMenu(props) {
 
     if (types.includes('null')) {
       const toAdd = [
-        {label: 'Is Empty', operatorValue: '=', valueType: 'null'},
-        {label: 'Is not Empty', operatorValue: '!=', valueType: 'null'},
+        { label: 'Is Empty', operatorValue: '=', valueType: 'null' },
+        { label: 'Is not Empty', operatorValue: '!=', valueType: 'null' },
       ];
       filters = filters.concat(toAdd);
     }
@@ -128,14 +126,14 @@ export default function DataGridColumnMenu(props) {
     // only support strings for now
     if (currentColumn.field.includes('.')) {
       const toAdd = [
-        {label: 'Contains', operatorValue: 'ilike', valueType: 'string'},
+        { label: 'Contains', operatorValue: 'ilike', valueType: 'string' },
         {
           label: 'One of',
           operatorValue: 'in',
           valueType: 'Array<string>',
         },
-        {label: 'Equals', operatorValue: '=', valueType: 'string'},
-        {label: 'Is not', operatorValue: '!=', valueType: 'string'},
+        { label: 'Equals', operatorValue: '=', valueType: 'string' },
+        { label: 'Is not', operatorValue: '!=', valueType: 'string' },
       ];
       filters = filters.concat(toAdd);
     }
@@ -143,14 +141,11 @@ export default function DataGridColumnMenu(props) {
     // differentiate between types of filters with the same operator
     const duplicateOperatorFilters = filters.filter((filter) => {
       return (
-        ['string', 'integer', 'number', 'date-time', 'enum'].includes(
-          filter.valueType
-        ) &&
+        ['string', 'integer', 'number', 'date-time', 'enum'].includes(filter.valueType) &&
         filters.filter(
           (f) =>
-            ['string', 'integer', 'number', 'date-time', 'enum'].includes(
-              filter.valueType
-            ) && f.operatorValue === filter.operatorValue
+            ['string', 'integer', 'number', 'date-time', 'enum'].includes(filter.valueType) &&
+            f.operatorValue === filter.operatorValue,
         ).length > 1
       );
     });
@@ -225,31 +220,17 @@ export default function DataGridColumnMenu(props) {
   }
 
   return (
-    <GridColumnMenuContainer
-      hideMenu={hideMenu}
-      currentColumn={currentColumn}
-      open={open}
-    >
+    <GridColumnMenuContainer hideMenu={hideMenu} currentColumn={currentColumn} open={open}>
       <SortGridMenuItems onClick={hideMenu} column={currentColumn} />
       <HideGridColMenuItem onClick={hideMenu} column={currentColumn} />
       <GridColumnsMenuItem onClick={hideMenu} column={currentColumn} />
       {currentColumn.filterable && (
-        <Popover
-          width={450}
-          position="right"
-          withArrow
-          radius={`md`}
-          shadow="lg"
-          zIndex={1400}
-        >
+        <Popover width={450} position="right" withArrow radius={`md`} shadow="lg" zIndex={1400}>
           <Popover.Target>
             <MenuItem>Filter</MenuItem>
           </Popover.Target>
           <Popover.Dropdown onKeyDown={(e) => e.stopPropagation()}>
-            <form
-              className={`flex text-sm gap-1 items-end`}
-              onSubmit={submitFilter}
-            >
+            <form className={`flex text-sm gap-1 items-end`} onSubmit={submitFilter}>
               <Select
                 size={`sm`}
                 placeholder={`Operator`}
@@ -257,21 +238,17 @@ export default function DataGridColumnMenu(props) {
                 data={availableFilters.map((f) => f.label)}
                 value={selectedFilter?.label}
                 onChange={(labelValue) => {
-                  const filter = availableFilters.find(
-                    (f) => f.label === labelValue
-                  );
+                  const filter = availableFilters.find((f) => f.label === labelValue);
                   setSelectedFilter(filter);
                   setSelectedValue('');
                 }}
-                comboboxProps={{withinPortal: false}}
+                comboboxProps={{ withinPortal: false }}
                 required
                 withAsterisk={false}
                 withCheckIcon={false}
               />
 
-              {!selectedFilter && (
-                <TextInput size={`sm`} placeholder={`Value`} disabled />
-              )}
+              {!selectedFilter && <TextInput size={`sm`} placeholder={`Value`} disabled />}
 
               {selectedFilter?.label.startsWith('One of') ? (
                 selectedFilter.valueType === 'Array<enum>' ? (
@@ -280,11 +257,9 @@ export default function DataGridColumnMenu(props) {
                     placeholder="Values"
                     className={`w-[200px]`}
                     data={selectedFilter.enum}
-                    value={
-                      selectedValue !== '' ? selectedValue?.split(',') : []
-                    }
+                    value={selectedValue !== '' ? selectedValue?.split(',') : []}
                     onChange={(values) => setSelectedValue(values.join(','))}
-                    comboboxProps={{withinPortal: false}}
+                    comboboxProps={{ withinPortal: false }}
                   />
                 ) : (
                   <TextInput
@@ -310,9 +285,7 @@ export default function DataGridColumnMenu(props) {
                     />
                   )}
 
-                  {['integer', 'number'].includes(
-                    selectedFilter?.valueType
-                  ) && (
+                  {['integer', 'number'].includes(selectedFilter?.valueType) && (
                     <NumberInput
                       size={`sm`}
                       placeholder={`Value`}
@@ -335,7 +308,7 @@ export default function DataGridColumnMenu(props) {
                       required
                       withAsterisk={false}
                       valueFormat="DD MMM YYYY HH:mm"
-                      popoverProps={{withinPortal: false}}
+                      popoverProps={{ withinPortal: false }}
                     />
                   )}
 
@@ -362,7 +335,7 @@ export default function DataGridColumnMenu(props) {
                       data={selectedFilter.enum}
                       value={selectedValue}
                       onChange={setSelectedValue}
-                      comboboxProps={{withinPortal: false}}
+                      comboboxProps={{ withinPortal: false }}
                       required
                       withAsterisk={false}
                       withCheckIcon={false}
@@ -371,12 +344,7 @@ export default function DataGridColumnMenu(props) {
                 </>
               )}
 
-              <Button
-                size={`sm`}
-                type={`submit`}
-                radius={`md`}
-                className={`min-w-[40px] !px-0.5`}
-              >
+              <Button size={`sm`} type={`submit`} radius={`md`} className={`min-w-[40px] !px-0.5`}>
                 <FontAwesomeIcon icon={faPlus} />
               </Button>
             </form>

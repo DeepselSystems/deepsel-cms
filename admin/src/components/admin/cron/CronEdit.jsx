@@ -3,25 +3,25 @@ import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import NumberInput from '../../../common/ui/NumberInput.jsx';
-import {useTranslation} from 'react-i18next';
-import {Switch} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Switch } from '@mantine/core';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import Select from '../../../common/ui/Select.jsx';
 
 export default function CronEdit() {
-  const {t} = useTranslation();
-  const {id} = useParams();
+  const { t } = useTranslation();
+  const { id } = useParams();
   const query = useModel('cron', {
     id,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading: recordLoading} = query;
+  const { record, setRecord, update, loading: recordLoading } = query;
   const loading = recordLoading;
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {

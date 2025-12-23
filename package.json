@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "build": "npm run build --workspace=client",
-    "dev": "npm run dev --workspace=client"
+    "dev": "npm run dev --workspace=client",
+    "format": "npm run format --workspace=client && npm run format --workspace=admin && npm run format --workspace=packages/cms-react && npm run format --workspace=packages/cms-utils",
+    "format:check": "npm run format:check --workspace=client && npm run format:check --workspace=admin && npm run format:check --workspace=packages/cms-react && npm run format:check --workspace=packages/cms-utils"
   },
   "devDependencies": {
     "happy-dom": "^20.0.11"

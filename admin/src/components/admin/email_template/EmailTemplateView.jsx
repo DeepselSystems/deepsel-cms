@@ -1,40 +1,33 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
-import {useParams} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import ReadOnlyField from '../../../common/ui/ReadOnlyField.jsx';
 import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import IframeContent from '../../../common/ui/IframeContent.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import {useDisclosure} from '@mantine/hooks';
-import {Modal, Alert} from '@mantine/core';
-import {useState} from 'react';
+import { useDisclosure } from '@mantine/hooks';
+import { Modal, Alert } from '@mantine/core';
+import { useState } from 'react';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faCheck,
-  faPlus,
-  faPaperPlane,
-  faCircleInfo,
-} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faPlus, faPaperPlane, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import useFetch from '../../../common/api/useFetch.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 
 export default function EmailTemplateView() {
-  const {t} = useTranslation();
-  const {notify} = NotificationState((state) => state);
-  const {id} = useParams();
+  const { t } = useTranslation();
+  const { notify } = NotificationState((state) => state);
+  const { id } = useParams();
   const query = useModel('email_template', {
     id,
     autoFetch: true,
   });
-  const {post: postTestEmail, loading} = useFetch(
-    'email_template/test-send-email'
-  );
-  const {record} = query;
-  const [isOpen, {open, close}] = useDisclosure();
+  const { post: postTestEmail, loading } = useFetch('email_template/test-send-email');
+  const { record } = query;
+  const [isOpen, { open, close }] = useDisclosure();
   const [params, setParams] = useState([
     {
       param: '',
@@ -98,11 +91,7 @@ export default function EmailTemplateView() {
           <div className="flex justify-between">
             <H1>{t('Email Template')}</H1>
             <Button onClick={() => open()}>
-              <FontAwesomeIcon
-                icon={faPaperPlane}
-                className="mr-2 h-3 w-3"
-                size={`sm`}
-              />
+              <FontAwesomeIcon icon={faPaperPlane} className="mr-2 h-3 w-3" size={`sm`} />
               {t('Send Test Email')}
             </Button>
           </div>
@@ -123,9 +112,7 @@ export default function EmailTemplateView() {
       <Modal
         opened={isOpen}
         onClose={close}
-        title={
-          <div className={`font-semibold text-lg`}>{t('Send Test Email')}</div>
-        }
+        title={<div className={`font-semibold text-lg`}>{t('Send Test Email')}</div>}
         // size={700}
       >
         <div className=" pt-4 flex flex-col">
@@ -135,9 +122,7 @@ export default function EmailTemplateView() {
             className={`mb-4`}
             icon={<FontAwesomeIcon icon={faCircleInfo} className={``} />}
           >
-            {t(
-              'A test email will be sent to all users with role ‘Email Tester’'
-            )}
+            {t('A test email will be sent to all users with role ‘Email Tester’')}
           </Alert>
           {params.map((param, index) => (
             <div className="flex items-center gap-2 mb-2" key={index}>
@@ -170,11 +155,7 @@ export default function EmailTemplateView() {
             <FontAwesomeIcon icon={faPlus} className={`mr-1`} />
             {t('Add Variable')}
           </button>
-          <Button
-            className="mx-auto mt-20 !w-full"
-            onClick={handleTestEmail}
-            loading={loading}
-          >
+          <Button className="mx-auto mt-20 !w-full" onClick={handleTestEmail} loading={loading}>
             <FontAwesomeIcon icon={faCheck} className="mr-2 h-4 w-4" />
             {t('Send Test Email')}
           </Button>

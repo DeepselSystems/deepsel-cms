@@ -1,4 +1,4 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import {
   faUser,
   faUsersGear,
@@ -7,7 +7,7 @@ import {
   faClock,
 } from '@fortawesome/free-solid-svg-icons';
 import AppLayout from '../../common/layouts/AppLayout.jsx';
-import {faGoogle} from '@fortawesome/free-brands-svg-icons';
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 
 const navbarLinks = [
   {
@@ -56,6 +56,6 @@ const navbarLinks = [
   },
 ];
 export default function OrganizationLayout() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return <AppLayout navbarLinks={navbarLinks} />;
 }

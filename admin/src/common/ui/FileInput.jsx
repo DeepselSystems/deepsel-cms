@@ -1,10 +1,10 @@
-import {faFileLines, faPlus, faXmark} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Indicator} from '@mantine/core';
-import {useDisclosure} from '@mantine/hooks';
-import {useState} from 'react';
+import { faFileLines, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Indicator } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { useState } from 'react';
 import ChooseAttachmentModal from './ChooseAttachmentModal.jsx';
-import {getFileNameFromAttachUrl, getAttachmentUrl} from '../utils/index.js';
+import { getFileNameFromAttachUrl, getAttachmentUrl } from '../utils/index.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import documentIcon from '../../assets/images/document.png';
 import imageIcon from '../../assets/images/placeholder.png';
@@ -22,17 +22,14 @@ export default function FileInput(props) {
     showPastFiles = true,
   } = props;
 
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
   const [attachUrl, setAttachUrl] = useState(value || '');
-  const [isOpen, {open, close}] = useDisclosure();
+  const [isOpen, { open, close }] = useDisclosure();
 
-  let {placeholder} = props;
+  let { placeholder } = props;
   if (!placeholder) {
     // astro assets need to use .src attribute instead of the object
-    placeholder =
-      type === 'image'
-        ? imageIcon.src || imageIcon
-        : documentIcon.src || documentIcon;
+    placeholder = type === 'image' ? imageIcon.src || imageIcon : documentIcon.src || documentIcon;
   }
 
   async function handleRemoveFile() {
@@ -104,9 +101,7 @@ export default function FileInput(props) {
                   height: `${height}px`,
                 }}
               />
-              <div className="ml-2 !underline">
-                {getFileNameFromAttachUrl(attachUrl)}
-              </div>
+              <div className="ml-2 !underline">{getFileNameFromAttachUrl(attachUrl)}</div>
             </a>
           )}
         </Indicator>
@@ -131,7 +126,7 @@ export default function FileInput(props) {
             <FontAwesomeIcon
               icon={faFileLines}
               className="text-primary-main"
-              style={{width: `${width}px`, height: `${height}px`}}
+              style={{ width: `${width}px`, height: `${height}px` }}
             />
           )}
         </Indicator>

@@ -1,14 +1,14 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
@@ -18,14 +18,14 @@ import H3 from '../../../common/ui/H3.jsx';
 import IframeContent from '../../../common/ui/IframeContent.jsx';
 
 export default function EmailTemplateEdit() {
-  const {t} = useTranslation();
-  const {id} = useParams();
+  const { t } = useTranslation();
+  const { id } = useParams();
   const query = useModel('email_template', {
     id,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading} = query;
-  const {notify} = NotificationState((state) => state);
+  const { record, setRecord, update, loading } = query;
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -47,15 +47,8 @@ export default function EmailTemplateEdit() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`max-w-screen-2xl m-auto my-[20px] px-[24px]`}
-    >
-      <EditFormActionBar
-        title={t(`Edit Email Template`)}
-        query={query}
-        loading={loading}
-      />
+    <form onSubmit={handleSubmit} className={`max-w-screen-2xl m-auto my-[20px] px-[24px]`}>
+      <EditFormActionBar title={t(`Edit Email Template`)} query={query} loading={loading} />
 
       {record ? (
         <Card>
@@ -91,9 +84,7 @@ export default function EmailTemplateEdit() {
 
           <H3>{t('Content')}</H3>
           <div className={`grid grid-cols-2 gap-2 my-2`}>
-            <div
-              className={`max-h-[600px] overflow-y-auto border border-gray-border rounded`}
-            >
+            <div className={`max-h-[600px] overflow-y-auto border border-gray-border rounded`}>
               <Editor
                 className="w-full min-h-full"
                 value={record?.content}
@@ -112,10 +103,7 @@ export default function EmailTemplateEdit() {
               />
             </div>
             <div className={`grow h-[600px]`}>
-              <IframeContent
-                html={record.content}
-                className={`w-full h-full`}
-              />
+              <IframeContent html={record.content} className={`w-full h-full`} />
             </div>
           </div>
         </Card>

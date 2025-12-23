@@ -52,9 +52,7 @@ export const initializeEmbedAudios = (container) => {
 
   embedAudioWrappers.forEach((wrapper) => {
     // Apply responsive styles to audio container
-    const audioContainer = wrapper.querySelector(
-      `.${EMBED_AUDIO_CLASSES.AUDIO_CONTAINER}`
-    );
+    const audioContainer = wrapper.querySelector(`.${EMBED_AUDIO_CLASSES.AUDIO_CONTAINER}`);
 
     if (audioContainer) {
       // Ensure audio container is responsive

@@ -1,5 +1,5 @@
-import {useState} from 'react';
-import {useTranslation} from 'react-i18next';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   faDownload,
   faTrash,
@@ -10,33 +10,24 @@ import {
   faLink,
   faEllipsisV,
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Dropzone} from '@mantine/dropzone';
-import {Group, Text, Menu} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Dropzone } from '@mantine/dropzone';
+import { Group, Text, Menu } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
 import useUpload from '../../../common/api/useUpload.js';
-import {
-  getAttachmentUrl,
-  downloadFromAttachUrl,
-} from '../../../common/utils/index.js';
+import { getAttachmentUrl, downloadFromAttachUrl } from '../../../common/utils/index.js';
 import Button from '../../../common/ui/Button.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import H1 from '../../../common/ui/H1.jsx';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 
 /**
  * @type {string[]}
  */
-const AcceptedFormat = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/gif',
-  'image/svg',
-];
+const AcceptedFormat = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg'];
 
 function formatFileSize(bytes) {
   if (bytes === 0) return '0 Bytes';
@@ -73,10 +64,10 @@ function getFileTypeIcon(filename) {
     : '/images/fileTypeIcons/generic.png';
 }
 
-function FileCard({file, onDelete}) {
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {notify} = NotificationState((state) => state);
+function FileCard({ file, onDelete }) {
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { notify } = NotificationState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
 
   const handleDownload = (e) => {
@@ -174,17 +165,13 @@ function FileCard({file, onDelete}) {
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Item
-                    leftSection={
-                      <FontAwesomeIcon icon={faDownload} className="h-3 w-3" />
-                    }
+                    leftSection={<FontAwesomeIcon icon={faDownload} className="h-3 w-3" />}
                     onClick={handleDownload}
                   >
                     {t('Download')}
                   </Menu.Item>
                   <Menu.Item
-                    leftSection={
-                      <FontAwesomeIcon icon={faTrash} className="h-3 w-3" />
-                    }
+                    leftSection={<FontAwesomeIcon icon={faTrash} className="h-3 w-3" />}
                     onClick={handleDelete}
                     color="red"
                   >
@@ -235,17 +222,13 @@ function FileCard({file, onDelete}) {
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Item
-                    leftSection={
-                      <FontAwesomeIcon icon={faDownload} className="h-3 w-3" />
-                    }
+                    leftSection={<FontAwesomeIcon icon={faDownload} className="h-3 w-3" />}
                     onClick={handleDownload}
                   >
                     {t('Download')}
                   </Menu.Item>
                   <Menu.Item
-                    leftSection={
-                      <FontAwesomeIcon icon={faTrash} className="h-3 w-3" />
-                    }
+                    leftSection={<FontAwesomeIcon icon={faTrash} className="h-3 w-3" />}
                     onClick={handleDelete}
                     color="red"
                   >
@@ -268,10 +251,10 @@ function FileCard({file, onDelete}) {
 }
 
 export default function Media() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {notify} = NotificationState((state) => state);
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { notify } = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
 
   const filters = [
     {
@@ -292,7 +275,7 @@ export default function Media() {
     filters,
   });
 
-  const {uploadFileModel} = useUpload();
+  const { uploadFileModel } = useUpload();
   const [newUploads, setNewUploads] = useState(new Set());
   const [storageInfo, setStorageInfo] = useState({
     usedStorage: 0,
@@ -324,7 +307,7 @@ export default function Media() {
   };
 
   const formatStorageInfo = () => {
-    const {usedStorage, maxStorage, unit} = storageInfo;
+    const { usedStorage, maxStorage, unit } = storageInfo;
     const formattedUsedStorage = parseFloat(usedStorage).toFixed(2);
     if (maxStorage === null) {
       return `${formattedUsedStorage} ${unit} ${t('used')}`;
@@ -339,9 +322,7 @@ export default function Media() {
       const uploadedFiles = await uploadFileModel('attachment', files);
       if (uploadedFiles) {
         // Handle single file or array of files
-        const filesArray = Array.isArray(uploadedFiles)
-          ? uploadedFiles
-          : [uploadedFiles];
+        const filesArray = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles];
 
         filesArray.forEach((uploadedFile) => {
           setNewUploads((prev) => new Set([...prev, uploadedFile.id]));
@@ -403,7 +384,7 @@ export default function Media() {
             message: error.message || t('Failed to delete file'),
             type: 'error',
           });
-        }
+        },
       );
     } catch (error) {
       console.error('Unexpected error in handleDelete:', error);
@@ -429,10 +410,7 @@ export default function Media() {
         <div className="flex justify-between items-center mb-4">
           <H1>{t('Media Library')}</H1>
           <div className="flex items-center text-sm bg-gray-100 px-3 py-2 rounded-md">
-            <FontAwesomeIcon
-              icon={faHardDrive}
-              className="mr-2 text-primary-main"
-            />
+            <FontAwesomeIcon icon={faHardDrive} className="mr-2 text-primary-main" />
             {isLoading ? t('Loading storage info...') : formatStorageInfo()}
           </div>
         </div>
@@ -443,22 +421,12 @@ export default function Media() {
             // accept={AcceptedFormat.map((format) => ({mime: format}))}
             className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
           >
-            <Group
-              justify="center"
-              gap="xl"
-              style={{minHeight: 100, pointerEvents: 'none'}}
-            >
+            <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
               <Dropzone.Accept>
-                <FontAwesomeIcon
-                  icon={faCloudArrowUp}
-                  className="text-3xl text-green-500"
-                />
+                <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
               </Dropzone.Accept>
               <Dropzone.Idle>
-                <FontAwesomeIcon
-                  icon={faImage}
-                  className="text-3xl text-gray-500"
-                />
+                <FontAwesomeIcon icon={faImage} className="text-3xl text-gray-500" />
               </Dropzone.Idle>
 
               <div className="text-center">
@@ -474,15 +442,9 @@ export default function Media() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {sortFilesWithNewUploadsFirst(files, newUploads).map(
-            (file, index) => (
-              <FileCard
-                key={file.id || index}
-                file={file}
-                onDelete={handleDelete}
-              />
-            )
-          )}
+          {sortFilesWithNewUploadsFirst(files, newUploads).map((file, index) => (
+            <FileCard key={file.id || index} file={file} onDelete={handleDelete} />
+          ))}
         </div>
       </div>
     </>

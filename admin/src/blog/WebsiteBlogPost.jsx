@@ -1,33 +1,33 @@
-import {useState, useEffect} from 'react';
-import {useParams, useLocation} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
-import {Avatar} from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Avatar } from '@mantine/core';
 import WebsiteHeader from '../components/website/WebsiteHeader.jsx';
 import WebsiteFooter from '../components/website/WebsiteFooter.jsx';
 import SitePublicSettingsState from '../common/stores/SitePublicSettingsState.js';
 import BackendHostURLState from '../common/stores/BackendHostURLState.js';
-import {getAttachmentUrl} from '../common/utils/index.js';
+import { getAttachmentUrl } from '../common/utils/index.js';
 import useAuthentication from '../common/api/useAuthentication.js';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import RichTextRenderer from '../common/ui/RichTextRenderer.jsx';
-import {lazy, Suspense} from 'react';
-import {apiRequest} from '../utils/apiUtils.js';
+import { lazy, Suspense } from 'react';
+import { apiRequest } from '../utils/apiUtils.js';
 import CustomCodeRenderer from '../components/website/CustomCodeRenderer.jsx';
 import CustomCodeErrorBoundary from '../components/website/CustomCodeErrorBoundary.jsx';
-import {useProtectedAuth} from '../common/auth/ProtectedAuth.jsx';
+import { useProtectedAuth } from '../common/auth/ProtectedAuth.jsx';
 import SpecialTemplateRenderer from '../components/website/SpecialTemplateRenderer.jsx';
 
 // Lazy load the AdminHeader component
 const AdminHeader = lazy(() => import('../components/website/AdminHeader.jsx'));
 
 export default function WebsiteBlogPost(props) {
-  const {initialPageData, isPreviewMode, siteSettings} = props;
-  const {slug} = useParams();
-  const {settings} = SitePublicSettingsState();
-  const {backendHost} = BackendHostURLState();
-  const {user} = useAuthentication();
-  const {t, i18n} = useTranslation();
-  const {setRequiresLogin} = useProtectedAuth();
+  const { initialPageData, isPreviewMode, siteSettings } = props;
+  const { slug } = useParams();
+  const { settings } = SitePublicSettingsState();
+  const { backendHost } = BackendHostURLState();
+  const { user } = useAuthentication();
+  const { t, i18n } = useTranslation();
+  const { setRequiresLogin } = useProtectedAuth();
 
   // State for client-side data fetching (when no server data available)
   const [clientBlogPost, setClientBlogPost] = useState(null);
@@ -54,10 +54,7 @@ export default function WebsiteBlogPost(props) {
 
       try {
         // Use the same language resolution as server-side
-        const currentLang =
-          i18n.language ||
-          actualSiteSettings?.default_language?.iso_code ||
-          'en';
+        const currentLang = i18n.language || actualSiteSettings?.default_language?.iso_code || 'en';
 
         // Prepare headers with authentication if user is logged in
         const headers = {};
@@ -66,16 +63,14 @@ export default function WebsiteBlogPost(props) {
         }
 
         // Format the slug properly - remove /blog/ prefix if present
-        const formattedSlug = slug
-          .replace(/^\/blog\//, '')
-          .replace(/^blog\//, '');
+        const formattedSlug = slug.replace(/^\/blog\//, '').replace(/^blog\//, '');
 
         const response = await apiRequest(
           `${backendHost}/blog_post/website/${currentLang}/${formattedSlug}`,
           {
             method: 'GET',
             headers,
-          }
+          },
         );
 
         if (response.status === 401) {
@@ -129,10 +124,7 @@ export default function WebsiteBlogPost(props) {
       highlights.forEach((highlight) => {
         const parentNode = highlight.parentNode;
         if (!parentNode) return;
-        parentNode.replaceChild(
-          document.createTextNode(highlight.textContent),
-          highlight
-        );
+        parentNode.replaceChild(document.createTextNode(highlight.textContent), highlight);
         parentNode.normalize();
       });
     };
@@ -161,8 +153,7 @@ export default function WebsiteBlogPost(props) {
         const parentElement = node.parentElement;
         if (
           !node.textContent ||
-          (parentElement &&
-            ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parentElement.tagName)) ||
+          (parentElement && ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parentElement.tagName)) ||
           parentElement?.classList?.contains('search-highlight')
         ) {
           return;
@@ -175,19 +166,14 @@ export default function WebsiteBlogPost(props) {
         let lastIndex = 0;
 
         matches.forEach((match) => {
-          const {index} = match;
+          const { index } = match;
           if (index > lastIndex) {
-            fragment.appendChild(
-              document.createTextNode(node.textContent.slice(lastIndex, index))
-            );
+            fragment.appendChild(document.createTextNode(node.textContent.slice(lastIndex, index)));
           }
 
           const highlight = document.createElement('mark');
           highlight.className = 'search-highlight';
-          highlight.textContent = node.textContent.slice(
-            index,
-            index + match[0].length
-          );
+          highlight.textContent = node.textContent.slice(index, index + match[0].length);
           fragment.appendChild(highlight);
 
           if (!firstHighlight) {
@@ -198,9 +184,7 @@ export default function WebsiteBlogPost(props) {
         });
 
         if (lastIndex < node.textContent.length) {
-          fragment.appendChild(
-            document.createTextNode(node.textContent.slice(lastIndex))
-          );
+          fragment.appendChild(document.createTextNode(node.textContent.slice(lastIndex)));
         }
 
         node.parentNode.replaceChild(fragment, node);
@@ -216,7 +200,7 @@ export default function WebsiteBlogPost(props) {
       const firstMatch = highlightMatches(container, keyword);
       if (firstMatch) {
         scrollTimeout = window.setTimeout(() => {
-          firstMatch.scrollIntoView({behavior: 'smooth', block: 'center'});
+          firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 400);
       }
     });
@@ -253,10 +237,7 @@ export default function WebsiteBlogPost(props) {
   // Show 404 if no blog post data
   if (!blogPostData || blogPostData.notFound || notFound) {
     return (
-      <SpecialTemplateRenderer
-        templateKey="not_found"
-        siteSettingsOverride={actualSiteSettings}
-      />
+      <SpecialTemplateRenderer templateKey="not_found" siteSettingsOverride={actualSiteSettings} />
     );
   }
 
@@ -274,7 +255,7 @@ export default function WebsiteBlogPost(props) {
             subtitle: null,
             content: blogPostData.content,
             featured_image_id: blogPostData.featured_image_id,
-            locale: {iso_code: blogPostData.lang},
+            locale: { iso_code: blogPostData.lang },
             custom_code: blogPostData.custom_code,
           },
         ],
@@ -284,12 +265,9 @@ export default function WebsiteBlogPost(props) {
     !user?.roles.some((role) => role.string_id === 'website_author_role') ||
     (user?.roles.some((role) => role.string_id === 'website_author_role') &&
       !user?.roles.some((role) =>
-        [
-          'admin_role',
-          'super_admin_role',
-          'website_admin_role',
-          'website_editor_role',
-        ].includes(role.string_id)
+        ['admin_role', 'super_admin_role', 'website_admin_role', 'website_editor_role'].includes(
+          role.string_id,
+        ),
       ) &&
       blogPost?.owner_id === user?.id);
 
@@ -303,9 +281,7 @@ export default function WebsiteBlogPost(props) {
       </Helmet>
       <main className="min-h-screen flex flex-col">
         {user && blogPost && (
-          <Suspense
-            fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}
-          >
+          <Suspense fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}>
             <AdminHeader
               dashboardPath={'/admin/blog_posts'}
               allowEdit={allowEdit}
@@ -322,9 +298,7 @@ export default function WebsiteBlogPost(props) {
               <h1 className="text-4xl font-bold mb-2">{postContent.title}</h1>
 
               {postContent.subtitle && (
-                <h2 className="text-2xl text-gray-600 mb-4">
-                  {postContent.subtitle}
-                </h2>
+                <h2 className="text-2xl text-gray-600 mb-4">{postContent.subtitle}</h2>
               )}
 
               <div className="flex items-center gap-3 text-gray-600 text-sm mb-6">
@@ -336,7 +310,7 @@ export default function WebsiteBlogPost(props) {
                         blogPost.author.image
                           ? getAttachmentUrl(
                               actualSiteSettings?.backend_host || '',
-                              blogPost.author.image.name
+                              blogPost.author.image.name,
                             )
                           : null
                       }
@@ -345,8 +319,7 @@ export default function WebsiteBlogPost(props) {
                       color="blue"
                     >
                       {!blogPost.author.image &&
-                        (blogPost.author.name?.[0] ||
-                          blogPost.author.username?.[0])}
+                        (blogPost.author.name?.[0] || blogPost.author.username?.[0])}
                     </Avatar>
                     <div>
                       <div className="font-semibold">
@@ -356,7 +329,7 @@ export default function WebsiteBlogPost(props) {
                       {actualSiteSettings?.show_post_date && (
                         <div>
                           {new Date(
-                            blogPost.publish_date || blogPost.created_at
+                            blogPost.publish_date || blogPost.created_at,
                           ).toLocaleDateString(undefined, {
                             year: 'numeric',
                             month: 'long',
@@ -374,7 +347,7 @@ export default function WebsiteBlogPost(props) {
                   <img
                     src={getAttachmentUrl(
                       actualSiteSettings?.backend_host || '',
-                      postContent.featured_image?.name
+                      postContent.featured_image?.name,
                     )}
                     alt={postContent.title}
                     className="w-full h-auto rounded-lg shadow-md"
@@ -382,10 +355,7 @@ export default function WebsiteBlogPost(props) {
                 </div>
               )}
 
-              <RichTextRenderer
-                content={postContent.content || ''}
-                className="blog-content"
-              />
+              <RichTextRenderer content={postContent.content || ''} className="blog-content" />
 
               {/* Custom Code Injection after content */}
               <CustomCodeErrorBoundary>

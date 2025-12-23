@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
 /**
  * @type {{organizations: Array<Organization>}}
@@ -16,7 +16,7 @@ const OrganizationState = create((set) => ({
    * @param {Array<Organization>} organizations
    */
   setOrganizations: (organizations) => {
-    set(() => ({organizations}));
+    set(() => ({ organizations }));
   },
 }));
 

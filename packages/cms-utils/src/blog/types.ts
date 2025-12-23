@@ -6,7 +6,7 @@ import type {
   LanguageAlternative,
 } from '../page/types';
 
-export interface BlogListResponse {
+export interface BlogListData {
   lang: string;
   public_settings: SiteSettings;
   blog_posts: BlogPostListItem[] | null;
@@ -14,16 +14,7 @@ export interface BlogListResponse {
   page_size: number;
 }
 
-export interface FetchBlogListOptions {
-  lang: string;
-  page?: number;
-  page_size?: number;
-  authToken?: string | null;
-  astroRequest?: Request | null;
-  backendHost?: string;
-}
-
-export interface BlogPostResponse {
+export interface BlogPostData {
   id: number;
   title: string;
   content: string;
@@ -37,12 +28,4 @@ export interface BlogPostResponse {
   publish_date?: string | null;
   author?: BlogPostAuthor | null;
   language_alternatives: LanguageAlternative[];
-}
-
-export interface FetchBlogPostOptions {
-  lang: string;
-  slug: string;
-  authToken?: string | null;
-  astroRequest?: Request | null;
-  backendHost?: string;
 }

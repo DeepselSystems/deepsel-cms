@@ -1,26 +1,26 @@
-import {useState} from 'react';
-import {Preferences} from '@capacitor/preferences';
+import { useState } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import backendHost from '../../constants/backendHost.js';
 import UserState from '../stores/UserState.js';
-import {Device} from '@capacitor/device';
-import {useNetwork} from '@mantine/hooks';
-import {useLocation} from 'react-router-dom';
-import {useDeviceData} from 'react-device-detect';
+import { Device } from '@capacitor/device';
+import { useNetwork } from '@mantine/hooks';
+import { useLocation } from 'react-router-dom';
+import { useDeviceData } from 'react-device-detect';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
-import {v4 as uuidv4} from 'uuid';
-import {setCookie, removeCookie} from '../utils/cookieUtils.js';
+import { v4 as uuidv4 } from 'uuid';
+import { setCookie, removeCookie } from '../utils/cookieUtils.js';
 
 export default function useAuthentication() {
-  const {user, setUser} = UserState();
+  const { user, setUser } = UserState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const network = useNetwork();
   const location = useLocation();
   const deviceData = useDeviceData();
-  const {organizationId, setOrganizationId} = OrganizationIdState();
+  const { organizationId, setOrganizationId } = OrganizationIdState();
 
   async function saveUserData(userData, token) {
-    setUser({...userData, token});
+    setUser({ ...userData, token });
 
     // Store token in cookies for SSR access
     setCookie('token', token, 30);
@@ -45,24 +45,21 @@ export default function useAuthentication() {
       referrer: document.referrer,
       user_agent: navigator.userAgent,
       network,
-      os_version:
-        deviceInfo.osVersion === 'unknown'
-          ? deviceData.os.name
-          : deviceInfo.osVersion,
+      os_version: deviceInfo.osVersion === 'unknown' ? deviceData.os.name : deviceInfo.osVersion,
       browser: deviceData.browser,
       cpu: deviceData.cpu,
     };
 
     // Get or generate anonymousId
-    let anonymousId = (await Preferences.get({key: 'anonymousId'})).value;
+    let anonymousId = (await Preferences.get({ key: 'anonymousId' })).value;
     if (!anonymousId) {
       anonymousId = uuidv4();
-      await Preferences.set({key: 'anonymousId', value: anonymousId});
+      await Preferences.set({ key: 'anonymousId', value: anonymousId });
     }
 
     const res = await fetch(`${backendHost}/init`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         device_info: deviceInfo,
         organization_id: user?.organization_id || organizationId,
@@ -74,10 +71,10 @@ export default function useAuthentication() {
 
   async function fetchUserData(token) {
     const response = await fetch(`${backendHost}/user/util/me`, {
-      headers: {Authorization: `Bearer ${token}`},
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (response.status !== 200) {
-      const {detail} = await response.json();
+      const { detail } = await response.json();
       setError(detail);
       throw new Error(detail);
     }
@@ -90,19 +87,19 @@ export default function useAuthentication() {
     saveUserData(userData, userToken);
   }
 
-  async function login({username, password, otp = ''}) {
+  async function login({ username, password, otp = '' }) {
     try {
       setLoading(true);
       const encodedUsername = encodeURIComponent(username);
       const encodedPassword = encodeURIComponent(password);
       const response = await fetch(`${backendHost}/token`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `username=${encodedUsername}&password=${encodedPassword}&otp=${otp}`,
       });
 
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -115,15 +112,12 @@ export default function useAuthentication() {
       } = responseData || {};
 
       // handle if user is from different organization
-      if (
-        userData?.organization_id &&
-        userData?.organization_id !== organizationId
-      ) {
+      if (userData?.organization_id && userData?.organization_id !== organizationId) {
         setOrganizationId(userData.organization_id);
       }
 
       if (is_require_user_config_2fa) {
-        return {is_require_user_config_2fa};
+        return { is_require_user_config_2fa };
       }
 
       await saveUserData(userData, token);
@@ -133,12 +127,12 @@ export default function useAuthentication() {
     }
   }
 
-  async function signup({username, password}, autoLogin = true) {
+  async function signup({ username, password }, autoLogin = true) {
     try {
       setLoading(true);
       const response = await fetch(`${backendHost}/signup`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: username,
           password,
@@ -147,13 +141,13 @@ export default function useAuthentication() {
       });
 
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
 
       if (autoLogin) {
-        return login({username, password});
+        return login({ username, password });
       } else {
         return response.json();
       }
@@ -164,8 +158,8 @@ export default function useAuthentication() {
 
   async function logout() {
     await Promise.all([
-      Preferences.remove({key: 'token'}),
-      Preferences.remove({key: 'userData'}),
+      Preferences.remove({ key: 'token' }),
+      Preferences.remove({ key: 'userData' }),
     ]);
 
     // Remove token from cookies
@@ -179,18 +173,16 @@ export default function useAuthentication() {
   async function passwordlessLogin(passwordlessToken) {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${backendHost}/passwordless-login?token=${passwordlessToken}`
-      );
+      const response = await fetch(`${backendHost}/passwordless-login?token=${passwordlessToken}`);
 
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
 
       const responseData = await response.json();
-      const {access_token: token, user: userData} = responseData || {};
+      const { access_token: token, user: userData } = responseData || {};
 
       await saveUserData(userData, token);
       return userData;

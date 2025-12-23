@@ -20,26 +20,6 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./components/PageDataManager": {
-      "import": "./dist/components/PageDataManager.js",
-      "types": "./dist/components/PageDataManager.d.ts"
-    },
-    "./hooks/useAuthentication": {
-      "import": "./dist/hooks/useAuthentication.js",
-      "types": "./dist/hooks/useAuthentication.d.ts"
-    },
-    "./hooks/useLanguage": {
-      "import": "./dist/hooks/useLanguage.js",
-      "types": "./dist/hooks/useLanguage.d.ts"
-    },
-    "./hooks/useNavigation": {
-      "import": "./dist/hooks/useNavigation.js",
-      "types": "./dist/hooks/useNavigation.d.ts"
-    },
-    "./hooks/usePageData": {
-      "import": "./dist/hooks/usePageData.js",
-      "types": "./dist/hooks/usePageData.d.ts"
     }
   },
   "files": [

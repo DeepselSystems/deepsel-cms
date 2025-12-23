@@ -1,19 +1,19 @@
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useState} from 'react';
+import { useState } from 'react';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CreateFormWrapper from '../../../common/ui/CreateFormWrapper.jsx';
 import NumberInput from '../../../common/ui/NumberInput.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
-import {Switch} from '@mantine/core';
+import { Switch } from '@mantine/core';
 import Select from '../../../common/ui/Select.jsx';
 
 export default function CronCreate(props) {
-  const {t} = useTranslation();
-  const {modalMode, onSuccess, parent} = props;
+  const { t } = useTranslation();
+  const { modalMode, onSuccess, parent } = props;
   const [record, setRecord] = useState({
     name: '',
     model: '',
@@ -25,9 +25,9 @@ export default function CronCreate(props) {
     interval: null,
     interval_unit: 'hours',
   });
-  const {create, cronLoading} = useModel('cron');
+  const { create, cronLoading } = useModel('cron');
   const loading = cronLoading;
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {

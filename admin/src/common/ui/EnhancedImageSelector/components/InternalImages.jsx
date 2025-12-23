@@ -1,17 +1,9 @@
-import {useMemo, useState, useEffect, useRef, useCallback} from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import clsx from 'clsx';
-import {
-  Box,
-  Image,
-  Text,
-  Checkbox,
-  AspectRatio,
-  Group,
-  UnstyledButton,
-} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {getAttachmentRelativeUrl} from '../../../utils/index.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { Box, Image, Text, Checkbox, AspectRatio, Group, UnstyledButton } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { getAttachmentRelativeUrl } from '../../../utils/index.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheckDouble,
   faCloudArrowUp,
@@ -22,7 +14,7 @@ import {
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import fromPairs from 'lodash/fromPairs';
-import {Dropzone, IMAGE_MIME_TYPE} from '@mantine/dropzone';
+import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import useUpload from '../../../api/useUpload.js';
 import NotificationState from '../../../stores/NotificationState.js';
 import useModel from '../../../api/useModel.jsx';
@@ -51,22 +43,20 @@ const InternalImages = ({
   setSelectedImages,
 }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Notification
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
 
   // Upload query
-  const {uploadFileModel} = useUpload();
-  const {deleteWithConfirm} = useModel('attachment', {
+  const { uploadFileModel } = useUpload();
+  const { deleteWithConfirm } = useModel('attachment', {
     pageSize: null,
   });
 
   // Edit mode
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingImages, setEditingImages] = useState(
-    /** @type {Array<AttachmentFile>}*/ []
-  );
+  const [editingImages, setEditingImages] = useState(/** @type {Array<AttachmentFile>}*/ []);
 
   // Track which images should be loaded
   const [loadedImages, setLoadedImages] = useState(new Set());
@@ -79,7 +69,7 @@ const InternalImages = ({
   // Attachment images with mapping style
   const attachmentImagesMap = useMemo(
     () => fromPairs(attachmentImages.map((o) => [o.id, o])),
-    [attachmentImages]
+    [attachmentImages],
   );
 
   // Checkbox value
@@ -88,7 +78,7 @@ const InternalImages = ({
       isEditMode
         ? editingImages.map((o) => String(o.id))
         : selectedImages?.map((o) => String(o.id)) || [],
-    [editingImages, isEditMode, selectedImages]
+    [editingImages, isEditMode, selectedImages],
   );
 
   /**
@@ -108,11 +98,10 @@ const InternalImages = ({
       if (isEditMode) {
         setEditingImages(values.map((o) => attachmentImagesMap[Number(o)]));
       } else {
-        !!multiple &&
-          setSelectedImages(values.map((o) => attachmentImagesMap[Number(o)]));
+        !!multiple && setSelectedImages(values.map((o) => attachmentImagesMap[Number(o)]));
       }
     },
-    [attachmentImagesMap, isEditMode, multiple, setSelectedImages]
+    [attachmentImagesMap, isEditMode, multiple, setSelectedImages],
   );
 
   // Observe image containers when they mount
@@ -131,14 +120,8 @@ const InternalImages = ({
       if (files?.length) {
         setIsUploading(true);
         try {
-          const newImageAttachments = await uploadFileModel(
-            'attachment',
-            files
-          );
-          setAttachmentImages((prevState) => [
-            ...newImageAttachments,
-            ...prevState,
-          ]);
+          const newImageAttachments = await uploadFileModel('attachment', files);
+          setAttachmentImages((prevState) => [...newImageAttachments, ...prevState]);
           notify({
             message: t('Uploaded successfully'),
             type: 'success',
@@ -154,7 +137,7 @@ const InternalImages = ({
         }
       }
     },
-    [notify, setAttachmentImages, t, uploadFileModel]
+    [notify, setAttachmentImages, t, uploadFileModel],
   );
 
   /**
@@ -181,7 +164,7 @@ const InternalImages = ({
         setEditingImages([]);
         setIsEditMode(false);
         setAttachmentImages((prevState) =>
-          prevState.filter((o) => !deletingImageIds.includes(o.id))
+          prevState.filter((o) => !deletingImageIds.includes(o.id)),
         );
       });
   }, [deleteWithConfirm, editingImages, setAttachmentImages]);
@@ -205,7 +188,7 @@ const InternalImages = ({
       {
         rootMargin: '50px', // Start loading 50px before entering viewport
         threshold: 0.01,
-      }
+      },
     );
 
     return () => {
@@ -233,28 +216,15 @@ const InternalImages = ({
             accept={IMAGE_MIME_TYPE}
             className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
           >
-            <Group
-              justify="center"
-              gap="xl"
-              style={{minHeight: 100, pointerEvents: 'none'}}
-            >
+            <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
               <Dropzone.Accept>
-                <FontAwesomeIcon
-                  icon={faCloudArrowUp}
-                  className="text-3xl text-green-500"
-                />
+                <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
               </Dropzone.Accept>
               <Dropzone.Reject>
-                <FontAwesomeIcon
-                  icon={faXmark}
-                  className="text-3xl text-danger-main"
-                />
+                <FontAwesomeIcon icon={faXmark} className="text-3xl text-danger-main" />
               </Dropzone.Reject>
               <Dropzone.Idle>
-                <FontAwesomeIcon
-                  icon={faImage}
-                  className="text-3xl text-gray-500"
-                />
+                <FontAwesomeIcon icon={faImage} className="text-3xl text-gray-500" />
               </Dropzone.Idle>
               <div className="text-center">
                 <Text size="xl" inline className="font-medium">
@@ -325,13 +295,10 @@ const InternalImages = ({
                     <Box
                       className={clsx(
                         'absolute top-0 left-0 p-2',
-                        !multiple && !isEditMode && 'hidden'
+                        !multiple && !isEditMode && 'hidden',
                       )}
                     >
-                      <Checkbox.Indicator
-                        size="md"
-                        className="!cursor-pointer"
-                      />
+                      <Checkbox.Indicator size="md" className="!cursor-pointer" />
                     </Box>
                     <AspectRatio
                       ratio={1}
@@ -340,7 +307,7 @@ const InternalImages = ({
                         'transition-all duration-200',
                         checkboxValue.includes(String(attachmentImage.id))
                           ? 'border-4 border-gray !rounded-xl overflow-hidden'
-                          : 'hover:border-4 border-gray-westar !rounded-xl overflow-hidden'
+                          : 'hover:border-4 border-gray-westar !rounded-xl overflow-hidden',
                       )}
                     >
                       {shouldLoad ? (
@@ -364,11 +331,7 @@ const InternalImages = ({
         {/*region for not font alert*/}
         {!isImagesLoading && !attachmentImages.length && (
           <Box className="text-center space-y-3 px-6 py-16">
-            <FontAwesomeIcon
-              size="3x"
-              icon={faImages}
-              className="text-gray-pale-sky"
-            />
+            <FontAwesomeIcon size="3x" icon={faImages} className="text-gray-pale-sky" />
             <Text c="dimmed" size="sm">
               {t('No images found.')}
             </Text>

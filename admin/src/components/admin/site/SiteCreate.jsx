@@ -1,20 +1,14 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import H2 from '../../../common/ui/H2.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CreateFormActionBar from '../../../common/ui/CreateFormActionBar.jsx';
-import {useState, useEffect} from 'react';
-import {
-  LoadingOverlay,
-  Select,
-  MultiSelect,
-  Text,
-  TagsInput,
-} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react';
+import { LoadingOverlay, Select, MultiSelect, Text, TagsInput } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faLanguage,
   faRobot,
@@ -28,9 +22,9 @@ import Switch from '../../../common/ui/Switch.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 
 export default function SiteCreate() {
-  const {t} = useTranslation();
-  const {create} = useModel('organization');
-  const {notify} = NotificationState((state) => state);
+  const { t } = useTranslation();
+  const { create } = useModel('organization');
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +47,7 @@ export default function SiteCreate() {
   });
 
   // Fetch locales
-  const {data: locales, loading: localesLoading} = useModel('locale', {
+  const { data: locales, loading: localesLoading } = useModel('locale', {
     autoFetch: true,
     pageSize: null, // Get all locales
   });
@@ -62,7 +56,7 @@ export default function SiteCreate() {
   const [localeOptions, setLocaleOptions] = useState([]);
 
   // Fetch openrouter models for default values
-  const {data: openRouterModels} = useModel('openrouter_model', {
+  const { data: openRouterModels } = useModel('openrouter_model', {
     autoFetch: true,
     pageSize: 1000,
   });
@@ -83,14 +77,10 @@ export default function SiteCreate() {
     if (!openRouterModels || record.ai_translation_model_id) return;
 
     const translationModel = openRouterModels.find(
-      (model) => model.string_id === 'google/gemini-flash-1.5-8b'
+      (model) => model.string_id === 'google/gemini-flash-1.5-8b',
     );
-    const writingModel = openRouterModels.find(
-      (model) => model.string_id === 'openai/gpt-5'
-    );
-    const autocompleteModel = openRouterModels.find(
-      (model) => model.string_id === 'openai/gpt-4'
-    );
+    const writingModel = openRouterModels.find((model) => model.string_id === 'openai/gpt-5');
+    const autocompleteModel = openRouterModels.find((model) => model.string_id === 'openai/gpt-4');
 
     let shouldUpdate = false;
     const updates = {};
@@ -176,14 +166,10 @@ export default function SiteCreate() {
       if (
         record.default_language_id &&
         record.available_languages &&
-        !record.available_languages.some(
-          (lang) => lang.id === record.default_language_id
-        )
+        !record.available_languages.some((lang) => lang.id === record.default_language_id)
       ) {
         // Find the locale object for the default language
-        const defaultLocale = locales.find(
-          (l) => l.id === record.default_language_id
-        );
+        const defaultLocale = locales.find((l) => l.id === record.default_language_id);
         if (defaultLocale) {
           const defaultLangObject = {
             id: defaultLocale.id,
@@ -191,10 +177,7 @@ export default function SiteCreate() {
             iso_code: defaultLocale.iso_code,
             emoji_flag: defaultLocale.emoji_flag,
           };
-          const updatedAvailableLanguages = [
-            ...record.available_languages,
-            defaultLangObject,
-          ];
+          const updatedAvailableLanguages = [...record.available_languages, defaultLangObject];
 
           await create({
             ...record,
@@ -224,10 +207,7 @@ export default function SiteCreate() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <CreateFormActionBar loading={loading || localesLoading} />
 
       <Card className={`shadow-none border-none`}>
@@ -257,7 +237,7 @@ export default function SiteCreate() {
           <TagsInput
             label={t('Domains')}
             description={t(
-              'Enter the domains for this website (e.g., example.com, subdomain.example.com). Press Enter to add each domain.'
+              'Enter the domains for this website (e.g., example.com, subdomain.example.com). Press Enter to add each domain.',
             )}
             placeholder={t('Enter domain and press Enter')}
             value={record.domains || []}
@@ -281,16 +261,10 @@ export default function SiteCreate() {
 
             <MultiSelect
               label={t('Available Languages')}
-              description={t(
-                'Select languages that will be available on your site'
-              )}
+              description={t('Select languages that will be available on your site')}
               placeholder={t('Select languages')}
               data={localeOptions}
-              value={
-                record?.available_languages?.map((lang) =>
-                  lang.id.toString()
-                ) || []
-              }
+              value={record?.available_languages?.map((lang) => lang.id.toString()) || []}
               onChange={handleAvailableLanguagesChange}
               className="mb-4"
               required
@@ -321,7 +295,7 @@ export default function SiteCreate() {
 
           <Text color="dimmed" size="sm" className="mb-2">
             {t(
-              'Configure AI-powered content generation and translation features. Requires an OpenRouter API key to function.'
+              'Configure AI-powered content generation and translation features. Requires an OpenRouter API key to function.',
             )}
           </Text>
 
@@ -329,9 +303,7 @@ export default function SiteCreate() {
             <div>
               <Switch
                 label={t('Auto-translate Pages')}
-                description={t(
-                  'Automatically translate page content when adding new languages'
-                )}
+                description={t('Automatically translate page content when adding new languages')}
                 checked={record.auto_translate_pages || false}
                 onChange={(event) =>
                   setRecord({
@@ -345,7 +317,7 @@ export default function SiteCreate() {
               <Switch
                 label={t('Auto-translate Blog Posts')}
                 description={t(
-                  'Automatically translate blog post content when adding new languages'
+                  'Automatically translate blog post content when adding new languages',
                 )}
                 checked={record.auto_translate_posts || false}
                 onChange={(event) =>
@@ -360,11 +332,7 @@ export default function SiteCreate() {
 
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <FontAwesomeIcon
-                  icon={faKey}
-                  className="text-gray-500"
-                  size="sm"
-                />
+                <FontAwesomeIcon icon={faKey} className="text-gray-500" size="sm" />
                 <Text size="sm" weight={500}>
                   {t('API Keys')}
                 </Text>
@@ -373,7 +341,7 @@ export default function SiteCreate() {
               <PasswordInput
                 label={t('OpenRouter API Key')}
                 description={t(
-                  'API key for AI-powered translation and content generation features'
+                  'API key for AI-powered translation and content generation features',
                 )}
                 placeholder={t('Enter OpenRouter API key')}
                 value={record.openrouter_api_key || ''}
@@ -391,9 +359,7 @@ export default function SiteCreate() {
                 pageSize={1000}
                 searchFields={['string_id', 'name']}
                 label={t('Translation model')}
-                description={t(
-                  'AI model used for translating content between languages'
-                )}
+                description={t('AI model used for translating content between languages')}
                 placeholder={t('Select a AI model')}
                 value={record?.ai_translation_model_id}
                 onChange={(value) =>
@@ -427,9 +393,7 @@ export default function SiteCreate() {
                 pageSize={1000}
                 searchFields={['string_id', 'name']}
                 label={t('Autocomplete model')}
-                description={t(
-                  'AI model used for text autocomplete and suggestions'
-                )}
+                description={t('AI model used for text autocomplete and suggestions')}
                 placeholder={t('Select a AI model')}
                 value={record?.ai_autocomplete_model_id}
                 onChange={(value) =>
@@ -451,7 +415,7 @@ export default function SiteCreate() {
 
           <Text c="dimmed" size="sm" className="ml-1">
             {t(
-              'Enable the website AI assistant in a popup chat box to help users with their queries and provide support.'
+              'Enable the website AI assistant in a popup chat box to help users with their queries and provide support.',
             )}
           </Text>
 
@@ -459,9 +423,7 @@ export default function SiteCreate() {
             <div>
               <Switch
                 label={t('Enabled')}
-                description={t(
-                  'Show AI assistant chat widget on website pages'
-                )}
+                description={t('Show AI assistant chat widget on website pages')}
                 checked={record.show_chatbox || false}
                 onChange={(event) =>
                   setRecord({

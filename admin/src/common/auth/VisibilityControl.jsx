@@ -7,16 +7,12 @@ export default function VisibilityControl(props) {
     children,
   } = props;
 
-  const {user} = useAuthentication();
+  const { user } = useAuthentication();
   const userRoleIds = user?.all_roles?.map((rec) => rec.string_id) || [];
   const isVisible = roleIds.some((roleId) => userRoleIds.includes(roleId));
 
   if (render) {
-    return (
-      <div className={`${isVisible ? '' : 'invisible cursor-none'}`}>
-        {children}
-      </div>
-    );
+    return <div className={`${isVisible ? '' : 'invisible cursor-none'}`}>{children}</div>;
   } else {
     return isVisible ? children : null;
   }

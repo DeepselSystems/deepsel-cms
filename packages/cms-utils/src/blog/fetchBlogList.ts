@@ -1,26 +1,25 @@
-import type { BlogListResponse, FetchBlogListOptions } from './types';
-
+import type { BlogListData } from './types';
+import type { Pagination } from '../page/getPathType';
 /**
  * Fetches blog list from the backend by language
  * Corresponds to GET /blog_post/website/{lang}
  */
-export async function fetchBlogList(options: FetchBlogListOptions): Promise<BlogListResponse> {
-  const {
-    lang,
-    page = 1,
-    page_size = 5,
-    authToken = null,
-    astroRequest = null,
-    backendHost = 'http://localhost:8000',
-  } = options;
-
+export async function fetchBlogList(
+  pagination?: Pagination,
+  lang?: string,
+  astroRequest?: Request,
+  authToken?: string,
+  backendHost?: string | 'http://localhost:8000',
+): Promise<BlogListData> {
   try {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      page_size: page_size.toString(),
-    });
+    let url = `${backendHost}/blog_post/website/${lang}`;
 
-    const url = `${backendHost}/blog_post/website/${lang}?${params}`;
+    if (pagination) {
+      const searchParams = new URLSearchParams();
+      if (pagination.page) searchParams.append('page', pagination.page.toString());
+      if (pagination.pageSize) searchParams.append('page_size', pagination.pageSize.toString());
+      url += `?${searchParams.toString()}`;
+    }
 
     const fetchOptions = {
       method: 'GET',
@@ -57,7 +56,7 @@ export async function fetchBlogList(options: FetchBlogListOptions): Promise<Blog
       throw new Error(`Failed to fetch blog list: ${response.statusText}`);
     }
 
-    const jsonData: BlogListResponse = await response.json();
+    const jsonData: BlogListData = await response.json();
     return jsonData;
   } catch (error: any) {
     console.error('Error fetching blog list:', error);

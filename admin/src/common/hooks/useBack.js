@@ -1,4 +1,4 @@
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function useBack() {
   const location = useLocation();
@@ -16,5 +16,5 @@ export default function useBack() {
     }
   }
 
-  return {back};
+  return { back };
 }

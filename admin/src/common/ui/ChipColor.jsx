@@ -1,4 +1,4 @@
-export default function ChipColor({className, color, children}) {
+export default function ChipColor({ className, color, children }) {
   return (
     <div
       className={`leading-5 rounded-3xl p-1 text-center ${className}`}

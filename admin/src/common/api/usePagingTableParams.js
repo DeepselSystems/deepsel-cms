@@ -13,10 +13,7 @@ import React from 'react';
  */
 const usePagingTableParams = (searchQueryKey, initialValue) => {
   // Search params state for paging param
-  const [searchParamState, setSearchParamState] = useSearchParamState(
-    searchQueryKey,
-    initialValue
-  );
+  const [searchParamState, setSearchParamState] = useSearchParamState(searchQueryKey, initialValue);
 
   // State for page param
   const [state, setState] = React.useState(() => {
@@ -37,7 +34,7 @@ const usePagingTableParams = (searchQueryKey, initialValue) => {
       // Set new local state
       setState(newState);
     },
-    [setSearchParamState]
+    [setSearchParamState],
   );
 
   /**

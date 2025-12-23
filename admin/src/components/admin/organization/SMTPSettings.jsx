@@ -1,28 +1,28 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import PasswordInput from '../../../common/ui/PasswordInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import FindGoodConfigModal from './components/FindGoodConfigModal.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faFlask} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFlask } from '@fortawesome/free-solid-svg-icons';
 
 export default function SMTPSettings() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const query = useModel('organization', {
     id: 1,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading} = query;
-  const {notify} = NotificationState();
+  const { record, setRecord, update, loading } = query;
+  const { notify } = NotificationState();
   const navigate = useNavigate();
 
   /**
@@ -53,10 +53,7 @@ export default function SMTPSettings() {
 
   return (
     <>
-      <form
-        className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-        onSubmit={handleSubmit}
-      >
+      <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
         <EditFormActionBar loading={loading} showBack={false} />
 
         {record ? (
@@ -66,9 +63,7 @@ export default function SMTPSettings() {
             <div className={`flex gap-16 my-2 mt-10`}>
               {/* Left section - SMTP Settings */}
               <div className={`flex gap-2 flex-col max-w-[300px]`}>
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  {t('SMTP Settings')}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('SMTP Settings')}</h3>
                 <TextInput
                   label={t('SMTP Server')}
                   value={record.mail_server}
@@ -183,9 +178,7 @@ export default function SMTPSettings() {
 
               {/* Right section - Send Rate Limit */}
               <div className={`flex gap-2 flex-col max-w-[300px]`}>
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  {t('Send Rate Limit')}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('Send Rate Limit')}</h3>
                 <TextInput
                   label={t('Send Rate Limit - Per Hour')}
                   value={record.mail_send_rate_limit_per_hour || ''}
@@ -198,9 +191,7 @@ export default function SMTPSettings() {
                   type="number"
                   min="0"
                   placeholder="200"
-                  description={t(
-                    'Maximum emails per hour. Set to 0 for unlimited sending.'
-                  )}
+                  description={t('Maximum emails per hour. Set to 0 for unlimited sending.')}
                 />
               </div>
             </div>

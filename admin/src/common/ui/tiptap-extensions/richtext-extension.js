@@ -1,5 +1,5 @@
-import {Node, mergeAttributes} from '@tiptap/core';
-import {Plugin, PluginKey} from 'prosemirror-state';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { Plugin, PluginKey } from 'prosemirror-state';
 
 // RichText Node Extension for TipTap - allows recursive rich text editing
 export const RichText = Node.create({
@@ -70,7 +70,7 @@ export const RichText = Node.create({
   },
 
   // Render richtext node to HTML
-  renderHTML({HTMLAttributes, node}) {
+  renderHTML({ HTMLAttributes, node }) {
     // Get the richtext configuration and content
     const config = node.attrs.config || {
       maxWidth: null,
@@ -102,9 +102,7 @@ export const RichText = Node.create({
       'background-color': config.backgroundColor,
       'border-radius': `${config.borderRadius}px`,
       border: config.border,
-      ...(config.maxWidth
-        ? {'max-width': `${config.maxWidth}px`, margin: '1rem auto'}
-        : {}),
+      ...(config.maxWidth ? { 'max-width': `${config.maxWidth}px`, margin: '1rem auto' } : {}),
     };
 
     // Convert style object to string
@@ -126,7 +124,7 @@ export const RichText = Node.create({
       mergeAttributes(richtextAttrs),
       [
         'div',
-        {class: 'richtext-content'},
+        { class: 'richtext-content' },
         // Store content as text initially
         content,
       ],
@@ -157,7 +155,7 @@ export const RichText = Node.create({
     return {
       setRichText:
         (attributes) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.insertContent({
             type: this.name,
             attrs: attributes,
@@ -165,7 +163,7 @@ export const RichText = Node.create({
         },
       updateRichText:
         (attributes) =>
-        ({commands, editor}) => {
+        ({ commands, editor }) => {
           // Find the richtext node and update its attributes
           if (editor.isActive(this.name)) {
             return commands.updateAttributes(this.name, attributes);
@@ -177,7 +175,7 @@ export const RichText = Node.create({
 
   // Add custom node view
   addNodeView() {
-    return ({node, editor, getPos}) => {
+    return ({ node, editor, getPos }) => {
       const dom = document.createElement('div');
       dom.classList.add('richtext-container');
 
@@ -194,9 +192,7 @@ export const RichText = Node.create({
       // Handle both object and string formats for backward compatibility
       if (node.attrs.config) {
         config =
-          typeof node.attrs.config === 'string'
-            ? JSON.parse(node.attrs.config)
-            : node.attrs.config;
+          typeof node.attrs.config === 'string' ? JSON.parse(node.attrs.config) : node.attrs.config;
       }
 
       if (node.attrs.content) {
@@ -267,11 +263,10 @@ export const RichText = Node.create({
             content: node.attrs.content || '',
             updateRichText: (newAttrs) => {
               const pos = getPos();
-              const transaction = editor.view.state.tr.setNodeMarkup(
-                pos,
-                undefined,
-                {...node.attrs, ...newAttrs}
-              );
+              const transaction = editor.view.state.tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                ...newAttrs,
+              });
               editor.view.dispatch(transaction);
             },
           },
@@ -351,14 +346,11 @@ export const RichText = Node.create({
           update: (view) => {
             // Find all richtext containers and render their content properly
             setTimeout(() => {
-              const richtextContainers = document.querySelectorAll(
-                '.richtext-container'
-              );
+              const richtextContainers = document.querySelectorAll('.richtext-container');
               richtextContainers.forEach((container) => {
                 const contentDiv = container.querySelector('.richtext-content');
                 if (contentDiv) {
-                  const htmlContent =
-                    contentDiv.textContent || contentDiv.innerText;
+                  const htmlContent = contentDiv.textContent || contentDiv.innerText;
                   if (htmlContent && htmlContent.trim().startsWith('<')) {
                     // Only process if it looks like HTML content
                     contentDiv.innerHTML = htmlContent;

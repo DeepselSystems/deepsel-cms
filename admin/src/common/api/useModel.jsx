@@ -1,15 +1,15 @@
-import {useState, useEffect, useRef} from 'react';
-import {useNavigate, useLocation} from 'react-router-dom';
-import {Preferences} from '@capacitor/preferences';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Preferences } from '@capacitor/preferences';
 import useAuthentication from './useAuthentication.js';
-import {modals} from '@mantine/modals';
-import {Alert} from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { Alert } from '@mantine/core';
 import dayjs from 'dayjs';
 import H2 from '../../common/ui/H2';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
-import {useTranslation} from 'react-i18next';
-import {PagingTableParams} from '../../constants/searchParams.js';
+import { useTranslation } from 'react-i18next';
+import { PagingTableParams } from '../../constants/searchParams.js';
 import usePagingTableParams from './usePagingTableParams.js';
 import useSearchParamState from './useSearchParamState.js';
 
@@ -35,26 +35,26 @@ const usePagingState = (
   syncPagingParamsWithURL,
   initialPage,
   initialPageSize,
-  initialSearchTerm
+  initialSearchTerm,
 ) => {
   // Search params state for page number
   const [searchParamPage, setSearchParamPage] = usePagingTableParams(
     PagingTableParams.Page,
-    initialPage
+    initialPage,
   );
   const [page, setPage] = useState(initialPage);
 
   // Search param state for page size
   const [searchParamPageSize, setSearchParamPageSize] = usePagingTableParams(
     PagingTableParams.Limit,
-    initialPageSize
+    initialPageSize,
   );
   const [pageSize, setPageSize] = useState(initialPageSize);
 
   // Search param state for search term
   const [searchParamSearchTerm, setSearchParamSearchTerm] = useSearchParamState(
     PagingTableParams.Search,
-    initialSearchTerm
+    initialSearchTerm,
   );
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
@@ -64,9 +64,7 @@ const usePagingState = (
     pageSize: syncPagingParamsWithURL ? searchParamPageSize : pageSize,
     setPageSize: syncPagingParamsWithURL ? setSearchParamPageSize : setPageSize,
     searchTerm: syncPagingParamsWithURL ? searchParamSearchTerm : searchTerm,
-    setSearchTerm: syncPagingParamsWithURL
-      ? setSearchParamSearchTerm
-      : setSearchTerm,
+    setSearchTerm: syncPagingParamsWithURL ? setSearchParamSearchTerm : setSearchTerm,
   };
 };
 
@@ -77,7 +75,7 @@ const usePagingState = (
  * @param {UseModelOptions} options
  */
 export default function useModel(modelName, options = {}) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     id = null,
     autoFetch = false,
@@ -86,7 +84,7 @@ export default function useModel(modelName, options = {}) {
     page: initialPage = 1,
     pageSize: initialPageSize = 20,
     filters: initialFilters = [],
-    orderBy: initialOrderBy = {field: 'id', direction: 'desc'},
+    orderBy: initialOrderBy = { field: 'id', direction: 'desc' },
     redirectLoginIfUnauthorized = true,
     abortPreviousRequest = true,
     filterAfterLoad = null, // Function to filter data after loading from API
@@ -101,15 +99,19 @@ export default function useModel(modelName, options = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-  const {user, setUser} = useAuthentication();
-  const {backendHost} = BackendHostURLState();
-  const {organizationId} = OrganizationIdState();
+  const { user, setUser } = useAuthentication();
+  const { backendHost } = BackendHostURLState();
+  const { organizationId } = OrganizationIdState();
 
   const [total, setTotal] = useState(0);
 
   // get paging params, searching term, filter states
-  const {page, setPage, pageSize, setPageSize, searchTerm, setSearchTerm} =
-    usePagingState(syncPagingParamsWithURL, initialPage, initialPageSize, '');
+  const { page, setPage, pageSize, setPageSize, searchTerm, setSearchTerm } = usePagingState(
+    syncPagingParamsWithURL,
+    initialPage,
+    initialPageSize,
+    '',
+  );
   const [filters, setFilters] = syncPagingParamsWithURL
     ? useSearchParamState('filters', initialFilters)
     : useState(initialFilters);
@@ -179,7 +181,7 @@ export default function useModel(modelName, options = {}) {
 
       // Create new abort controller for this request
       abortControllerRef.current = new AbortController();
-      const {signal} = abortControllerRef.current;
+      const { signal } = abortControllerRef.current;
 
       setLoading(true);
       const skip = (page - 1) * (pageSize || 0); // Use 0 if pageSize is null
@@ -191,10 +193,9 @@ export default function useModel(modelName, options = {}) {
 
       const query = queryObject || _buildQueryBody();
 
-      const headers = {'Content-Type': 'application/json'};
-      const tokenResult = await Preferences.get({key: 'token'});
-      if (tokenResult?.value)
-        headers.Authorization = `Bearer ${tokenResult.value}`;
+      const headers = { 'Content-Type': 'application/json' };
+      const tokenResult = await Preferences.get({ key: 'token' });
+      if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -205,7 +206,7 @@ export default function useModel(modelName, options = {}) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -246,21 +247,20 @@ export default function useModel(modelName, options = {}) {
         abortControllerRef.current.abort();
       }
       abortControllerRef.current = new AbortController();
-      const {signal} = abortControllerRef.current;
+      const { signal } = abortControllerRef.current;
 
       setLoading(true);
       const endpoint = `${backendHost}/${modelName}/${id}`;
       const headers = {};
-      const tokenResult = await Preferences.get({key: 'token'});
-      if (tokenResult?.value)
-        headers.Authorization = `Bearer ${tokenResult.value}`;
+      const tokenResult = await Preferences.get({ key: 'token' });
+      if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
 
-      const response = await fetch(endpoint, {headers});
+      const response = await fetch(endpoint, { headers });
       if (response.status === 401) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -310,10 +310,9 @@ export default function useModel(modelName, options = {}) {
           },
         };
       }
-      const headers = {'Content-Type': 'application/json'};
-      const tokenResult = await Preferences.get({key: 'token'});
-      if (tokenResult?.value)
-        headers.Authorization = `Bearer ${tokenResult.value}`;
+      const headers = { 'Content-Type': 'application/json' };
+      const tokenResult = await Preferences.get({ key: 'token' });
+      if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
       const response = await fetch(endpoint, {
         method: 'POST',
         body: JSON.stringify(query),
@@ -323,7 +322,7 @@ export default function useModel(modelName, options = {}) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         console.log(detail);
         setError(detail);
         throw new Error(detail);
@@ -343,7 +342,7 @@ export default function useModel(modelName, options = {}) {
       formData.append('file', file);
 
       const endpoint = `${backendHost}/${modelName}/import`;
-      const tokenResult = await Preferences.get({key: 'token'});
+      const tokenResult = await Preferences.get({ key: 'token' });
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -353,7 +352,7 @@ export default function useModel(modelName, options = {}) {
         body: formData,
       });
       if (res.status !== 200) {
-        const {detail} = await res.json();
+        const { detail } = await res.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -369,7 +368,7 @@ export default function useModel(modelName, options = {}) {
     setLoading(true);
     // replace all date objects with naive datetime strings
     const keys = Object.keys(newItem);
-    const newItemCopy = {...newItem};
+    const newItemCopy = { ...newItem };
     for (const key of keys) {
       if (newItem[key] instanceof Date) {
         // Send date as-is without any timezone conversion
@@ -380,10 +379,9 @@ export default function useModel(modelName, options = {}) {
     try {
       const endpoint = `${backendHost}/${modelName}`;
 
-      const headers = {'Content-Type': 'application/json'};
-      const tokenResult = await Preferences.get({key: 'token'});
-      if (tokenResult?.value)
-        headers.Authorization = `Bearer ${tokenResult.value}`;
+      const headers = { 'Content-Type': 'application/json' };
+      const tokenResult = await Preferences.get({ key: 'token' });
+      if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -394,7 +392,7 @@ export default function useModel(modelName, options = {}) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         console.error(detail);
         setError(detail);
         throw new Error(detail);
@@ -419,21 +417,18 @@ export default function useModel(modelName, options = {}) {
 
       // replace all date objects with naive datetime strings
       const keys = Object.keys(updatedItem);
-      const updatedItemCopy = {...updatedItem};
+      const updatedItemCopy = { ...updatedItem };
       for (const key of keys) {
         if (updatedItem[key] instanceof Date) {
           // Send date as-is without any timezone conversion
-          updatedItemCopy[key] = dayjs(updatedItem[key]).format(
-            'YYYY-MM-DDTHH:mm:ss'
-          );
+          updatedItemCopy[key] = dayjs(updatedItem[key]).format('YYYY-MM-DDTHH:mm:ss');
         }
       }
 
       const endpoint = `${backendHost}/${modelName}/${updatedItem.id}`;
-      const headers = {'Content-Type': 'application/json'};
-      const tokenResult = await Preferences.get({key: 'token'});
-      if (tokenResult?.value)
-        headers.Authorization = `Bearer ${tokenResult.value}`;
+      const headers = { 'Content-Type': 'application/json' };
+      const tokenResult = await Preferences.get({ key: 'token' });
+      if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
 
       const response = await fetch(endpoint, {
         method: 'PUT',
@@ -442,14 +437,14 @@ export default function useModel(modelName, options = {}) {
       });
       if (response.status === 401) return resetAuth();
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
 
       // Update original data first
       const updatedOriginalData = originalData.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item
+        item.id === updatedItem.id ? updatedItem : item,
       );
       setOriginalData(updatedOriginalData);
 
@@ -482,19 +477,17 @@ export default function useModel(modelName, options = {}) {
       const headers = {};
       if (user?.token) headers.Authorization = `Bearer ${user.token}`;
 
-      const response = await fetch(endpoint, {method: 'DELETE', headers});
+      const response = await fetch(endpoint, { method: 'DELETE', headers });
       if (response.status === 401) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
 
-      const updatedOriginalData = originalData.filter(
-        (item) => item.id !== recordId
-      );
+      const updatedOriginalData = originalData.filter((item) => item.id !== recordId);
       setOriginalData(updatedOriginalData);
 
       const updatedFilteredData = applyClientSideFilter(updatedOriginalData);
@@ -517,13 +510,11 @@ export default function useModel(modelName, options = {}) {
   async function bulkDelete(queryObject = {}, force = false) {
     try {
       setLoading(true);
-      const endpoint = `${backendHost}/${modelName}/bulk_delete${
-        force ? '?force=true' : ''
-      }`;
+      const endpoint = `${backendHost}/${modelName}/bulk_delete${force ? '?force=true' : ''}`;
       const query = queryObject || {};
       const headers = {
         'Content-Type': 'application/json',
-        ...(user?.token && {['Authorization']: `Bearer ${user.token}`}),
+        ...(user?.token && { ['Authorization']: `Bearer ${user.token}` }),
       };
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -534,7 +525,7 @@ export default function useModel(modelName, options = {}) {
         return resetAuth();
       }
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -555,11 +546,7 @@ export default function useModel(modelName, options = {}) {
    * @param onErr
    * @return {Promise<void>}
    */
-  async function handleDeleteConfirm(
-    recordIds = [],
-    callback = () => {},
-    onErr = () => {}
-  ) {
+  async function handleDeleteConfirm(recordIds = [], callback = () => {}, onErr = () => {}) {
     try {
       // return to avoid deleting all records
       if (!recordIds.length) return;
@@ -573,7 +560,7 @@ export default function useModel(modelName, options = {}) {
             value: id,
           })),
         },
-        true
+        true,
       );
       modals.closeAll();
       if (callback) callback();
@@ -590,8 +577,8 @@ export default function useModel(modelName, options = {}) {
     const res = await fetch(
       `${backendHost}/util/delete_check/${modelName}/${recordIds.join(',')}`,
       {
-        headers: {Authorization: `Bearer ${user.token}`},
-      }
+        headers: { Authorization: `Bearer ${user.token}` },
+      },
     );
     const response = await res.json();
 
@@ -603,7 +590,7 @@ export default function useModel(modelName, options = {}) {
     modals.openConfirmModal({
       title: <span className={`text-2xl font-bold`}>{t('Delete')}</span>,
       centered: true,
-      labels: {confirm: t('Delete'), cancel: t('Cancel')},
+      labels: { confirm: t('Delete'), cancel: t('Cancel') },
       onConfirm: () => handleDeleteConfirm(recordIds, callback, onErr),
       children: (
         <div>
@@ -611,24 +598,15 @@ export default function useModel(modelName, options = {}) {
             {t(
               recordIds.length > 1
                 ? 'Are you sure you want to delete these records?'
-                : 'Are you sure you want to delete this record?'
+                : 'Are you sure you want to delete this record?',
             )}
             {/* Are you sure you want to delete {recordIds.length} record{recordIds.length > 1 ? 's' : ''}?
                         This action cannot be undone. */}
           </div>
-          {Object.keys(toDelete).length > 0 ||
-          Object.keys(toSetNull).length > 0 ? (
-            <Alert
-              color="red"
-              title={<H2>{t('WARNING')}</H2>}
-              className={`mb-2`}
-            >
+          {Object.keys(toDelete).length > 0 || Object.keys(toSetNull).length > 0 ? (
+            <Alert color="red" title={<H2>{t('WARNING')}</H2>} className={`mb-2`}>
               <div>
-                <div>
-                  {t(
-                    'Deleting this record will have the following cascading effects:'
-                  )}
-                </div>
+                <div>{t('Deleting this record will have the following cascading effects:')}</div>
                 {Object.keys(toDelete).map((tableName) => (
                   <div key={tableName}>
                     <div className={`font-semibold`}>
@@ -661,8 +639,8 @@ export default function useModel(modelName, options = {}) {
 
   async function resetAuth() {
     await Promise.all([
-      Preferences.remove({key: 'token'}),
-      Preferences.remove({key: 'userData'}),
+      Preferences.remove({ key: 'token' }),
+      Preferences.remove({ key: 'userData' }),
     ]);
     setUser(null);
     if (redirectLoginIfUnauthorized) {
@@ -685,7 +663,7 @@ export default function useModel(modelName, options = {}) {
         body: formData,
       });
       if (res.status !== 200) {
-        const {detail} = await res.json();
+        const { detail } = await res.json();
         setError(detail);
         throw new Error(detail);
       }
@@ -693,7 +671,7 @@ export default function useModel(modelName, options = {}) {
       const resp = await res.json();
 
       if (rcd) {
-        const copyRecord = {...rcd};
+        const copyRecord = { ...rcd };
         copyRecord[attachmentIdField] = resp.id;
         await update(copyRecord);
       }

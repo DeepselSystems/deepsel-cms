@@ -1,6 +1,6 @@
-import {useState, useRef, useMemo} from 'react';
-import {NodeViewWrapper} from '@tiptap/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState, useRef, useMemo } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faAlignLeft,
   faAlignCenter,
@@ -12,8 +12,8 @@ import {
   faCircle,
   faIndent,
 } from '@fortawesome/free-solid-svg-icons';
-import {Tooltip} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import DescriptionModal from './DescriptionModal.jsx';
 import {
   ENHANCED_IMAGE_ATTRIBUTES,
@@ -27,33 +27,23 @@ import clsx from 'clsx';
  * EditorNodeView component for enhanced image with description
  * Provides hover menu with image controls and description editing
  */
-const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
+const EditorNodeView = ({ node, updateAttributes, deleteNode }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const wrapperRef = useRef(null);
 
-  const {
-    src,
-    alt,
-    title,
-    width,
-    height,
-    alignment,
-    rounded,
-    circle,
-    inline,
-    description,
-  } = node.attrs;
+  const { src, alt, title, width, height, alignment, rounded, circle, inline, description } =
+    node.attrs;
 
   /**
    * Handle alignment change
    * @param newAlignment
    */
   const handleAlignmentChange = (newAlignment) => {
-    updateAttributes({alignment: newAlignment});
+    updateAttributes({ alignment: newAlignment });
   };
 
   /**
@@ -65,35 +55,35 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
     const newWidth = increase
       ? Math.round(currentWidth * 1.1)
       : Math.max(50, Math.round(currentWidth * 0.9));
-    updateAttributes({width: newWidth});
+    updateAttributes({ width: newWidth });
   };
 
   /**
    * Handle click rounded toggle
    */
   const handleRoundedToggle = () => {
-    updateAttributes({rounded: !rounded});
+    updateAttributes({ rounded: !rounded });
   };
 
   /**
    * Handle click circle toggle
    */
   const handleCircleToggle = () => {
-    updateAttributes({circle: !circle});
+    updateAttributes({ circle: !circle });
   };
 
   /**
    * Handle click inline toggle
    */
   const handleInlineToggle = () => {
-    updateAttributes({inline: !inline});
+    updateAttributes({ inline: !inline });
   };
 
   /**
    * Handle saved description
    */
   const handleDescriptionUpdate = (newDescription) => {
-    updateAttributes({description: newDescription});
+    updateAttributes({ description: newDescription });
     setIsModalOpen(false);
   };
 
@@ -162,7 +152,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
       className={clsx(
         ENHANCED_IMAGE_CLASSES.WRAPPER,
         'relative inline-block max-w-fit',
-        'transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10'
+        'transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10',
       )}
       style={alignmentStyles}
       {...{
@@ -193,9 +183,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
 
       {/* Description */}
       {description && description.trim() && (
-        <div className={clsx(ENHANCED_IMAGE_CLASSES.DESCRIPTION)}>
-          {description}
-        </div>
+        <div className={clsx(ENHANCED_IMAGE_CLASSES.DESCRIPTION)}>{description}</div>
       )}
 
       {/* Hover Menu */}
@@ -203,27 +191,22 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
         className={clsx(
           'transition opacity-0 group-hover:opacity-100',
           'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2',
-          'bg-white border border-gray-200 rounded shadow-lg p-1 flex gap-0.5'
+          'bg-white border border-gray-200 rounded shadow-lg p-1 flex gap-0.5',
         )}
       >
         {/* Align Left */}
         <Tooltip label={t('Align Left')}>
           <button
             type="button"
-            onClick={() =>
-              handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.LEFT)
-            }
+            onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.LEFT)}
             className={clsx(
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.LEFT,
-              }
+              },
             )}
           >
-            <FontAwesomeIcon
-              icon={faAlignLeft}
-              className="text-gray-600 text-xs"
-            />
+            <FontAwesomeIcon icon={faAlignLeft} className="text-gray-600 text-xs" />
           </button>
         </Tooltip>
 
@@ -232,20 +215,15 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
           <Tooltip label={t('Align Center')}>
             <button
               type="button"
-              onClick={() =>
-                handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.CENTER)
-              }
+              onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.CENTER)}
               className={clsx(
                 'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
                 {
                   'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.CENTER,
-                }
+                },
               )}
             >
-              <FontAwesomeIcon
-                icon={faAlignCenter}
-                className="text-gray-600 text-xs"
-              />
+              <FontAwesomeIcon icon={faAlignCenter} className="text-gray-600 text-xs" />
             </button>
           </Tooltip>
         )}
@@ -254,20 +232,15 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
         <Tooltip label={t('Align Right')}>
           <button
             type="button"
-            onClick={() =>
-              handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.RIGHT)
-            }
+            onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.RIGHT)}
             className={clsx(
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.RIGHT,
-              }
+              },
             )}
           >
-            <FontAwesomeIcon
-              icon={faAlignRight}
-              className="text-gray-600 text-xs"
-            />
+            <FontAwesomeIcon icon={faAlignRight} className="text-gray-600 text-xs" />
           </button>
         </Tooltip>
 
@@ -302,7 +275,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': rounded,
-              }
+              },
             )}
           >
             <div
@@ -322,7 +295,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': circle,
-              }
+              },
             )}
           >
             <FontAwesomeIcon
@@ -344,7 +317,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-blue-200': inline,
-              }
+              },
             )}
           >
             <FontAwesomeIcon
@@ -366,7 +339,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
               'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-blue-100': description && description.trim(),
-              }
+              },
             )}
           >
             <FontAwesomeIcon icon={faEdit} className="text-gray-600 text-xs" />

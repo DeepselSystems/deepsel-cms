@@ -3,10 +3,8 @@ const DEFAULT_PROD_BACKEND = 'https://democms-api-dev.deepsel.com';
 
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
-  const windowPublicBackend =
-    typeof window !== 'undefined' ? window.PUBLIC_BACKEND : undefined;
-  const configuredBackend =
-    import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
+  const windowPublicBackend = typeof window !== 'undefined' ? window.PUBLIC_BACKEND : undefined;
+  const configuredBackend = import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
   if (configuredBackend) return configuredBackend;
   return import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND;
 };

@@ -1,10 +1,10 @@
 import React from 'react';
 import TextInput from '../../../../common/ui/TextInput.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useFetch from '../../../../common/api/useFetch.js';
-import {useDebouncedCallback} from '@mantine/hooks';
-import {generateSlugFromStr} from '../../../../common/utils/index.js';
-import {HOMEPAGE_DEFAULT_SLUG} from '../../../../constants/slug.js';
+import { useDebouncedCallback } from '@mantine/hooks';
+import { generateSlugFromStr } from '../../../../common/utils/index.js';
+import { HOMEPAGE_DEFAULT_SLUG } from '../../../../constants/slug.js';
 
 /**
  * Slug input with suggestion
@@ -19,25 +19,15 @@ import {HOMEPAGE_DEFAULT_SLUG} from '../../../../constants/slug.js';
  * }> & React.RefAttributes<unknown>>}
  */
 const SlugInput = React.forwardRef(
-  (
-    {
-      contentId,
-      localeId,
-      title,
-      value,
-      onChange = () => {},
-      isHomepage = false,
-    },
-    ref
-  ) => {
+  ({ contentId, localeId, title, value, onChange = () => {}, isHomepage = false }, ref) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // Query to generate slug
-    const {post: generateSlug} = useFetch('page_content/generate-slug', {
+    const { post: generateSlug } = useFetch('page_content/generate-slug', {
       autoFetch: false,
     });
-    const {post: getSlugValidation} = useFetch('page_content/validate-slug', {
+    const { post: getSlugValidation } = useFetch('page_content/validate-slug', {
       autoFetch: false,
     });
 
@@ -106,7 +96,7 @@ const SlugInput = React.forwardRef(
         onChange?.(newSlug);
         checkValidSlug();
       },
-      [checkValidSlug, onChange]
+      [checkValidSlug, onChange],
     );
 
     /**
@@ -126,7 +116,7 @@ const SlugInput = React.forwardRef(
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [isHomepage, contentId, hasEditedSlug, localeId, title]
+      [isHomepage, contentId, hasEditedSlug, localeId, title],
     );
 
     return (
@@ -137,10 +127,10 @@ const SlugInput = React.forwardRef(
           label={t('Language-specific slug')}
           placeholder={t('Enter URL slug for this language')}
           description={t(
-            'URL path for this language version. Will be auto-generated from title if left empty.'
+            'URL path for this language version. Will be auto-generated from title if left empty.',
           )}
           value={isHomepage ? HOMEPAGE_DEFAULT_SLUG : value}
-          onChange={({target: {value}}) => handleSlugChange(value)}
+          onChange={({ target: { value } }) => handleSlugChange(value)}
           error={
             !!validationSlug &&
             !validationSlug.is_valid &&
@@ -151,7 +141,7 @@ const SlugInput = React.forwardRef(
         />
       </>
     );
-  }
+  },
 );
 
 SlugInput.displayName = 'SlugInput';

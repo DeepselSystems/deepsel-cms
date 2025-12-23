@@ -1,13 +1,13 @@
-import {useState} from 'react';
-import {NodeViewWrapper} from '@tiptap/react';
-import {useTranslation} from 'react-i18next';
+import { useState } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import useEffectOnce from '../../../../hooks/useEffectOnce.js';
 import useUpload from '../../../../api/useUpload.js';
-import {Skeleton} from '@mantine/core';
+import { Skeleton } from '@mantine/core';
 import NotificationState from '../../../../stores/NotificationState.js';
-import {formatFileSize} from '../../../../utils/index.js';
-import {insertAttachmentsToEditor} from '../utils.js';
+import { formatFileSize } from '../../../../utils/index.js';
+import { insertAttachmentsToEditor } from '../utils.js';
 
 /**
  * EditorNodeView component for paste handler
@@ -16,12 +16,12 @@ import {insertAttachmentsToEditor} from '../utils.js';
  * @param {Object} editor - TipTap editor instance
  * @param {Function} getPos - Function to get current node position
  */
-const EditorNodeView = ({node, editor, getPos}) => {
+const EditorNodeView = ({ node, editor, getPos }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   // Notification
-  const {notify} = NotificationState();
+  const { notify } = NotificationState();
 
   /** @type {Array<File>} */
   const files = node.attrs.files || [];
@@ -30,7 +30,7 @@ const EditorNodeView = ({node, editor, getPos}) => {
   const [hasUploaded, setHasUploaded] = useState(false);
 
   // Attachment query
-  const {uploadFileModel} = useUpload();
+  const { uploadFileModel } = useUpload();
 
   /**
    * Load basic file information
@@ -50,7 +50,7 @@ const EditorNodeView = ({node, editor, getPos}) => {
           editor
             .chain()
             .focus()
-            .deleteRange({from: pos, to: pos + node.nodeSize})
+            .deleteRange({ from: pos, to: pos + node.nodeSize })
             .run();
 
           // Insert attachment files to editor at the position
@@ -90,7 +90,7 @@ const EditorNodeView = ({node, editor, getPos}) => {
               <div
                 key={index}
                 className={clsx(
-                  'inline-flex gap-3 items-center border border-opacity-50 rounded px-2 py-1'
+                  'inline-flex gap-3 items-center border border-opacity-50 rounded px-2 py-1',
                 )}
               >
                 <div className="p-1 flex items-center">
@@ -98,9 +98,7 @@ const EditorNodeView = ({node, editor, getPos}) => {
                 </div>
                 <div>
                   <div className="max-w-36 truncate font-bold">{file.name}</div>
-                  <div className="text-sm text-gray">
-                    {formatFileSize(file.size)}
-                  </div>
+                  <div className="text-sm text-gray">{formatFileSize(file.size)}</div>
                   <div className="text-sm">{t('Uploading...')}</div>
                 </div>
               </div>

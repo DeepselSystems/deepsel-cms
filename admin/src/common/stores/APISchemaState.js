@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import backendHost from '../../constants/backendHost.js';
 
 const initialState = {
@@ -10,17 +10,17 @@ const initialState = {
 const useAPISchemaStore = create((set) => ({
   ...initialState,
   setAPISchema: (APISchema) => {
-    set(() => ({APISchema}));
+    set(() => ({ APISchema }));
   },
   fetchAPISchema: async () => {
-    set({isLoading: true, error: null});
+    set({ isLoading: true, error: null });
     try {
       const response = await fetch(`${backendHost}/openapi.json`);
       const data = await response.json();
-      set({APISchema: data, isLoading: false});
+      set({ APISchema: data, isLoading: false });
       return response.data;
     } catch (error) {
-      set({error, isLoading: false});
+      set({ error, isLoading: false });
       console.error('Failed to fetch API schema:', error);
     }
   },

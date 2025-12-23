@@ -5,7 +5,7 @@ export default function snakeToPascal(string) {
       snake
         .split('_')
         .map((substr) => substr.charAt(0).toUpperCase() + substr.slice(1))
-        .join('')
+        .join(''),
     )
     .join('/');
 }

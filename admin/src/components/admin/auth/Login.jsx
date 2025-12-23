@@ -1,29 +1,29 @@
-import {useState, useEffect} from 'react';
-import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
-import {useTranslation} from 'react-i18next';
-import {Modal, Tabs} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Modal, Tabs } from '@mantine/core';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import {useDisclosure} from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import useFetch from '../../../common/api/useFetch.js';
 
 export default function Login() {
   const location = useLocation();
   const navigate = useNavigate();
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
   const [signupUsername, setSignupUsername] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPasswordConfirm, setSignupPasswordConfirm] = useState('');
-  const {notify} = NotificationState((state) => state);
-  const {login, signup, passwordlessLogin} = useAuthentication();
+  const { notify } = NotificationState((state) => state);
+  const { login, signup, passwordlessLogin } = useAuthentication();
   const [loading, setLoading] = useState(false);
 
   // reset password feature
@@ -31,21 +31,18 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
   const [isUseOtpField, setIsUseOtpField] = useState(false);
-  const [
-    isOpenResetPasswordModalToConfig2Fa,
-    setIsOpenResetPasswordModalToConfig2Fa,
-  ] = useState(false);
-  const {organizationId} = OrganizationIdState((state) => state);
+  const [isOpenResetPasswordModalToConfig2Fa, setIsOpenResetPasswordModalToConfig2Fa] =
+    useState(false);
+  const { organizationId } = OrganizationIdState((state) => state);
   const [orgPublicSettings, setOrgPublicSettings] = useState({});
 
   // passwordless login feature
   const [failCount, setFailCount] = useState(0);
-  const [
-    passwordlessModalOpen,
-    {open: openPasswordlessModal, close: closePasswordlessModal},
-  ] = useDisclosure();
-  const {post: requestPasswordlessLogin, loading: passwordlessLoading} =
-    useFetch('passwordless-login-request');
+  const [passwordlessModalOpen, { open: openPasswordlessModal, close: closePasswordlessModal }] =
+    useDisclosure();
+  const { post: requestPasswordlessLogin, loading: passwordlessLoading } = useFetch(
+    'passwordless-login-request',
+  );
   // const {passwordless: passwordlessToken} = useParams();
   const searchParams = useSearchParams()[0];
   const passwordlessToken = searchParams.get('passwordless');
@@ -62,9 +59,7 @@ export default function Login() {
   }, [organizationId]);
 
   async function fetchOrgPublicSettings() {
-    const response = await fetch(
-      `${backendHost}/util/public_settings/${organizationId}`
-    );
+    const response = await fetch(`${backendHost}/util/public_settings/${organizationId}`);
     const data = await response.json();
     setOrgPublicSettings(data);
   }
@@ -91,9 +86,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/') 
-        ? redirect.substring('/admin'.length) 
-        : (redirect || '/');
+      const redirectPath = redirect?.startsWith('/admin/')
+        ? redirect.substring('/admin'.length)
+        : redirect || '/';
       navigate(redirectPath);
     } catch (err) {
       if (err?.message === 'Incorrect OTP' && !isUseOtpField) {
@@ -123,7 +118,7 @@ export default function Login() {
           username: signupUsername,
           password: signupPassword,
         },
-        true
+        true,
       );
       notify({
         message: t('Signed up successfully!'),
@@ -131,9 +126,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/') 
-        ? redirect.substring('/admin'.length) 
-        : (redirect || '/');
+      const redirectPath = redirect?.startsWith('/admin/')
+        ? redirect.substring('/admin'.length)
+        : redirect || '/';
       navigate(redirectPath);
     } catch (err) {
       notify({
@@ -169,7 +164,7 @@ export default function Login() {
         }),
       });
       if (response.status !== 200) {
-        const {detail} = await response.json();
+        const { detail } = await response.json();
         if (typeof detail === 'string') {
           notify({
             message: detail,
@@ -197,7 +192,7 @@ export default function Login() {
   async function handlePasswordlessRequest(e) {
     e.preventDefault();
     try {
-      await requestPasswordlessLogin({mixin_id: email});
+      await requestPasswordlessLogin({ mixin_id: email });
       notify({
         type: 'success',
         message: t('You login link is on the way!'),
@@ -222,9 +217,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/') 
-        ? redirect.substring('/admin'.length) 
-        : (redirect || '/');
+      const redirectPath = redirect?.startsWith('/admin/')
+        ? redirect.substring('/admin'.length)
+        : redirect || '/';
       navigate(redirectPath);
     } catch (err) {
       console.error(err);
@@ -239,11 +234,7 @@ export default function Login() {
 
   return (
     <main className={`max-w-screen-xl grow mx-auto pt-10 w-full`}>
-      <Tabs
-        defaultValue="login"
-        variant="outline"
-        className={`max-w-[400px] mx-auto`}
-      >
+      <Tabs defaultValue="login" variant="outline" className={`max-w-[400px] mx-auto`}>
         <Tabs.List justify="start">
           <Tabs.Tab value="login">{t('Login')}</Tabs.Tab>
           {orgPublicSettings?.allow_public_signup && (
@@ -285,15 +276,9 @@ export default function Login() {
               <Button
                 className="flex items-center"
                 variant="light"
-                onClick={() =>
-                  (window.location.href = `${backendHost}/login/google`)
-                }
+                onClick={() => (window.location.href = `${backendHost}/login/google`)}
               >
-                <img
-                  src="/images/google-logo.svg"
-                  alt=""
-                  className="w-5 h-5 object-contain"
-                />
+                <img src="/images/google-logo.svg" alt="" className="w-5 h-5 object-contain" />
                 <div className="ml-4">{t('Login with Google')}</div>
               </Button>
             )}
@@ -302,9 +287,7 @@ export default function Login() {
                 className="flex items-center"
                 variant="light"
                 onClick={() => {
-                  const redirect = new URLSearchParams(location.search).get(
-                    'redirect'
-                  );
+                  const redirect = new URLSearchParams(location.search).get('redirect');
                   const samlUrl = redirect
                     ? `${backendHost}/login/saml?redirect=${encodeURIComponent(redirect)}`
                     : `${backendHost}/login/saml`;
@@ -340,10 +323,7 @@ export default function Login() {
 
         {orgPublicSettings?.allow_public_signup && (
           <Tabs.Panel value="signup">
-            <form
-              className={`flex flex-col gap-2 pt-2`}
-              onSubmit={handleSignup}
-            >
+            <form className={`flex flex-col gap-2 pt-2`} onSubmit={handleSignup}>
               <TextInput
                 label={t(`Username`)}
                 type="text"
@@ -387,14 +367,11 @@ export default function Login() {
         {isOpenResetPasswordModalToConfig2Fa && (
           <div className="mb-4">
             {t(
-              'Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials'
+              'Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials',
             )}
           </div>
         )}
-        <form
-          onSubmit={handleResetPasswordSubmit}
-          className={`flex items-center gap-2`}
-        >
+        <form onSubmit={handleResetPasswordSubmit} className={`flex items-center gap-2`}>
           <TextInput
             className="grow"
             type="email"
@@ -417,16 +394,9 @@ export default function Login() {
       <Modal
         opened={passwordlessModalOpen}
         onClose={closePasswordlessModal}
-        title={
-          <div className={`text-lg font-semibold`}>
-            {t('Passwordless Login')}
-          </div>
-        }
+        title={<div className={`text-lg font-semibold`}>{t('Passwordless Login')}</div>}
       >
-        <form
-          onSubmit={handlePasswordlessRequest}
-          className={`flex items-center gap-2`}
-        >
+        <form onSubmit={handlePasswordlessRequest} className={`flex items-center gap-2`}>
           <TextInput
             className="grow"
             type="email"

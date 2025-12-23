@@ -1,17 +1,17 @@
-import {Outlet} from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import useAuthentication from '../api/useAuthentication.js';
-import {useEffect, useMemo, memo} from 'react';
-import {Preferences} from '@capacitor/preferences';
+import { useEffect, useMemo, memo } from 'react';
+import { Preferences } from '@capacitor/preferences';
 
 function PublicAuth() {
-  const {user, fetchUserData, saveUserData, setUser} = useAuthentication();
+  const { user, fetchUserData, saveUserData, setUser } = useAuthentication();
 
   const initUserData = useMemo(
     () => async () => {
       if (!user) {
         // get user data from storage
-        const userDataResult = await Preferences.get({key: 'userData'});
-        const tokenResult = await Preferences.get({key: 'token'});
+        const userDataResult = await Preferences.get({ key: 'userData' });
+        const tokenResult = await Preferences.get({ key: 'token' });
         let token, userData;
 
         // found old token and user data, save it first, then async update
@@ -32,15 +32,15 @@ function PublicAuth() {
             // token is invalid, re-init anon user or just wipe it
             console.error(e);
             await Promise.all([
-              Preferences.remove({key: 'token'}),
-              Preferences.remove({key: 'userData'}),
+              Preferences.remove({ key: 'token' }),
+              Preferences.remove({ key: 'userData' }),
             ]);
             setUser(null);
           }
         }
       }
     },
-    [user, fetchUserData, saveUserData, setUser]
+    [user, fetchUserData, saveUserData, setUser],
   );
 
   useEffect(() => {

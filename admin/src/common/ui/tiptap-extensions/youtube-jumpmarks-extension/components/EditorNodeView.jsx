@@ -1,21 +1,21 @@
-import {useState, useCallback} from 'react';
-import {NodeViewWrapper} from '@tiptap/react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPen, faTrash} from '@fortawesome/free-solid-svg-icons';
-import {modals} from '@mantine/modals';
+import { useState, useCallback } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
 import JumpMarksModal from './JumpMarksModal.jsx';
-import {useTranslation} from 'react-i18next';
-import {getVideoId} from '../utils.js';
+import { useTranslation } from 'react-i18next';
+import { getVideoId } from '../utils.js';
 import clsx from 'clsx';
 
 /**
  * NodeView component for YouTube Jump Marks in editor mode
  * Displays YouTube video with jump marks and edit/delete buttons on hover
  */
-const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
-  const {t} = useTranslation();
+const EditorNodeView = ({ node, updateAttributes, deleteNode }) => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const {src, width, height, title, jumpMarks, showJumpMarks} = node.attrs;
+  const { src, width, height, title, jumpMarks, showJumpMarks } = node.attrs;
 
   /**
    * Handle edit button click - opens modal directly
@@ -34,7 +34,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
       updateAttributes(data);
       setIsModalOpen(false);
     },
-    [updateAttributes]
+    [updateAttributes],
   );
 
   /**
@@ -54,18 +54,14 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
       if (deleteNode) {
         modals.openConfirmModal({
           centered: true,
-          title: (
-            <div className="text-lg font-semibold ">
-              {t('Delete YouTube Video')}
-            </div>
-          ),
+          title: <div className="text-lg font-semibold ">{t('Delete YouTube Video')}</div>,
           children: t('Are you sure you want to delete this YouTube frame?'),
-          labels: {confirm: t('Delete'), cancel: t('Cancel')},
+          labels: { confirm: t('Delete'), cancel: t('Cancel') },
           onConfirm: deleteNode,
         });
       }
     },
-    [deleteNode, t]
+    [deleteNode, t],
   );
 
   /**
@@ -138,14 +134,14 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
       <div
         className={clsx(
           'absolute w-full h-full top-0 left-0',
-          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 group-hover:scale-x-[103%]'
+          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 group-hover:scale-x-[103%]',
         )}
       ></div>
       <div
         className={clsx(
           'transition opacity-0 group-hover:opacity-100',
           'absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2',
-          'flex gap-3 items-center justify-center'
+          'flex gap-3 items-center justify-center',
         )}
       >
         {/* Edit Button */}
@@ -154,7 +150,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
           className={clsx(
             'group-hover:opacity-100',
             'p-3 rounded bg-gray-ebony text-white bg-opacity-90',
-            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110'
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Edit YouTube Jump Marks')}
         >
@@ -167,7 +163,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
           className={clsx(
             'group-hover:opacity-100',
             'p-3 rounded bg-red-500 text-white bg-opacity-90',
-            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110'
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Delete YouTube Jump Marks')}
         >
@@ -206,9 +202,7 @@ const EditorNodeView = ({node, updateAttributes, deleteNode}) => {
                 {jumpMark.description &&
                   typeof jumpMark.description === 'string' &&
                   jumpMark.description.trim().length > 0 && (
-                    <div className="jump-mark-description">
-                      {jumpMark.description}
-                    </div>
+                    <div className="jump-mark-description">{jumpMark.description}</div>
                   )}
               </div>
             </div>

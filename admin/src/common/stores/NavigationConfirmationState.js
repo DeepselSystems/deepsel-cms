@@ -1,15 +1,14 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
 const NavigationConfirmationState = create((set, get) => ({
   confirmationCallback: null,
 
-  setNavigationConfirmation: (callback) =>
-    set({confirmationCallback: callback}),
+  setNavigationConfirmation: (callback) => set({ confirmationCallback: callback }),
 
-  clearNavigationConfirmation: () => set({confirmationCallback: null}),
+  clearNavigationConfirmation: () => set({ confirmationCallback: null }),
 
   confirmNavigation: (navigationCallback) => {
-    const {confirmationCallback} = get();
+    const { confirmationCallback } = get();
     if (confirmationCallback) {
       confirmationCallback(navigationCallback);
     } else {

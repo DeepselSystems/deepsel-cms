@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.process_menu_item import build_localized_menus, LocalizedMenuItem
 from deepsel.utils import decrypt, encrypt
-from apps.cms.types import PublicSettings
+from apps.cms.types.public_settings import PublicSettings
 
 
 logger = logging.getLogger(__name__)

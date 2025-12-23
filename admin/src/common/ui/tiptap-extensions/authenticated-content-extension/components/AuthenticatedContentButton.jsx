@@ -1,9 +1,9 @@
-import {useCallback} from 'react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faLock} from '@fortawesome/free-solid-svg-icons';
-import {useTranslation} from 'react-i18next';
+import { useCallback } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import {Tooltip} from '@mantine/core';
+import { Tooltip } from '@mantine/core';
 
 /**
  * Button component to insert authenticated content region
@@ -12,8 +12,8 @@ import {Tooltip} from '@mantine/core';
  * @param {Object} props.editor - TipTap editor instance
  * @param {string} props.className - Additional CSS classes
  */
-const AuthenticatedContentButton = ({editor, className}) => {
-  const {t} = useTranslation();
+const AuthenticatedContentButton = ({ editor, className }) => {
+  const { t } = useTranslation();
 
   /**
    * Handle button click - insert authenticated content region
@@ -34,7 +34,7 @@ const AuthenticatedContentButton = ({editor, className}) => {
         onClick={handleClick}
         className={clsx(
           'w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]',
-          className
+          className,
         )}
         title={t('Insert Authenticated Content')}
         type="button"

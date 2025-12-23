@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { parseSlugForLangAndPath } from '@deepsel/cms-utils';
+import { parseSlug } from '@deepsel/cms-utils';
 import { usePageData } from '../contexts/PageDataContext';
 
 /**
@@ -39,7 +39,7 @@ export function useLanguage() {
 
     // For pages: Use language_alternatives metadata to get language-specific slugs
     let targetPath: string | null = null;
-    const { path: currentPath } = parseSlugForLangAndPath(window.location.pathname);
+    const { path: currentPath } = parseSlug(window.location.pathname);
 
     if (pageData.language_alternatives?.length) {
       const targetAlternative = pageData.language_alternatives.find(

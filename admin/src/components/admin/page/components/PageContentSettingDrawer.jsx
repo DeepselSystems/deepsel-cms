@@ -1,13 +1,13 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {Drawer} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Drawer } from '@mantine/core';
 import Switch from '../../../../common/ui/Switch.jsx';
 import SeoMetadataForm from '../../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
 import SocialCardPreview from '../../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
 import SERPPreviewCardPreview from '../../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import H3 from '../../../../common/ui/H3.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core';
+import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
@@ -27,12 +27,9 @@ import 'prismjs/themes/prism.css';
  * React.RefAttributes<{unknow}>>}
  */
 const PageContentSettingDrawer = React.forwardRef(
-  (
-    {pageContent, updateContentField, opened, onClose, page, updatePageField},
-    ref
-  ) => {
+  ({ pageContent, updateContentField, opened, onClose, page, updatePageField }, ref) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     /**
      * Handle ref
@@ -49,7 +46,7 @@ const PageContentSettingDrawer = React.forwardRef(
           title={<h2 className="font-bold text-xl">{t('Settings')}</h2>}
           size="md"
           position="right"
-          transitionProps={{transition: 'slide-left', duration: 200}}
+          transitionProps={{ transition: 'slide-left', duration: 200 }}
         >
           <div className="mb-4 space-y-6">
             {/* Page Settings Section */}
@@ -65,22 +62,14 @@ const PageContentSettingDrawer = React.forwardRef(
                 checked={page?.require_login || false}
                 size="lg"
                 label={t('Require Login')}
-                description={t(
-                  'When enabled, users must be logged in to view this page'
-                )}
-                onChange={(e) =>
-                  updatePageField('require_login', e.currentTarget.checked)
-                }
+                description={t('When enabled, users must be logged in to view this page')}
+                onChange={(e) => updatePageField('require_login', e.currentTarget.checked)}
               />
             </div>
 
-            <SeoMetadataForm
-              pageContent={pageContent}
-              updateContentField={updateContentField}
-            />
+            <SeoMetadataForm pageContent={pageContent} updateContentField={updateContentField} />
 
-            {(pageContent.seo_metadata_title ||
-              pageContent.seo_metadata_description) && (
+            {(pageContent.seo_metadata_title || pageContent.seo_metadata_description) && (
               <>
                 <SocialCardPreview pageContent={pageContent} />
                 <SERPPreviewCardPreview pageContent={pageContent} />
@@ -97,22 +86,17 @@ const PageContentSettingDrawer = React.forwardRef(
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   {t(
-                    'This code will be injected only for this language version of the page, after the content.'
+                    'This code will be injected only for this language version of the page, after the content.',
                   )}
                 </p>
-                <div
-                  className="border border-gray-300 rounded"
-                  style={{height: '150px'}}
-                >
+                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
                   <Editor
                     className="w-full h-full"
                     value={pageContent.custom_code || ''}
                     onValueChange={(code) =>
                       updateContentField(pageContent.id, 'custom_code', code)
                     }
-                    highlight={(code) =>
-                      highlight(code, languages.markup, 'html')
-                    }
+                    highlight={(code) => highlight(code, languages.markup, 'html')}
                     padding={10}
                     style={{
                       fontSize: 12,
@@ -130,22 +114,15 @@ const PageContentSettingDrawer = React.forwardRef(
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   {t(
-                    'This code will be injected in all language versions of this page, after the content.'
+                    'This code will be injected in all language versions of this page, after the content.',
                   )}
                 </p>
-                <div
-                  className="border border-gray-300 rounded"
-                  style={{height: '150px'}}
-                >
+                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
                   <Editor
                     className="w-full h-full"
                     value={page?.page_custom_code || ''}
-                    onValueChange={(code) =>
-                      updatePageField('page_custom_code', code)
-                    }
-                    highlight={(code) =>
-                      highlight(code, languages.markup, 'html')
-                    }
+                    onValueChange={(code) => updatePageField('page_custom_code', code)}
+                    highlight={(code) => highlight(code, languages.markup, 'html')}
                     padding={10}
                     style={{
                       fontSize: 12,
@@ -161,7 +138,7 @@ const PageContentSettingDrawer = React.forwardRef(
         </Drawer>
       </>
     );
-  }
+  },
 );
 
 PageContentSettingDrawer.displayName = 'PageContentSettingDrawer';

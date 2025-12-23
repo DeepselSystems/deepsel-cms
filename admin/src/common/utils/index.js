@@ -36,14 +36,14 @@ export function renameKeys(keysMap, obj) {
   return Object.keys(obj).reduce(
     (acc, key) => ({
       ...acc,
-      ...{[keysMap[key] || key]: obj[key]},
+      ...{ [keysMap[key] || key]: obj[key] },
     }),
-    {}
+    {},
   );
 }
 
 export function removeKeys(keysArray, obj) {
-  const resObj = {...obj};
+  const resObj = { ...obj };
   keysArray.forEach((k) => {
     if (k in resObj) {
       delete resObj[k];
@@ -54,8 +54,7 @@ export function removeKeys(keysArray, obj) {
 
 export function randomID(length = 9) {
   let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {
@@ -121,10 +120,7 @@ export const formatFileSize = (bytes) => {
  * @param {Array} processedContents - Processed contents from client state (user's final choice)
  * @returns {Array} Merged contents preserving server data and using client updates
  */
-export const mergeContentsWithServerData = (
-  serverContents = [],
-  processedContents = []
-) => {
+export const mergeContentsWithServerData = (serverContents = [], processedContents = []) => {
   if (!serverContents.length) {
     return processedContents;
   }
@@ -141,15 +137,12 @@ export const mergeContentsWithServerData = (
     return map;
   }, {});
 
-  const serverContentsByLocaleIdMap = serverContents.reduce(
-    (map, serverContent) => {
-      if (serverContent.locale_id) {
-        map[serverContent.locale_id] = serverContent;
-      }
-      return map;
-    },
-    {}
-  );
+  const serverContentsByLocaleIdMap = serverContents.reduce((map, serverContent) => {
+    if (serverContent.locale_id) {
+      map[serverContent.locale_id] = serverContent;
+    }
+    return map;
+  }, {});
 
   // Return all processed contents, merge with server data when id or locale_id matches
   return processedContents.map((processedContent) => {

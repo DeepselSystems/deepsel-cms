@@ -1,22 +1,12 @@
-import {
-  faCheck,
-  faCircleCheck,
-  faCopy,
-  faDownload,
-} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Modal} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { faCheck, faCircleCheck, faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Modal } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
-export default function RecoveryCodesModal({
-  isOpen,
-  close,
-  onFinish,
-  recoveryCodes = [],
-}) {
-  const {t} = useTranslation();
-  const {notify} = NotificationState((state) => state);
+export default function RecoveryCodesModal({ isOpen, close, onFinish, recoveryCodes = [] }) {
+  const { t } = useTranslation();
+  const { notify } = NotificationState((state) => state);
 
   function handleCopy() {
     const textToCopy = (recoveryCodes || []).join('\n');
@@ -64,10 +54,7 @@ export default function RecoveryCodesModal({
       closeOnEscape={false}
       title={
         <div className="flex items-center gap-4 px-4">
-          <FontAwesomeIcon
-            icon={faCircleCheck}
-            className="h-6 w-6 text-[#4DB783] self-start"
-          />
+          <FontAwesomeIcon icon={faCircleCheck} className="h-6 w-6 text-[#4DB783] self-start" />
           <div className={`font-semibold text-lg`}>
             {t('Two-Factor Authentication - Enabled via Authenticator App')}
           </div>
@@ -75,17 +62,15 @@ export default function RecoveryCodesModal({
       }
     >
       <div className="px-8 py-6 bg-[#F7F9FA]">
-        <div className="text-[#E2393E] font-bold text-lg">
-          {t('Recovery Codes')}
-        </div>
+        <div className="text-[#E2393E] font-bold text-lg">{t('Recovery Codes')}</div>
         <div className="mt-4 text-[#85909A]">
           {t(
-            'Recovery codes are the backup codes to access your account in case you cannot receive two-factor authentication codes via the authenticator app.'
+            'Recovery codes are the backup codes to access your account in case you cannot receive two-factor authentication codes via the authenticator app.',
           )}
         </div>
         <div className="mt-2 text-[#85909A]">
           {t(
-            'Make a copy or download these codes and keep them somewhere safe before you continue further.'
+            'Make a copy or download these codes and keep them somewhere safe before you continue further.',
           )}
         </div>
         <div className="grid grid-cols-2 gap-y-2 my-8 text-[#26445A] font-semibold">
@@ -96,17 +81,11 @@ export default function RecoveryCodesModal({
           ))}
         </div>
         <div className="flex">
-          <Button
-            className="!bg-gray-300 !text-[#14354C]"
-            onClick={handleDownload}
-          >
+          <Button className="!bg-gray-300 !text-[#14354C]" onClick={handleDownload}>
             <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
             {t('Download')}
           </Button>
-          <Button
-            className="ml-2 !bg-gray-300 !text-[#14354C]"
-            onClick={handleCopy}
-          >
+          <Button className="ml-2 !bg-gray-300 !text-[#14354C]" onClick={handleCopy}>
             <FontAwesomeIcon icon={faCopy} className="mr-2 h-4 w-4" />
             {t('Copy')}
           </Button>

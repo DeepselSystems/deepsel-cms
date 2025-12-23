@@ -1,8 +1,8 @@
-import {Node} from '@tiptap/core';
-import {Plugin, PluginKey} from '@tiptap/pm/state';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { Node } from '@tiptap/core';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView.jsx';
-import {PASTE_HANDLER_ATTRIBUTES} from './utils.js';
+import { PASTE_HANDLER_ATTRIBUTES } from './utils.js';
 
 /**
  * Paste Handler extension for TipTap
@@ -55,10 +55,7 @@ export const PasteHandler = Node.create({
    * The node is removed after files are uploaded via EditorNodeView component
    */
   renderHTML() {
-    return [
-      'div',
-      {[PASTE_HANDLER_ATTRIBUTES.CONTAINER]: '', style: 'display: none;'},
-    ];
+    return ['div', { [PASTE_HANDLER_ATTRIBUTES.CONTAINER]: '', style: 'display: none;' }];
   },
 
   /**
@@ -77,7 +74,7 @@ export const PasteHandler = Node.create({
     return {
       setPastedFiles:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!options.files || options.files.length === 0) {
             return false;
           }
@@ -110,7 +107,7 @@ export const PasteHandler = Node.create({
 
               // Create temporary node to display pasted files
               if (editor) {
-                editor.commands.setPastedFiles({files});
+                editor.commands.setPastedFiles({ files });
                 return true; // Prevent default paste behavior
               }
             }

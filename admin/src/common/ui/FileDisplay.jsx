@@ -1,10 +1,10 @@
-import {faFileLines} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Indicator, Menu, Modal} from '@mantine/core';
-import {useDisclosure} from '@mantine/hooks';
-import {faDownload, faEye} from '@fortawesome/free-solid-svg-icons';
-import {forwardRef} from 'react';
-import {useTranslation} from 'react-i18next';
+import { faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Indicator, Menu, Modal } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { faDownload, faEye } from '@fortawesome/free-solid-svg-icons';
+import { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import documentIcon from '../../assets/images/document.png';
 import imageIcon from '../../assets/images/placeholder.png';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
@@ -26,7 +26,7 @@ function PdfDisplay({
   showMenuOnHover = false,
   dropdownPosition = 'right-start',
 }) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return (
     <Menu
       withArrow
@@ -53,9 +53,7 @@ function PdfDisplay({
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faDownload} className="w-5" />}
           component="a"
-          onClick={() =>
-            downloadFromAttachUrl(getAttachmentUrl(backendHost, src))
-          }
+          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -66,14 +64,7 @@ function PdfDisplay({
 }
 
 const OtherFileDisplay = forwardRef((props, ref) => {
-  const {
-    backendHost,
-    src,
-    width,
-    height,
-    disabledLink = false,
-    ...otherProps
-  } = props;
+  const { backendHost, src, width, height, disabledLink = false, ...otherProps } = props;
 
   return (
     <a
@@ -81,21 +72,13 @@ const OtherFileDisplay = forwardRef((props, ref) => {
       {...otherProps}
       className="flex items-end cursor-pointer text-primary-main"
       href={
-        disabledLink
-          ? null
-          : src?.startsWith('http')
-            ? src
-            : getAttachmentUrl(backendHost, src)
+        disabledLink ? null : src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
       }
       target="_blank"
       rel={'noreferrer'}
       download
     >
-      <Indicator
-        label={getFileExtension(src).toUpperCase()}
-        zIndex="auto"
-        size={15}
-      >
+      <Indicator label={getFileExtension(src).toUpperCase()} zIndex="auto" size={15}>
         <FontAwesomeIcon
           icon={faFileLines}
           style={{
@@ -122,7 +105,7 @@ function ImageDisplay({
   dropdownPosition = 'bottom',
   imgClassName = '',
 }) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return (
     <Menu
       withArrow
@@ -132,9 +115,7 @@ function ImageDisplay({
     >
       <Menu.Target>
         <img
-          src={
-            src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
-          }
+          src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
           alt={alt}
           width={width}
           height={height}
@@ -151,9 +132,7 @@ function ImageDisplay({
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faDownload} className="w-5" />}
           component="a"
-          onClick={() =>
-            downloadFromAttachUrl(getAttachmentUrl(backendHost, src))
-          }
+          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -172,7 +151,7 @@ function VideoDisplay({
   showMenuOnHover = false,
   dropdownPosition = 'bottom',
 }) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return (
     <Menu
       withArrow
@@ -182,9 +161,7 @@ function VideoDisplay({
     >
       <Menu.Target>
         <video
-          src={
-            src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
-          }
+          src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
           width={width}
           height={height}
           className="cursor-pointer"
@@ -201,9 +178,7 @@ function VideoDisplay({
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faDownload} className="w-5" />}
           component="a"
-          onClick={() =>
-            downloadFromAttachUrl(getAttachmentUrl(backendHost, src))
-          }
+          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -229,14 +204,14 @@ export default function FileDisplay(props) {
       placeholder: '',
     },
   } = props;
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
-  let {placeholder} = props;
+  let { placeholder } = props;
   if (!placeholder) {
     placeholder = type === 'image' ? imageIcon : documentIcon;
   }
-  const {backendHost} = BackendHostURLState((state) => state);
-  const [opened, {open, close}] = useDisclosure();
+  const { backendHost } = BackendHostURLState((state) => state);
+  const [opened, { open, close }] = useDisclosure();
 
   return (
     <div className={clsx('relative', classNames.root)}>
@@ -286,12 +261,7 @@ export default function FileDisplay(props) {
             dropdownPosition={dropdownPosition}
           />
         ) : (
-          <OtherFileDisplay
-            width={width}
-            height={height}
-            backendHost={backendHost}
-            src={src}
-          />
+          <OtherFileDisplay width={width} height={height} backendHost={backendHost} src={src} />
         )
       ) : (
         <img
@@ -303,33 +273,22 @@ export default function FileDisplay(props) {
         />
       )}
 
-      <Modal
-        opened={opened}
-        onClose={close}
-        fullScreen
-        title={<H2>{t('Preview')}</H2>}
-      >
+      <Modal opened={opened} onClose={close} fullScreen title={<H2>{t('Preview')}</H2>}>
         {type === 'image' ? (
           <img
-            src={
-              src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
-            }
+            src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
             alt={alt}
             className="max-w-full max-h-[calc(100vh-60px-16px)] mx-auto"
           />
         ) : type === 'video' ? (
           <video
-            src={
-              src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
-            }
+            src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
             controls
             className="max-w-full max-h-[calc(100vh-60px-16px)] mx-auto"
           />
         ) : (
           <iframe
-            src={
-              src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)
-            }
+            src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
             className="!w-full h-[calc(100vh-60px-16px)]"
             title="Document Preview"
           />

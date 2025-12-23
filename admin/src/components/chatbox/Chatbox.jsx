@@ -1,25 +1,18 @@
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ChatBoxState from '../../common/stores/ChatBoxState.js';
 import ChatQuestionItem from './ChatQuestionItem.jsx';
 import ChatAnswerItem from './ChatAnswerItem.jsx';
 
 export default function Chatbox() {
-  const {
-    isOpen,
-    history,
-    isLoading,
-    streamingAnswer,
-    toggleChatbox,
-    closeChatbox,
-    sendChat,
-  } = ChatBoxState();
+  const { isOpen, history, isLoading, streamingAnswer, toggleChatbox, closeChatbox, sendChat } =
+    ChatBoxState();
 
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -57,12 +50,7 @@ export default function Chatbox() {
           className="bg-primary-main hover:bg-red-700 text-primary-contrastText p-4 rounded-full shadow-lg transition-colors duration-200"
           aria-label="Open chat"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -85,12 +73,7 @@ export default function Chatbox() {
           className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
           aria-label="Close chat"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -180,12 +163,7 @@ export default function Chatbox() {
             disabled={!inputValue.trim() || isLoading || streamingAnswer}
             className="bg-primary-main text-primary-contrastText px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

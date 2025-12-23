@@ -1,5 +1,5 @@
 import useModel from './useModel.jsx';
-import {useState} from 'react';
+import { useState } from 'react';
 
 export default function useOne2many({
   parentRecord: initialParentRecord,
@@ -23,8 +23,8 @@ export default function useOne2many({
         createChild({
           ...record,
           [foreignKeyField]: parentRecord.id,
-        })
-      )
+        }),
+      ),
     );
   }
 
@@ -34,11 +34,9 @@ export default function useOne2many({
     const newRecordIds = newRecords.map((record) => record.id);
 
     const recordsToAdd = newRecords.filter(
-      (record) => !record.id || !oldRecordIds.includes(record.id)
+      (record) => !record.id || !oldRecordIds.includes(record.id),
     );
-    const recordsToRemove = oldRecords.filter(
-      (record) => !newRecordIds.includes(record.id)
-    );
+    const recordsToRemove = oldRecords.filter((record) => !newRecordIds.includes(record.id));
     const recordsToUpdate = newRecords.filter((record) => record.id);
 
     const created = Promise.all(
@@ -46,20 +44,18 @@ export default function useOne2many({
         createChild({
           ...record,
           [foreignKeyField]: parent.id,
-        })
-      )
+        }),
+      ),
     );
     const updated = Promise.all(
       recordsToUpdate.map((record) =>
         updateChild({
           ...record,
           [foreignKeyField]: parent.id,
-        })
-      )
+        }),
+      ),
     );
-    const deleted = Promise.all(
-      recordsToRemove.map((record) => deleteChild(record.id))
-    );
+    const deleted = Promise.all(recordsToRemove.map((record) => deleteChild(record.id)));
 
     return Promise.all([created, updated, deleted]);
   }

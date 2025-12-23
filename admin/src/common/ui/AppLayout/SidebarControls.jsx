@@ -1,4 +1,4 @@
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChevronLeft,
   faChevronRight,
@@ -11,8 +11,8 @@ import Button from '../Button.jsx';
 /**
  * Example component showing how to control the sidebar from any component
  */
-export default function SidebarControls({variant = 'buttons'}) {
-  const {isCollapsed, toggle, collapse, expand} = useSidebar();
+export default function SidebarControls({ variant = 'buttons' }) {
+  const { isCollapsed, toggle, collapse, expand } = useSidebar();
 
   if (variant === 'single') {
     return (
@@ -20,11 +20,7 @@ export default function SidebarControls({variant = 'buttons'}) {
         onClick={toggle}
         variant="outline"
         size="sm"
-        leftSection={
-          <FontAwesomeIcon
-            icon={isCollapsed ? faChevronRight : faChevronLeft}
-          />
-        }
+        leftSection={<FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />}
       >
         {isCollapsed ? 'Expand' : 'Collapse'} Sidebar
       </Button>
@@ -38,10 +34,7 @@ export default function SidebarControls({variant = 'buttons'}) {
         className="p-2 rounded hover:bg-gray-100 transition-colors"
         title={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
       >
-        <FontAwesomeIcon
-          icon={isCollapsed ? faExpand : faCompress}
-          className="h-4 w-4"
-        />
+        <FontAwesomeIcon icon={isCollapsed ? faExpand : faCompress} className="h-4 w-4" />
       </button>
     );
   }

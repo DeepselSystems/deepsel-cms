@@ -1,34 +1,32 @@
-import {useState, useEffect} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState, useEffect } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 
-const renderCell = (params) => (
-  <LinkedCell params={params}>{params.value}</LinkedCell>
-);
+const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
 export default function BlogPostList() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizationId } = OrganizationIdState();
+  const { settings: siteSettings } = SitePublicSettingsState((state) => state);
 
   // Build initial filters
   const buildFilters = () => {
@@ -47,12 +45,9 @@ export default function BlogPostList() {
     if (
       user.roles.some((role) => role.string_id === 'website_author_role') &&
       !user.roles.some((role) =>
-        [
-          'admin_role',
-          'super_admin_role',
-          'website_admin_role',
-          'website_editor_role',
-        ].includes(role.string_id)
+        ['admin_role', 'super_admin_role', 'website_admin_role', 'website_editor_role'].includes(
+          role.string_id,
+        ),
       )
     ) {
       filters.push({
@@ -69,7 +64,7 @@ export default function BlogPostList() {
     autoFetch: true,
     searchFields: ['slug'],
     syncPagingParamsWithURL: true,
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: buildFilters(),
   });
 
@@ -113,9 +108,7 @@ export default function BlogPostList() {
 
         // Get the default site language code
         const defaultLangId = siteSettings?.default_language_id;
-        const defaultLangContent = contents.find(
-          (content) => content.locale_id === defaultLangId
-        );
+        const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
 
         // Find content based on priority order:
         // 1. Selected language
@@ -125,9 +118,7 @@ export default function BlogPostList() {
         let selectedContent;
 
         // 1. Try to find content matching the current selected language
-        selectedContent = contents.find(
-          (content) => content.locale?.iso_code === currentLang
-        );
+        selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
 
         // 2. If not found, try to find content matching the default site language
         if (!selectedContent && defaultLangContent) {
@@ -136,9 +127,7 @@ export default function BlogPostList() {
 
         // 3. If still not found, try to find English content
         if (!selectedContent) {
-          selectedContent = contents.find(
-            (content) => content.locale?.iso_code === 'en'
-          );
+          selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
         }
 
         // 4. If still not found, use the first content
@@ -148,17 +137,13 @@ export default function BlogPostList() {
 
         return selectedContent.title || '-';
       },
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value || '-'}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
     },
     {
       field: 'languages',
@@ -211,9 +196,7 @@ export default function BlogPostList() {
       </Helmet>
       <main className="h-[calc(100vh-50px-32px-20px)] flex flex-col m-auto px-[12px] sm:px-[24px]">
         <div className="flex w-full justify-between gap-2 my-3">
-          <H1 className="text-[32px] font-bold text-primary">
-            {t('Blog Posts')}
-          </H1>
+          <H1 className="text-[32px] font-bold text-primary">{t('Blog Posts')}</H1>
           <VisibilityControl
             roleIds={[
               'super_admin_role',
@@ -231,9 +214,7 @@ export default function BlogPostList() {
               >
                 <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
                 {t('')}
-                <span className={`hidden sm:inline`}>
-                  {t('Create Blog Post')}
-                </span>
+                <span className={`hidden sm:inline`}>{t('Create Blog Post')}</span>
               </Button>
             </Link>
           </VisibilityControl>
@@ -252,7 +233,7 @@ export default function BlogPostList() {
                 'website_admin_role',
                 'website_editor_role',
                 'website_author_role',
-              ].includes(role.string_id)
+              ].includes(role.string_id),
             ) || false
           }
         />
@@ -285,7 +266,7 @@ export default function BlogPostList() {
           disableRowSelectionOnClick
           checkboxSelection
           className={`!border-0 flex-1`}
-          sx={{height: '100%'}}
+          sx={{ height: '100%' }}
           sortModel={
             orderBy
               ? [
@@ -313,8 +294,8 @@ export default function BlogPostList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

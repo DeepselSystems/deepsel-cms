@@ -1,30 +1,30 @@
-import {useDisclosure} from '@mantine/hooks';
-import {AppShell, Burger} from '@mantine/core';
-import {Link, Outlet} from 'react-router-dom';
+import { useDisclosure } from '@mantine/hooks';
+import { AppShell, Burger } from '@mantine/core';
+import { Link, Outlet } from 'react-router-dom';
 import useAuthentication from '../api/useAuthentication.js';
 import useUserPreferences from '../api/useUserPreferences.js';
 import NavigationLinks from '../ui/AppLayout/NavigationLinks.jsx';
 import AppsDropdown from '../ui/AppLayout/AppsDropdown.jsx';
 import ProfileDropdown from '../ui/AppLayout/ProfileDropdown.jsx';
 import NotificationsDropdown from '../ui/AppLayout/NotificationsDropdown.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faArrowLeft, faUsers} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faUsers } from '@fortawesome/free-solid-svg-icons';
 import Notification from '../notification/Notification.jsx';
 import Button from '../ui/Button.jsx';
 import apps from '../../constants/apps.js';
 import trackingSettings from '../../constants/trackingSettings.js';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import SidebarState from '../stores/SidebarState.js';
 import ShowHeaderBackButtonState from '../stores/ShowHeaderBackButtonState.js';
 import useBack from '../hooks/useBack.js';
 import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
-import {useEffect, useMemo} from 'react';
+import { useEffect, useMemo } from 'react';
 import LangSwitcher from '../ui/AppLayout/LangSwitcher.jsx';
 import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
-import {useNavigate} from 'react-router-dom';
-import {faSquareArrowUpRight} from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+import { faSquareArrowUpRight } from '@fortawesome/free-solid-svg-icons';
 
 export default function AppLayout(props) {
   const {
@@ -35,9 +35,9 @@ export default function AppLayout(props) {
     showApps = true,
     showSiteSelector = false,
   } = props;
-  const [opened, {toggle}] = useDisclosure();
-  const {user} = useAuthentication();
-  const {t} = useTranslation();
+  const [opened, { toggle }] = useDisclosure();
+  const { user } = useAuthentication();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     isCollapsed,
@@ -46,12 +46,10 @@ export default function AppLayout(props) {
     setToggleFunction,
     temporaryToggle,
   } = SidebarState();
-  const {showBackButton} = ShowHeaderBackButtonState();
-  const {back} = useBack();
-  const {confirmNavigation} = NavigationConfirmationState();
-  const {organizationId, setOrganizationId} = OrganizationIdState(
-    (state) => state
-  );
+  const { showBackButton } = ShowHeaderBackButtonState();
+  const { back } = useBack();
+  const { confirmNavigation } = NavigationConfirmationState();
+  const { organizationId, setOrganizationId } = OrganizationIdState((state) => state);
 
   // Check if there are any visible navigation links for the current user
   const hasVisibleNavLinks = useMemo(() => {
@@ -83,10 +81,12 @@ export default function AppLayout(props) {
   }, [navbarLinks, user?.all_roles]);
 
   // User preference for sidebar collapse (desktop only)
-  const {value: sidebarCollapsed, setValue: setSidebarCollapsed} =
-    useUserPreferences('sidebarCollapsed', {
+  const { value: sidebarCollapsed, setValue: setSidebarCollapsed } = useUserPreferences(
+    'sidebarCollapsed',
+    {
       defaultValue: false,
-    });
+    },
+  );
 
   const toggleSidebarCollapse = () => {
     // If there's a temporary override active, use temporaryToggle
@@ -139,28 +139,15 @@ export default function AppLayout(props) {
           <div className={`flex items-center justify-between h-full px-2`}>
             <div className={`flex items-center h-full gap-2`}>
               {hasVisibleNavLinks && (
-                <Burger
-                  opened={opened}
-                  onClick={toggle}
-                  hiddenFrom="sm"
-                  size="sm"
-                />
+                <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
               )}
               {hasVisibleNavLinks && (
                 <button
                   onClick={toggleSidebarCollapse}
                   className="hidden sm:flex items-center justify-center w-10 h-10 hover:bg-white/20 rounded border border-white/20 transition-colors cursor-pointer"
-                  title={
-                    sidebarCollapsed
-                      ? t('Expand sidebar')
-                      : t('Collapse sidebar')
-                  }
+                  title={sidebarCollapsed ? t('Expand sidebar') : t('Collapse sidebar')}
                 >
-                  <img
-                    src="/images/sidebar.png"
-                    alt="Toggle sidebar"
-                    className="h-6 w-6"
-                  />
+                  <img src="/images/sidebar.png" alt="Toggle sidebar" className="h-6 w-6" />
                 </button>
               )}
               {showBackButton && (
@@ -186,12 +173,10 @@ export default function AppLayout(props) {
                   ]}
                 >
                   <div className="flex items-center gap-2 ml-4">
-                    <div className="text-sm font-semibold hidden lg:block">
-                      {t('Select Site')}
-                    </div>
+                    <div className="text-sm font-semibold hidden lg:block">{t('Select Site')}</div>
                     <SiteSelector
-                      inputClassNames={{input: 'md:!min-w-52 !border-gray-200'}}
-                      value={organizationId ? {id: organizationId} : null}
+                      inputClassNames={{ input: 'md:!min-w-52 !border-gray-200' }}
+                      value={organizationId ? { id: organizationId } : null}
                       setValue={(value) => setOrganizationId(value?.id || null)}
                       onAddClick={() => navigate('/sites/new')}
                     />
@@ -207,11 +192,7 @@ export default function AppLayout(props) {
               </a>
             </div>
             <div className={`flex items-center gap-4`}>
-              {(
-                trackingSettings.enableAnonUsers
-                  ? user?.signed_up === true
-                  : user
-              ) ? (
+              {(trackingSettings.enableAnonUsers ? user?.signed_up === true : user) ? (
                 <>
                   <LangSwitcher />
 
@@ -241,12 +222,7 @@ export default function AppLayout(props) {
             }}
           >
             <div>
-              <NavigationLinks
-                links={navbarLinks}
-                user={user}
-                opened={opened}
-                toggle={toggle}
-              />
+              <NavigationLinks links={navbarLinks} user={user} opened={opened} toggle={toggle} />
             </div>
           </AppShell.Navbar>
         )}

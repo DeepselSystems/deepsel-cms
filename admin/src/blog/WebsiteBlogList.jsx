@@ -1,15 +1,15 @@
-import {useState, useEffect} from 'react';
-import {useSearchParams} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import WebsiteHeader from '../components/website/WebsiteHeader.jsx';
 import WebsiteFooter from '../components/website/WebsiteFooter.jsx';
-import {Pagination} from '@mantine/core';
+import { Pagination } from '@mantine/core';
 import useAuthentication from '../common/api/useAuthentication.js';
-import {useTranslation} from 'react-i18next';
-import {Helmet} from 'react-helmet';
-import {lazy, Suspense} from 'react';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet';
+import { lazy, Suspense } from 'react';
 import BlogCard from './BlogCard.jsx';
 import BackendHostURLState from '../common/stores/BackendHostURLState.js';
-import {apiRequest} from '../utils/apiUtils.js';
+import { apiRequest } from '../utils/apiUtils.js';
 import CustomCodeRenderer from '../components/website/CustomCodeRenderer.jsx';
 import CustomCodeErrorBoundary from '../components/website/CustomCodeErrorBoundary.jsx';
 
@@ -17,13 +17,13 @@ import CustomCodeErrorBoundary from '../components/website/CustomCodeErrorBounda
 const AdminHeader = lazy(() => import('../components/website/AdminHeader.jsx'));
 
 export default function WebsiteBlogList(props) {
-  const {initialPageData, isPreviewMode, siteSettings} = props;
+  const { initialPageData, isPreviewMode, siteSettings } = props;
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9; // 9 posts per page
-  const {user} = useAuthentication();
-  const {i18n} = useTranslation();
-  const {backendHost} = BackendHostURLState();
+  const { user } = useAuthentication();
+  const { i18n } = useTranslation();
+  const { backendHost } = BackendHostURLState();
 
   // State for client-side data fetching (when no server data available)
   const [clientPosts, setClientPosts] = useState([]);
@@ -50,13 +50,10 @@ export default function WebsiteBlogList(props) {
           headers['Authorization'] = `Bearer ${user.token}`;
         }
 
-        const response = await apiRequest(
-          `${backendHost}/blog_post/website/${currentLang}`,
-          {
-            method: 'GET',
-            headers,
-          }
-        );
+        const response = await apiRequest(`${backendHost}/blog_post/website/${currentLang}`, {
+          method: 'GET',
+          headers,
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -114,7 +111,7 @@ export default function WebsiteBlogList(props) {
   const totalPages = Math.ceil(total / pageSize);
 
   const handlePageChange = (newPage) => {
-    setSearchParams({page: newPage.toString()});
+    setSearchParams({ page: newPage.toString() });
   };
 
   return (
@@ -124,9 +121,7 @@ export default function WebsiteBlogList(props) {
       </Helmet>
       <main className="min-h-screen flex flex-col">
         {user && (
-          <Suspense
-            fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}
-          >
+          <Suspense fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}>
             <AdminHeader dashboardPath={'/admin/blog_posts'} />
           </Suspense>
         )}
@@ -204,11 +199,7 @@ export default function WebsiteBlogList(props) {
 
           {/* Custom Code Injection after content - Site-wide only for blog list */}
           <CustomCodeErrorBoundary>
-            <CustomCodeRenderer
-              pageData={null}
-              contentData={null}
-              type="blog_list"
-            />
+            <CustomCodeRenderer pageData={null} contentData={null} type="blog_list" />
           </CustomCodeErrorBoundary>
         </div>
 

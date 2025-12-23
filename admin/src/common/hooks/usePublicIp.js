@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import useEffectOnce from './useEffectOnce.js';
 
 const PROVIDER_ENDPOINT = 'https://api.ipify.org?format=json';
@@ -45,7 +45,7 @@ const usePublicIp = () => {
     };
   });
 
-  return {ip, loading, error};
+  return { ip, loading, error };
 };
 
 export default usePublicIp;

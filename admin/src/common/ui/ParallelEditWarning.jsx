@@ -1,31 +1,17 @@
-import {Modal, Button} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faExclamationTriangle,
-  faTimes,
-} from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Component to display parallel edit warnings when multiple users are editing the same content
  */
-export default function ParallelEditWarning({
-  warning,
-  onDismiss,
-  onGoBack,
-  onContinueEditing,
-}) {
-  const {t} = useTranslation();
+export default function ParallelEditWarning({ warning, onDismiss, onGoBack, onContinueEditing }) {
+  const { t } = useTranslation();
 
   if (!warning) return null;
 
-  const {
-    newEditor,
-    existingEditors,
-    allOtherEditors,
-    isNewEditor,
-    isFirstUser,
-  } = warning;
+  const { newEditor, existingEditors, allOtherEditors, isNewEditor, isFirstUser } = warning;
 
   const getAllEditors = () => {
     // Use the comprehensive allOtherEditors list if available
@@ -71,14 +57,8 @@ export default function ParallelEditWarning({
       onClose={isFirstUser ? onDismiss : onGoBack}
       title={
         <div className="flex items-center gap-2">
-          <FontAwesomeIcon
-            icon={faExclamationTriangle}
-            style={{color: '#fd7e14'}}
-            size="lg"
-          />
-          <span className="text-lg font-bold">
-            {t('WARNING: Parallel Editing Detected')}
-          </span>
+          <FontAwesomeIcon icon={faExclamationTriangle} style={{ color: '#fd7e14' }} size="lg" />
+          <span className="text-lg font-bold">{t('WARNING: Parallel Editing Detected')}</span>
         </div>
       }
       size="md"
@@ -101,9 +81,7 @@ export default function ParallelEditWarning({
                   <>{t('Another user has started editing this content.')}</>
                 ) : (
                   <>
-                    <strong className="text-orange-600">
-                      {getEditorCount()}
-                    </strong>{' '}
+                    <strong className="text-orange-600">{getEditorCount()}</strong>{' '}
                     {t('other users have started editing this content:')}
                   </>
                 )}
@@ -115,9 +93,7 @@ export default function ParallelEditWarning({
                   <>{t('Another user is currently editing this content:')}</>
                 ) : (
                   <>
-                    <strong className="text-orange-600">
-                      {getEditorCount()}
-                    </strong>{' '}
+                    <strong className="text-orange-600">{getEditorCount()}</strong>{' '}
                     {t('other users are currently editing this content:')}
                   </>
                 )}
@@ -128,9 +104,7 @@ export default function ParallelEditWarning({
           {/* Always show editor list for clear identification */}
           <div className="mb-3">
             <p className="text-xs text-gray-600 mb-2">
-              {getEditorCount() === 1
-                ? t('Active editor:')
-                : t('Active editors:')}
+              {getEditorCount() === 1 ? t('Active editor:') : t('Active editors:')}
             </p>
             <ul className="list-disc list-inside text-sm space-y-1">
               {getEditorList().map((name, index) => (
@@ -145,10 +119,10 @@ export default function ParallelEditWarning({
             <p className="text-orange-800 text-sm">
               {getEditorCount() === 1
                 ? t(
-                    'Editing simultaneously may result in conflicting changes and data loss. It is recommended to coordinate your edits.'
+                    'Editing simultaneously may result in conflicting changes and data loss. It is recommended to coordinate your edits.',
                   )
                 : t(
-                    'Multiple users editing simultaneously increases the risk of conflicting changes and data loss. It is strongly recommended to coordinate your edits.'
+                    'Multiple users editing simultaneously increases the risk of conflicting changes and data loss. It is strongly recommended to coordinate your edits.',
                   )}
             </p>
           </div>

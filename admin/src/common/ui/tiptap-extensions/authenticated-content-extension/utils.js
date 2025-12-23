@@ -29,11 +29,8 @@ export const containsAuthenticatedContent = (container) => {
   if (!container) return false;
 
   return (
-    container.querySelector(
-      `[${AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER}]`
-    ) !== null ||
-    container.querySelector(`.${AUTHENTICATED_CONTENT_CLASSES.WRAPPER}`) !==
-      null
+    container.querySelector(`[${AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER}]`) !== null ||
+    container.querySelector(`.${AUTHENTICATED_CONTENT_CLASSES.WRAPPER}`) !== null
   );
 };
 
@@ -46,17 +43,13 @@ export const initializeAuthenticatedContent = (container) => {
 
   // Find authenticated content regions by both data attribute and class
   const authenticatedContentWrappers = [
-    ...container.querySelectorAll(
-      `[${AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER}]`
-    ),
+    ...container.querySelectorAll(`[${AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER}]`),
     ...container.querySelectorAll(`.${AUTHENTICATED_CONTENT_CLASSES.WRAPPER}`),
   ];
 
   authenticatedContentWrappers.forEach((wrapper) => {
     // Apply any necessary styles or initialization
-    const contentDiv = wrapper.querySelector(
-      `.${AUTHENTICATED_CONTENT_CLASSES.CONTENT}`
-    );
+    const contentDiv = wrapper.querySelector(`.${AUTHENTICATED_CONTENT_CLASSES.CONTENT}`);
     if (contentDiv) {
       // Ensure proper styling
       contentDiv.style.padding = '1rem';

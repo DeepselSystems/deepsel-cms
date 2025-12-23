@@ -1,7 +1,7 @@
 import React from 'react';
-import {Box, Image} from '@mantine/core';
+import { Box, Image } from '@mantine/core';
 import H3 from '../H3.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 /**
  * This component is using to render SERPP preview
@@ -9,9 +9,9 @@ import {useTranslation} from 'react-i18next';
  *   readonly pageContent: PageContent | BlogPostContent
  * }>}
  */
-const SERPPreviewCardPreview = React.memo(({pageContent}) => {
+const SERPPreviewCardPreview = React.memo(({ pageContent }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   /** @type {string} */
   const hostEndpoint = React.useMemo(() => window.location.host, []);
@@ -44,9 +44,7 @@ const SERPPreviewCardPreview = React.memo(({pageContent}) => {
             <Box className="text-xl text-blue-ultramarine line-clamp-1">
               {pageContent.seo_metadata_title}
             </Box>
-            <Box className="text-sm line-clamp-2">
-              {pageContent.seo_metadata_description}
-            </Box>
+            <Box className="text-sm line-clamp-2">{pageContent.seo_metadata_description}</Box>
           </Box>
           {/*endregion content*/}
         </Box>

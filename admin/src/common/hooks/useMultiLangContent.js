@@ -1,10 +1,10 @@
-import {useState, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import NotificationState from '../stores/NotificationState.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
-import {useDisclosure} from '@mantine/hooks';
-import {modals} from '@mantine/modals';
+import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
 
 /**
  * Hook for managing multilingual content in the CMS
@@ -24,33 +24,25 @@ export default function useMultiLangContent({
   autoTranslate = false,
   contentType = 'page',
 }) {
-  const {t} = useTranslation();
-  const {notify} = NotificationState();
-  const {backendHost} = BackendHostURLState();
-  const {settings: siteSettings} = SitePublicSettingsState();
+  const { t } = useTranslation();
+  const { notify } = NotificationState();
+  const { backendHost } = BackendHostURLState();
+  const { settings: siteSettings } = SitePublicSettingsState();
 
   const [activeContentTab, setActiveContentTab] = useState(null);
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
   const [addingLanguage, setAddingLanguage] = useState(false);
 
   // Modal controls
-  const [
-    addContentModalOpened,
-    {open: openAddContentModal, close: closeAddContentModal},
-  ] = useDisclosure(false);
+  const [addContentModalOpened, { open: openAddContentModal, close: closeAddContentModal }] =
+    useDisclosure(false);
 
-  const [
-    settingsDrawerOpened,
-    {open: openSettingsDrawer, close: closeSettingsDrawer},
-  ] = useDisclosure(false);
+  const [settingsDrawerOpened, { open: openSettingsDrawer, close: closeSettingsDrawer }] =
+    useDisclosure(false);
 
   // Initialize with default content using the site's default language
   useEffect(() => {
-    if (
-      locales?.length > 0 &&
-      initialRecord?.contents?.length === 0 &&
-      siteSettings
-    ) {
+    if (locales?.length > 0 && initialRecord?.contents?.length === 0 && siteSettings) {
       // Get the default language ID from site settings
       const defaultLanguageId = siteSettings.default_language_id;
 
@@ -97,9 +89,7 @@ export default function useMultiLangContent({
   useEffect(() => {
     if (initialRecord?.contents?.length > 0 && !activeContentTab) {
       // Sort contents by ID (oldest first) and select the first one
-      const sortedContents = [...initialRecord.contents].sort(
-        (a, b) => a.id - b.id
-      );
+      const sortedContents = [...initialRecord.contents].sort((a, b) => a.id - b.id);
       setActiveContentTab(String(sortedContents[0].id));
     }
   }, [initialRecord?.contents, activeContentTab]);
@@ -141,9 +131,7 @@ export default function useMultiLangContent({
    */
   const updateContentField = (contentId, field, value) => {
     setRecord((prevState) => {
-      const contentIndex = prevState.contents.findIndex(
-        (content) => content.id === contentId
-      );
+      const contentIndex = prevState.contents.findIndex((content) => content.id === contentId);
 
       if (contentIndex === -1) {
         return prevState;
@@ -206,7 +194,7 @@ export default function useMultiLangContent({
       title: t('Delete content'),
       centered: true,
       children: t('Are you sure you want to delete this content?'),
-      labels: {confirm: t('Delete'), cancel: t('Cancel')},
+      labels: { confirm: t('Delete'), cancel: t('Cancel') },
       onConfirm: () => confirmDeleteContent(contentId),
       onCancel: () => {},
     });
@@ -218,15 +206,13 @@ export default function useMultiLangContent({
   const confirmDeleteContent = (contentId) => {
     setRecord((prevState) => ({
       ...prevState,
-      contents: prevState.contents.filter(
-        (content) => content.id !== contentId
-      ),
+      contents: prevState.contents.filter((content) => content.id !== contentId),
     }));
 
     // If the active tab is being deleted, set active tab to another content or null
     if (activeContentTab === String(contentId)) {
       const remainingContents = initialRecord.contents.filter(
-        (content) => content.id !== contentId
+        (content) => content.id !== contentId,
       );
 
       if (remainingContents.length > 0) {
@@ -253,9 +239,7 @@ export default function useMultiLangContent({
 
     try {
       // Check if content for this locale already exists
-      if (
-        initialRecord.contents.some((t) => t.locale_id === selectedLocaleId)
-      ) {
+      if (initialRecord.contents.some((t) => t.locale_id === selectedLocaleId)) {
         notify({
           message: t('A content for this language already exists.'),
           type: 'error',
@@ -293,32 +277,26 @@ export default function useMultiLangContent({
           // Get the default site language content
           const defaultLangId = siteSettings?.default_language_id;
           const defaultLangContent = initialRecord.contents.find(
-            (content) => content.locale_id === defaultLangId
+            (content) => content.locale_id === defaultLangId,
           );
 
           if (defaultLangContent) {
             sourceContent = defaultLangContent;
             // Find the locale in either locales array or available_languages array
-            const defaultLocale = locales.find(
-              (locale) => locale.id === defaultLangId
-            );
+            const defaultLocale = locales.find((locale) => locale.id === defaultLangId);
             sourceLocale = defaultLocale?.iso_code;
           }
 
           // If no default language content, use the first available content
           if (!sourceContent && initialRecord.contents.length > 0) {
             sourceContent = initialRecord.contents[0];
-            const sourceLocaleObj = locales.find(
-              (locale) => locale.id === sourceContent.locale_id
-            );
+            const sourceLocaleObj = locales.find((locale) => locale.id === sourceContent.locale_id);
             sourceLocale = sourceLocaleObj?.iso_code;
           }
 
           // If we found a source content and locale, translate it
           if (sourceContent && sourceLocale) {
-            const targetLocaleObj = locales.find(
-              (locale) => locale.id === selectedLocaleId
-            );
+            const targetLocaleObj = locales.find((locale) => locale.id === selectedLocaleId);
             const targetLocale = targetLocaleObj?.iso_code;
 
             if (targetLocale) {
@@ -343,9 +321,7 @@ export default function useMultiLangContent({
 
                 if (!response.ok) {
                   const errorText = await response.text();
-                  throw new Error(
-                    `Translation failed: ${response.status} ${errorText}`
-                  );
+                  throw new Error(`Translation failed: ${response.status} ${errorText}`);
                 }
 
                 const translatedContent = await response.json();
@@ -412,7 +388,7 @@ export default function useMultiLangContent({
    * Process contents before submission
    */
   const processContentsForSubmit = (contents) => {
-    return contents.map(({_addNew, ...rest}) => {
+    return contents.map(({ _addNew, ...rest }) => {
       // Check if this is truly a new content item or has a temporary ID
       const isNewContent =
         _addNew ||
@@ -449,15 +425,9 @@ export default function useMultiLangContent({
           newContentData.title
         ) {
           newContentData.slug = generateSlug(newContentData.title);
-        } else if (
-          newContentData.slug === null ||
-          newContentData.slug === undefined
-        ) {
+        } else if (newContentData.slug === null || newContentData.slug === undefined) {
           newContentData.slug = '/';
-        } else if (
-          newContentData.slug &&
-          !newContentData.slug.startsWith('/')
-        ) {
+        } else if (newContentData.slug && !newContentData.slug.startsWith('/')) {
           newContentData.slug = `/${newContentData.slug}`;
         }
 
@@ -483,9 +453,7 @@ export default function useMultiLangContent({
     const localeIds = contents.map((t) => t.locale_id);
     if (localeIds.length !== new Set(localeIds).size) {
       throw new Error(
-        t(
-          'Each content must have a unique language. Please remove duplicate languages.'
-        )
+        t('Each content must have a unique language. Please remove duplicate languages.'),
       );
     }
     return true;

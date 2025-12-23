@@ -1,14 +1,14 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import {Link, useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import H2 from '../../../common/ui/H2.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCube,
   faCog,
@@ -18,32 +18,30 @@ import {
   faServer,
   faBoxes,
 } from '@fortawesome/free-solid-svg-icons';
-import {Menu, LoadingOverlay} from '@mantine/core';
+import { Menu, LoadingOverlay } from '@mantine/core';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 // import backendHost from "../../constants/backendHost.js";
-import {useState} from 'react';
+import { useState } from 'react';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
-import {Switch, Collapse} from '@mantine/core';
+import { Switch, Collapse } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
 
 export default function OrganizationSettings() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const query = useModel('organization', {
     id: 1,
     autoFetch: true,
   });
-  const {record, setRecord, update, loading: orgLoading} = query;
-  const {notify} = NotificationState((state) => state);
+  const { record, setRecord, update, loading: orgLoading } = query;
+  const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
-  const {user} = useAuthentication();
-  const {backendHost, setBackendHost, resetDefault} = BackendHostURLState(
-    (state) => state
-  );
+  const { user } = useAuthentication();
+  const { backendHost, setBackendHost, resetDefault } = BackendHostURLState((state) => state);
   const [demoDataLoading, setDemoDataLoading] = useState(false);
   const loading = orgLoading || demoDataLoading;
   const [showTechnical, setShowTechnical] = useState(false);
   const [newBackendHost, setNewBackendHost] = useState(backendHost);
-  const {data: apps} = useModel('apps', {
+  const { data: apps } = useModel('apps', {
     autoFetch: true,
   });
 
@@ -74,15 +72,12 @@ export default function OrganizationSettings() {
       const headers = {
         Authorization: `Bearer ${user.token}`,
       };
-      const res = await fetch(
-        `${backendHost}/apps/load_demo_data/${app.name}`,
-        {
-          method: 'POST',
-          headers,
-        }
-      );
+      const res = await fetch(`${backendHost}/apps/load_demo_data/${app.name}`, {
+        method: 'POST',
+        headers,
+      });
       if (res.status !== 200) {
-        const {detail} = await res.json();
+        const { detail } = await res.json();
         console.error(detail);
         return notify({
           message: detail,
@@ -110,10 +105,7 @@ export default function OrganizationSettings() {
   }
 
   return (
-    <form
-      className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
       <EditFormActionBar loading={loading} />
 
       {record ? (
@@ -147,7 +139,7 @@ export default function OrganizationSettings() {
             <Switch
               label={t('Enable Authentication')}
               description={t(
-                'In authless mode, enable this to require authentication. In normal mode, authentication is always required regardless of this setting.'
+                'In authless mode, enable this to require authentication. In normal mode, authentication is always required regardless of this setting.',
               )}
               className={`cursor-pointer`}
               checked={record.enable_auth}
@@ -193,10 +185,7 @@ export default function OrganizationSettings() {
                 })
               }
             />
-            <Link
-              to="/google-sign-in-settings"
-              className="flex items-center gap-2 my-3"
-            >
+            <Link to="/google-sign-in-settings" className="flex items-center gap-2 my-3">
               <div
                 className="cursor-pointer underline"
                 style={{
@@ -241,9 +230,7 @@ export default function OrganizationSettings() {
               <FontAwesomeIcon icon={faBoxes} className="text-gray-600" />
               <H2>{t('Installed Business Apps')}</H2>
             </div>
-            <div
-              className={`relative flex gap-4 my-2 flex-wrap text-primary-main`}
-            >
+            <div className={`relative flex gap-4 my-2 flex-wrap text-primary-main`}>
               <LoadingOverlay
                 visible={loading}
                 zIndex={1000}
@@ -267,18 +254,12 @@ export default function OrganizationSettings() {
                     </div>
                     <Menu shadow="md" width={180}>
                       <Menu.Target>
-                        <FontAwesomeIcon
-                          icon={faCog}
-                          className={`cursor-pointer`}
-                        />
+                        <FontAwesomeIcon icon={faCog} className={`cursor-pointer`} />
                       </Menu.Target>
 
                       <Menu.Dropdown>
                         <Menu.Item onClick={() => loadDemoData(app)}>
-                          <FontAwesomeIcon
-                            icon={faFileImport}
-                            className={`mr-1.5`}
-                          />
+                          <FontAwesomeIcon icon={faFileImport} className={`mr-1.5`} />
                           {t('Load demo data')}
                         </Menu.Item>
                       </Menu.Dropdown>

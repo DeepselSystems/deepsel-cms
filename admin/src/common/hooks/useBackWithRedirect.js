@@ -1,5 +1,5 @@
-import {useCallback} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
  * Custom hook to navigate back with redirect param
@@ -15,9 +15,7 @@ const useBackWithRedirect = (redirectParamKey = 'redirect') => {
 
     if (redirectParam) {
       // Ensure redirect path always starts with "/"
-      const redirectPath = redirectParam.startsWith('/')
-        ? redirectParam
-        : `/${redirectParam}`;
+      const redirectPath = redirectParam.startsWith('/') ? redirectParam : `/${redirectParam}`;
 
       // Absolute URL with current origin
       const redirectUrl = `${window.location.origin}${redirectPath}`;

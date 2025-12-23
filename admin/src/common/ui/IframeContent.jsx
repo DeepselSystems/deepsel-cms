@@ -1,7 +1,7 @@
-import {useRef, useEffect} from 'react';
+import { useRef, useEffect } from 'react';
 
 export default function IframeContent(props) {
-  const {html, ...others} = props;
+  const { html, ...others } = props;
   const iframeRef = useRef(null);
 
   useEffect(() => {

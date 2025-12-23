@@ -10,20 +10,15 @@ import {
   Tooltip,
   UnstyledButton,
 } from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useStockImages from '../hooks/useStockImages.js';
 import StockImageItem from './StockImageItem.jsx';
 import Button from '../../Button.jsx';
 import Masonry from '../../Masonry.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faImages,
-  faInfoCircle,
-  faSave,
-  faSearch,
-} from '@fortawesome/free-solid-svg-icons';
-import {useCallback, useState} from 'react';
-import {downloadFromAttachUrl} from '../../../utils/index.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImages, faInfoCircle, faSave, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { useCallback, useState } from 'react';
+import { downloadFromAttachUrl } from '../../../utils/index.js';
 import clsx from 'clsx';
 import useUpload from '../../../api/useUpload.js';
 import NotificationState from '../../../stores/NotificationState.js';
@@ -47,10 +42,10 @@ const SearchStockImages = ({
   setSelectedImages,
 }) => {
   // Notification
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
 
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     prevSearchStrRef,
     searchQuery,
@@ -65,16 +60,14 @@ const SearchStockImages = ({
   } = useStockImages();
 
   // Selected image
-  const [selectedImage, setSelectedImage] = useState(
-    /**@type {StockImage | null}*/ null
-  );
+  const [selectedImage, setSelectedImage] = useState(/**@type {StockImage | null}*/ null);
 
   //Loading states
   const [loaded, setLoaded] = useState(false);
   const [isCloningStockImage, setIsCloningStockImage] = useState(false);
 
   // Attachment query
-  const {uploadFileModel} = useUpload();
+  const { uploadFileModel } = useUpload();
 
   /**
    * Download image from URL and convert to File object
@@ -133,9 +126,7 @@ const SearchStockImages = ({
         onNewAttachment?.(attachment);
         setSelectedImage(null);
         setImages((prevState) => {
-          const selectedImageIndex = prevState.findIndex(
-            (o) => o._id === image._id
-          );
+          const selectedImageIndex = prevState.findIndex((o) => o._id === image._id);
           if (selectedImageIndex >= 0) {
             prevState[selectedImageIndex] = {
               ...prevState[selectedImageIndex],
@@ -161,7 +152,7 @@ const SearchStockImages = ({
         setIsCloningStockImage(false);
       }
     },
-    [notify, onNewAttachment, setImages, t, uploadFileModel]
+    [notify, onNewAttachment, setImages, t, uploadFileModel],
   );
 
   /**
@@ -197,9 +188,7 @@ const SearchStockImages = ({
 
       {/*region loading*/}
       {!images.length && loading && (
-        <Box
-          style={{display: 'flex', justifyContent: 'center', padding: '2rem'}}
-        >
+        <Box style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
           <Loader size="md" />
         </Box>
       )}
@@ -230,14 +219,11 @@ const SearchStockImages = ({
                 onCheckedChange={(checked) => {
                   if (image._attachment) {
                     if (checked) {
-                      setSelectedImages((prevState) => [
-                        ...prevState,
-                        image._attachment,
-                      ]);
+                      setSelectedImages((prevState) => [...prevState, image._attachment]);
                     } else {
                       setSelectedImages((prevState) => {
                         const imageIndex = prevState.findIndex(
-                          (o) => o.id === image._attachment?.id
+                          (o) => o.id === image._attachment?.id,
                         );
                         return [
                           ...prevState.slice(0, imageIndex),
@@ -271,11 +257,7 @@ const SearchStockImages = ({
       {/*region no images*/}
       {!loading && !error && !images.length && (
         <Box className="text-center space-y-3 px-6 py-16">
-          <FontAwesomeIcon
-            size="3x"
-            icon={faImages}
-            className="text-gray-pale-sky"
-          />
+          <FontAwesomeIcon size="3x" icon={faImages} className="text-gray-pale-sky" />
           <Text c="dimmed" size="sm">
             {t('No images found. Enter new keywords.')}
           </Text>
@@ -290,7 +272,7 @@ const SearchStockImages = ({
         opened={!!selectedImage}
         onClose={() => setSelectedImage(null)}
         keepMounted={false}
-        classNames={{content: '!overflow-hidden'}}
+        classNames={{ content: '!overflow-hidden' }}
         title={
           <Box>
             <b>{selectedImage?.title} </b>
@@ -323,7 +305,7 @@ const SearchStockImages = ({
             <Box
               className={clsx(
                 '!absolute !inset-0 !mx-auto !w-full !h-full !pb-20',
-                loaded ? '!hidden' : ''
+                loaded ? '!hidden' : '',
               )}
             >
               <Skeleton className={clsx('!w-full !h-full')} />
@@ -333,10 +315,7 @@ const SearchStockImages = ({
               <Image
                 src={selectedImage.src}
                 alt={selectedImage.title}
-                className={clsx(
-                  'max-h-full w-auto !object-contain',
-                  loaded ? '' : '!hidden'
-                )}
+                className={clsx('max-h-full w-auto !object-contain', loaded ? '' : '!hidden')}
                 onLoad={() => setTimeout(() => setLoaded(true), 500)}
               />
             )}

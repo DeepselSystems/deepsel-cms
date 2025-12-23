@@ -1,9 +1,4 @@
-export default function linkIsCurrentPage(
-  path,
-  currentLanguage,
-  defaultLanguage,
-  windowHref
-) {
+export default function linkIsCurrentPage(path, currentLanguage, defaultLanguage, windowHref) {
   let result;
   try {
     if (!path) result = false;
@@ -14,10 +9,7 @@ export default function linkIsCurrentPage(
     const pathToCompare = urlObject.pathname;
     let currentPath = currentUrl.pathname;
 
-    if (
-      currentLanguage === defaultLanguage &&
-      currentPath.startsWith(`/${defaultLanguage}/`)
-    ) {
+    if (currentLanguage === defaultLanguage && currentPath.startsWith(`/${defaultLanguage}/`)) {
       // remove language prefix for comparison
       currentPath = currentPath.replace(`/${defaultLanguage}`, ``);
     }

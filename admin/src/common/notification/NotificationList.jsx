@@ -1,23 +1,18 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useModel from '../api/useModel.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
-import {faEllipsis, faTrash} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Menu, Tooltip} from '@mantine/core';
+import { faEllipsis, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Menu, Tooltip } from '@mantine/core';
 
-function Notification({notification, onDelete}) {
-  const {t} = useTranslation();
-  const time = dayjs
-    .utc(notification.created_at)
-    .local()
-    .format('MMMM D, YYYY h:mm A');
+function Notification({ notification, onDelete }) {
+  const { t } = useTranslation();
+  const time = dayjs.utc(notification.created_at).local().format('MMMM D, YYYY h:mm A');
   const relativeTime = dayjs.utc(notification.created_at).local().fromNow();
   return (
     <div className={`p-2`}>
-      <div
-        className={`text-xs text-gray-main flex items-center justify-between`}
-      >
+      <div className={`text-xs text-gray-main flex items-center justify-between`}>
         <Tooltip label={time}>
           <div className={`cursor-default`}>{t(relativeTime)}</div>
         </Tooltip>
@@ -48,7 +43,7 @@ function Notification({notification, onDelete}) {
 }
 
 export default function NotificationList() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     data: notifications,
     del,
@@ -66,16 +61,10 @@ export default function NotificationList() {
     <div>
       {notifications?.length > 0 ? (
         notifications.map((notification) => (
-          <Notification
-            key={notification.id}
-            notification={notification}
-            onDelete={onDelete}
-          />
+          <Notification key={notification.id} notification={notification} onDelete={onDelete} />
         ))
       ) : (
-        <div className={`text-sm p-3 text-gray-main`}>
-          {t('Nothing here yet.')}
-        </div>
+        <div className={`text-sm p-3 text-gray-main`}>{t('Nothing here yet.')}</div>
       )}
     </div>
   );

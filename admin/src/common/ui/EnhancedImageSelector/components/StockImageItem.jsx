@@ -1,6 +1,6 @@
-import {memo} from 'react';
-import {Box, Checkbox, Image} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { memo } from 'react';
+import { Box, Checkbox, Image } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Render stock image items
@@ -22,7 +22,7 @@ const StockImageItem = memo(
     onCheckedChange = () => {},
   }) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     return (
       <>
@@ -44,7 +44,7 @@ const StockImageItem = memo(
             <Box className="absolute top-0 right-0 p-1">
               <Checkbox
                 checked={checked}
-                onChange={({target: {checked}}) => {
+                onChange={({ target: { checked } }) => {
                   onCheckedChange(checked);
                 }}
               />
@@ -53,7 +53,7 @@ const StockImageItem = memo(
         </Box>
       </>
     );
-  }
+  },
 );
 
 StockImageItem.displayName = 'StockImageItem';

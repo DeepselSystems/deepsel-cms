@@ -1,21 +1,20 @@
-import type { BlogPostResponse, FetchBlogPostOptions } from './types';
+import type { BlogPostData } from './types';
 
 /**
  * Fetches a single blog post from the backend by language and slug
  * Corresponds to GET /blog_post/website/{lang}/{slug}
  */
-export async function fetchBlogPost(options: FetchBlogPostOptions): Promise<BlogPostResponse> {
-  const {
-    lang,
-    slug,
-    authToken = null,
-    astroRequest = null,
-    backendHost = 'http://localhost:8000',
-  } = options;
-
+export async function fetchBlogPost(
+  slug: string,
+  lang?: string,
+  astroRequest?: Request,
+  authToken?: string,
+  backendHost: string = 'http://localhost:8000',
+): Promise<BlogPostData> {
   try {
     const cleanSlug = slug.startsWith('/') ? slug.substring(1) : slug;
-    const url = `${backendHost}/blog_post/website/${lang}/${cleanSlug}`;
+    const langPrefix = lang || 'default';
+    const url = `${backendHost}/blog_post/website/${langPrefix}/${cleanSlug}`;
 
     const fetchOptions = {
       method: 'GET',
@@ -57,7 +56,7 @@ export async function fetchBlogPost(options: FetchBlogPostOptions): Promise<Blog
       throw new Error(`Failed to fetch blog post: ${response.statusText}`);
     }
 
-    const jsonData: BlogPostResponse = await response.json();
+    const jsonData: BlogPostData = await response.json();
     return jsonData;
   } catch (error: any) {
     console.error('Error fetching blog post:', error);

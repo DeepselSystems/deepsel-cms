@@ -1,5 +1,5 @@
-import {Extension} from '@tiptap/core';
-import {Plugin, PluginKey} from 'prosemirror-state';
+import { Extension } from '@tiptap/core';
+import { Plugin, PluginKey } from 'prosemirror-state';
 
 // Extension to add image hover menu
 export const ImageHoverMenu = Extension.create({
@@ -62,7 +62,7 @@ export const ImageHoverMenu = Extension.create({
               alignLeftBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed]';
               alignLeftBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -83,7 +83,7 @@ export const ImageHoverMenu = Extension.create({
               alignCenterBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed]';
               alignCenterBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -104,7 +104,7 @@ export const ImageHoverMenu = Extension.create({
               alignRightBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed]';
               alignRightBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -125,7 +125,7 @@ export const ImageHoverMenu = Extension.create({
               increaseBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed]';
               increaseBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -149,7 +149,7 @@ export const ImageHoverMenu = Extension.create({
               decreaseBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed]';
               decreaseBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -183,7 +183,7 @@ export const ImageHoverMenu = Extension.create({
               };
 
               roundedBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Get the current node state
@@ -225,7 +225,7 @@ export const ImageHoverMenu = Extension.create({
               deleteBtn.className =
                 'w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-normal cursor-pointer hover:bg-[#e4e6ed] hover:bg-red-100';
               deleteBtn.addEventListener('click', () => {
-                const {state, dispatch} = view;
+                const { state, dispatch } = view;
                 view.focus();
                 const pos = getPos();
                 // Delete the image node
@@ -287,9 +287,7 @@ export const ImageHoverMenu = Extension.create({
 
               wrapper.addEventListener('mouseenter', showMenu);
               wrapper.addEventListener('mouseleave', hideMenu);
-              menu.addEventListener('mouseenter', () =>
-                clearTimeout(hoverTimeout)
-              );
+              menu.addEventListener('mouseenter', () => clearTimeout(hoverTimeout));
               menu.addEventListener('mouseleave', hideMenu);
 
               // Append elements to the wrapper
@@ -332,9 +330,7 @@ export const ImageHoverMenu = Extension.create({
                   // Clean up event listeners
                   wrapper.removeEventListener('mouseenter', showMenu);
                   wrapper.removeEventListener('mouseleave', hideMenu);
-                  menu.removeEventListener('mouseenter', () =>
-                    clearTimeout(hoverTimeout)
-                  );
+                  menu.removeEventListener('mouseenter', () => clearTimeout(hoverTimeout));
                   menu.removeEventListener('mouseleave', hideMenu);
                   alignLeftBtn.removeEventListener('click', () => {});
                   alignCenterBtn.removeEventListener('click', () => {});
@@ -362,8 +358,7 @@ export const ImageAlignment = Extension.create({
         attributes: {
           alignment: {
             default: 'center',
-            parseHTML: (element) =>
-              element.getAttribute('data-alignment') || 'center',
+            parseHTML: (element) => element.getAttribute('data-alignment') || 'center',
             renderHTML: (attributes) => {
               if (!attributes.alignment) {
                 return {};
@@ -383,9 +378,9 @@ export const ImageAlignment = Extension.create({
     return {
       setImageAlignment:
         (alignment) =>
-        ({editor, commands}) => {
+        ({ editor, commands }) => {
           if (editor.isActive('image')) {
-            return commands.updateAttributes('image', {alignment});
+            return commands.updateAttributes('image', { alignment });
           }
           return false;
         },
@@ -435,21 +430,21 @@ export const ImageResize = Extension.create({
     return {
       setImageSize:
         (width) =>
-        ({editor, commands}) => {
+        ({ editor, commands }) => {
           if (editor.isActive('image')) {
-            return commands.updateAttributes('image', {width});
+            return commands.updateAttributes('image', { width });
           }
           return false;
         },
       toggleImageRounded:
         () =>
-        ({editor, commands}) => {
+        ({ editor, commands }) => {
           if (editor.isActive('image')) {
             // Get current node attributes
             const node = editor.state.selection.$anchor.node();
             const isRounded = node.attrs.rounded !== false; // Default is true
             // Toggle rounded status
-            return commands.updateAttributes('image', {rounded: !isRounded});
+            return commands.updateAttributes('image', { rounded: !isRounded });
           }
           return false;
         },

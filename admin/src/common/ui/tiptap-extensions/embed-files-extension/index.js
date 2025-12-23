@@ -1,12 +1,8 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
+import { mergeAttributes, Node } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView.jsx';
-import {
-  EMBED_FILES_ATTRIBUTES,
-  EMBED_FILES_CLASSES,
-  MAX_FILES_COUNT,
-} from './utils.js';
-import {getAttachmentRelativeUrl} from '../../../utils/index.js';
+import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES, MAX_FILES_COUNT } from './utils.js';
+import { getAttachmentRelativeUrl } from '../../../utils/index.js';
 
 /**
  * Embed Files extension for TipTap
@@ -65,8 +61,8 @@ export const EmbedFiles = Node.create({
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
-    const {files} = node.attrs;
+  renderHTML({ node, HTMLAttributes }) {
+    const { files } = node.attrs;
 
     if (!files || files.length === 0) {
       return ['div', {}];
@@ -130,7 +126,7 @@ export const EmbedFiles = Node.create({
     return {
       setEmbedFiles:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!options.files || options.files.length === 0) {
             return false;
           }
@@ -147,7 +143,7 @@ export const EmbedFiles = Node.create({
         },
       updateEmbedFiles:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           return commands.updateAttributes(this.name, options);
         },
     };

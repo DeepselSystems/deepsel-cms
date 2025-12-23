@@ -1,4 +1,4 @@
-import {AUTOCOMPLETE_CONSTANTS} from '../constants.js';
+import { AUTOCOMPLETE_CONSTANTS } from '../constants.js';
 
 /**
  * Tab badge component to show at the end of ghost text

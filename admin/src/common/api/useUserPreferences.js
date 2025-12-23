@@ -1,5 +1,5 @@
 import useAuthentication from './useAuthentication.js';
-import {useMemo} from 'react';
+import { useMemo } from 'react';
 import useModel from './useModel.jsx';
 
 // this is intended to read/sync a key in the `user.preferences` object, which is a json column in the database
@@ -9,10 +9,10 @@ export default function useUserPreferences(
   key,
   options = {
     defaultValue: null,
-  }
+  },
 ) {
-  const {user, saveUserData} = useAuthentication();
-  const {update: updateUserOnServer} = useModel('user');
+  const { user, saveUserData } = useAuthentication();
+  const { update: updateUserOnServer } = useModel('user');
 
   const userPreferences = useMemo(() => {
     return user?.preferences;

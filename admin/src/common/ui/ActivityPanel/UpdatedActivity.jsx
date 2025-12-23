@@ -1,16 +1,14 @@
 import dayjs from 'dayjs';
-import {useTranslation} from 'react-i18next';
-import {capitalizeFirstLetter} from '../../utils';
+import { useTranslation } from 'react-i18next';
+import { capitalizeFirstLetter } from '../../utils';
 
-export default function UpdatedActivity({activity}) {
-  const {t} = useTranslation();
+export default function UpdatedActivity({ activity }) {
+  const { t } = useTranslation();
 
   const renderValue = (value, type) => {
     switch (type) {
       case 'string':
-        return value
-          ? capitalizeFirstLetter(value).replace('_', ' ')
-          : t('N/A');
+        return value ? capitalizeFirstLetter(value).replace('_', ' ') : t('N/A');
       case 'integer':
         return value;
       case 'boolean':
@@ -20,9 +18,7 @@ export default function UpdatedActivity({activity}) {
       case 'numeric':
         return value;
       case 'enum':
-        return value
-          ? capitalizeFirstLetter(value).replace('_', ' ')
-          : t('N/A');
+        return value ? capitalizeFirstLetter(value).replace('_', ' ') : t('N/A');
       default:
         return value;
     }
@@ -39,13 +35,9 @@ export default function UpdatedActivity({activity}) {
               {capitalizeFirstLetter(change.field).replace('_', ' ')}
             </span>
             : {t('from')}{' '}
-            <span className="font-bold">
-              {renderValue(change.old_value, change.type)}
-            </span>{' '}
+            <span className="font-bold">{renderValue(change.old_value, change.type)}</span>{' '}
             {t('to')}{' '}
-            <span className="font-bold">
-              {renderValue(change.new_value, change.type)}
-            </span>
+            <span className="font-bold">{renderValue(change.new_value, change.type)}</span>
           </div>
         ))}
       </>

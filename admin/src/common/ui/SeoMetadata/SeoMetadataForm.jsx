@@ -1,6 +1,6 @@
 import React from 'react';
 import TextInput from '../TextInput.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import H3 from '../H3.jsx';
 import TextArea from '../TextArea.jsx';
 import Switch from '../Switch.jsx';
@@ -15,9 +15,9 @@ import FileInput from '../FileInput.jsx';
  * readonly updateContentField: (contentId: number, filed: string, newValue) => void
  * }>}
  */
-const SeoMetadataForm = React.memo(({pageContent, updateContentField}) => {
+const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
   // Translation
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <>
@@ -30,7 +30,7 @@ const SeoMetadataForm = React.memo(({pageContent, updateContentField}) => {
             description={t('Defaults to associated content title')}
             type="text"
             value={pageContent.seo_metadata_title || ''}
-            onChange={({target: {value}}) =>
+            onChange={({ target: { value } }) =>
               updateContentField?.(pageContent.id, 'seo_metadata_title', value)
             }
           />
@@ -40,12 +40,8 @@ const SeoMetadataForm = React.memo(({pageContent, updateContentField}) => {
             description={t('Meta description for search results')}
             type="text"
             value={pageContent.seo_metadata_description || ''}
-            onChange={({target: {value}}) =>
-              updateContentField?.(
-                pageContent.id,
-                'seo_metadata_description',
-                value
-              )
+            onChange={({ target: { value } }) =>
+              updateContentField?.(pageContent.id, 'seo_metadata_description', value)
             }
           />
 
@@ -58,32 +54,22 @@ const SeoMetadataForm = React.memo(({pageContent, updateContentField}) => {
             label={t('Allow indexing')}
             description={t('Allow search engine indexing')}
             checked={!!pageContent.seo_metadata_allow_indexing}
-            onChange={({target: {checked}}) =>
-              updateContentField?.(
-                pageContent.id,
-                'seo_metadata_allow_indexing',
-                checked
-              )
+            onChange={({ target: { checked } }) =>
+              updateContentField?.(pageContent.id, 'seo_metadata_allow_indexing', checked)
             }
           />
 
           <FileInput
             label={t('Featured image')}
-            description={t(
-              'Featured image for social sharing and search results'
-            )}
+            description={t('Featured image for social sharing and search results')}
             type="image"
             value={pageContent.seo_metadata_featured_image?.name}
             onChange={(file) => {
-              updateContentField?.(
-                pageContent.id,
-                'seo_metadata_featured_image',
-                file
-              );
+              updateContentField?.(pageContent.id, 'seo_metadata_featured_image', file);
               updateContentField?.(
                 pageContent.id,
                 'seo_metadata_featured_image_id',
-                file?.id || null
+                file?.id || null,
               );
             }}
           />

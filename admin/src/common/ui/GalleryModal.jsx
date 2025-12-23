@@ -1,7 +1,7 @@
-import {useState, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Modal, Text, Group, TextInput} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, Text, Group, TextInput } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faImage,
   faArrowUp,
@@ -12,8 +12,8 @@ import {
 import Button from './Button.jsx';
 import Checkbox from './Checkbox.jsx';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
-import {getAttachmentUrl} from '../utils/index.js';
-import {EnhancedImageSelector} from './EnhancedImageSelector/index.jsx';
+import { getAttachmentUrl } from '../utils/index.js';
+import { EnhancedImageSelector } from './EnhancedImageSelector/index.jsx';
 
 export default function GalleryModal({
   isOpen,
@@ -28,8 +28,8 @@ export default function GalleryModal({
   initialAttachments = [],
   onSave,
 }) {
-  const {t} = useTranslation();
-  const {backendHost} = BackendHostURLState((state) => state);
+  const { t } = useTranslation();
+  const { backendHost } = BackendHostURLState((state) => state);
 
   // State for gallery configuration
   const [config, setConfig] = useState(initialConfig);
@@ -62,17 +62,11 @@ export default function GalleryModal({
     const newOrder = [...selectedAttachments];
     if (direction === 'up' && index > 0) {
       // Swap with previous item
-      [newOrder[index], newOrder[index - 1]] = [
-        newOrder[index - 1],
-        newOrder[index],
-      ];
+      [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
       setSelectedAttachments(newOrder);
     } else if (direction === 'down' && index < selectedAttachments.length - 1) {
       // Swap with next item
-      [newOrder[index], newOrder[index + 1]] = [
-        newOrder[index + 1],
-        newOrder[index],
-      ];
+      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
       setSelectedAttachments(newOrder);
     }
   };
@@ -90,9 +84,9 @@ export default function GalleryModal({
       prev.map((attachment, index) => {
         const currentId = attachment.id || attachment.name || index;
         return currentId === attachmentId
-          ? {...attachment, caption: newCaption.trim()}
+          ? { ...attachment, caption: newCaption.trim() }
           : attachment;
-      })
+      }),
     );
   };
 
@@ -149,17 +143,13 @@ export default function GalleryModal({
               <div className="mb-3 border border-gray-300 rounded-md p-3 bg-gray-50">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {t('Images per row')}:
-                    </span>
+                    <span className="text-sm font-medium">{t('Images per row')}:</span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4].map((num) => (
                         <button
                           key={num}
                           className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.imagesPerRow === num ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                          onClick={() =>
-                            setConfig({...config, imagesPerRow: num})
-                          }
+                          onClick={() => setConfig({ ...config, imagesPerRow: num })}
                         >
                           {num}
                         </button>
@@ -170,9 +160,7 @@ export default function GalleryModal({
                   <div className="flex items-center">
                     <Checkbox
                       checked={config.rounded}
-                      onChange={() =>
-                        setConfig({...config, rounded: !config.rounded})
-                      }
+                      onChange={() => setConfig({ ...config, rounded: !config.rounded })}
                       className="cursor-pointer"
                     />
                     <span className="ml-2 text-sm">{t('Rounded corners')}</span>
@@ -185,7 +173,7 @@ export default function GalleryModal({
                         <button
                           key={num}
                           className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.gap === num ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                          onClick={() => setConfig({...config, gap: num})}
+                          onClick={() => setConfig({ ...config, gap: num })}
                         >
                           {num}
                         </button>
@@ -197,9 +185,7 @@ export default function GalleryModal({
 
               {/* Preview panel with fixed width */}
               <div className="border border-gray-300 rounded-md p-4 h-full">
-                <h3 className="text-lg font-medium mb-4">
-                  {t('Gallery Preview')}
-                </h3>
+                <h3 className="text-lg font-medium mb-4">{t('Gallery Preview')}</h3>
                 <div
                   className="mx-auto w-[300px] lg:w-[500px] xl:w-[600px]"
                   style={{
@@ -230,58 +216,37 @@ export default function GalleryModal({
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
-                                console.log(
-                                  'Edit button clicked for attachment:',
-                                  attachment
-                                );
+                                console.log('Edit button clicked for attachment:', attachment);
                                 console.log('Attachment ID:', attachment.id);
-                                console.log(
-                                  'Attachment keys:',
-                                  Object.keys(attachment)
-                                );
-                                const attachmentId =
-                                  attachment.id || attachment.name || index;
+                                console.log('Attachment keys:', Object.keys(attachment));
+                                const attachmentId = attachment.id || attachment.name || index;
                                 setEditingCaption(attachmentId);
                                 setNewCaption(attachment.caption || '');
                               }}
                               className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
                               title="Edit Caption"
                             >
-                              <FontAwesomeIcon
-                                icon={faEdit}
-                                className="text-gray-700"
-                              />
+                              <FontAwesomeIcon icon={faEdit} className="text-gray-700" />
                             </button>
                             <button
                               className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                               onClick={() => moveAttachment(index, 'up')}
                               disabled={index === 0}
                             >
-                              <FontAwesomeIcon
-                                icon={faArrowUp}
-                                className="text-gray-700"
-                              />
+                              <FontAwesomeIcon icon={faArrowUp} className="text-gray-700" />
                             </button>
                             <button
                               className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                               onClick={() => moveAttachment(index, 'down')}
-                              disabled={
-                                index === selectedAttachments.length - 1
-                              }
+                              disabled={index === selectedAttachments.length - 1}
                             >
-                              <FontAwesomeIcon
-                                icon={faArrowDown}
-                                className="text-gray-700"
-                              />
+                              <FontAwesomeIcon icon={faArrowDown} className="text-gray-700" />
                             </button>
                             <button
                               className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white hover:text-red-500"
                               onClick={() => removeAttachment(index)}
                             >
-                              <FontAwesomeIcon
-                                icon={faTrash}
-                                className="text-gray-700"
-                              />
+                              <FontAwesomeIcon icon={faTrash} className="text-gray-700" />
                             </button>
                           </div>
                         </div>

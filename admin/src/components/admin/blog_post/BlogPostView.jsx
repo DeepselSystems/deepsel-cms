@@ -1,10 +1,10 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 
-import {faExternalLinkAlt} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {LoadingOverlay, Tabs, Tooltip} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useParams} from 'react-router-dom';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { LoadingOverlay, Tabs, Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -13,22 +13,22 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import {getAttachmentUrl} from '../../../common/utils/index.js';
+import { getAttachmentUrl } from '../../../common/utils/index.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
-import {buildBlogPostUrlWithDomain} from '../../../utils/domainUtils.js';
+import { buildBlogPostUrlWithDomain } from '../../../utils/domainUtils.js';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
 
 export default function BlogPostView() {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizations} = OrganizationState();
-  const {id} = useParams();
-  const query = useModel('blog_post', {id, autoFetch: true});
-  const {record, update, getOne} = query;
-  const {notify} = NotificationState((state) => state);
-  const {backendHost} = BackendHostURLState((state) => state);
-  const {data: locales} = useModel('locale', {
+  const { t } = useTranslation();
+  const { user } = useAuthentication();
+  const { organizations } = OrganizationState();
+  const { id } = useParams();
+  const query = useModel('blog_post', { id, autoFetch: true });
+  const { record, update, getOne } = query;
+  const { notify } = NotificationState((state) => state);
+  const { backendHost } = BackendHostURLState((state) => state);
+  const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
@@ -36,12 +36,9 @@ export default function BlogPostView() {
     !user.roles.some((role) => role.string_id === 'website_author_role') ||
     (user.roles.some((role) => role.string_id === 'website_author_role') &&
       !user.roles.some((role) =>
-        [
-          'admin_role',
-          'super_admin_role',
-          'website_admin_role',
-          'website_editor_role',
-        ].includes(role.string_id)
+        ['admin_role', 'super_admin_role', 'website_admin_role', 'website_editor_role'].includes(
+          role.string_id,
+        ),
       ) &&
       record?.owner_id === user.id);
 
@@ -117,18 +114,11 @@ export default function BlogPostView() {
                   size="sm"
                   title={t('Go to post')}
                   component="a"
-                  href={buildBlogPostUrlWithDomain(
-                    record,
-                    record.slug,
-                    organizations
-                  )}
+                  href={buildBlogPostUrlWithDomain(record, record.slug, organizations)}
                   target="_blank"
                   disabled={!record.published}
                 >
-                  <FontAwesomeIcon
-                    icon={faExternalLinkAlt}
-                    className="h-4 w-4 mr-2"
-                  />
+                  <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4 mr-2" />
                   {t('Go to post')}
                 </Button>
               </div>
@@ -138,8 +128,8 @@ export default function BlogPostView() {
               <LoadingOverlay
                 visible={false}
                 zIndex={1000}
-                overlayProps={{radius: 'sm', blur: 2}}
-                loaderProps={{type: 'bars'}}
+                overlayProps={{ radius: 'sm', blur: 2 }}
+                loaderProps={{ type: 'bars' }}
               />
 
               {record.contents?.length > 0 ? (
@@ -155,13 +145,8 @@ export default function BlogPostView() {
                       .map((content) => (
                         <div key={content.id} className="relative group">
                           <Tooltip label={t('View Content')}>
-                            <Tabs.Tab
-                              value={String(content.id)}
-                              className="mr-1 mb-1"
-                            >
-                              <span className="mr-1">
-                                {getLanguageFlag(content.locale_id)}
-                              </span>
+                            <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                              <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
                               {getLanguageName(content.locale_id)}
                             </Tabs.Tab>
                           </Tooltip>
@@ -174,22 +159,15 @@ export default function BlogPostView() {
                     .map((content) => (
                       <Tabs.Panel key={content.id} value={String(content.id)}>
                         <div className="my-4">
-                          <h1 className="text-3xl font-bold mb-2">
-                            {content.title}
-                          </h1>
+                          <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
                           {content.subtitle && (
-                            <p className="text-gray-500 text-sm mb-4">
-                              {content.subtitle}
-                            </p>
+                            <p className="text-gray-500 text-sm mb-4">{content.subtitle}</p>
                           )}
 
                           {content.featured_image && (
                             <div className="w-full mb-6 mt-4">
                               <img
-                                src={getAttachmentUrl(
-                                  backendHost,
-                                  content.featured_image.name
-                                )}
+                                src={getAttachmentUrl(backendHost, content.featured_image.name)}
                                 alt={content.title || 'Featured image'}
                                 className="w-full h-auto object-cover rounded-md max-h-[400px]"
                               />
@@ -204,34 +182,27 @@ export default function BlogPostView() {
                           />
 
                           {/* Activity Content Revision Section */}
-                          {content.revisions &&
-                            content.revisions.length > 0 && (
-                              <div className="mt-8 pt-6">
-                                <h3 className="text-lg font-semibold mb-4">
-                                  {t('Revisions')}
-                                </h3>
-                                <ActivityContentRevision
-                                  revisions={content.revisions}
-                                  contentType="blog_post_content"
-                                  contentId={content.id}
-                                  currentLanguage={getLanguageName(
-                                    content.locale_id
-                                  )}
-                                  hasWritePermission={hasWritePermission}
-                                  onContentRestored={async () => {
-                                    await getOne(id);
-                                  }}
-                                />
-                              </div>
-                            )}
+                          {content.revisions && content.revisions.length > 0 && (
+                            <div className="mt-8 pt-6">
+                              <h3 className="text-lg font-semibold mb-4">{t('Revisions')}</h3>
+                              <ActivityContentRevision
+                                revisions={content.revisions}
+                                contentType="blog_post_content"
+                                contentId={content.id}
+                                currentLanguage={getLanguageName(content.locale_id)}
+                                hasWritePermission={hasWritePermission}
+                                onContentRestored={async () => {
+                                  await getOne(id);
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
                       </Tabs.Panel>
                     ))}
                 </Tabs>
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  {t('Nothing here yet.')}
-                </div>
+                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
               )}
             </div>
           </form>

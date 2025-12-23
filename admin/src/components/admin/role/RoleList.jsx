@@ -1,26 +1,24 @@
-import {useState} from 'react';
-import {DataGrid} from '@mui/x-data-grid';
+import { useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
-import {Helmet} from 'react-helmet';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
 
-const renderCell = (params) => (
-  <LinkedCell params={params}>{params.value}</LinkedCell>
-);
+const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
 export default function RoleList() {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const query = useModel('role', {
     autoFetch: true,
     searchFields: ['name'],
@@ -45,17 +43,13 @@ export default function RoleList() {
       field: 'name',
       headerName: t('Name'),
       width: 200,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'description',
       headerName: t('Description'),
       width: 200,
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'implied_roles',
@@ -155,8 +149,8 @@ export default function RoleList() {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

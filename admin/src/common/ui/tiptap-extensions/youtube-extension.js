@@ -1,4 +1,4 @@
-import {Node, mergeAttributes} from '@tiptap/core';
+import { Node, mergeAttributes } from '@tiptap/core';
 
 export const YoutubeEmbed = Node.create({
   name: 'youtubeEmbed',
@@ -37,12 +37,12 @@ export const YoutubeEmbed = Node.create({
     ];
   },
 
-  renderHTML({HTMLAttributes}) {
+  renderHTML({ HTMLAttributes }) {
     const embedUrl = this.getEmbedUrl(HTMLAttributes.src);
 
     return [
       'div',
-      {class: 'youtube-embed-wrapper'},
+      { class: 'youtube-embed-wrapper' },
       [
         'iframe',
         mergeAttributes(this.options.HTMLAttributes, {
@@ -62,7 +62,7 @@ export const YoutubeEmbed = Node.create({
     return {
       setYoutubeVideo:
         (options) =>
-        ({commands}) => {
+        ({ commands }) => {
           if (!options.src) {
             return false;
           }
@@ -81,8 +81,7 @@ export const YoutubeEmbed = Node.create({
     }
 
     // Handle different YouTube URL formats
-    const youtubeRegExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const youtubeRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(youtubeRegExp);
 
     const videoId = match && match[2].length === 11 ? match[2] : url;

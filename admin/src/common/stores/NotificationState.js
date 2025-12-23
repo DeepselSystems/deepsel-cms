@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
 const initialState = {
   open: false,
@@ -9,8 +9,8 @@ const initialState = {
 
 export default create((set) => ({
   ...initialState,
-  setOpen: (open) => set(() => ({open})),
-  notify: ({message, type, duration = 3000}) =>
+  setOpen: (open) => set(() => ({ open })),
+  notify: ({ message, type, duration = 3000 }) =>
     set(() => ({
       message,
       open: true,

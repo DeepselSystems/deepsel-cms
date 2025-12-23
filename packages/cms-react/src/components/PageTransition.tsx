@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { usePageData } from '../contexts/PageDataContext';
-import { fetchPageData, parseSlugForLangAndPath } from '@deepsel/cms-utils';
+import { fetchPageData, parseSlug } from '@deepsel/cms-utils';
 
 interface PageTransitionProps {
   onPathChange?: (path: string) => void;
@@ -14,8 +14,8 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
   // Client-side navigation function
   const navigateToUrl = async (url: string) => {
     try {
-      const { lang, path } = parseSlugForLangAndPath(url);
-      const newPageData = await fetchPageData(lang, path);
+      const { lang, path } = parseSlug(url);
+      const newPageData = await fetchPageData(path, lang);
 
       if ('error' in newPageData || 'notFound' in newPageData) {
         window.location.href = url;
@@ -67,8 +67,8 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
       const currentPath = window.location.pathname;
 
       try {
-        const { lang, path } = parseSlugForLangAndPath(currentPath);
-        const newPageData = await fetchPageData(lang, path);
+        const { lang, path } = parseSlug(currentPath);
+        const newPageData = await fetchPageData(path, lang);
 
         if (!('error' in newPageData) && !('notFound' in newPageData)) {
           setPageData(newPageData);
