@@ -5,11 +5,11 @@ import type { Pagination } from '../page/getPathType';
  * Corresponds to GET /blog_post/website/{lang}
  */
 export async function fetchBlogList(
-  pagination?: Pagination,
-  lang?: string,
   astroRequest?: Request,
+  pagination?: Pagination,
   authToken?: string,
-  backendHost?: string | 'http://localhost:8000',
+  lang: string = 'default',
+  backendHost: string = 'http://localhost:8000',
 ): Promise<BlogListData> {
   try {
     let url = `${backendHost}/blog_post/website/${lang}`;

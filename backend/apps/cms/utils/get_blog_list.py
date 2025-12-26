@@ -7,6 +7,9 @@ from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from fastapi import Request
 from traceback import print_exc
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BlogListResponse(BaseModel):
@@ -47,6 +50,11 @@ def get_blog_list(
         # Detect organization by domain
         domain: str = detect_domain_from_request(request)
         org_settings = OrganizationModel.find_organization_by_domain(domain, db)
+        target_lang_iso_code = (
+            org_settings.default_language.iso_code
+            if target_lang == "default"
+            else target_lang
+        )
 
         # Query published blog posts with content in the specified language
         query = (
@@ -57,7 +65,7 @@ def get_blog_list(
             .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
             .filter(
                 BlogPostModel.published == True,
-                LocaleModel.iso_code == target_lang,
+                LocaleModel.iso_code == target_lang_iso_code,
                 BlogPostModel.organization_id == org_settings.id,
             )
             .order_by(BlogPostModel.publish_date.desc())
@@ -106,13 +114,13 @@ def get_blog_list(
         settings = org_settings.get_public_settings(
             org_settings.id,
             db,
-            lang=target_lang,
+            lang=target_lang_iso_code,
         )
 
         return BlogListResponse(
             blog_posts=blog_posts,
             public_settings=settings,
-            lang=target_lang,
+            lang=target_lang_iso_code,
             page=page,
             page_size=page_size,
         )
@@ -123,12 +131,12 @@ def get_blog_list(
         settings = org_settings.get_public_settings(
             org_settings.id,
             db,
-            lang=target_lang,
+            lang=target_lang_iso_code,
         )
         return BlogListResponse(
             blog_posts=[],
             public_settings=settings,
-            lang=target_lang,
+            lang=target_lang_iso_code,
             page=page,
             page_size=page_size,
         )
