@@ -18,28 +18,30 @@ const { slug = "/" } = Astro.params;
 const { lang, path, pathType, pagination } = parseSlug(slug);
 
 let ThemeComponent: any;
-let data: PageData | BlogListData | BlogPostData;
+let pageData: PageData | null = null;
+let blogListData: BlogListData | null = null;
+let blogPostData: BlogPostData | null = null;
 
 if (pathType === "Page") {
-  data = await fetchPageData(path, lang, Astro.request);
-  ThemeComponent = getPageThemeComponent(data, lang);
+  pageData = await fetchPageData(path, lang, Astro.request);
+  ThemeComponent = getPageThemeComponent(pageData, lang);
 } else if (pathType === "BlogList") {
-  data = await fetchBlogList(Astro.request, pagination, lang);
-  ThemeComponent = getBlogListThemeComponent(data, lang);
+  blogListData = await fetchBlogList(Astro.request, pagination, lang);
+  ThemeComponent = getBlogListThemeComponent(blogListData, lang);
 } else if (pathType === "BlogPost") {
-  data = await fetchBlogPost(path, lang, Astro.request);
-  ThemeComponent = getBlogPostThemeComponent(data, lang);
+  blogPostData = await fetchBlogPost(path, lang, Astro.request);
+  ThemeComponent = getBlogPostThemeComponent(blogPostData, lang);
 } else {
-  data = await fetchPageData(path, lang, Astro.request);
-  ThemeComponent = getPageThemeComponent(data, lang);
+  pageData = await fetchPageData(path, lang, Astro.request);
+  ThemeComponent = getPageThemeComponent(pageData, lang);
 }
 ---
 
 {
   pathType === "Page" ? (
-    <ThemeComponent data={data as PageData} />
+    <ThemeComponent data={pageData} />
   ) : pathType === "BlogList" ? (
-    <ThemeComponent data={data as BlogListData} />
-  ) : // :(pathType === "BlogPost") ? <ThemeComponent data={data as BlogPostData} />
+    <ThemeComponent data={blogListData} />
+  ) : // :(pathType === "BlogPost") ? <ThemeComponent data={blogPostData} />
   null
 }
