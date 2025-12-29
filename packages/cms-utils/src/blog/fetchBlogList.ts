@@ -1,16 +1,25 @@
 import type { BlogListData } from './types';
 import type { Pagination } from '../page/getPathType';
+
+interface FetchBlogListProps {
+  lang?: string;
+  pagination?: Pagination;
+  astroRequest?: Request;
+  authToken?: string;
+  backendHost?: string;
+}
+
 /**
  * Fetches blog list from the backend by language
  * Corresponds to GET /blog_post/website/{lang}
  */
-export async function fetchBlogList(
-  astroRequest?: Request,
-  pagination?: Pagination,
-  authToken?: string,
-  lang: string = 'default',
-  backendHost: string = 'http://localhost:8000',
-): Promise<BlogListData> {
+export async function fetchBlogList({
+  astroRequest,
+  pagination,
+  authToken,
+  lang = 'default',
+  backendHost = 'http://localhost:8000',
+}: FetchBlogListProps): Promise<BlogListData> {
   try {
     let url = `${backendHost}/blog_post/website/${lang}`;
 

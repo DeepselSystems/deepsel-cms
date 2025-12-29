@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { parseSlug } from '@deepsel/cms-utils';
-import { usePageData } from '../contexts/PageDataContext';
+import { useWebsiteData } from '../contexts/WebsiteDataContext';
 
 /**
  * React hook to read and change the current language.
@@ -9,23 +9,23 @@ import { usePageData } from '../contexts/PageDataContext';
  * - `setLanguage` updates the URL based on the current page and its language alternatives.
  */
 export function useLanguage() {
-  const { pageData } = usePageData();
+  const { websiteData } = useWebsiteData();
 
   const language = useMemo(() => {
-    if (pageData?.lang) {
-      return pageData.lang;
+    if (websiteData?.data?.lang) {
+      return websiteData.data.lang;
     }
 
-    return pageData?.public_settings?.default_language.iso_code ?? 'en';
-  }, [pageData?.lang, pageData?.public_settings?.default_language.iso_code]);
+    return websiteData?.settings?.default_language.iso_code;
+  }, [websiteData?.data?.lang, websiteData?.settings?.default_language.iso_code]);
 
   const availableLanguages = useMemo(
-    () => pageData?.public_settings?.available_languages || [],
-    [pageData?.public_settings?.available_languages],
+    () => websiteData?.settings?.available_languages || [],
+    [websiteData?.settings?.available_languages],
   );
 
   const setLanguage = (targetLangCode: string) => {
-    if (!pageData) {
+    if (!websiteData) {
       return;
     }
 
@@ -41,8 +41,11 @@ export function useLanguage() {
     let targetPath: string | null = null;
     const { path: currentPath } = parseSlug(window.location.pathname);
 
-    if (pageData.language_alternatives?.length) {
-      const targetAlternative = pageData.language_alternatives.find(
+    if (
+      'language_alternatives' in websiteData?.data &&
+      websiteData.data.language_alternatives?.length
+    ) {
+      const targetAlternative = websiteData.data.language_alternatives.find(
         (alt: any) => alt.locale?.iso_code === targetLangCode,
       );
 
@@ -60,7 +63,7 @@ export function useLanguage() {
 
     // Build final URL
     const finalUrl =
-      targetLangCode !== pageData.public_settings.default_language.iso_code
+      targetLangCode !== websiteData?.settings?.default_language.iso_code
         ? `/${targetLangCode}${targetPath}`
         : targetPath;
 

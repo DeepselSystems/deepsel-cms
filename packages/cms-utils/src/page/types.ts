@@ -39,43 +39,18 @@ export interface LanguageAlternative {
   locale: Language;
 }
 
-export interface BlogPostAuthor {
-  id: number;
-  display_name?: string;
-  username: string;
-  image?: string;
-}
-
-export interface BlogPostListItem {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  featured_image_id?: number;
-  publish_date?: string;
-  author?: BlogPostAuthor;
-  lang: string;
-}
-
 export interface PageData {
   id?: number;
   title?: string;
   content?: Content;
   slug?: string;
-  lang: string;
+  lang?: string;
   public_settings: SiteSettings;
   seo_metadata?: SeoMetadata;
   language_alternatives?: LanguageAlternative[];
   page_custom_code?: string | null;
   custom_code?: string | null;
   require_login?: boolean;
-  // Blog-specific fields
-  blog_posts?: BlogPostListItem[]; // For blog list pages (/blog)
-  featured_image_id?: number; // For single blog posts
-  publish_date?: string; // For single blog posts
-  author?: BlogPostAuthor; // For single blog posts
-  // For 404 cases
+  // added client-side when 404 is received
   notFound?: boolean;
-  status?: number;
-  detail?: string;
 }

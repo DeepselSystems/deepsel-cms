@@ -1,11 +1,12 @@
 import { isValidLanguageCode } from './isValidLanguageCode';
 import { getPathType } from './getPathType';
-import type { PathType, Pagination } from './getPathType';
+import type { Pagination } from './getPathType';
+import type { WebsiteDataType } from '../constants';
 
 export interface SlugParseResult {
   lang?: string;
   path: string;
-  pathType: PathType;
+  pathType: WebsiteDataType;
   pagination?: Pagination;
 }
 

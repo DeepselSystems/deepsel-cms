@@ -1,12 +1,12 @@
-export type PathType = 'BlogList' | 'BlogPost' | 'Page';
+import { WebsiteDataTypes, type WebsiteDataType } from '../constants';
 
 export interface Pagination {
   page?: number;
   pageSize?: number;
 }
 
-export function getPathType(path: string): { pathType: PathType; pagination?: Pagination } {
-  let pathType: PathType = 'Page';
+export function getPathType(path: string): { pathType: WebsiteDataType; pagination?: Pagination } {
+  let pathType: WebsiteDataType = WebsiteDataTypes.Page;
   let pagination: Pagination | undefined = undefined;
 
   if (path.startsWith('blog')) {
@@ -27,16 +27,16 @@ export function getPathType(path: string): { pathType: PathType; pagination?: Pa
     if (parts.length > 1 && parts[1] !== '') {
       // /blog/page/2
       if (parts[1] === 'page' && parts[2] && !isNaN(Number(parts[2]))) {
-        pathType = 'BlogList';
+        pathType = WebsiteDataTypes.BlogList;
         pagination = { page: Number(parts[2]), pageSize };
       }
       // /blog/{slug}
       else {
-        pathType = 'BlogPost';
+        pathType = WebsiteDataTypes.BlogPost;
       }
     } else {
       // /blog
-      pathType = 'BlogList';
+      pathType = WebsiteDataTypes.BlogList;
       if (pageSize) {
         pagination = { pageSize };
       }

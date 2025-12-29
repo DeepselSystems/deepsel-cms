@@ -1,27 +1,36 @@
 import { fetchPublicSettings } from './fetchPublicSettings';
 import type { PageData } from './types';
+import type { SiteSettings } from '../types';
+
+interface FetchPageDataProps {
+  path: string;
+  lang?: string;
+  astroRequest?: Request;
+  authToken?: string;
+  backendHost?: string;
+}
 
 /**
  * Fetches page data from the backend by language and slug
  */
-export async function fetchPageData(
-  slug: string,
-  lang?: string,
-  astroRequest?: Request,
-  authToken?: string,
-  backendHost: string = 'http://localhost:8000',
-): Promise<PageData> {
+export async function fetchPageData({
+  path,
+  lang,
+  astroRequest,
+  authToken,
+  backendHost = 'http://localhost:8000',
+}: FetchPageDataProps): Promise<PageData> {
   try {
-    // Format the slug properly, make sure it starts with a slash
-    let formattedSlug = slug.startsWith('/') ? slug : `/${slug}`;
+    // Format the path properly, make sure it starts with a slash
+    let formattedPath = path.startsWith('/') ? path : `/${path}`;
     // Backend will consider 'default' as the home slug
-    if (formattedSlug === '/') {
-      formattedSlug = '/default';
+    if (formattedPath === '/') {
+      formattedPath = '/default';
     }
 
     // Determine the URL based on whether a language is provided
     const langPrefix = lang || 'default';
-    let url = `${backendHost}/page/website/${langPrefix}${formattedSlug}`;
+    let url = `${backendHost}/page/website/${langPrefix}${formattedPath}`;
 
     // Add preview parameter if enabled
     if (astroRequest) {
@@ -73,22 +82,28 @@ export async function fetchPageData(
 
     // Only treat actual 404 as not found
     if (response.status === 404) {
-      const { detail } = await response.json();
-      console.warn('404', url, { detail });
+      try {
+        const { detail } = await response.json();
+        console.warn('404', url, { detail });
+      } catch (error) {
+        console.warn('404', url);
+      }
 
       // When page is not found, still fetch menus and site settings
       try {
-        const siteSettings = await fetchPublicSettings(null, astroRequest, lang, backendHost);
+        const siteSettings: SiteSettings = await fetchPublicSettings(
+          null,
+          astroRequest,
+          lang,
+          backendHost,
+        );
         return {
           notFound: true,
-          status: 404,
-          detail,
           public_settings: siteSettings,
-          lang: lang || siteSettings.default_language?.iso_code || 'en',
         };
       } catch (settingsError) {
         console.warn('Could not fetch site settings for 404 page:', settingsError);
-        throw new Error(`Page not found: ${detail}`);
+        throw new Error(`Page not found`);
       }
     }
 

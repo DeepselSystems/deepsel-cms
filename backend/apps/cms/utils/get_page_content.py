@@ -5,7 +5,6 @@ from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
 from deepsel.utils.models_pool import models_pool
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
 from apps.cms.types.shared_datatypes import SEOMetadata
 from apps.cms.types.public_settings import PublicSettings
 
@@ -19,17 +18,17 @@ class PageContentResponse(BaseModel):
     id: int
     title: str
     content: dict[str, dict[str, str]]
-    slug: str = None
-    lang: str = None
+    slug: str
+    lang: str
     public_settings: PublicSettings
-    seo_metadata: Optional[SEOMetadata] = None
+    seo_metadata: SEOMetadata
     # other languages available for this page
-    language_alternatives: Optional[list[dict]] = None
+    language_alternatives: [list[dict]]
     # Custom code fields
-    page_custom_code: Optional[str] = None
-    custom_code: Optional[str] = None
+    page_custom_code: str | None = None
+    custom_code: str | None = None
     # Access control
-    require_login: Optional[bool] = None
+    require_login: bool
 
 
 def get_page_content(

@@ -1,20 +1,29 @@
 import type { BlogPostData } from './types';
+import { fetchPublicSettings } from '../page';
+import type { SiteSettings } from '../types';
+
+interface FetchBlogPostProps {
+  path: string;
+  lang?: string;
+  astroRequest?: Request;
+  authToken?: string;
+  backendHost?: string;
+}
 
 /**
- * Fetches a single blog post from the backend by language and slug
- * Corresponds to GET /blog_post/website/{lang}/{slug}
+ * Fetches a single blog post from the backend by language and path
+ * Corresponds to GET /blog_post/website/{lang}/{path}
  */
-export async function fetchBlogPost(
-  slug: string,
-  lang?: string,
-  astroRequest?: Request,
-  authToken?: string,
-  backendHost: string = 'http://localhost:8000',
-): Promise<BlogPostData> {
+export async function fetchBlogPost({
+  path,
+  lang = 'default',
+  astroRequest,
+  authToken,
+  backendHost = 'http://localhost:8000',
+}: FetchBlogPostProps): Promise<BlogPostData> {
   try {
-    const cleanSlug = slug.startsWith('/') ? slug.substring(1) : slug;
-    const langPrefix = lang || 'default';
-    const url = `${backendHost}/blog_post/website/${langPrefix}/${cleanSlug}`;
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    const url = `${backendHost}/blog_post/website/${lang}/${cleanPath}`;
 
     const fetchOptions = {
       method: 'GET',
@@ -48,12 +57,24 @@ export async function fetchBlogPost(
     }
 
     if (response.status === 404) {
-      const { detail } = (await response.json()) as { detail?: string };
-      throw new Error(detail || 'Blog post not found');
-    }
+      try {
+        const { detail } = (await response.json()) as { detail?: string };
+        console.warn('404', url, { detail });
+      } catch {
+        console.warn('404', url);
+      }
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch blog post: ${response.statusText}`);
+      const siteSettings: SiteSettings = await fetchPublicSettings(
+        null,
+        astroRequest,
+        lang,
+        backendHost,
+      );
+
+      return {
+        notFound: true,
+        public_settings: siteSettings,
+      };
     }
 
     const jsonData: BlogPostData = await response.json();

@@ -1,14 +1,18 @@
 import React from 'react';
-import { usePageData } from '../contexts/PageDataContext';
+import { useWebsiteData } from '../contexts/WebsiteDataContext';
 
 export function ContentRenderer() {
-  const { pageData } = usePageData();
+  const { websiteData } = useWebsiteData();
 
-  if (!pageData) {
+  if (
+    !websiteData ||
+    !('content' in websiteData.data) ||
+    typeof websiteData.data.content !== 'object'
+  ) {
     return null;
   }
 
-  const mainContent = pageData?.content?.main?.['ds-value'] || '';
+  const mainContent = websiteData.data.content.main['ds-value'] || '';
 
   return (
     <article

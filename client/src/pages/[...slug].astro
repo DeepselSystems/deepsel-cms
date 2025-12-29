@@ -4,6 +4,7 @@ import {
   parseSlug,
   fetchBlogList,
   fetchBlogPost,
+  WebsiteDataTypes,
   type PageData,
   type BlogListData,
   type BlogPostData,
@@ -22,26 +23,26 @@ let pageData: PageData | null = null;
 let blogListData: BlogListData | null = null;
 let blogPostData: BlogPostData | null = null;
 
-if (pathType === "Page") {
-  pageData = await fetchPageData(path, lang, Astro.request);
+if (pathType === WebsiteDataTypes.Page) {
+  pageData = await fetchPageData({path, lang, astroRequest: Astro.request});
   ThemeComponent = getPageThemeComponent(pageData, lang);
-} else if (pathType === "BlogList") {
-  blogListData = await fetchBlogList(Astro.request, pagination, lang);
+} else if (pathType === WebsiteDataTypes.BlogList) {
+  blogListData = await fetchBlogList({lang, pagination, astroRequest: Astro.request});
   ThemeComponent = getBlogListThemeComponent(blogListData, lang);
-} else if (pathType === "BlogPost") {
-  blogPostData = await fetchBlogPost(path, lang, Astro.request);
+} else if (pathType === WebsiteDataTypes.BlogPost) {
+  blogPostData = await fetchBlogPost({path, lang, astroRequest: Astro.request});
   ThemeComponent = getBlogPostThemeComponent(blogPostData, lang);
 } else {
-  pageData = await fetchPageData(path, lang, Astro.request);
+  pageData = await fetchPageData({path, lang, astroRequest: Astro.request});
   ThemeComponent = getPageThemeComponent(pageData, lang);
 }
 ---
 
 {
-  pathType === "Page" ? (
+  pathType === WebsiteDataTypes.Page ? (
     <ThemeComponent data={pageData} />
-  ) : pathType === "BlogList" ? (
+  ) : pathType === WebsiteDataTypes.BlogList ? (
     <ThemeComponent data={blogListData} />
-  ) : // :(pathType === "BlogPost") ? <ThemeComponent data={blogPostData} />
+  ) : // :(pathType === WebsiteDataTypes.BlogPost) ? <ThemeComponent data={blogPostData} />
   null
 }
