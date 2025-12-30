@@ -1,10 +1,14 @@
-import { BlogListDataProvider } from "@deepsel/cms-react";
+import { WebsiteDataProvider } from "@deepsel/cms-react";
+import { WebsiteDataTypes } from "@deepsel/cms-utils";
 import type { BlogListData, BlogPostListItem } from "@deepsel/cms-utils";
+import Header from "./Header";
+import Footer from "./Footer";
 
 export default function BlogList({ data }: { data: BlogListData }) {
 
   return (
-    <BlogListDataProvider blogListData={data}>
+    <WebsiteDataProvider websiteData={{type: WebsiteDataTypes.BlogList, data: data}}>
+      <Header />
       <div className="max-w-7xl mx-auto px-4 py-10">
         <h1 className="text-4xl font-bold mb-8">Blog</h1>
 
@@ -65,6 +69,7 @@ export default function BlogList({ data }: { data: BlogListData }) {
           </div>
         )}
       </div>
-    </BlogListDataProvider>
+      <Footer/>
+    </WebsiteDataProvider>
   );
 }
