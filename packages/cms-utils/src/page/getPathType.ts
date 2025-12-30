@@ -9,6 +9,11 @@ export function getPathType(path: string): { pathType: WebsiteDataType; paginati
   let pathType: WebsiteDataType = WebsiteDataTypes.Page;
   let pagination: Pagination | undefined = undefined;
 
+  // delete forward at the beginning
+  if (path.startsWith('/')) {
+    path = path.slice(1);
+  }
+
   if (path.startsWith('blog')) {
     // split
     const parts = path.split('/');
