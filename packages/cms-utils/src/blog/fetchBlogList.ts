@@ -21,7 +21,7 @@ export async function fetchBlogList({
   backendHost = 'http://localhost:8000',
 }: FetchBlogListProps): Promise<BlogListData> {
   try {
-    let url = `${backendHost}/blog_post/website/${lang}`;
+    let url = `${backendHost}/blog_post/list/${lang}`;
 
     if (pagination) {
       const searchParams = new URLSearchParams();

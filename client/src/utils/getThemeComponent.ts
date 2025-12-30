@@ -16,8 +16,6 @@ export function getPageThemeComponent(data: PageData, lang?: string): any {
   const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
   const langPrefix = isNonDefaultLang ? `${lang}:` : '';
 
-  console.log('getPageThemeComponent', { data });
-
   if (data.notFound) {
     // For notFound, use the 404 template. component key will be "en:404" or just "404"
     ThemeComponent =

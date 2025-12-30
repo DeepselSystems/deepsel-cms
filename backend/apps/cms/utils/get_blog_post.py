@@ -7,6 +7,9 @@ from apps.cms.types.blog import PublicSettings, AuthorData, LanguageAlternative
 from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from fastapi import Request
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BlogPostResponse(BaseModel):
@@ -53,6 +56,9 @@ def get_blog_post(
     # Detect organization by domain
     domain = detect_domain_from_request(request)
     org_settings = OrganizationModel.find_organization_by_domain(domain, db)
+
+    if target_lang == "default":
+        target_lang = org_settings.default_language.iso_code
 
     # Add leading slash if not present (database stores slugs with leading slash)
     post_slug = "/" + post_slug.lstrip("/")
@@ -123,7 +129,7 @@ def get_blog_post(
     if blog_post.author:
         author_data = AuthorData(
             id=blog_post.author.id,
-            display_name=blog_post.author.display_name,
+            display_name=blog_post.author.name,
             username=blog_post.author.username,
             image=blog_post.author.image.name if blog_post.author.image else None,
         )

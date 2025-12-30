@@ -36,8 +36,6 @@ if (pathType === WebsiteDataTypes.Page) {
   pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getPageThemeComponent(pageData, lang);
 }
-
-console.log({ ThemeComponent });
 ---
 
 {

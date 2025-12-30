@@ -22,9 +22,15 @@ export async function fetchBlogPost({
   backendHost = 'http://localhost:8000',
 }: FetchBlogPostProps): Promise<BlogPostData> {
   try {
+    console.log('fetchBlogPost', { path });
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    const url = `${backendHost}/blog_post/website/${lang}/${cleanPath}`;
+    let postSlug = cleanPath;
+    // rm the blog/ prefix
+    if (cleanPath.startsWith('blog/')) {
+      postSlug = cleanPath.substring('blog/'.length);
+    }
 
+    const url = `${backendHost}/blog_post/single/${lang}/${postSlug}`;
     const fetchOptions = {
       method: 'GET',
       headers: {

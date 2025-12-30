@@ -12,7 +12,9 @@ from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from deepsel.utils.get_current_user import get_current_user
+import logging
 
+logger = logging.getLogger(__name__)
 
 table_name = "blog_post"
 CRUDSchemas = generate_CRUD_schemas(table_name)
@@ -54,8 +56,8 @@ async def translate_content(
     )
 
 
-# /blog_post/website/lang
-@router.get("/website/{lang}", response_model=BlogListResponse)
+# /blog_post/list/lang
+@router.get("/list/{lang}", response_model=BlogListResponse)
 def get_website_blog_list(
     request: Request,
     lang: str,
@@ -73,15 +75,16 @@ def get_website_blog_list(
     )
 
 
-# /blog_post/website/lang/slug
-@router.get("/website/{lang}/{slug}", response_model=BlogPostResponse)
+# /blog_post/single/lang/slug
+@router.get("/single/{lang}/{slug}", response_model=BlogPostResponse)
 def get_website_blog_post(
     request: Request, lang: str, slug: str, db: Session = Depends(get_db)
 ):
+    logger.info(f"Get website blog post: {lang}/{slug}")
     return get_blog_post(
         request=request,
         target_lang=lang,
-        slug=slug,
+        post_slug=slug,
         db=db,
         current_user=None,
     )

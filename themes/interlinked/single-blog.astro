@@ -1,7 +1,6 @@
 ---
 import type { BlogPostData } from "@deepsel/cms-utils";
-// import Header from "./components/Header.tsx";
-import Footer from "./components/Footer.tsx";
+import Footer from "./components/Footer";
 import "./main.css";
 
 interface Props {
@@ -25,6 +24,7 @@ const { data } = Astro.props;
         />
     </head>
     <body>
+        <article set:html={data.content}></article>
         <Footer />
     </body>
 </html>
