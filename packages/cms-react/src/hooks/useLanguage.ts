@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { parseSlug } from '@deepsel/cms-utils';
+import { parseSlug, type LanguageAlternative } from '@deepsel/cms-utils';
 import { useWebsiteData } from '../contexts/WebsiteDataContext';
 
 /**
@@ -25,19 +25,13 @@ export function useLanguage() {
   );
 
   const setLanguage = (targetLangCode: string) => {
-    if (!websiteData) {
+    // Change the URL to match new language
+    // Data fetching is handled by useTransition automatically
+    if (!websiteData || typeof window === 'undefined') {
       return;
     }
 
-    // Note: With context-based approach, we just navigate to the new URL
-    // The page will reload with the correct language data
-
-    // In the browser environment, we will need to change the URL to match
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    // For pages: Use language_alternatives metadata to get language-specific slugs
+    // For pages and blog posts: Use language_alternatives metadata to get language-specific slugs
     let targetPath: string | null = null;
     const { path: currentPath } = parseSlug(window.location.pathname);
 
@@ -45,9 +39,10 @@ export function useLanguage() {
       'language_alternatives' in websiteData?.data &&
       websiteData.data.language_alternatives?.length
     ) {
-      const targetAlternative = websiteData.data.language_alternatives.find(
-        (alt: any) => alt.locale?.iso_code === targetLangCode,
-      );
+      const targetAlternative: LanguageAlternative | undefined =
+        websiteData.data.language_alternatives.find(
+          (alt: any) => alt.locale?.iso_code === targetLangCode,
+        );
 
       if (targetAlternative?.slug) {
         targetPath = targetAlternative.slug.startsWith('/')
@@ -67,7 +62,7 @@ export function useLanguage() {
         ? `/${targetLangCode}${targetPath}`
         : targetPath;
 
-    // Just update the URL, PageTransition will handle fetching new data
+    // Just update the URL, useTransition will handle fetching new data
     window.history.pushState(null, '', finalUrl);
   };
 

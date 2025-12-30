@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { usePageData } from '@deepsel/cms-react';
-import { isActiveMenu } from '@deepsel/cms-utils';
-import type { MenuItem } from '@deepsel/cms-utils';
+import { useWebsiteData } from '@deepsel/cms-react';
+import { isActiveMenu, type MenuItem } from '@deepsel/cms-utils';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
@@ -11,11 +10,11 @@ interface SidebarMenuItemProps {
 }
 
 function SidebarMenuItem({ item, level }: SidebarMenuItemProps) {
-  const { pageData } = usePageData();
+  const { websiteData } = useWebsiteData();
   const hasChildren = !!item.children && item.children.length > 0;
   const hasUrl = !!item.url;
   const [expanded, setExpanded] = useState(true);
-  const isActive = isActiveMenu(item, pageData!);
+  const isActive = isActiveMenu(item, websiteData!);
 
   // Calculate indentation based on level
   const paddingLeft = `${level * 1 + 0.5}rem`;
@@ -82,8 +81,8 @@ function SidebarMenuItem({ item, level }: SidebarMenuItemProps) {
 }
 
 export default function Sidebar() {
-  const { pageData } = usePageData();
-  const menus = pageData?.public_settings?.menus;
+  const { websiteData } = useWebsiteData();
+  const menus = websiteData?.settings?.menus;
 
   if (!menus || menus.length === 0) {
     return null;

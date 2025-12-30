@@ -1,8 +1,8 @@
 import type { MenuItem } from './types';
-import type { PageData } from '../page';
+import type { WebsiteData } from '../types';
 
 // Check if a menu item should be marked as active
-export const isActiveMenu = (menuItem: MenuItem, pageData: PageData) => {
+export const isActiveMenu = (menuItem: MenuItem, websiteData: WebsiteData) => {
   // return if not browser
   if (typeof window === 'undefined') {
     return false;
@@ -10,7 +10,7 @@ export const isActiveMenu = (menuItem: MenuItem, pageData: PageData) => {
 
   const location = window.location;
 
-  const currentLang = pageData.lang;
+  const currentLang = websiteData.data.lang;
   let result;
   if (menuItem.url === '/') {
     result =

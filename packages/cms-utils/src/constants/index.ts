@@ -1,1 +1,1 @@
-export * from './wesiteDataTypes';
+export * from './websiteDataTypes';

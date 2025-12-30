@@ -1,5 +1,14 @@
 import type { MenuItem } from './menus/types';
 import type { SpecialTemplate } from './page/types';
+import type { WebsiteDataType } from './constants';
+import type { PageData } from './page';
+import type { BlogListData, BlogPostData } from './blog';
+
+export type WebsiteData = {
+  type: WebsiteDataType;
+  data: PageData | BlogListData | BlogPostData;
+  settings?: SiteSettings;
+};
 
 export interface SiteSettings {
   id: number;

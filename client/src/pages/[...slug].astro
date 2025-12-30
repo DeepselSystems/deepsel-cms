@@ -8,14 +8,14 @@ import {
   type PageData,
   type BlogListData,
   type BlogPostData,
-} from "@deepsel/cms-utils";
+} from '@deepsel/cms-utils';
 import {
   getPageThemeComponent,
   getBlogListThemeComponent,
   getBlogPostThemeComponent,
-} from "../utils/getThemeComponent";
+} from '../utils/getThemeComponent';
 
-const { slug = "/" } = Astro.params;
+const { slug = '/' } = Astro.params;
 const { lang, path, pathType, pagination } = parseSlug(slug);
 
 let ThemeComponent: any;
@@ -24,18 +24,20 @@ let blogListData: BlogListData | null = null;
 let blogPostData: BlogPostData | null = null;
 
 if (pathType === WebsiteDataTypes.Page) {
-  pageData = await fetchPageData({path, lang, astroRequest: Astro.request});
+  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getPageThemeComponent(pageData, lang);
 } else if (pathType === WebsiteDataTypes.BlogList) {
-  blogListData = await fetchBlogList({lang, pagination, astroRequest: Astro.request});
+  blogListData = await fetchBlogList({ lang, pagination, astroRequest: Astro.request });
   ThemeComponent = getBlogListThemeComponent(blogListData, lang);
 } else if (pathType === WebsiteDataTypes.BlogPost) {
-  blogPostData = await fetchBlogPost({path, lang, astroRequest: Astro.request});
+  blogPostData = await fetchBlogPost({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getBlogPostThemeComponent(blogPostData, lang);
 } else {
-  pageData = await fetchPageData({path, lang, astroRequest: Astro.request});
+  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getPageThemeComponent(pageData, lang);
 }
+
+console.log({ ThemeComponent });
 ---
 
 {
@@ -43,6 +45,7 @@ if (pathType === WebsiteDataTypes.Page) {
     <ThemeComponent data={pageData} />
   ) : pathType === WebsiteDataTypes.BlogList ? (
     <ThemeComponent data={blogListData} />
-  ) : // :(pathType === WebsiteDataTypes.BlogPost) ? <ThemeComponent data={blogPostData} />
-  null
+  ) : pathType === WebsiteDataTypes.BlogPost ? (
+    <ThemeComponent data={blogPostData} />
+  ) : null
 }

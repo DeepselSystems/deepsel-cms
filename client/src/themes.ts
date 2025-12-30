@@ -2,6 +2,7 @@
 import Interlinked404 from '../../themes/interlinked/404.astro';
 import InterlinkedBlog from '../../themes/interlinked/blog.astro';
 import InterlinkedIndex from '../../themes/interlinked/index.astro';
+import InterlinkedSingleBlog from '../../themes/interlinked/single-blog.astro';
 // THEME_IMPORTS_END
 
 export const themeSystemKeys = {
@@ -16,6 +17,7 @@ export const themeMap = {
   interlinked: {
     [themeSystemKeys.Page]: InterlinkedIndex,
     [themeSystemKeys.BlogList]: InterlinkedBlog,
+    [themeSystemKeys.BlogPost]: InterlinkedSingleBlog,
     [themeSystemKeys.NotFound]: Interlinked404,
   },
 };

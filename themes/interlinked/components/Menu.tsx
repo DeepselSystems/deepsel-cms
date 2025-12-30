@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import { usePageData } from '@deepsel/cms-react';
-import { isActiveMenu } from '@deepsel/cms-utils';
-import type { MenuItem } from '@deepsel/cms-utils';
-
-
-
+import { useWebsiteData } from '@deepsel/cms-react';
+import { isActiveMenu, type MenuItem } from '@deepsel/cms-utils';
 
 
 interface RecursiveMenuItemProps {
@@ -105,14 +101,13 @@ function TopLevelMenuItem({ item, isActive }: TopLevelMenuItemProps) {
 }
 
 export default function Menu() {
-  const { pageData } = usePageData();
-
-  const menus = pageData?.public_settings?.menus;
+  const { websiteData } = useWebsiteData();
+  const menus = websiteData?.settings?.menus;
 
   return (
     <ul className="flex gap-4 items-center">
       {menus?.map((menu) => (
-        <TopLevelMenuItem key={menu.id} item={menu} isActive={isActiveMenu(menu, pageData!)} />
+        <TopLevelMenuItem key={menu.id} item={menu} isActive={isActiveMenu(menu, websiteData!)} />
       ))}
     </ul>
   );

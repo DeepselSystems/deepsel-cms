@@ -1,9 +1,8 @@
 ---
 import type { BlogListData } from "@deepsel/cms-utils";
-// import { PageDataProvider } from "@deepsel/deep-cms-react";
 // import Header from "./components/Header.tsx";
 import Footer from "./components/Footer.tsx";
-// import BlogList from "./components/BlogList.tsx";
+import BlogList from "./components/BlogList.tsx";
 import "./main.css";
 
 interface Props {
@@ -24,10 +23,8 @@ const { data } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- <PageDataProvider pageData={pageData}>
-        <Header client:load/>
-        <BlogList client:load />
-    </PageDataProvider> -->
+        <!-- <Header client:load/> -->
+    <BlogList client:load data={data} />
     <Footer />
 </body>
 </html>

@@ -11,7 +11,7 @@ export default function LangSwitcher() {
         type="button"
         className="flex items-center gap-1 px-2 py-1 text-sm rounded border border-primary-200 hover:bg-primary-100"
       >
-        <span>{language.toUpperCase() || 'LANG'}</span>
+        <span>{language?.toUpperCase()}</span>
         <FontAwesomeIcon icon={faCaretDown} className="text-xs" />
       </button>
       <div className="absolute right-0 mt-0 hidden min-w-[120px] rounded bg-white py-1 border border-primary-200 shadow-lg group-hover:block z-20">

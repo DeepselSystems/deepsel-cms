@@ -23,7 +23,7 @@ class PageContentResponse(BaseModel):
     public_settings: PublicSettings
     seo_metadata: SEOMetadata
     # other languages available for this page
-    language_alternatives: [list[dict]]
+    language_alternatives: list[dict]
     # Custom code fields
     page_custom_code: str | None = None
     custom_code: str | None = None

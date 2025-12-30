@@ -6,17 +6,18 @@ import {
   fetchBlogPost,
   parseSlug,
   WebsiteDataTypes,
+  isCrossingTemplateBoundary,
   type PageData,
   BlogListData,
   BlogPostData,
 } from '@deepsel/cms-utils';
 
-interface useTransitionProps {
+interface PageTransitionProps {
   onPathChange?: (path: string) => void;
   onNavigate?: (url: string, event: MouseEvent) => void;
 }
 
-export function useTransition({ onPathChange, onNavigate }: useTransitionProps) {
+export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps) {
   // Initialize the page data store
   const { websiteData, setWebsiteData } = useWebsiteData();
 
@@ -208,6 +209,11 @@ export function useTransition({ onPathChange, onNavigate }: useTransitionProps) 
         return;
       }
 
+      // Skip if crossing template boundary (e.g. from page to blog list)
+      if (isCrossingTemplateBoundary(window.location.pathname, href)) {
+        return;
+      }
+
       // Prevent default navigation and stop propagation
       event.preventDefault();
       event.stopPropagation();
@@ -228,4 +234,6 @@ export function useTransition({ onPathChange, onNavigate }: useTransitionProps) 
       document.removeEventListener('click', handleLinkClick, true);
     };
   }, [onNavigate, onPathChange, navigateToUrl]);
+
+  return null;
 }
