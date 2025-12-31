@@ -1,20 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLanguage } from '../../src/hooks/useLanguage';
-import { PageDataProvider } from '../../src/contexts/PageDataContext';
+import { WebsiteDataProvider } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
 // Mock cms-utils
 vi.mock('@deepsel/cms-utils', () => ({
-  parseSlugForLangAndPath: vi.fn((pathname: string) => {
+  parseSlug: vi.fn((pathname: string) => {
     const parts = pathname.split('/').filter(Boolean);
     if (parts.length > 0 && parts[0].length === 2) {
-      return { lang: parts[0], path: '/' + parts.slice(1).join('/') };
+      return { lang: parts[0], path: '/' + parts.slice(1).join('/'), pathType: 'Page' };
     }
-    return { lang: null, path: pathname };
+    return { lang: undefined, path: pathname, pathType: 'Page' };
   }),
-  fetchPageData: vi.fn(),
+  WebsiteDataTypes: {
+    Page: 'Page',
+    BlogList: 'BlogList',
+    BlogPost: 'BlogPost',
+  },
+  fetchPageData: vi.fn(() => Promise.resolve({ notFound: false })),
+  fetchBlogList: vi.fn(() => Promise.resolve({})),
+  fetchBlogPost: vi.fn(() => Promise.resolve({ notFound: false })),
 }));
 
 describe('useLanguage', () => {
@@ -55,7 +62,7 @@ describe('useLanguage', () => {
 
   it('should return current language from pageData', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={mockPageData}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -66,7 +73,7 @@ describe('useLanguage', () => {
   it('should return default language when pageData.lang is not set', () => {
     const pageDataWithoutLang = { ...mockPageData, lang: undefined };
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={pageDataWithoutLang}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutLang }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -76,7 +83,7 @@ describe('useLanguage', () => {
 
   it('should return available languages', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={mockPageData}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -92,7 +99,7 @@ describe('useLanguage', () => {
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={mockPageData}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -111,7 +118,7 @@ describe('useLanguage', () => {
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={mockPageData}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -131,7 +138,7 @@ describe('useLanguage', () => {
 
     const pageDataWithoutAlternatives = { ...mockPageData, language_alternatives: [] };
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PageDataProvider pageData={pageDataWithoutAlternatives}>{children}</PageDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutAlternatives }}>{children}</WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });

@@ -6,8 +6,10 @@ export function ContentRenderer() {
 
   if (
     !websiteData ||
+    !websiteData.data ||
     !('content' in websiteData.data) ||
-    typeof websiteData.data.content !== 'object'
+    typeof websiteData.data.content !== 'object' ||
+    !websiteData.data.content.main
   ) {
     return null;
   }

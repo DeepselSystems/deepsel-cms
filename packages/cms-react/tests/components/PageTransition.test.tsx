@@ -1,18 +1,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import { PageTransition } from '../../src/components/PageTransition';
-import { PageDataProvider } from '../../src/contexts/PageDataContext';
+import { PageTransition } from '../../src/hooks/useTransition';
+import { WebsiteDataProvider } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
 // Mock cms-utils
-const mockFetchPageData = vi.fn<(lang: string | null, path: string) => Promise<any>>();
-const mockParseSlugForLangAndPath =
-  vi.fn<(pathname: string) => { lang: string | null; path: string }>();
+const mockFetchPageData = vi.fn();
+const mockParseSlug = vi.fn();
+const mockIsCrossingTemplateBoundary = vi.fn();
 
 vi.mock('@deepsel/cms-utils', () => ({
-  fetchPageData: (lang: string | null, path: string) => mockFetchPageData(lang, path),
-  parseSlugForLangAndPath: (pathname: string) => mockParseSlugForLangAndPath(pathname),
+  fetchPageData: (args: any) => mockFetchPageData(args),
+  parseSlug: (pathname: string) => mockParseSlug(pathname),
+  isCrossingTemplateBoundary: (from: string, to: string) => mockIsCrossingTemplateBoundary(from, to),
+  WebsiteDataTypes: {
+    Page: 'Page',
+    BlogList: 'BlogList',
+    BlogPost: 'BlogPost',
+  },
 }));
 
 describe('PageTransition', () => {
@@ -63,9 +69,9 @@ describe('PageTransition', () => {
 
   it('should update document title when pageData changes', () => {
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(document.title).toBe('Test SEO Title');
@@ -73,9 +79,9 @@ describe('PageTransition', () => {
 
   it('should update meta description when pageData changes', () => {
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -84,9 +90,9 @@ describe('PageTransition', () => {
 
   it('should update robots meta tag based on allow_indexing', () => {
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const metaRobots = document.querySelector('meta[name="robots"]');
@@ -103,9 +109,9 @@ describe('PageTransition', () => {
     };
 
     render(
-      <PageDataProvider pageData={noIndexPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: noIndexPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const metaRobots = document.querySelector('meta[name="robots"]');
@@ -114,16 +120,17 @@ describe('PageTransition', () => {
 
   it('should update html lang attribute', () => {
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(document.documentElement.lang).toBe('en');
   });
 
   it('should intercept link clicks for client-side navigation', async () => {
-    mockParseSlugForLangAndPath.mockReturnValue({ lang: 'en', path: '/about' });
+    mockParseSlug.mockReturnValue({ lang: 'en', path: '/about', pathType: 'Page' });
+    mockIsCrossingTemplateBoundary.mockReturnValue(false);
     mockFetchPageData.mockResolvedValue({
       ...mockPageData,
       title: 'About Page',
@@ -131,26 +138,26 @@ describe('PageTransition', () => {
     });
 
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="/about">About</a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
     link?.click();
 
     await waitFor(() => {
-      expect(mockFetchPageData).toHaveBeenCalledWith('en', '/about');
+      expect(mockFetchPageData).toHaveBeenCalledWith({ lang: 'en', path: '/about' });
     });
   });
 
   it('should not intercept external links', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="https://example.com">External</a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -161,12 +168,12 @@ describe('PageTransition', () => {
 
   it('should not intercept links with target="_blank"', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="/about" target="_blank">
           About
         </a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -177,10 +184,10 @@ describe('PageTransition', () => {
 
   it('should not intercept hash links', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="#section">Section</a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -191,10 +198,10 @@ describe('PageTransition', () => {
 
   it('should not intercept mailto links', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="mailto:test@example.com">Email</a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -205,12 +212,12 @@ describe('PageTransition', () => {
 
   it('should not intercept download links', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="/file.pdf" download>
           Download
         </a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -223,9 +230,9 @@ describe('PageTransition', () => {
     const onNavigate = vi.fn();
 
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition onNavigate={onNavigate} />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     // Verify PageTransition accepts onNavigate prop without errors
@@ -236,11 +243,13 @@ describe('PageTransition', () => {
 
   it('should call onPathChange callback when provided', async () => {
     const onPathChange = vi.fn();
+    mockParseSlug.mockReturnValue({ lang: 'en', path: '/test', pathType: 'Page' });
+    mockFetchPageData.mockResolvedValue(mockPageData);
 
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition onPathChange={onPathChange} />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     // Simulate popstate event
@@ -252,13 +261,13 @@ describe('PageTransition', () => {
   });
 
   it('should handle popstate events for browser back/forward', async () => {
-    mockParseSlugForLangAndPath.mockReturnValue({ lang: 'en', path: '/test' });
+    mockParseSlug.mockReturnValue({ lang: 'en', path: '/test', pathType: 'Page' });
     mockFetchPageData.mockResolvedValue(mockPageData);
 
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     window.dispatchEvent(new PopStateEvent('popstate'));
@@ -269,14 +278,15 @@ describe('PageTransition', () => {
   });
 
   it('should fallback to regular navigation on fetch error', async () => {
-    mockParseSlugForLangAndPath.mockReturnValue({ lang: 'en', path: '/error' });
-    mockFetchPageData.mockResolvedValue({ error: 'Not found' });
+    mockParseSlug.mockReturnValue({ lang: 'en', path: '/error', pathType: 'Page' });
+    mockIsCrossingTemplateBoundary.mockReturnValue(false);
+    mockFetchPageData.mockResolvedValue({ notFound: true });
 
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
         <a href="/error">Error Page</a>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     const link = container.querySelector('a');
@@ -289,9 +299,9 @@ describe('PageTransition', () => {
 
   it('should render nothing (null)', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <PageTransition />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(container.firstChild).toBeNull();

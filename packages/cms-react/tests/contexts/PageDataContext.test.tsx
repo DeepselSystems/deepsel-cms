@@ -1,15 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { PageDataProvider, usePageData } from '../../src/contexts/PageDataContext';
+import { WebsiteDataProvider, useWebsiteData } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
 // Mock PageTransition component
-vi.mock('../../src/components/PageTransition', () => ({
+vi.mock('../../src/hooks/useTransition', () => ({
   PageTransition: () => null,
 }));
 
-describe('PageDataContext', () => {
+describe('WebsiteDataContext', () => {
   const mockPageData: PageData = {
     id: '1',
     title: 'Test Page',
@@ -27,22 +27,22 @@ describe('PageDataContext', () => {
 
   it('should provide pageData to children', () => {
     const TestComponent = () => {
-      const { pageData } = usePageData();
-      return <div>{pageData.title}</div>;
+      const { websiteData } = useWebsiteData();
+      return <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>;
     };
 
     render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <TestComponent />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(screen.getByText('Test Page')).toBeDefined();
   });
 
-  it('should throw error when usePageData is used outside provider', () => {
+  it('should throw error when useWebsiteData is used outside provider', () => {
     const TestComponent = () => {
-      usePageData();
+      useWebsiteData();
       return null;
     };
 
@@ -51,32 +51,34 @@ describe('PageDataContext', () => {
     console.error = vi.fn();
 
     expect(() => render(<TestComponent />)).toThrow(
-      'usePageData must be used inside <PageDataProvider>',
+      'useWebsiteData must be used inside <WebsiteDataProvider>',
     );
 
     console.error = originalError;
   });
 
-  it('should allow updating pageData via setPageData', async () => {
+  it('should allow updating pageData via setWebsiteData', async () => {
     const TestComponent = () => {
-      const { pageData, setPageData } = usePageData();
+      const { websiteData, setWebsiteData } = useWebsiteData();
 
       const updateTitle = () => {
-        setPageData({ ...pageData, title: 'Updated Title' });
+        if (websiteData.type === 'Page') {
+          setWebsiteData({ type: 'Page', data: { ...websiteData.data, title: 'Updated Title' } });
+        }
       };
 
       return (
         <div>
-          <div>{pageData.title}</div>
+          <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>
           <button onClick={updateTitle}>Update</button>
         </div>
       );
     };
 
     const { getByText, findByText } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <TestComponent />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(getByText('Test Page')).toBeDefined();
@@ -88,9 +90,9 @@ describe('PageDataContext', () => {
 
   it('should render PageTransition component', () => {
     const { container } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <div>Test</div>
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     // PageTransition should be rendered (mocked to return null)
@@ -100,12 +102,12 @@ describe('PageDataContext', () => {
 
   it('should maintain pageData state across re-renders', async () => {
     const TestComponent = () => {
-      const { pageData } = usePageData();
+      const { websiteData } = useWebsiteData();
       const [count, setCount] = React.useState(0);
 
       return (
         <div>
-          <div>{pageData.title}</div>
+          <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>
           <div>Count: {count}</div>
           <button onClick={() => setCount(count + 1)}>Increment</button>
         </div>
@@ -113,9 +115,9 @@ describe('PageDataContext', () => {
     };
 
     const { getByText, findByText } = render(
-      <PageDataProvider pageData={mockPageData}>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
         <TestComponent />
-      </PageDataProvider>,
+      </WebsiteDataProvider>,
     );
 
     expect(getByText('Test Page')).toBeDefined();

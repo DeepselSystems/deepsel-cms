@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react';
 import {
   WebsiteDataProvider,
   useWebsiteData,
-  type WebsiteData,
 } from '../../src/contexts/WebsiteDataContext';
+import type { WebsiteData } from '@deepsel/cms-utils';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
 // Mock PageTransition component
-vi.mock('../../src/components/PageTransition', () => ({
+vi.mock('../../src/hooks/useTransition', () => ({
   PageTransition: () => null,
 }));
 
@@ -36,12 +36,12 @@ describe('WebsiteDataContext', () => {
 
   it('should provide website data to children', () => {
     const TestComponent = () => {
-      const { data } = useWebsiteData();
-      return <div>{data.type === 'Page' ? data.data.title : ''}</div>;
+      const { websiteData } = useWebsiteData();
+      return <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>;
     };
 
     render(
-      <WebsiteDataProvider data={mockWebsiteData}>
+      <WebsiteDataProvider websiteData={mockWebsiteData}>
         <TestComponent />
       </WebsiteDataProvider>,
     );
@@ -66,26 +66,26 @@ describe('WebsiteDataContext', () => {
     console.error = originalError;
   });
 
-  it('should allow updating website data via setData', async () => {
+  it('should allow updating website data via setWebsiteData', async () => {
     const TestComponent = () => {
-      const { data, setData } = useWebsiteData();
+      const { websiteData, setWebsiteData } = useWebsiteData();
 
       const updateTitle = () => {
-        if (data.type === 'Page') {
-          setData({ type: 'Page', data: { ...data.data, title: 'Updated Title' } });
+        if (websiteData.type === 'Page') {
+          setWebsiteData({ type: 'Page', data: { ...websiteData.data, title: 'Updated Title' } });
         }
       };
 
       return (
         <div>
-          <div>{data.type === 'Page' ? data.data.title : ''}</div>
+          <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>
           <button onClick={updateTitle}>Update</button>
         </div>
       );
     };
 
     const { getByText, findByText } = render(
-      <WebsiteDataProvider data={mockWebsiteData}>
+      <WebsiteDataProvider websiteData={mockWebsiteData}>
         <TestComponent />
       </WebsiteDataProvider>,
     );
@@ -99,7 +99,7 @@ describe('WebsiteDataContext', () => {
 
   it('should render PageTransition component', () => {
     const { container } = render(
-      <WebsiteDataProvider data={mockWebsiteData}>
+      <WebsiteDataProvider websiteData={mockWebsiteData}>
         <div>Test</div>
       </WebsiteDataProvider>,
     );
@@ -111,12 +111,12 @@ describe('WebsiteDataContext', () => {
 
   it('should maintain website data state across re-renders', async () => {
     const TestComponent = () => {
-      const { data } = useWebsiteData();
+      const { websiteData } = useWebsiteData();
       const [count, setCount] = React.useState(0);
 
       return (
         <div>
-          <div>{data.type === 'Page' ? data.data.title : ''}</div>
+          <div>{websiteData.type === 'Page' ? websiteData.data.title : ''}</div>
           <div>Count: {count}</div>
           <button onClick={() => setCount(count + 1)}>Increment</button>
         </div>
@@ -124,7 +124,7 @@ describe('WebsiteDataContext', () => {
     };
 
     const { getByText, findByText } = render(
-      <WebsiteDataProvider data={mockWebsiteData}>
+      <WebsiteDataProvider websiteData={mockWebsiteData}>
         <TestComponent />
       </WebsiteDataProvider>,
     );
