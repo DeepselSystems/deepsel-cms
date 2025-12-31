@@ -13,6 +13,7 @@ firebase-key.json
 backups
 .cache
 backend/volumes
+backend/files
 .vscode
 volumes
 .astro

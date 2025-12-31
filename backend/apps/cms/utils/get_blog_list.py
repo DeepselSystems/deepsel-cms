@@ -100,6 +100,9 @@ def get_blog_list(
                     "slug": blog_post.slug,
                     "excerpt": content.subtitle,  # Use subtitle as excerpt
                     "featured_image_id": content.featured_image_id,
+                    "featured_image_name": (
+                        content.featured_image.name if content.featured_image else None
+                    ),
                     "publish_date": (
                         blog_post.publish_date.isoformat()
                         if blog_post.publish_date

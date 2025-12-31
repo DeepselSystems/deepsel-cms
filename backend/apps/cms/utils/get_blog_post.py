@@ -3,7 +3,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
-from apps.cms.types.blog import PublicSettings, AuthorData, LanguageAlternative
+from apps.cms.types.blog import AuthorData, LanguageAlternative
+from apps.cms.types.public_settings import PublicSettings
 from deepsel.utils.models_pool import models_pool
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from fastapi import Request
@@ -25,6 +26,7 @@ class BlogPostResponse(BaseModel):
     page_custom_code: Optional[str] = None
     require_login: Optional[bool] = None
     featured_image_id: Optional[int] = None
+    featured_image_name: Optional[str] = None
     publish_date: Optional[str] = None
     author: Optional[AuthorData] = None
     language_alternatives: list[LanguageAlternative]
@@ -160,6 +162,11 @@ def get_blog_post(
         page_custom_code=blog_post.blog_post_custom_code,
         require_login=blog_post.require_login,
         featured_image_id=matching_content.featured_image_id,
+        featured_image_name=(
+            matching_content.featured_image.name
+            if matching_content.featured_image
+            else None
+        ),
         publish_date=(
             blog_post.publish_date.isoformat() if blog_post.publish_date else None
         ),

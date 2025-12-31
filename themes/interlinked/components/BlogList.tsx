@@ -22,10 +22,10 @@ export default function BlogList({ data }: { data: BlogListData }) {
                 href={`/blog${post.slug}`}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
-                {post.featured_image_id && (
+                {post.featured_image_name && (
                   <div className="aspect-video bg-gray-200">
                     <img
-                      src={`/api/attachment/${post.featured_image_id}`}
+                      src={`/api/v1/attachment/serve/${post.featured_image_name}`}
                       alt={post.title}
                       className="w-full h-full object-cover"
                     />
@@ -47,7 +47,7 @@ export default function BlogList({ data }: { data: BlogListData }) {
                         <>
                           {post.author.image && (
                             <img
-                              src={`/api/attachment/${post.author.image}`}
+                              src={`/api/v1/attachment/serve/${post.author.image}`}
                               alt={post.author.display_name || post.author.username}
                               className="w-8 h-8 rounded-full"
                             />

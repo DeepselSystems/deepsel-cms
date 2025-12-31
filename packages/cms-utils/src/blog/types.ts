@@ -14,6 +14,7 @@ export interface BlogPostListItem {
   slug: string;
   excerpt?: string;
   featured_image_id?: number;
+  featured_image_name?: string;
   publish_date?: string;
   author?: BlogPostAuthor;
   lang: string;
@@ -38,6 +39,7 @@ export interface BlogPostData {
   page_custom_code?: string | null;
   require_login?: boolean | null;
   featured_image_id?: number | null;
+  featured_image_name?: string | null;
   publish_date?: string | null;
   author?: BlogPostAuthor | null;
   language_alternatives?: LanguageAlternative[];

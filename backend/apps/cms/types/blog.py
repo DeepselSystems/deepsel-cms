@@ -2,8 +2,7 @@
 
 from typing import Optional
 from pydantic import BaseModel
-from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
-from apps.cms.types.public_settings import PublicSettings
+from apps.cms.types.shared_datatypes import LocaleData
 
 
 class AuthorData(BaseModel):
@@ -30,6 +29,7 @@ class BlogPostListItem(BaseModel):
     slug: str
     excerpt: Optional[str]
     featured_image_id: Optional[int]
+    featured_image_name: Optional[str]
     publish_date: Optional[str]
     author: Optional[AuthorData]
     lang: str
