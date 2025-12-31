@@ -153,22 +153,12 @@ async def send_email_with_limit(
             print(
                 f"🎉 DOSER: Email sent successfully! Remaining: {post_status['max_emails'] - post_status['current_count']} emails"
             )
-
-            logger.info(
-                f"Email sent successfully to {len(to)} recipients. Email ID: {email_record.id}"
-            )
             return {
                 "success": True,
                 "status": "sent",
-                "email_id": email_record.id,
                 "recipients_count": len(to),
             }
         else:
-            # Update email record with error
-            email_record.status = EmailOutStatus.FAILED
-            email_record.error = result["error"]
-            db.commit()
-
             # DOSER DEBUG: Show status (no change on failure)
             current_status = doser.get_current_usage(scope)
             print(
@@ -180,15 +170,9 @@ async def send_email_with_limit(
                 "success": False,
                 "status": "failed",
                 "error": result["error"],
-                "email_id": email_record.id,
             }
 
     except Exception as e:
-        # Update email record with error
-        email_record.status = EmailOutStatus.FAILED
-        email_record.error = str(e)
-        db.commit()
-
         # DOSER DEBUG: Show status (no change on exception)
         current_status = doser.get_current_usage(scope)
         print(
@@ -200,7 +184,6 @@ async def send_email_with_limit(
             "success": False,
             "status": "failed",
             "error": str(e),
-            "email_id": email_record.id,
         }
 
 
