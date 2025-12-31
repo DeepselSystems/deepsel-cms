@@ -85,7 +85,7 @@ export async function fetchPageData({
       try {
         const { detail } = await response.json();
         console.warn('404', url, { detail });
-      } catch (error) {
+      } catch {
         console.warn('404', url);
       }
 

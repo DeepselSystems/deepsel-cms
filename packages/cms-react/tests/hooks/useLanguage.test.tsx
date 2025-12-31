@@ -62,7 +62,9 @@ describe('useLanguage', () => {
 
   it('should return current language from pageData', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -73,7 +75,9 @@ describe('useLanguage', () => {
   it('should return default language when pageData.lang is not set', () => {
     const pageDataWithoutLang = { ...mockPageData, lang: undefined };
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutLang }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutLang }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -83,7 +87,9 @@ describe('useLanguage', () => {
 
   it('should return available languages', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -99,7 +105,9 @@ describe('useLanguage', () => {
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -118,7 +126,9 @@ describe('useLanguage', () => {
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });
@@ -138,7 +148,9 @@ describe('useLanguage', () => {
 
     const pageDataWithoutAlternatives = { ...mockPageData, language_alternatives: [] };
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutAlternatives }}>{children}</WebsiteDataProvider>
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: pageDataWithoutAlternatives }}>
+        {children}
+      </WebsiteDataProvider>
     );
 
     const { result } = renderHook(() => useLanguage(), { wrapper });

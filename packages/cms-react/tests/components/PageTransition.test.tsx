@@ -13,7 +13,8 @@ const mockIsCrossingTemplateBoundary = vi.fn();
 vi.mock('@deepsel/cms-utils', () => ({
   fetchPageData: (args: any) => mockFetchPageData(args),
   parseSlug: (pathname: string) => mockParseSlug(pathname),
-  isCrossingTemplateBoundary: (from: string, to: string) => mockIsCrossingTemplateBoundary(from, to),
+  isCrossingTemplateBoundary: (from: string, to: string) =>
+    mockIsCrossingTemplateBoundary(from, to),
   WebsiteDataTypes: {
     Page: 'Page',
     BlogList: 'BlogList',

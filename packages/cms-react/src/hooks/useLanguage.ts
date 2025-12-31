@@ -36,7 +36,8 @@ export function useLanguage() {
     const { path: currentPath } = parseSlug(window.location.pathname);
 
     if (
-      'language_alternatives' in websiteData?.data &&
+      websiteData?.data &&
+      'language_alternatives' in websiteData.data &&
       websiteData.data.language_alternatives?.length
     ) {
       const targetAlternative: LanguageAlternative | undefined =

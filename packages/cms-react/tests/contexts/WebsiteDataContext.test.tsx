@@ -1,9 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import {
-  WebsiteDataProvider,
-  useWebsiteData,
-} from '../../src/contexts/WebsiteDataContext';
+import { WebsiteDataProvider, useWebsiteData } from '../../src/contexts/WebsiteDataContext';
 import type { WebsiteData } from '@deepsel/cms-utils';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
