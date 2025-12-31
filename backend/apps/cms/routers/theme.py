@@ -2,19 +2,20 @@ import logging
 import os
 import json
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from deepsel.utils.get_current_user import get_current_user
 from deepsel.models.user import UserModel
 from deepsel.utils.models_pool import models_pool
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 
 STATE_FILENAME = ".theme_state.json"
 
-router = APIRouter(prefix="/theme", tags=["theme"])
+router = create_api_router("theme", tags=["Theme"])
 
 
 class ThemeInfo(BaseModel):

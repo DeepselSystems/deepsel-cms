@@ -40,11 +40,12 @@ from deepsel.utils.generate_crud_schemas import generate_read_schema
 from deepsel.utils.get_current_user import get_current_user
 from deepsel.utils.models_pool import models_pool
 from deepsel.utils.pwd_context import pwd_context
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 
 
-router = APIRouter(tags=["Authentication"])
+router = create_api_router(tags=["Authentication"])
 RoleModel = models_pool["role"]
 UserModel = models_pool["user"]
 OrganizationModel = models_pool["organization"]

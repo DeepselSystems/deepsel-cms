@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+API_VERSION = "v1"
+API_PREFIX = f"/api/{API_VERSION}"
+
 ENVIRONMENT = os.getenv("ENVIRONMENT", "prod")
 
 # Database

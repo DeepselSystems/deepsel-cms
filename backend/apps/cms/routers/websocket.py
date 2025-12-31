@@ -16,9 +16,10 @@ from datetime import datetime
 import json
 import logging
 from typing import Optional
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = create_api_router(tags=["WebSocket APIs"])
 
 
 async def get_current_user_websocket(

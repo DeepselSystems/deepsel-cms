@@ -1,6 +1,6 @@
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, Optional, Type, Union
 from fastapi_crudrouter.core import _utils
-from fastapi_crudrouter.core._types import DEPENDENCIES, PAGINATION, T, PYDANTIC_SCHEMA
+from fastapi_crudrouter.core._types import DEPENDENCIES, PAGINATION, PYDANTIC_SCHEMA
 from deepsel.utils.generate_crud_schemas import (
     generate_create_schema,
     generate_update_schema,
@@ -29,6 +29,7 @@ from deepsel.mixins.orm import (
 from deepsel.models.user import UserModel
 from deepsel.utils.get_current_user import get_current_user
 from deepsel.utils.models_pool import models_pool
+from constants import API_PREFIX
 
 
 # monkey patch this broken shit
@@ -42,7 +43,7 @@ def get_pk_type(schema: Type[PYDANTIC_SCHEMA], pk_field: str) -> Any:
 _utils.get_pk_type = get_pk_type
 
 CALLABLE = Callable[..., Model]
-CALLABLE_LIST = Callable[..., List[Model]]
+CALLABLE_LIST = Callable[..., list[Model]]
 CALLABLE_DICT = Callable[..., dict]
 
 
@@ -57,7 +58,7 @@ class CRUDRouter(SQLAlchemyCRUDRouter):
         update_schema: Optional[Type[PYDANTIC_SCHEMA]] = None,
         # optional configs
         prefix: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        tags: Optional[list[str]] = None,
         paginate: Optional[int] = None,
         # enable or disable routes
         get_all_route: Union[bool, DEPENDENCIES] = False,
@@ -82,6 +83,11 @@ class CRUDRouter(SQLAlchemyCRUDRouter):
         update_schema = (
             update_schema if update_schema else generate_update_schema(db_model)
         )
+
+        prefix = str(prefix if prefix else table_name).lower()
+        prefix = f"{API_PREFIX}/{prefix.strip('/')}"
+        if not tags:
+            tags = [table_name.title()]
 
         super().__init__(
             schema=read_schema,
@@ -171,7 +177,7 @@ class CRUDRouter(SQLAlchemyCRUDRouter):
             pagination: PAGINATION = self.pagination,
             # search: Optional[list[SearchCriteria]] = None,
             # order_by: Optional[OrderByCriteria] = None
-        ) -> List[Model]:
+        ) -> list[Model]:
             return self.db_model.get_all(db, user, pagination)
 
         return route

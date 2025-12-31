@@ -17,10 +17,11 @@ from deepsel.utils.models_pool import models_pool
 from deepsel.utils.check_delete_cascade import get_delete_cascade_records_recursively
 from deepsel.utils.get_class_info import get_class_info
 from deepsel.utils.install_apps import import_csv_data
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Utilities"], prefix="/util")
+router = create_api_router("util", tags=["Utilities"])
 OrganizationModel = models_pool["organization"]
 UserModel = models_pool["user"]
 

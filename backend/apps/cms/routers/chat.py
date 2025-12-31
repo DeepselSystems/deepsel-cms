@@ -13,9 +13,9 @@ import logging
 import unicodedata
 from typing import List, Dict, Tuple
 from apps.cms.utils.domain_detection import detect_domain_from_request
-from apps.cms.models.organization import CMSSettingsModel
+from deepsel.utils.api_router import create_api_router
 
-router = APIRouter(tags=["Chatbox APIs"], prefix="/chat")
+router = create_api_router("chat", tags=["Chatbox APIs"])
 logger = logging.getLogger(__name__)
 
 

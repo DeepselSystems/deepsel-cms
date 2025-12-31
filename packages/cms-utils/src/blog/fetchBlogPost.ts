@@ -19,7 +19,7 @@ export async function fetchBlogPost({
   lang = 'default',
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000',
+  backendHost = 'http://localhost:8000/api/v1',
 }: FetchBlogPostProps): Promise<BlogPostData> {
   try {
     console.log('fetchBlogPost', { path });

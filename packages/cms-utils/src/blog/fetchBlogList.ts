@@ -18,7 +18,7 @@ export async function fetchBlogList({
   pagination,
   authToken,
   lang = 'default',
-  backendHost = 'http://localhost:8000',
+  backendHost = 'http://localhost:8000/api/v1',
 }: FetchBlogListProps): Promise<BlogListData> {
   try {
     let url = `${backendHost}/blog_post/list/${lang}`;

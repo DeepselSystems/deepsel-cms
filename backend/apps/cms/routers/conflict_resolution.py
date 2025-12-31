@@ -10,9 +10,10 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 import logging
 import requests
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/conflict_resolution", tags=["Conflict Resolution"])
+router = create_api_router("conflict_resolution", tags=["Conflict Resolution"])
 
 
 def generate_manual_explanation(conflicts):
@@ -20,9 +21,9 @@ def generate_manual_explanation(conflicts):
     if len(conflicts) == 1:
         conflict = conflicts[0]
         if conflict.get("type") == "new_server_content":
-            return f"<p><strong>New content detected:</strong> The server has new content in {conflict['locale']} that you don't have locally.</p>"
+            return f"<p><strong>New content detected:</strong> The system has new content saved in {conflict['locale']} that you don't have locally.</p>"
         elif conflict.get("type") == "new_user_content":
-            return f"<p><strong>New local content:</strong> You have new content in {conflict['locale']} that doesn't exist on the server.</p>"
+            return f"<p><strong>New local content:</strong> You have new content saved in {conflict['locale']} that doesn't exist on the server.</p>"
         else:
             return f"<p><strong>Content modified:</strong> The {conflict['locale']} version has been changed by another user. Please review the differences.</p>"
     else:

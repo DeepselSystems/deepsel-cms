@@ -192,7 +192,7 @@ try:
     )
 
     # Add GraphQL endpoint
-    app.include_router(graphql_router, prefix="/graphql")
+    app.include_router(graphql_router, prefix="/graphql", tags=["GraphQL"])
     logger.info("GraphQL endpoint initialized at /graphql")
 
 except Exception as e:

@@ -1,17 +1,29 @@
-const DEFAULT_DEV_BACKEND = 'https://democms-api-dev.deepsel.com';
-const DEFAULT_PROD_BACKEND = 'https://democms-api-dev.deepsel.com';
+const DEFAULT_DEV_BACKEND = 'https://deepsel-cms-api-dev.deepsel.com';
+const DEFAULT_PROD_BACKEND = 'https://deepsel-cms-api.deepsel.com';
 
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
   const windowPublicBackend = typeof window !== 'undefined' ? window.PUBLIC_BACKEND : undefined;
   const configuredBackend = import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
-  if (configuredBackend) return configuredBackend;
-  return import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND;
+  let host =
+    configuredBackend || (import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND);
+
+  // Add /api/v1 suffix if not already present
+  if (!host.endsWith('/api/v1')) {
+    host = host.endsWith('/') ? host + 'api/v1' : host + '/api/v1';
+  }
+
+  return host;
 };
 
 const checkBackendHealth = async (url) => {
   try {
-    const response = await fetch(`${url}/util/health`);
+    // Add /api/v1 suffix if not already present
+    let healthUrl = url;
+    if (!healthUrl.endsWith('/api/v1')) {
+      healthUrl = healthUrl.endsWith('/') ? healthUrl + 'api/v1' : healthUrl + '/api/v1';
+    }
+    const response = await fetch(`${healthUrl}/util/health`);
     const data = await response.json();
     return data.status === 'ok';
   } catch (error) {
@@ -27,10 +39,19 @@ const getPullRequestBackendHost = async () => {
   if (deployPullRequest !== 'true') return null;
 
   const backendSubdomain = deployBranch.replace('/', '-').toLowerCase();
-  const prBackendHost = `https://${backendSubdomain}.deepsel.com`;
+  let prBackendHost = `https://${backendSubdomain}.deepsel.com`;
 
   const isHealthy = await checkBackendHealth(prBackendHost);
-  return isHealthy ? prBackendHost : null;
+  if (isHealthy) {
+    // Add /api/v1 suffix if not already present
+    if (!prBackendHost.endsWith('/api/v1')) {
+      prBackendHost = prBackendHost.endsWith('/')
+        ? prBackendHost + 'api/v1'
+        : prBackendHost + '/api/v1';
+    }
+    return prBackendHost;
+  }
+  return null;
 };
 
 let backendHost = getInitialBackendHost();

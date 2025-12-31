@@ -6,8 +6,9 @@ from deepsel.utils.models_pool import models_pool
 from apps.cms.models.organization import CMSSettingsModel
 import requests
 import logging
+from deepsel.utils.api_router import create_api_router
 
-router = APIRouter(tags=["Autocomplete APIs"], prefix="/autocomplete")
+router = create_api_router("autocomplete", tags=["Autocomplete APIs"])
 logger = logging.getLogger(__name__)
 
 

@@ -18,7 +18,7 @@ export async function fetchPageData({
   lang,
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000',
+  backendHost = 'http://localhost:8000/api/v1',
 }: FetchPageDataProps): Promise<PageData> {
   try {
     // Format the path properly, make sure it starts with a slash
