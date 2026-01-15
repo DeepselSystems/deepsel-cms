@@ -4,8 +4,8 @@ from typing import Dict, Any, Optional, Tuple
 from jinja2 import Environment, DictLoader, select_autoescape
 from sqlalchemy.orm import Session
 
-from deepsel.models.user import UserModel
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.models.user import UserModel
+from apps.deepsel.utils.models_pool import models_pool
 from apps.cms.models.organization import CMSSettingsModel
 from fastapi import HTTPException
 

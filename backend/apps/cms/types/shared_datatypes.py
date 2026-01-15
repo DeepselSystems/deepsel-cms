@@ -3,7 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel, field_serializer, computed_field
 
-from deepsel.utils.secret_utils import truncate_secret
+from apps.deepsel.utils.secret_utils import truncate_secret
 
 
 class LocaleData(BaseModel):

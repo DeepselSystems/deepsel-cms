@@ -4,15 +4,15 @@ from apps.cms.utils.page_content import (
     check_page_content_slug_with_conflict,
 )
 from db import Base
-from deepsel.mixins.base_model import BaseModel
-from deepsel.mixins.activity import ActivityMixin
-from deepsel.mixins.orm import (
+from apps.deepsel.mixins.base_model import BaseModel
+from apps.deepsel.mixins.activity import ActivityMixin
+from apps.deepsel.mixins.orm import (
     PAGINATION,
     SearchQuery,
     OrderByCriteria,
     SearchCriteria,
 )
-from deepsel.models.user import UserModel
+from apps.deepsel.models.user import UserModel
 from sqlalchemy.orm import relationship, Session
 from fastapi import HTTPException, status
 from typing import Optional

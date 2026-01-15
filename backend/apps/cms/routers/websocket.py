@@ -9,14 +9,14 @@ from fastapi import (
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
-from deepsel.utils.get_current_user import get_current_user
-from deepsel.models.user import UserModel
+from apps.deepsel.utils.get_current_user import get_current_user
+from apps.deepsel.models.user import UserModel
 from apps.cms.utils.edit_session_manager import edit_session_manager, EditSession
 from datetime import datetime
 import json
 import logging
 from typing import Optional
-from deepsel.utils.api_router import create_api_router
+from apps.deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 router = create_api_router(tags=["WebSocket APIs"])

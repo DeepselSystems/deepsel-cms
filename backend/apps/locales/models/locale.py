@@ -4,7 +4,7 @@ from sqlalchemy import (
     String,
 )
 from db import Base
-from deepsel.mixins.orm import ORMBaseMixin
+from apps.deepsel.mixins.orm import ORMBaseMixin
 
 
 class LocaleModel(Base, ORMBaseMixin):

@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from constants import DATABASE_URL
 import psycopg2
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 from db import get_db_context
 import logging
 import os

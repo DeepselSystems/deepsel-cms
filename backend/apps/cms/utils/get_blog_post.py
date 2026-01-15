@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
 from apps.cms.types.blog import AuthorData, LanguageAlternative
 from apps.cms.types.public_settings import PublicSettings
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 from apps.cms.utils.domain_detection import detect_domain_from_request
 from fastapi import Request
 import logging

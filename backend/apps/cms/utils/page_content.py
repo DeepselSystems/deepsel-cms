@@ -1,7 +1,7 @@
 import re
 from sqlalchemy.orm import Session
 
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 
 
 def check_valid_page_content_slug(

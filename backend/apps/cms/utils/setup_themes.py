@@ -9,7 +9,7 @@ import logging
 import hashlib
 
 from _pytest.stash import D
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 from db import get_db_context
 from .hash_utils import hash_file, hash_directory, hash_theme_files
 from .state_utils import load_setup_state, save_setup_state

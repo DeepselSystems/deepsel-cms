@@ -3,7 +3,7 @@ from apps.cms.utils.render_wysiwyg_content import render_wysiwyg_content
 import logging
 from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 from pydantic import BaseModel, ConfigDict
 from apps.cms.types.shared_datatypes import SEOMetadata
 from apps.cms.types.public_settings import PublicSettings

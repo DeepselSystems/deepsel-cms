@@ -1,4 +1,5 @@
 installed_apps = [
+    "deepsel",
     "locales",
     "cms",
 ]

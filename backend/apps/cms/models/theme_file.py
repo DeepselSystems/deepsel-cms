@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Text, String
 from db import Base
-from deepsel.mixins.base_model import BaseModel
-from deepsel.mixins.activity import ActivityMixin
+from apps.deepsel.mixins.base_model import BaseModel
+from apps.deepsel.mixins.activity import ActivityMixin
 from sqlalchemy.orm import relationship
 
 

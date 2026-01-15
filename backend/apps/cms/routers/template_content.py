@@ -2,9 +2,9 @@ from typing import Optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
-from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
-from deepsel.utils.get_current_user import get_current_user
+from apps.deepsel.utils.crud_router import CRUDRouter
+from apps.deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.deepsel.utils.get_current_user import get_current_user
 from fastapi import Depends, Body, HTTPException
 from apps.cms.utils.render_wysiwyg_content import render_template_content
 import logging

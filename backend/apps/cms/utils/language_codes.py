@@ -2,7 +2,7 @@
 
 import logging
 from db import get_db_context
-from deepsel.utils.models_pool import models_pool
+from apps.deepsel.utils.models_pool import models_pool
 
 logger = logging.getLogger(__name__)
 

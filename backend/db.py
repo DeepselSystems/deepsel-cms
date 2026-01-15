@@ -2,7 +2,7 @@ from constants import DATABASE_URL, DB_POOL_SIZE, DB_MAX_OVERFLOW
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.engine.base import Engine
-from deepsel.utils.query import Query
+from apps.deepsel.utils.query import Query
 from contextlib import contextmanager
 
 engine: Engine = create_engine(

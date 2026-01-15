@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from deepsel.mixins.orm import ORMBaseMixin
+from apps.deepsel.mixins.orm import ORMBaseMixin
 from db import Base
 
 

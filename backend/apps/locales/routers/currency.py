@@ -1,6 +1,6 @@
-from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
-from deepsel.utils.get_current_user import get_current_user
+from apps.deepsel.utils.crud_router import CRUDRouter
+from apps.deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.deepsel.utils.get_current_user import get_current_user
 from fastapi import Depends
 
 table_name = "currency"

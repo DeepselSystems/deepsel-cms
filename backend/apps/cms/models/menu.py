@@ -1,12 +1,12 @@
 from sqlalchemy import Column, Integer, ForeignKey, Boolean, JSON
 from db import Base
-from deepsel.mixins.base_model import BaseModel
-from deepsel.mixins.orm import (
+from apps.deepsel.mixins.base_model import BaseModel
+from apps.deepsel.mixins.orm import (
     PAGINATION,
     SearchQuery,
     OrderByCriteria,
 )
-from deepsel.models.user import UserModel
+from apps.deepsel.models.user import UserModel
 from sqlalchemy.orm import relationship, Session
 from typing import Optional
 

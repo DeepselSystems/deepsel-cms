@@ -12,11 +12,11 @@ If not set, the server runs normally with migrations on startup.
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from constants import APP_SECRET
-from deepsel.utils.install_apps import install_apps
-from deepsel.utils.db_manager import startup_database_update
-from deepsel.utils.server_events import on_startup, on_shutdown
-from deepsel.utils.graphql_context import get_graphql_context
+from constants import APP_SECRET, DATABASE_URL
+from apps.deepsel.utils.install_apps import install_apps
+from apps.deepsel.utils.server_events import on_startup, on_shutdown
+from apps.deepsel.utils.graphql_context import get_graphql_context
+from apps.deepsel.utils.models_pool import models_pool
 from strawberry.fastapi import GraphQLRouter
 from contextlib import asynccontextmanager
 import logging
@@ -24,6 +24,8 @@ import os
 import sys
 from starlette.middleware.sessions import SessionMiddleware
 from traceback import format_exc
+from deepsel.sqlalchemy import DatabaseManager
+from db import Base
 
 
 logging.basicConfig(
@@ -134,7 +136,12 @@ if only_migrate:
     try:
         logger.info("Running database migrations only (ONLY_MIGRATE env set)")
         logger.info("Step 1/3: Running database migrations...")
-        startup_database_update()
+        # startup_database_update()
+        DatabaseManager(
+            sqlalchemy_declarative_base=Base,
+            db_url=DATABASE_URL,
+            models_pool=models_pool,
+        )
         logger.info("Step 2/3: Installing apps and importing data...")
         install_apps(app)
         logger.info("Step 3/3: Running startup logic...")
@@ -149,7 +156,12 @@ if only_migrate:
 try:
     if not no_migrate:
         logger.info("Initializing database and installing apps")
-        startup_database_update()
+        # startup_database_update()
+        DatabaseManager(
+            sqlalchemy_declarative_base=Base,
+            db_url=DATABASE_URL,
+            models_pool=models_pool,
+        )
         logger.info("Database migrations completed successfully")
     else:
         logger.info("Skipping database migrations due to NO_MIGRATE env set")
@@ -161,7 +173,7 @@ try:
     logger.info("Initializing GraphQL schema generation")
 
     try:
-        from deepsel.utils.graphql_schema import create_auto_schema
+        from apps.deepsel.utils.graphql_schema import create_auto_schema
 
         graphql_schema = create_auto_schema()
         logger.info("GraphQL schema generation completed successfully")
