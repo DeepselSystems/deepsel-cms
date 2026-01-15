@@ -19,7 +19,9 @@ class BlogListResponse(BaseModel):
     public_settings: PublicSettings
     blog_posts: Optional[list[BlogPostListItem]] = None
     page: int = 1
-    page_size: int = 5
+    page_size: int = 6
+    total_count: int = 0
+    total_pages: int = 0
 
 
 def get_blog_list(
@@ -54,6 +56,26 @@ def get_blog_list(
             org_settings.default_language.iso_code
             if target_lang == "default"
             else target_lang
+        )
+
+        # Build base query with filters
+        base_query = (
+            db.query(BlogPostModel)
+            .join(
+                BlogPostContentModel, BlogPostModel.id == BlogPostContentModel.post_id
+            )
+            .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
+            .filter(
+                BlogPostModel.published == True,
+                LocaleModel.iso_code == target_lang_iso_code,
+                BlogPostModel.organization_id == org_settings.id,
+            )
+        )
+
+        # Get total count efficiently
+        total_count = base_query.count()
+        total_pages = (
+            (total_count + page_size - 1) // page_size if total_count > 0 else 0
         )
 
         # Query published blog posts with content in the specified language
@@ -126,6 +148,8 @@ def get_blog_list(
             lang=target_lang_iso_code,
             page=page,
             page_size=page_size,
+            total_count=total_count,
+            total_pages=total_pages,
         )
 
     except Exception:
@@ -142,4 +166,6 @@ def get_blog_list(
             lang=target_lang_iso_code,
             page=page,
             page_size=page_size,
+            total_count=0,
+            total_pages=0,
         )

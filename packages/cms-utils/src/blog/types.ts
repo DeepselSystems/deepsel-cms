@@ -26,6 +26,8 @@ export interface BlogListData {
   blog_posts: BlogPostListItem[];
   page: number;
   page_size: number;
+  total_count: number;
+  total_pages: number;
 }
 
 export interface BlogPostData {

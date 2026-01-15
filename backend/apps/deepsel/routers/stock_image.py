@@ -3,7 +3,10 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from apps.deepsel.utils.stock_image import search_pexels_provider, StockImageProviderEnum
+from apps.deepsel.utils.stock_image import (
+    search_pexels_provider,
+    StockImageProviderEnum,
+)
 
 logger = logging.getLogger(__name__)
 

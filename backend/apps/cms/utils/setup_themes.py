@@ -180,6 +180,7 @@ def setup_themes(force_build=False, force_sync=False):
         with get_db_context() as db:
             ThemeFileModel = models_pool.get("theme_file")
             theme_files = db.query(ThemeFileModel).all()
+            db_hash = None
 
             if theme_files:
                 # Calculate hash from database models

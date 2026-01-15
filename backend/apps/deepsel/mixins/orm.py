@@ -40,7 +40,10 @@ from apps.deepsel.utils.check_delete_cascade import (
 )
 from apps.deepsel.utils.generate_crud_schemas import _get_relationships_class_map
 from apps.deepsel.utils.get_field_info import FieldInfo
-from apps.deepsel.utils.get_relationships import get_one2many_parent_id, get_relationships
+from apps.deepsel.utils.get_relationships import (
+    get_one2many_parent_id,
+    get_relationships,
+)
 from apps.deepsel.utils.models_pool import models_pool
 
 logger = logging.getLogger(__name__)

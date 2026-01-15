@@ -101,11 +101,11 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
   }, [websiteData]);
 
   useEffect(() => {
-    // Watch for URL path changes (browser back/forward)
+    // Watch for URL path changes (browser back/forward) and re-fetch data
     const handlePathChange = async () => {
       const currentPath = window.location.pathname;
 
-      const { lang, path, pathType } = parseSlug(currentPath);
+      const { lang, path, pathType, pagination } = parseSlug(currentPath);
 
       if (pathType == WebsiteDataTypes.Page) {
         const data: PageData = await fetchPageData({ path, lang });
@@ -119,8 +119,8 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
           data: data,
         });
       } else if (pathType == WebsiteDataTypes.BlogList) {
-        const data: BlogListData = await fetchBlogList({ lang });
-
+        const data: BlogListData = await fetchBlogList({ lang, pagination });
+        console.log({ currentPath, lang, path, pathType, pagination, data });
         setWebsiteData({
           type: pathType,
           data: data,

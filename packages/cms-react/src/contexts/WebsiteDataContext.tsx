@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { WebsiteData } from '@deepsel/cms-utils';
-import { PageTransition } from '../hooks/useTransition';
+import { PageTransition } from '../components/PageTransition';
 
 type WebsiteDataContextValue = {
   websiteData: WebsiteData;

@@ -1,2 +1,2 @@
-export * from '../hooks/useTransition';
+export * from './PageTransition';
 export * from './ContentRenderer';
