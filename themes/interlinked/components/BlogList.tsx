@@ -13,7 +13,7 @@ export default function BlogList({ data }: { data: BlogListData }) {
   return (
     <WebsiteDataProvider websiteData={{ type: WebsiteDataTypes.BlogList, data: data }}>
       <main className="min-h-screen flex flex-col justify-between">
-        <div className="relative flex flex-col justify-center items-center bg-cover bg-center h-[450px] pt-4" style={{ backgroundImage: `url(${hero.src})` }}>
+        <div className="relative flex flex-col justify-center items-center bg-cover bg-center h-[450px] pt-4" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${hero.src})` }}>
           <header className="absolute top-10 shadow px-3 max-w-7xl mx-auto rounded-lg  z-50 backdrop-blur bg-white/90">
             <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
               <div className="flex items-center gap-2 text-2xl font-bold">
@@ -26,7 +26,9 @@ export default function BlogList({ data }: { data: BlogListData }) {
             </div>
           </header>
           {/* <img src={hero2.src} alt="Hero" /> */}
-          <h1 className="absolute bottom-[-60px] text-5xl font-bold mb-8 bg-white shadow-lg rounded-lg px-20 pt-2 pb-3">Blog</h1>
+          <h1 className="text-4xl font-bold mb-8 shadow rounded-lg px-10 pt-2 pb-3 text-white">
+            Blog
+          </h1>
         </div>
 
         <div className="max-w-7xl mx-auto flex gap-4 pt-4">
