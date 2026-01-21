@@ -459,7 +459,7 @@ export default function SiteCreate() {
         <div className={`mt-8 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
             <FontAwesomeIcon icon={faNewspaper} className="text-gray-600" />
-            <H2>{t('Blog Post Settings')}</H2>
+            <H2>{t('Blog Settings')}</H2>
           </div>
 
           <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, TextInput, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faEdit, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faEdit, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Render label and description
@@ -112,7 +112,7 @@ const SecretInput = React.forwardRef(
         <Box>
           <LabelAndDescription required={required} label={label} description={description} />
 
-          <Group gap="sm" className="w-full">
+          <Group gap="xs" className="w-full">
             {/* Input field for editing secret value */}
             <TextInput
               autoFocus
@@ -121,17 +121,19 @@ const SecretInput = React.forwardRef(
               onChange={({ target: { value } }) => setEditingValue?.(value)}
               placeholder={t('Enter new secret...')}
               className="flex-1"
-              size="sm"
+              size="md"
+              radius="md"
             />
             {/* Done button - confirms and saves the changes */}
             <Button
               size="sm"
               variant="filled"
-              color="blue"
+              color="green"
               leftSection={<FontAwesomeIcon icon={faCheck} />}
               disabled={!editingValue}
               onClick={handleDoneClick}
               className="shrink-0"
+              radius="md"
             >
               {t('Done')}
             </Button>
@@ -139,12 +141,13 @@ const SecretInput = React.forwardRef(
             <Button
               size="sm"
               variant="outline"
-              color="blue"
-              leftSection={<FontAwesomeIcon icon={faRefresh} />}
+              color="red"
+              leftSection={<FontAwesomeIcon icon={faXmark} />}
               onClick={handleResetClick}
               className="shrink-0"
+              radius="md"
             >
-              {t('Reset')}
+              {t('Cancel')}
             </Button>
           </Group>
         </Box>
@@ -155,9 +158,9 @@ const SecretInput = React.forwardRef(
     return (
       <Box>
         <LabelAndDescription required={required} label={label} description={description} />
-        <Group gap="sm" className="w-full" wrap="nowrap">
+        <Group gap="xs" className="w-full" wrap="nowrap">
           {/*region Display box for truncated secret*/}
-          <Box className="flex-1 px-3 py-2 bg-gray-50 rounded-md border border-gray-200 truncate">
+          <Box className="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 truncate">
             <span className="text-sm text-gray-700 font-mono">
               {editingValue || truncateSecret || t('No secret available')}
             </span>
@@ -173,6 +176,7 @@ const SecretInput = React.forwardRef(
               leftSection={<FontAwesomeIcon icon={faEdit} />}
               onClick={handleEditClick}
               className="shrink-0"
+              radius="md"
             >
               {t('Edit')}
             </Button>

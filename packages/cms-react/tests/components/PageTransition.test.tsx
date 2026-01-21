@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import { PageTransition } from '../../src/hooks/useTransition';
+import { PageTransition } from '../../src/components/PageTransition';
 import { WebsiteDataProvider } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';

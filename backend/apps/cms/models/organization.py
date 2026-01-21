@@ -56,9 +56,10 @@ class CMSSettingsModel(OrganizationModel, __CMSSettingsEncryptedData):
     auto_translate_components = Column(Boolean, default=False)
     openai_api_key = Column(String(255), nullable=True)
 
-    # post settings
+    # blog settings
     show_post_author = Column(Boolean, default=True)
     show_post_date = Column(Boolean, default=True)
+    blog_posts_per_page = Column(Integer, default=6)
 
     ai_translation_model_id = Column(Integer, ForeignKey("openrouter_model.id"))
     ai_translation_model = relationship(

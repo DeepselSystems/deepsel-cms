@@ -26,6 +26,7 @@ import { Button, Modal, FileInput, Group, Alert } from '@mantine/core';
 import Switch from '../../../common/ui/Switch.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
+import NumberInput from '../../../common/ui/NumberInput.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SecretInput from '../../../common/ui/SecretInput.jsx';
@@ -510,7 +511,7 @@ export default function SiteSettings() {
                   searchFields={['string_id', 'name']}
                   label={t('Translation model')}
                   description={t('AI model used for translating content between languages')}
-                  placeholder={t('Select a AI model')}
+                  placeholder={t('Select an AI model')}
                   value={record?.ai_translation_model_id}
                   onChange={(value) =>
                     setRecord({
@@ -529,7 +530,7 @@ export default function SiteSettings() {
                   searchFields={['string_id', 'name']}
                   label={t('Default writing model')}
                   description={t('Default AI model for generating new content')}
-                  placeholder={t('Select a AI model')}
+                  placeholder={t('Select an AI model')}
                   value={record?.ai_default_writing_model_id}
                   onChange={(value) =>
                     setRecord({
@@ -547,7 +548,7 @@ export default function SiteSettings() {
                   searchFields={['string_id', 'name']}
                   label={t('Autocomplete model')}
                   description={t('AI model used for text autocomplete and suggestions')}
-                  placeholder={t('Select a AI model')}
+                  placeholder={t('Select an AI model')}
                   value={record?.ai_autocomplete_model_id}
                   onChange={(value) =>
                     setRecord({
@@ -610,7 +611,7 @@ export default function SiteSettings() {
                   searchFields={['string_id', 'name']}
                   label={t('Chat model')}
                   description={t('AI model used for the chat assistant')}
-                  placeholder={t('Select a AI model')}
+                  placeholder={t('Select an AI model')}
                   value={record?.chatbox_model_id}
                   onChange={(value) =>
                     setRecord({
@@ -626,11 +627,23 @@ export default function SiteSettings() {
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
               <FontAwesomeIcon icon={faNewspaper} className="text-gray-600" />
-              <H2>{t('Blog Post Settings')}</H2>
+              <H2>{t('Blog Settings')}</H2>
             </div>
 
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
+                <NumberInput
+                  label={t('Posts per page')}
+                  description={t('Number of blog posts to display per page')}
+                  value={record.blog_posts_per_page || 6}
+                  onChange={(value) =>
+                    setRecord({
+                      ...record,
+                      blog_posts_per_page: value,
+                    })
+                  }
+                  className="mb-6 max-w-[300px]"
+                />
                 <Switch
                   label={t('Show Author on Posts')}
                   description={t('Display the author name on blog posts')}

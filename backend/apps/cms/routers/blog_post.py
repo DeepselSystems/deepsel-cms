@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import Body, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -62,7 +62,7 @@ def get_website_blog_list(
     request: Request,
     lang: str,
     page: int = 1,
-    page_size: int = 5,
+    page_size: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
     return get_blog_list(
