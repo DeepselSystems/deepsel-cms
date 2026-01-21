@@ -4,7 +4,7 @@ import os
 import hashlib
 
 
-def hash_file(path):
+def hash_file(path: str):
     """Hash a single file."""
     if not os.path.exists(path):
         return None
@@ -15,11 +15,12 @@ def hash_file(path):
     return hasher.hexdigest()
 
 
-def hash_directory(path, ignored_dirs=None):
+def hash_directory(
+    path: str, ignored_dirs: list[str] = ["node_modules", "dist", ".astro", ".git"]
+):
     """Hash an entire directory, optionally ignoring certain subdirectories."""
     if not os.path.exists(path):
         return None
-    ignored_dirs = ignored_dirs or set()
     hasher = hashlib.sha256()
     for root, dirs, files in os.walk(path):
         dirs[:] = [d for d in dirs if d not in ignored_dirs]

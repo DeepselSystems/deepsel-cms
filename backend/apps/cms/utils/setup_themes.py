@@ -22,7 +22,6 @@ from constants import ENVIRONMENT
 
 logger = logging.getLogger(__name__)
 
-SOURCE_HASH_IGNORES = {"node_modules", "dist", ".astro", ".git"}
 STATE_FILENAME = ".theme_state.json"
 
 
@@ -40,9 +39,8 @@ def setup_themes(force_build=False, force_sync=False):
         force_sync: If True, force sync themes folder (used when language versions are deleted)
     """
     start_time = time.time()
-    logger.info("Setting up themes...")
     data_dir = user_data_dir("deepsel-cms", "deepsel")
-    logger.info(f"Data dir: {data_dir}")
+    logger.info(f"Setting up themes with data dir {data_dir}")
 
     user_shell = os.environ.get("SHELL", "/bin/sh")
 
@@ -85,10 +83,10 @@ def setup_themes(force_build=False, force_sync=False):
         admin_src = "../admin"
         packages_src = "../packages"
 
-        themes_hash = hash_directory(themes_src, SOURCE_HASH_IGNORES)
-        admin_hash = hash_directory(admin_src, SOURCE_HASH_IGNORES)
-        packages_hash = hash_directory(packages_src, SOURCE_HASH_IGNORES)
-        client_hash = hash_directory(client_path, SOURCE_HASH_IGNORES)
+        themes_hash = hash_directory(themes_src)
+        admin_hash = hash_directory(admin_src)
+        packages_hash = hash_directory(packages_src)
+        client_hash = hash_directory(client_path)
 
         # Check what needs syncing
         need_themes_sync = (
@@ -103,7 +101,7 @@ def setup_themes(force_build=False, force_sync=False):
             themes_dst = os.path.join(data_dir, "themes")
             os.makedirs(themes_dst, exist_ok=True)
             sync_directory(src=themes_src, dst=themes_dst, exclude_dirs=EXCLUDE_DIRS)
-            logger.info("Themes folder synced successfully")
+            logger.info("Themes folder changes synced successfully")
         else:
             logger.info("Themes folder unchanged; skipping sync")
 
@@ -118,6 +116,10 @@ def setup_themes(force_build=False, force_sync=False):
 
         # Sync packages if changed
         if need_packages_sync and os.path.exists(packages_src):
+            logger.info("Packages folder changes detected; syncing...")
+            logger.info(previous_state.get("packages_hash") != packages_hash)
+            logger.info(previous_state.get("packages_hash"))
+            logger.info(packages_hash)
             packages_dst = os.path.join(data_dir, "packages")
             os.makedirs(packages_dst, exist_ok=True)
             sync_directory(
@@ -234,9 +236,9 @@ def setup_themes(force_build=False, force_sync=False):
                         f"Reconciled {reconciled_count} theme files from database"
                     )
                 else:
-                    logger.info("Theme files unchanged; skipping reconciliation")
+                    logger.info("Theme edits unchanged; skipping reconciliation")
             else:
-                logger.info("No theme files in database to reconcile")
+                logger.info("No theme edits in database to reconcile")
 
         # Step 2.5: Generate theme imports for client_build (after cloning and reconciliation)
         generate_theme_imports(data_dir_path=data_dir)
@@ -245,6 +247,7 @@ def setup_themes(force_build=False, force_sync=False):
         need_install = (
             not os.path.exists(node_modules_path)
             or previous_state.get("package_lock_hash") != package_lock_hash
+            or need_themes_sync
         )
 
         build_inputs_hasher = hashlib.sha256()
@@ -299,7 +302,7 @@ def setup_themes(force_build=False, force_sync=False):
             else:
                 logger.info("Client build completed successfully")
         else:
-            logger.info("Build artifacts up to date; skipping npm build steps")
+            logger.info("Build artifacts up to date; skipping client build")
 
         state_payload = {
             "themes_hash": themes_hash,
@@ -307,10 +310,9 @@ def setup_themes(force_build=False, force_sync=False):
             "client_hash": client_hash,
             "db_hash": db_hash,
             "package_lock_hash": package_lock_hash,
+            "packages_hash": packages_hash,
             "build_inputs_hash": build_inputs_hash,
         }
-        if ENVIRONMENT == "dev":
-            state_payload["packages_hash"] = packages_hash
         save_setup_state(state_path, state_payload)
 
         logger.info(f"Theme setup completed in {time.time() - start_time:.2f} seconds")

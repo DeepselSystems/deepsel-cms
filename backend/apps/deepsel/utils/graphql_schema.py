@@ -212,7 +212,7 @@ class AutoGraphQLFactory:
 
             # Skip input type generation if no usable fields (likely association table)
             if not annotations:
-                logger.warning(
+                logger.debug(
                     f"Skipping create input type for {table_name} - no usable fields"
                 )
                 return None, None
@@ -315,7 +315,7 @@ class AutoGraphQLFactory:
 
         # Skip resolvers if input types couldn't be generated (association table)
         if not create_input_type or not update_input_type:
-            logger.warning(
+            logger.debug(
                 f"Skipping resolvers for {table_name} - no input types available"
             )
             return None

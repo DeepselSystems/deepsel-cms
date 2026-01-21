@@ -185,8 +185,9 @@ export type ThemeName = keyof typeof themeMap;
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(updated)
                 logger.info(f"Updated themes.ts with {len(imports)} imports")
-            else:
-                logger.info("No changes needed for themes.ts")
+            # else:
+            # logger.info("No changes needed for themes.ts")
+
         else:
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(file_content)
