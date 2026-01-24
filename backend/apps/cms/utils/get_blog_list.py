@@ -57,11 +57,7 @@ def get_blog_list(
             if target_lang == "default"
             else target_lang
         )
-        logger.info(org_settings.blog_posts_per_page)
-        logger.info(page_size)
         page_size = org_settings.blog_posts_per_page if page_size is None else page_size
-
-        logger.info(page_size)
 
         # Build base query with filters
         base_query = (

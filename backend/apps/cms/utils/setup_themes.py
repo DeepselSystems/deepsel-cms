@@ -117,9 +117,6 @@ def setup_themes(force_build=False, force_sync=False):
         # Sync packages if changed
         if need_packages_sync and os.path.exists(packages_src):
             logger.info("Packages folder changes detected; syncing...")
-            logger.info(previous_state.get("packages_hash") != packages_hash)
-            logger.info(previous_state.get("packages_hash"))
-            logger.info(packages_hash)
             packages_dst = os.path.join(data_dir, "packages")
             os.makedirs(packages_dst, exist_ok=True)
             sync_directory(

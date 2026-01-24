@@ -105,7 +105,6 @@ function BlogListContent() {
       <div className="flex justify-center">
         <MantineProvider>
           <Pagination total={websiteData.data?.total_pages} onChange={(page) => {
-            console.log({ page });
             window.history.pushState(null, '', `/blog/page/${page}`);
           }} />
         </MantineProvider>
