@@ -46,24 +46,24 @@ jobs:
         with:
           python-version: '3.12'
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/pyproject.toml
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install flake8==7.2.0 black==25.1.0 bandit==1.8.3 pytest==8.3.5
+          python -m pip install --upgrade pip
+          make install-dev
 
-      - name: Run lint checks
-        run: |
-          make lint
-
-      - name: Run security checks
-        run: |
-          make security
-
-      - name: Run tests
-        run: |
-          make test
+      - name: Check formatting with black
+        run: make format-check
+      
+      - name: Lint with flake8
+        run: make lint
+      
+      - name: Security check with bandit
+        run: make security
+      
+      - name: Test with pytest
+        run: make test
 
   # build:
   #   runs-on: ubuntu-latest

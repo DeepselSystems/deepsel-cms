@@ -66,7 +66,7 @@ class ActivityMixin(object):
         values: dict,
         commit: Optional[bool] = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         instance = super().create(db, user, values, commit=True, *args, **kwargs)
         activity = ActivityModel(
@@ -190,7 +190,7 @@ class ActivityMixin(object):
         values: dict,
         commit: Optional[bool] = True,
         *args,
-        **kwargs
+        **kwargs,
     ):
         # Get changes before update
         changes = self._get_changes(db, values)

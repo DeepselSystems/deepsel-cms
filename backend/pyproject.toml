@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=80.9.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepsel-cms"
+version = "0.1.0"
+description = "Deepsel CMS Backend - FastAPI application for content management"
+readme = "README.md"
+authors = [
+    {name = "Deepsel Inc.", email = "info@deepsel.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Framework :: Pydantic",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["cms", "fastapi", "sqlalchemy", "deepsel"]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic==2.7.1",
+    "beautifulsoup4==4.12.3",
+    "python-dotenv==1.0.1",
+    "boto3==1.34.103",
+    "SQLAlchemy==2.0.30",
+    "uvicorn==0.29.0",
+    "fastapi==0.115.6",
+    "python-multipart==0.0.18",
+    "fastapi-crudrouter==0.8.6",
+    "psycopg2-binary==2.9.9",
+    "PyJWT==2.8.0",
+    "passlib==1.7.4",
+    "bcrypt==4.0.1",
+    "requests==2.32.2",
+    "websockets==12.0",
+    "fastapi-mail==1.4.1",
+    "geoip2==4.8.0",
+    "pyotp==2.9.0",
+    "clamd==1.0.2",
+    "azure-storage-blob==12.19.1",
+    "Authlib==1.3.1",
+    "starlette==0.40.0",
+    "itsdangerous==2.2.0",
+    "httpx==0.27.2",
+    "PyYAML==6.0.2",
+    "python3-saml==1.16.0",
+    "strawberry-graphql[fastapi]",
+    "deepsel",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "black>=25.0.0",
+    "flake8>=7.2.0",
+    "bandit>=1.8.0",
+    "build>=0.10.0",
+    "twine>=6.2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/DeepselSystems/deepsel-cms"
+Repository = "https://github.com/DeepselSystems/deepsel-cms"
+Issues = "https://github.com/DeepselSystems/deepsel-cms/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["apps*"]
+exclude = ["tests*", "docs*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=apps --cov-report=term-missing"
+
+[tool.flake8]
+max-line-length = 88
+exclude = [".git", "venv", ".venv", "build", "dist", "__pycache__"]
+ignore = ["E501", "F401", "W292", "E261", "W503", "W504", "E302", "F541", "E303", "E712", "E711", "E203", "W291"]
