@@ -4,7 +4,6 @@ from typing import Any, Optional
 
 import httpx
 
-
 logger = logging.getLogger(__name__)
 
 

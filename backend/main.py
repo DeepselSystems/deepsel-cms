@@ -27,7 +27,6 @@ from traceback import format_exc
 from deepsel.sqlalchemy import DatabaseManager
 from db import Base
 
-
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
     format="%(levelname)s:     [%(asctime)s] %(name)s %(message)s",

@@ -8,7 +8,6 @@ from typing import Optional, Any
 from fastapi import APIRouter
 from constants import API_PREFIX
 
-
 # ============================================================================
 # Router Helper Functions
 # ============================================================================

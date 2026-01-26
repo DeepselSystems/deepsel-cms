@@ -3,7 +3,6 @@ import logging
 import httpx
 from fastapi import HTTPException
 
-
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a professional content writer. Generate high-quality page content based on the user's request.

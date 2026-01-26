@@ -43,16 +43,14 @@ def get_delete_cascade_records_recursively(
     engine = db.bind
     inspector = inspect(engine)
     table_name = records[0].__tablename__
-    command = text(
-        """
+    command = text("""
         SELECT DISTINCT
             conrelid::regclass AS table_name
         FROM
             pg_constraint AS con
         WHERE
             confrelid = :table_name ::regclass;
-    """
-    ).bindparams(table_name=table_name)
+    """).bindparams(table_name=table_name)
     tables_with_foreign_keys_to_this_table = db.execute(command)
     for row in tables_with_foreign_keys_to_this_table:
         table_name = row[0].replace('"', "")

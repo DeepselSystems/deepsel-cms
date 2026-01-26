@@ -6,7 +6,6 @@ from constants import DATABASE_URL
 from main import app as fastapi_app
 from fastapi.testclient import TestClient
 
-
 engine: Engine = create_engine(DATABASE_URL)
 
 

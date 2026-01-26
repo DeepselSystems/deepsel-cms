@@ -15,7 +15,6 @@ from apps.deepsel.models.organization import OrganizationModel
 from apps.deepsel.utils.models_pool import models_pool
 from apps.deepsel.utils.send_email import send_email_with_limit, EmailRateLimitError
 
-
 logger = logging.getLogger(__name__)
 
 

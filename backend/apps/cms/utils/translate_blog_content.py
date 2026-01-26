@@ -3,7 +3,6 @@ from typing import Any
 
 import httpx
 
-
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (

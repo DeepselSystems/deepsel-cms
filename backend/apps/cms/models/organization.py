@@ -10,7 +10,6 @@ from apps.cms.utils.process_menu_item import build_localized_menus, LocalizedMen
 from apps.deepsel.utils import decrypt, encrypt
 from apps.cms.types.public_settings import PublicSettings
 
-
 logger = logging.getLogger(__name__)
 
 
