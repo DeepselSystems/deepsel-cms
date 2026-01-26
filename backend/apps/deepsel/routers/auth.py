@@ -156,7 +156,7 @@ def login_for_access_token(
         organization = db.query(OrganizationModel).get(user.organization_id)
         if organization.require_2fa_all_users:
             return {
-                "access_token": "",
+                "access_token": "",  # nosec B105
                 "user": None,
                 "is_require_user_config_2fa": True,
             }
