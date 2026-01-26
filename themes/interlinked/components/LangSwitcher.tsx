@@ -5,8 +5,6 @@ import { useLanguage } from "@deepsel/cms-react";
 export default function LangSwitcher() {
   const { language, setLanguage, availableLanguages } = useLanguage();
 
-  console.log({ language, availableLanguages });
-
   if (availableLanguages?.length === 1) {
     return null;
   }

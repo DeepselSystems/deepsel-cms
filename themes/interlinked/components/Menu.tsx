@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretDown, faCaretRight } from '@fortawesome/free-solid-svg-icons';
-import { useWebsiteData } from '@deepsel/cms-react';
-import { isActiveMenu, type MenuItem } from '@deepsel/cms-utils';
-
+import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { useWebsiteData } from "@deepsel/cms-react";
+import { isActiveMenu, type MenuItem } from "@deepsel/cms-utils";
 
 interface RecursiveMenuItemProps {
   item: MenuItem;
@@ -12,9 +11,11 @@ interface RecursiveMenuItemProps {
 
 function RecursiveMenuItem({ item, level }: RecursiveMenuItemProps) {
   const hasChildren = !!item.children && item.children.length > 0;
+  const openInNewTab = item.open_in_new_tab;
   const [expanded, setExpanded] = useState(false);
 
-  const indentClass = level === 0 ? '' : level === 1 ? 'pl-2' : level === 2 ? 'pl-4' : 'pl-6';
+  const indentClass =
+    level === 0 ? "" : level === 1 ? "pl-2" : level === 2 ? "pl-4" : "pl-6";
 
   return (
     <li className="w-full">
@@ -27,7 +28,8 @@ function RecursiveMenuItem({ item, level }: RecursiveMenuItemProps) {
         }}
       >
         <a
-          href={item.url || '#'}
+          href={item.url || "#"}
+          target={openInNewTab ? "_blank" : "_self"}
           className="flex-1 text-left"
           onClick={(e) => {
             if (hasChildren) {
@@ -46,7 +48,10 @@ function RecursiveMenuItem({ item, level }: RecursiveMenuItemProps) {
               setExpanded((prev) => !prev);
             }}
           >
-            <FontAwesomeIcon icon={expanded ? faCaretDown : faCaretRight} />
+            <FontAwesomeIcon
+              icon={expanded ? faCaretDown : faCaretRight}
+              className="text-xs max-w-[10px]"
+            />
           </button>
         )}
       </div>
@@ -68,11 +73,16 @@ interface TopLevelMenuItemProps {
 
 function TopLevelMenuItem({ item, isActive }: TopLevelMenuItemProps) {
   const hasChildren = !!item.children && item.children.length > 0;
+  const openInNewTab = item.open_in_new_tab;
 
   if (!hasChildren) {
     return (
       <li className="relative py-4">
-        <a href={item.url || '#'} className="px-2 py-1 hover:text-primary-600 transition-colors duration-200">
+        <a
+          href={item.url || "#"}
+          className="px-2 py-1 hover:text-primary-600 transition-colors duration-200"
+          target={openInNewTab ? "_blank" : "_self"}
+        >
           {item.title}
         </a>
       </li>
@@ -80,13 +90,13 @@ function TopLevelMenuItem({ item, isActive }: TopLevelMenuItemProps) {
   }
 
   return (
-    <li className="relative group">
+    <li className="relative group py-4">
       <button
         type="button"
         className="flex items-center gap-1 px-2 py-1 hover:text-primary-600 transition-colors duration-200"
       >
         <span>{item.title}</span>
-        <FontAwesomeIcon icon={faCaretDown} className="text-xs" />
+        <FontAwesomeIcon icon={faCaretDown} className="text-xs max-w-[10px]" />
       </button>
       <div className="absolute left-0 mt-0 hidden min-w-[160px] rounded bg-white py-2 border border-primary-200 shadow-lg group-hover:block z-20">
         <ul className="w-full">
@@ -106,7 +116,11 @@ export default function Menu() {
   return (
     <ul className="flex gap-4 items-center">
       {menus?.map((menu) => (
-        <TopLevelMenuItem key={menu.id} item={menu} isActive={isActiveMenu(menu, websiteData!)} />
+        <TopLevelMenuItem
+          key={menu.id}
+          item={menu}
+          isActive={isActiveMenu(menu, websiteData!)}
+        />
       ))}
     </ul>
   );

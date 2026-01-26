@@ -12,9 +12,9 @@ export default function Page({ pageData }: { pageData: PageData }) {
     >
       <header className="shadow px-3 backdrop-blur bg-white/90">
           <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 text-2xl font-bold">
+            <a href="/" className="flex items-center gap-2 text-2xl font-bold">
               React Starter Theme
-            </div>
+            </a>
             <div className="flex items-center gap-6">
               <Menu />
               <LangSwitcher />

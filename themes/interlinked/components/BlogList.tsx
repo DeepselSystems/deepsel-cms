@@ -26,9 +26,9 @@ function BlogListContent() {
       <div className="relative flex flex-col justify-center items-center bg-cover bg-center h-[450px] pt-4" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${hero.src})` }}>
         <header className="absolute top-10 shadow min-w-[200px] md:min-w-[400px] lg:min-w-[600px] xl:min-w-[800px] px-3 max-w-7xl mx-auto rounded-lg  z-50 backdrop-blur bg-white/90">
           <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 text-2xl font-bold">
+            <a href="/" className="flex items-center gap-2 text-2xl font-bold">
               React Starter Theme
-            </div>
+            </a>
             <div className="flex items-center gap-6">
               <Menu />
               <LangSwitcher />
@@ -40,7 +40,7 @@ function BlogListContent() {
         </h1>
       </div>
 
-      <div className="max-w-7xl mx-auto flex gap-4 pt-4">
+      <div className="max-w-7xl mx-auto flex gap-4 pt-6">
         <div className="max-w-7xl mx-auto px-4 py-10">
           {websiteData.data?.blog_posts?.length === 0 ? (
             <p className="text-gray-600">No blog posts available.</p>
@@ -101,7 +101,7 @@ function BlogListContent() {
         </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-6">
         <MantineProvider>
           <Pagination total={websiteData.data?.total_pages} onChange={(page) => {
             window.history.pushState(null, '', `/blog/page/${page}`);
