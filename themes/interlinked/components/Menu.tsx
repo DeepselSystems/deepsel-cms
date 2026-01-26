@@ -68,11 +68,10 @@ interface TopLevelMenuItemProps {
 
 function TopLevelMenuItem({ item, isActive }: TopLevelMenuItemProps) {
   const hasChildren = !!item.children && item.children.length > 0;
-  const hightlightClass = isActive ? 'border-b-primary-600' : 'border-b-transparent hover:border-b-primary-600';
 
   if (!hasChildren) {
     return (
-      <li className={`relative py-4 border-b-4 ${hightlightClass}`}>
+      <li className="relative py-4">
         <a href={item.url || '#'} className="px-2 py-1 hover:text-primary-600 transition-colors duration-200">
           {item.title}
         </a>
