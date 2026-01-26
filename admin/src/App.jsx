@@ -41,7 +41,6 @@ import SamlSetting from './components/admin/organization/SamlSetting.jsx';
 import SiteSettings from './components/admin/site/SiteSettings.jsx';
 import SiteCreate from './components/admin/site/SiteCreate.jsx';
 import Media from './components/admin/attachment/Media.jsx';
-import ReactClient from './ReactClient.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
 import PublicAuth from './common/auth/PublicAuth.jsx';
 
