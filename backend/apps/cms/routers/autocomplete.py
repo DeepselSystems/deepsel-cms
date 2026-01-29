@@ -24,12 +24,7 @@ class AutocompleteResponse(BaseModel):
 
 def get_openrouter_client(organization_id: int, db: Session):
     """Get OpenRouter client configuration from organization settings"""
-    logger.info(f"=== GET OPENROUTER CLIENT START ===")
-    logger.info(f"Organization ID: {organization_id}")
-
     try:
-        logger.info(f"Looking up organization settings for org_id: {organization_id}")
-
         # Get organization settings
         settings_model = (
             db.query(CMSSettingsModel)
@@ -44,8 +39,6 @@ def get_openrouter_client(organization_id: int, db: Session):
             raise HTTPException(
                 status_code=404, detail="Organization settings not found"
             )
-
-        logger.info(f"Found organization settings")
 
         if not settings_model.openrouter_api_key:
             logger.error("No OpenRouter API key configured")
@@ -73,9 +66,6 @@ def get_openrouter_client(organization_id: int, db: Session):
             "model": model_string_id,
             "organization_id": organization_id,
         }
-
-        logger.info(f"Returning config: model={config['model']}")
-        logger.info(f"=== GET OPENROUTER CLIENT END ===")
 
         return config
 
@@ -147,14 +137,14 @@ Completion:"""
         headers = {
             "Authorization": f"Bearer {config['api_key']}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://deepsel-cms.com",
-            "X-Title": "DeepSel CMS Autocomplete",
+            "HTTP-Referer": "https://deepsel.com",
+            "X-Title": "Deepsel CMS Autocomplete",
         }
 
         data = {
             "model": config["model"],
             "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 50,
+            "max_tokens": 2000,
             "temperature": 0.7,
             "stop": ["\n", ".", "!", "?"],
         }
@@ -167,6 +157,9 @@ Completion:"""
         )
 
         if response.status_code != 200:
+            logger.error(
+                f"OpenRouter API request failed with status code: {response.status_code}"
+            )
             return AutocompleteResponse(suggestions=[])
 
         try:

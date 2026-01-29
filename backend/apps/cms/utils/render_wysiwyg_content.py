@@ -126,10 +126,7 @@ def render_template_content(
         loader=DictLoader(jinja2_templates),
         autoescape=select_autoescape(["html", "xml"]),
     )
-    logger.info(f"TRYING TO LOAD: {name}")
-    logger.info(f"TEMPLATE CONTENT: \n\n {jinja2_templates[name]}")
     template = env.get_template(name)
-    logger.info(f"LOADED: {template}")
     try:
         rendered_content = template.render(**context)
         return rendered_content
