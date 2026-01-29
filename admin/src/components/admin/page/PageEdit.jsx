@@ -35,8 +35,6 @@ import HomepageSwitch from './components/HomepageSwitch.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
 import AIWriterModal from './components/AIWriterModal.jsx';
-import SideBySideLanguageModal from '../../shared/SideBySideEditing/SideBySideLanguageModal.jsx';
-import SideBySideEditingView from '../../shared/SideBySideEditing/SideBySideEditingView.jsx';
 import { buildFullUrl } from '../../../utils/domainUtils.js';
 import useBackWithRedirect from '../../../common/hooks/useBackWithRedirect.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
@@ -153,11 +151,6 @@ export default function PageEdit({ onSuccess }) {
 
   // AI Writer state
   const [aiWriterModalOpened, setAiWriterModalOpened] = useState(false);
-
-  // Side-by-side editing state
-  const [sideBySideModalOpened, setSideBySideModalOpened] = useState(false);
-  const [isSideBySideMode, setIsSideBySideMode] = useState(false);
-  const [selectedLanguageContents, setSelectedLanguageContents] = useState([]);
 
   // Edit session management for parallel edit detection
   // Note: Using null for contentId to track page level editing (not individual content items)
@@ -834,402 +827,345 @@ export default function PageEdit({ onSuccess }) {
     clearParallelEditWarning();
   };
 
-  // Side-by-side editing functions
-  const openSideBySideModal = () => {
-    setSideBySideModalOpened(true);
-  };
-
-  const closeSideBySideModal = () => {
-    setSideBySideModalOpened(false);
-  };
-
-  const handleSideBySideEdit = (selectedLanguageIds) => {
-    const selectedContents = record.contents.filter((content) =>
-      selectedLanguageIds.includes(content.id),
-    );
-    setSelectedLanguageContents(selectedContents);
-    setIsSideBySideMode(true);
-  };
-
-  const exitSideBySideMode = () => {
-    setIsSideBySideMode(false);
-    setSelectedLanguageContents([]);
-  };
-
   return (!loading && record) || isCreateMode ? (
     <>
-      {isSideBySideMode ? (
-        <SideBySideEditingView
-          selectedLanguageContents={selectedLanguageContents}
-          record={record}
-          setRecord={setRecord}
-          onExitSideBySide={exitSideBySideMode}
-          onSave={handleSubmit}
-          isSaving={isSaving}
-          ContentEditor={JSONPageDataEditor}
-          AIWriterModalComponent={AIWriterModal}
-          aiAutocompleteEnabled={aiAutocompleteEnabled}
-          onAiAutocompleteChange={setAiAutocompleteEnabled}
-          aiAutoCompleteAvailable={aiAutoCompleteAvailable}
-          aiWritingAvailable={aiWritingAvailable}
-        />
-      ) : (
-        <div className="h-screen w-full flex overflow-hidden">
-          {/* Form Section - Left Side */}
-          <form
-            className="overflow-y-auto px-2 pb-2"
-            style={{ width: `${width}px`, flexShrink: 0 }}
-            onSubmit={handleSubmit}
-          >
-            {/* Parallel Edit Warning */}
-            <ParallelEditWarning
-              warning={parallelEditWarning}
-              onDismiss={clearParallelEditWarning}
-              onGoBack={handleGoBack}
-              onContinueEditing={handleContinueEditing}
-            />
-
-            {/* Title and Controls */}
-            <div className="">
-              <div className="flex justify-between flex-1 flex-col">
-                {activeContentTab &&
-                record.contents.find((c) => String(c.id) === activeContentTab) ? (
-                  <div className="space-y-2 mb-3">
-                    <TextInput
-                      className="flex-1 max-w-2xl"
-                      placeholder={t('Title')}
-                      classNames={{
-                        input: 'text-3xl! font-bold! px-0! border-0! bg-transparent!',
-                      }}
-                      maxLength={255}
-                      size="xl"
-                      variant="unstyled"
-                      required
-                      value={activeContent?.title || ''}
-                      onChange={(e) => {
-                        const newTitle = e.target.value;
-                        const content = record.contents.find(
-                          (c) => String(c.id) === activeContentTab,
-                        );
-                        if (content) {
-                          updateContentField(content.id, 'title', newTitle);
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <h1 className="text-3xl font-bold">{t('Page')}</h1>
-                )}
-              </div>
-            </div>
-
-            {/* Content Editing Section */}
-            <div>
-              <LoadingOverlay
-                visible={loading}
-                zIndex={1000}
-                overlayProps={{ radius: 'sm', blur: 2 }}
-                loaderProps={{ type: 'bars' }}
-              />
-
-              <Tabs
-                value={activeContentTab}
-                onChange={setActiveContentTab}
-                variant="pills"
-                radius="lg"
-              >
-                <Tabs.List className="mb-2 flex-wrap">
-                  {record?.contents?.map((content) => (
-                    <div key={content.id} className="relative group">
-                      <Menu
-                        shadow="md"
-                        width={150}
-                        position="bottom-end"
-                        withArrow
-                        radius="md"
-                        trigger="hover"
-                        openDelay={100}
-                        closeDelay={400}
-                      >
-                        <Menu.Target>
-                          <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
-                            <span className="mr-1">{content.locale?.emoji_flag}</span>
-                            {content.locale?.name}
-                          </Tabs.Tab>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            color="red"
-                            leftSection={<FontAwesomeIcon icon={faTrash} />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteContent(content.id);
-                            }}
-                          >
-                            {t('Remove')}
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                    </div>
-                  ))}
-
-                  <Tooltip label={t('Add Language')}>
-                    <Tabs.Tab
-                      value="add_new"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAddContent();
-                      }}
-                      className="bg-gray-100 hover:bg-gray-200"
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                    </Tabs.Tab>
-                  </Tooltip>
-                </Tabs.List>
-
-                {record?.contents?.length > 0 ? (
-                  record.contents.map((content) => (
-                    <Tabs.Panel key={content.id} value={String(content.id)}>
-                      <div className="flex gap-4 my-2">
-                        <div className="flex flex-col grow gap-2"></div>
-                      </div>
-
-                      {/* Slug Input */}
-                      {!record?.is_homepage && (
-                        <div className="mb-4">
-                          <SlugInput
-                            isHomepage={!!record?.is_homepage}
-                            contentId={content?._addNew ? null : content?.id}
-                            localeId={content?.locale_id}
-                            title={content?.title || ''}
-                            value={content?.slug || ''}
-                            onChange={(newSlug) => {
-                              updateContentField(content.id, 'slug', newSlug);
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      {/* Dynamic JSON Content Fields */}
-                      <div className="my-4">
-                        {content.content &&
-                        typeof content.content === 'object' &&
-                        Object.keys(content.content).length > 0 ? (
-                          <JSONPageDataEditor
-                            key={`editor-${content.id}-${editorRenderKey}`}
-                            content={content.content}
-                            contentId={content.id}
-                            setRecord={wrappedSetRecord}
-                            autoCompleteEnabled={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                          />
-                        ) : (
-                          <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-                            <p>{t('No content fields defined yet.')}</p>
-                            <p className="text-sm mt-2">
-                              {t(
-                                'Content fields will appear here when defined in the JSON structure.',
-                              )}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </Tabs.Panel>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
-                )}
-              </Tabs>
-            </div>
-          </form>
-
-          {/* Resize Handle */}
-          <div
-            className="hover:bg-blue-200 cursor-col-resize transition-colors"
-            onMouseDown={handleMouseDown}
-            style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
-            title="Drag to resize"
+      <div className="h-screen w-full flex overflow-hidden">
+        {/* Form Section - Left Side */}
+        <form
+          className="overflow-y-auto px-2 pb-2"
+          style={{ width: `${width}px`, flexShrink: 0 }}
+          onSubmit={handleSubmit}
+        >
+          {/* Parallel Edit Warning */}
+          <ParallelEditWarning
+            warning={parallelEditWarning}
+            onDismiss={clearParallelEditWarning}
+            onGoBack={handleGoBack}
+            onContinueEditing={handleContinueEditing}
           />
 
-          {/* Preview Panel - Right Side */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex-1 relative flex flex-col"
-            style={{ minWidth: 0 }}
-          >
-            {/* Preview Header */}
-            <div className="flex-shrink-0 px-4 py-2">
-              <div className="flex items-center justify-between">
-                {/* Device Icons - Left Side */}
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant={previewDevice === 'desktop' ? 'filled' : 'subtle'}
-                    size="sm"
-                    onClick={() => setPreviewDevice('desktop')}
-                    className="px-2"
-                  >
-                    <FontAwesomeIcon icon={faDesktop} />
-                  </Button>
-                  <Button
-                    variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
-                    size="sm"
-                    onClick={() => setPreviewDevice('tablet')}
-                    className="px-2"
-                  >
-                    <FontAwesomeIcon icon={faTabletAlt} />
-                  </Button>
-                  <Button
-                    variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
-                    size="sm"
-                    onClick={() => setPreviewDevice('mobile')}
-                    className="px-2"
-                  >
-                    <FontAwesomeIcon icon={faMobileAlt} />
-                  </Button>
+          {/* Title and Controls */}
+          <div className="">
+            <div className="flex justify-between flex-1 flex-col">
+              {activeContentTab &&
+              record.contents.find((c) => String(c.id) === activeContentTab) ? (
+                <div className="space-y-2 mb-3">
+                  <TextInput
+                    className="flex-1 max-w-2xl"
+                    placeholder={t('Title')}
+                    classNames={{
+                      input: 'text-3xl! font-bold! px-0! border-0! bg-transparent!',
+                    }}
+                    maxLength={255}
+                    size="xl"
+                    variant="unstyled"
+                    required
+                    value={activeContent?.title || ''}
+                    onChange={(e) => {
+                      const newTitle = e.target.value;
+                      const content = record.contents.find(
+                        (c) => String(c.id) === activeContentTab,
+                      );
+                      if (content) {
+                        updateContentField(content.id, 'title', newTitle);
+                      }
+                    }}
+                  />
                 </div>
+              ) : (
+                <h1 className="text-3xl font-bold">{t('Page')}</h1>
+              )}
+            </div>
+          </div>
 
-                {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
-                <div className="flex items-center gap-3">
-                  {record?.contents?.length > 1 && (
+          {/* Content Editing Section */}
+          <div>
+            <LoadingOverlay
+              visible={loading}
+              zIndex={1000}
+              overlayProps={{ radius: 'sm', blur: 2 }}
+              loaderProps={{ type: 'bars' }}
+            />
+
+            <Tabs
+              value={activeContentTab}
+              onChange={setActiveContentTab}
+              variant="pills"
+              radius="lg"
+            >
+              <Tabs.List className="mb-2 flex-wrap">
+                {record?.contents?.map((content) => (
+                  <div key={content.id} className="relative group">
+                    <Menu
+                      shadow="md"
+                      width={150}
+                      position="bottom-end"
+                      withArrow
+                      radius="md"
+                      trigger="hover"
+                      openDelay={100}
+                      closeDelay={400}
+                    >
+                      <Menu.Target>
+                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <span className="mr-1">{content.locale?.emoji_flag}</span>
+                          {content.locale?.name}
+                        </Tabs.Tab>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          color="red"
+                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteContent(content.id);
+                          }}
+                        >
+                          {t('Remove')}
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </div>
+                ))}
+
+                <Tooltip label={t('Add Language')}>
+                  <Tabs.Tab
+                    value="add_new"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddContent();
+                    }}
+                    className="bg-gray-100 hover:bg-gray-200"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </Tabs.Tab>
+                </Tooltip>
+              </Tabs.List>
+
+              {record?.contents?.length > 0 ? (
+                record.contents.map((content) => (
+                  <Tabs.Panel key={content.id} value={String(content.id)}>
+                    <div className="flex gap-4 my-2">
+                      <div className="flex flex-col grow gap-2"></div>
+                    </div>
+
+                    {/* Slug Input */}
+                    {!record?.is_homepage && (
+                      <div className="mb-4">
+                        <SlugInput
+                          isHomepage={!!record?.is_homepage}
+                          contentId={content?._addNew ? null : content?.id}
+                          localeId={content?.locale_id}
+                          title={content?.title || ''}
+                          value={content?.slug || ''}
+                          onChange={(newSlug) => {
+                            updateContentField(content.id, 'slug', newSlug);
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Dynamic JSON Content Fields */}
+                    <div className="my-4">
+                      {content.content &&
+                      typeof content.content === 'object' &&
+                      Object.keys(content.content).length > 0 ? (
+                        <JSONPageDataEditor
+                          key={`editor-${content.id}-${editorRenderKey}`}
+                          content={content.content}
+                          contentId={content.id}
+                          setRecord={wrappedSetRecord}
+                          autoCompleteEnabled={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                        />
+                      ) : (
+                        <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                          <p>{t('No content fields defined yet.')}</p>
+                          <p className="text-sm mt-2">
+                            {t(
+                              'Content fields will appear here when defined in the JSON structure.',
+                            )}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Tabs.Panel>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
+              )}
+            </Tabs>
+          </div>
+        </form>
+
+        {/* Resize Handle */}
+        <div
+          className="hover:bg-blue-200 cursor-col-resize transition-colors"
+          onMouseDown={handleMouseDown}
+          style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
+          title="Drag to resize"
+        />
+
+        {/* Preview Panel - Right Side */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 relative flex flex-col"
+          style={{ minWidth: 0 }}
+        >
+          {/* Preview Header */}
+          <div className="flex-shrink-0 px-4 py-2">
+            <div className="flex items-center justify-between">
+              {/* Device Icons - Left Side */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant={previewDevice === 'desktop' ? 'filled' : 'subtle'}
+                  size="sm"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className="px-2"
+                >
+                  <FontAwesomeIcon icon={faDesktop} />
+                </Button>
+                <Button
+                  variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
+                  size="sm"
+                  onClick={() => setPreviewDevice('tablet')}
+                  className="px-2"
+                >
+                  <FontAwesomeIcon icon={faTabletAlt} />
+                </Button>
+                <Button
+                  variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
+                  size="sm"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className="px-2"
+                >
+                  <FontAwesomeIcon icon={faMobileAlt} />
+                </Button>
+              </div>
+
+              {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
+              <div className="flex items-center gap-3">
+                <Tooltip
+                  label={
+                    'Please specify an API key and autocomplete model in Site Settings to use this feature.'
+                  }
+                  disabled={aiAutoCompleteAvailable}
+                >
+                  <div className="inline-flex items-center">
+                    <Switch
+                      label={t('AI Autocomplete')}
+                      checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                      disabled={!aiAutoCompleteAvailable}
+                      size="md"
+                    />
+                  </div>
+                </Tooltip>
+                <Tooltip
+                  label={
+                    aiWritingAvailable
+                      ? t('AI Writer')
+                      : t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )
+                  }
+                >
+                  <div>
                     <Button
-                      variant="outline"
+                      variant="filled"
                       size="sm"
-                      onClick={openSideBySideModal}
+                      onClick={openAiWriterModal}
+                      className="px-2"
+                      disabled={!aiWritingAvailable}
+                    >
+                      <FontAwesomeIcon icon={faPenNib} className="mr-2" />
+                      {t('AI Writer')}
+                    </Button>
+                  </div>
+                </Tooltip>
+                {!record?.is_frontend_page && (
+                  <Tooltip label={t('Settings')}>
+                    <Button
+                      variant="subtle"
+                      size="sm"
+                      onClick={openSettingsDrawer}
                       className="px-2"
                     >
-                      {t('Edit languages side-by-side')}
+                      <FontAwesomeIcon icon={faGear} />
                     </Button>
-                  )}
-                  <Tooltip
-                    label={
-                      'Please specify an API key and autocomplete model in Site Settings to use this feature.'
-                    }
-                    disabled={aiAutoCompleteAvailable}
-                  >
-                    <div className="inline-flex items-center">
-                      <Switch
-                        label={t('AI Autocomplete')}
-                        checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                        onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                        disabled={!aiAutoCompleteAvailable}
-                        size="md"
-                      />
-                    </div>
                   </Tooltip>
-                  <Tooltip
-                    label={
-                      aiWritingAvailable
-                        ? t('AI Writer')
-                        : t(
-                            'Please specify an API key and writing model in Site Settings to use this feature.',
-                          )
-                    }
-                  >
-                    <div>
-                      <Button
-                        variant="filled"
-                        size="sm"
-                        onClick={openAiWriterModal}
-                        className="px-2"
-                        disabled={!aiWritingAvailable}
-                      >
-                        <FontAwesomeIcon icon={faPenNib} className="mr-2" />
-                        {t('AI Writer')}
-                      </Button>
-                    </div>
-                  </Tooltip>
-                  {!record?.is_frontend_page && (
-                    <Tooltip label={t('Settings')}>
-                      <Button
-                        variant="subtle"
-                        size="sm"
-                        onClick={openSettingsDrawer}
-                        className="px-2"
-                      >
-                        <FontAwesomeIcon icon={faGear} />
-                      </Button>
-                    </Tooltip>
-                  )}
-                  <HomepageSwitch page={record} setPage={setRecord} />
-                  <Switch
-                    checked={record.published}
-                    onLabel={t('Published')}
-                    offLabel={t('Unpublished')}
-                    size="xl"
-                    classNames={{
-                      track: 'px-2',
-                    }}
-                    onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-                  />
-                  <Button
-                    type="submit"
-                    variant="filled"
-                    size="sm"
-                    loading={loading || isCheckingConflicts}
-                  >
-                    <FontAwesomeIcon icon={faSave} className="mr-2" />
-                    {t('Save')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Preview Content */}
-            <div className="flex-1 relative">
-              {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
-              {isResizing && (
-                <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
-              )}
-              <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
-                <div
-                  className="bg-white shadow-lg transition-all duration-300"
-                  style={{
-                    width:
-                      previewDevice === 'desktop'
-                        ? '100%'
-                        : previewDevice === 'tablet'
-                          ? '1024px'
-                          : '393px',
-                    height:
-                      previewDevice === 'desktop'
-                        ? 'calc(100% - 0px)'
-                        : previewDevice === 'tablet'
-                          ? '852px'
-                          : '852px',
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    borderRadius: '8px',
+                )}
+                <HomepageSwitch page={record} setPage={setRecord} />
+                <Switch
+                  checked={record.published}
+                  onLabel={t('Published')}
+                  offLabel={t('Unpublished')}
+                  size="xl"
+                  classNames={{
+                    track: 'px-2',
                   }}
+                  onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
+                />
+                <Button
+                  type="submit"
+                  variant="filled"
+                  size="sm"
+                  loading={loading || isCheckingConflicts}
                 >
-                  {previewUrl ? (
-                    <iframe
-                      ref={iframeRef}
-                      className="w-full h-full border border-gray-300 !shadow"
-                      style={{ borderRadius: '8px' }}
-                      title={`Preview`}
-                      sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      <div className="text-center">
-                        <p>{t('No content selected')}</p>
-                        <p className="text-sm mt-1">{t('Select a language tab to preview')}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  {t('Save')}
+                </Button>
               </div>
             </div>
-          </form>
-        </div>
-      )}
+          </div>
 
-      {/* Side-by-Side Language Selection Modal */}
-      <SideBySideLanguageModal
-        opened={sideBySideModalOpened}
-        onClose={closeSideBySideModal}
-        languages={record?.contents || []}
-        onEdit={handleSideBySideEdit}
-      />
+          {/* Preview Content */}
+          <div className="flex-1 relative">
+            {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
+            {isResizing && (
+              <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
+            )}
+            <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+              <div
+                className="bg-white shadow-lg transition-all duration-300"
+                style={{
+                  width:
+                    previewDevice === 'desktop'
+                      ? '100%'
+                      : previewDevice === 'tablet'
+                        ? '1024px'
+                        : '393px',
+                  height:
+                    previewDevice === 'desktop'
+                      ? 'calc(100% - 0px)'
+                      : previewDevice === 'tablet'
+                        ? '852px'
+                        : '852px',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  borderRadius: '8px',
+                }}
+              >
+                {previewUrl ? (
+                  <iframe
+                    ref={iframeRef}
+                    className="w-full h-full border border-gray-300 !shadow"
+                    style={{ borderRadius: '8px' }}
+                    title={`Preview`}
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <p>{t('No content selected')}</p>
+                      <p className="text-sm mt-1">{t('Select a language tab to preview')}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
 
       {/* Add Language Modal */}
       <Modal

@@ -25,10 +25,6 @@ import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx'
 import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
 import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
-import SideBySideLanguageModal from '../../shared/SideBySideEditing/SideBySideLanguageModal.jsx';
-import SideBySideEditingView from '../../shared/SideBySideEditing/SideBySideEditingView.jsx';
-import BlogPostContentEditor from '../../shared/SideBySideEditing/BlogPostContentEditor.jsx';
-import AIWriterModal from '../page/components/AIWriterModal.jsx';
 
 export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { t } = useTranslation();
@@ -102,11 +98,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
     [activeContentTab, record?.contents],
   );
 
-  // Side-by-side editing state
-  const [sideBySideModalOpened, setSideBySideModalOpened] = useState(false);
-  const [isSideBySideMode, setIsSideBySideMode] = useState(false);
-  const [selectedLanguageContents, setSelectedLanguageContents] = useState([]);
-
   // Function to generate slug from title
   const generateSlug = (title) => {
     if (!title) return '/';
@@ -168,209 +159,157 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
     }
   };
 
-  // Side-by-side editing functions
-  const openSideBySideModal = () => {
-    setSideBySideModalOpened(true);
-  };
-
-  const closeSideBySideModal = () => {
-    setSideBySideModalOpened(false);
-  };
-
-  const handleSideBySideEdit = (selectedLanguageIds) => {
-    const selectedContents = record.contents.filter((content) =>
-      selectedLanguageIds.includes(content.id),
-    );
-    setSelectedLanguageContents(selectedContents);
-    setIsSideBySideMode(true);
-  };
-
-  const exitSideBySideMode = () => {
-    setIsSideBySideMode(false);
-    setSelectedLanguageContents([]);
-  };
-
   return (
     <>
-      {isSideBySideMode ? (
-        <SideBySideEditingView
-          selectedLanguageContents={selectedLanguageContents}
-          record={record}
-          setRecord={setRecord}
-          onExitSideBySide={exitSideBySideMode}
-          onSave={handleSubmit}
-          isSaving={loading}
-          ContentEditor={BlogPostContentEditor}
-          AIWriterModalComponent={AIWriterModal}
-          aiAutocompleteEnabled={aiAutocompleteEnabled}
-          onAiAutocompleteChange={setAiAutocompleteEnabled}
-          isAiFeatureAvailable={isAiFeatureAvailable}
-          aiFeatureTooltip={aiRequirementMessage}
-        />
-      ) : (
-        <CreateFormWrapper
-          onSubmit={handleSubmit}
-          modalMode={modalMode}
-          loading={loading}
-          cardMode={false}
-        >
-          <div className={`flex justify-between mt-4`}>
-            <div className="text-gray-500 text-sm font-bold uppercase">{t('Create Blog Post')}</div>
-            <div className="flex items-center gap-2">
-              {record?.contents?.length > 1 && (
-                <Button variant="outline" size="md" onClick={openSideBySideModal} className="px-2">
-                  {t('Edit languages side-by-side')}
-                </Button>
-              )}
-              <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
-                <div className="inline-flex items-center">
-                  <Switch
-                    label={t('AI Autocomplete')}
-                    checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                    onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                    disabled={!isAiFeatureAvailable}
-                    size="md"
-                  />
-                </div>
-              </Tooltip>
-              <Tooltip label={t('Settings')}>
-                <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
-                  <FontAwesomeIcon icon={faGear} />
-                </Button>
-              </Tooltip>
-              <Switch
-                checked={record.published}
-                onLabel={t('Published')}
-                offLabel={t('Unpublished')}
-                size="xl"
-                classNames={{
-                  track: 'px-2',
-                }}
-                onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-              />
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <LoadingOverlay
-              visible={false}
-              zIndex={1000}
-              overlayProps={{ radius: 'sm', blur: 2 }}
-              loaderProps={{ type: 'bars' }}
+      <CreateFormWrapper
+        onSubmit={handleSubmit}
+        modalMode={modalMode}
+        loading={loading}
+        cardMode={false}
+      >
+        <div className={`flex justify-between mt-4`}>
+          <div className="text-gray-500 text-sm font-bold uppercase">{t('Create Blog Post')}</div>
+          <div className="flex items-center gap-2">
+            <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
+              <div className="inline-flex items-center">
+                <Switch
+                  label={t('AI Autocomplete')}
+                  checked={aiAutocompleteEnabled && isAiFeatureAvailable}
+                  onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                  disabled={!isAiFeatureAvailable}
+                  size="md"
+                />
+              </div>
+            </Tooltip>
+            <Tooltip label={t('Settings')}>
+              <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+                <FontAwesomeIcon icon={faGear} />
+              </Button>
+            </Tooltip>
+            <Switch
+              checked={record.published}
+              onLabel={t('Published')}
+              offLabel={t('Unpublished')}
+              size="xl"
+              classNames={{
+                track: 'px-2',
+              }}
+              onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
             />
+          </div>
+        </div>
 
-            <Tabs
-              value={activeContentTab}
-              onChange={setActiveContentTab}
-              variant="pills"
-              radius="lg"
-              className="p-2"
-            >
-              <Tabs.List className="mb-2 flex-wrap">
-                {record.contents.map((content) => (
-                  <div key={content.id} className="relative group">
-                    <Menu
-                      shadow="md"
-                      width={150}
-                      position="bottom-end"
-                      withArrow
-                      radius="md"
-                      trigger="hover"
-                      openDelay={100}
-                      closeDelay={400}
-                    >
-                      <Menu.Target>
-                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
-                          <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
-                          {getLanguageName(content.locale_id)}
-                        </Tabs.Tab>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item
-                          color="red"
-                          leftSection={<FontAwesomeIcon icon={faTrash} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteContent(content.id);
-                          }}
-                        >
-                          {t('Remove')}
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </div>
-                ))}
+        <div className="mt-4">
+          <LoadingOverlay
+            visible={false}
+            zIndex={1000}
+            overlayProps={{ radius: 'sm', blur: 2 }}
+            loaderProps={{ type: 'bars' }}
+          />
 
-                <Tooltip label={t('Add Language')}>
-                  <Tabs.Tab
-                    value="add_new"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddContent();
-                    }}
-                    className="bg-gray-100 hover:bg-gray-200"
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </Tabs.Tab>
-                </Tooltip>
-              </Tabs.List>
-
+          <Tabs
+            value={activeContentTab}
+            onChange={setActiveContentTab}
+            variant="pills"
+            radius="lg"
+            className="p-2"
+          >
+            <Tabs.List className="mb-2 flex-wrap">
               {record.contents.map((content) => (
-                <Tabs.Panel key={content.id} value={String(content.id)}>
-                  <div className="flex gap-4 my-2">
-                    <div className="flex flex-col grow gap-2">
-                      <TextInput
-                        className="w-full"
-                        placeholder={t('Title')}
-                        classNames={{ input: 'text-[36px]! font-bold! px-0!' }}
-                        size="xl"
-                        variant="subtle"
-                        required
-                        value={content.title || ''}
-                        onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  {content.featured_image && (
-                    <div
-                      className="w-full my-4 relative group cursor-pointer"
-                      onClick={openSettingsDrawer}
-                    >
-                      <img
-                        src={getAttachmentUrl(backendHost, content.featured_image.name)}
-                        alt={content.title || 'Featured image'}
-                        className="w-full h-auto object-cover rounded-md max-h-[400px]"
-                      />
-                      <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
-                        <div className="text-white font-medium">
-                          <FontAwesomeIcon icon={faGear} className="mr-2" />
-                          {t('Edit Settings')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div className="my-4">
-                    <RichTextInput
-                      content={content.content || ''}
-                      onChange={(value) => updateContentField(content.id, 'content', value)}
-                      classNames={{ content: 'min-h-[1000px]' }}
-                      autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
+                <div key={content.id} className="relative group">
+                  <Menu
+                    shadow="md"
+                    width={150}
+                    position="bottom-end"
+                    withArrow
+                    radius="md"
+                    trigger="hover"
+                    openDelay={100}
+                    closeDelay={400}
+                  >
+                    <Menu.Target>
+                      <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                        <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
+                        {getLanguageName(content.locale_id)}
+                      </Tabs.Tab>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        color="red"
+                        leftSection={<FontAwesomeIcon icon={faTrash} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteContent(content.id);
+                        }}
+                      >
+                        {t('Remove')}
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </div>
+              ))}
+
+              <Tooltip label={t('Add Language')}>
+                <Tabs.Tab
+                  value="add_new"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleAddContent();
+                  }}
+                  className="bg-gray-100 hover:bg-gray-200"
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </Tabs.Tab>
+              </Tooltip>
+            </Tabs.List>
+
+            {record.contents.map((content) => (
+              <Tabs.Panel key={content.id} value={String(content.id)}>
+                <div className="flex gap-4 my-2">
+                  <div className="flex flex-col grow gap-2">
+                    <TextInput
+                      className="w-full"
+                      placeholder={t('Title')}
+                      classNames={{ input: 'text-[36px]! font-bold! px-0!' }}
+                      size="xl"
+                      variant="subtle"
+                      required
+                      value={content.title || ''}
+                      onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
                     />
                   </div>
-                </Tabs.Panel>
-              ))}
-            </Tabs>
-          </div>
-        </CreateFormWrapper>
-      )}
-
-      {/* Side-by-Side Language Selection Modal */}
-      <SideBySideLanguageModal
-        opened={sideBySideModalOpened}
-        onClose={closeSideBySideModal}
-        languages={record?.contents || []}
-        onEdit={handleSideBySideEdit}
-      />
+                </div>
+                {content.featured_image && (
+                  <div
+                    className="w-full my-4 relative group cursor-pointer"
+                    onClick={openSettingsDrawer}
+                  >
+                    <img
+                      src={getAttachmentUrl(backendHost, content.featured_image.name)}
+                      alt={content.title || 'Featured image'}
+                      className="w-full h-auto object-cover rounded-md max-h-[400px]"
+                    />
+                    <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
+                      <div className="text-white font-medium">
+                        <FontAwesomeIcon icon={faGear} className="mr-2" />
+                        {t('Edit Settings')}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="my-4">
+                  <RichTextInput
+                    content={content.content || ''}
+                    onChange={(value) => updateContentField(content.id, 'content', value)}
+                    classNames={{ content: 'min-h-[1000px]' }}
+                    autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
+                  />
+                </div>
+              </Tabs.Panel>
+            ))}
+          </Tabs>
+        </div>
+      </CreateFormWrapper>
 
       {/* Add Language Modal */}
       <Modal

@@ -17,7 +17,7 @@ function SidebarMenuItem({ item, level }: SidebarMenuItemProps) {
   const isActive = isActiveMenu(item, websiteData!);
 
   // Calculate indentation based on level
-  const paddingLeft = `${level * 1 + 0.5}rem`;
+  const paddingLeft = `${level * 1 + 1}rem`;
 
   // Category style (no URL) - bold text
   const categoryClass = !hasUrl ? 'font-bold text-gray-900' : '';
@@ -37,7 +37,7 @@ function SidebarMenuItem({ item, level }: SidebarMenuItemProps) {
   return (
     <div className="">
       <div
-        className={`flex items-center justify-between py-2 px-3 cursor-pointer transition-colors rounded ${categoryClass} ${activeClass} ${hoverClass}`}
+        className={`flex items-center justify-between py-2 px-4 cursor-pointer transition-colors rounded-lg ${categoryClass} ${activeClass} ${hoverClass}`}
         style={{ paddingLeft }}
         onClick={handleClick}
       >
