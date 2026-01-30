@@ -175,21 +175,6 @@ const RichTextInput = forwardRef((props, ref) => {
     editorRef.current = editor;
   }, [editor]);
 
-  // Debug: Log content changes to ensure we're getting current data
-  useEffect(() => {
-    if (editor) {
-      const handleUpdate = () => {
-        console.log('RichTextInput content updated:', editor.getText().substring(0, 50));
-      };
-
-      editor.on('update', handleUpdate);
-
-      return () => {
-        editor.off('update', handleUpdate);
-      };
-    }
-  }, [editor]);
-
   function getHTML() {
     return editor ? editor.getHTML() : '';
   }
