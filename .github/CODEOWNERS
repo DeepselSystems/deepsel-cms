@@ -1,0 +1,12 @@
+# CODEOWNERS - GitHub automatically requests reviews from code owners
+# when a pull request touches the files they own.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# CI/CD workflows
+.github/workflows/ @DeepselSystems/admins
+
+# Backend
+backend/ @DeepselSystems/backend
+
+# Frontend packages
+packages/ @DeepselSystems/frontend
