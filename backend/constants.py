@@ -14,9 +14,9 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "prod")
 # Database
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", 5432)
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME", "")
+DB_USER = os.getenv("DB_USER", "")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DATABASE_URL = f"postgresql://{quote_plus(DB_USER)}:{quote_plus(DB_PASSWORD)}@{quote_plus(DB_HOST)}:{DB_PORT}/{quote_plus(DB_NAME)}"
 # Database optionals
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 10))
