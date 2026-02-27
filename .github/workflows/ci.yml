@@ -20,23 +20,6 @@ jobs:
       run:
         working-directory: backend
 
-    services:
-      postgres:
-        image: postgres:alpine
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_DB: test
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-
-    env:
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_NAME: test
-      DB_USER: test
-      DB_PASSWORD: test
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
