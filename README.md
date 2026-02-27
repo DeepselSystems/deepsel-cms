@@ -55,6 +55,11 @@ npm run dev   # http://localhost:4322
 
 The client proxies `/api/v1` to `http://localhost:8000`.
 
+### Default Login
+
+- **Username:** `admin`
+- **Password:** `1234`
+
 ## Development
 
 ### Backend commands (run from `backend/`)
@@ -142,7 +147,7 @@ The MCP server is a local process that makes HTTP calls to your CMS backend (loc
       "env": {
         "MCP_CMS_BASE_URL": "https://your-cms.example.com",
         "MCP_CMS_USERNAME": "admin",
-        "MCP_CMS_PASSWORD": "your-password"
+        "MCP_CMS_PASSWORD": "1234"
       }
     }
   }

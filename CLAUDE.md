@@ -74,6 +74,8 @@ cd client && npm install && npm run dev
 
 The client proxies `/api/v1` to `http://localhost:8000`.
 
+Default login: username `admin`, password `1234`.
+
 ## After Making Edits
 
 Run `make prepush` from `backend/` after any backend changes. This runs lint, security, format-check, and tests and must pass before committing.
