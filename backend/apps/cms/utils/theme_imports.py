@@ -61,7 +61,8 @@ def generate_theme_imports(data_dir_path: str):
         theme_map_entries: dict[str, dict[str, str]] = {}
 
         def _to_component_name(theme: str, filename: str, lang_suffix: str = "") -> str:
-            theme_part = theme.capitalize().replace("-", "")
+            # Convert theme name to PascalCase (handles hyphens and underscores)
+            theme_part = "".join(word.capitalize() for word in re.split(r"[-_]", theme))
             file_base = filename[:-6] if filename.endswith(".astro") else filename
             page_part = file_base.capitalize().replace("-", "")
             return f"{theme_part}{lang_suffix}{page_part}"

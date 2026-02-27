@@ -8,7 +8,7 @@ Deepsel CMS is a full-stack content management system organized as an npm monore
 - **`backend/`** — FastAPI (Python 3.12) REST API + GraphQL, PostgreSQL
 - **`admin/`** — React 18 + Vite admin dashboard (Mantine UI, Tiptap editor)
 - **`client/`** — Astro 5 server-rendered public website
-- **`themes/`** — Astro-based themes (e.g. `themes/interlinked/`)
+- **`themes/`** — Astro-based themes (e.g. `themes/starter_react/`)
 - **`packages/`** — Shared npm packages (`@deepsel/cms-react`, `@deepsel/cms-utils`) published to npm
 
 ## Commands
