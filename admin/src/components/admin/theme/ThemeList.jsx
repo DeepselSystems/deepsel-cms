@@ -151,14 +151,28 @@ export default function ThemeList() {
                 <Card
                   key={theme.folder_name}
                   shadow="sm"
-                  padding="lg"
+                  padding={0}
                   radius="md"
                   withBorder
                   className={`hover:shadow-md transition-shadow ${isSelected ? 'border-green-500 border-2' : ''}`}
                 >
-                  <div className="flex flex-col h-full">
-                    <div className="mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{theme.name}</h3>
+                  {/* Preview image */}
+                  {theme.image && (
+                    <div className="w-full h-[180px] bg-gray-100 overflow-hidden">
+                      <img
+                        src={`${backendHost}/theme/preview-image/${theme.folder_name}/${theme.image}`}
+                        alt={theme.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex flex-col h-full p-4">
+                    <div className="mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{theme.name}</h3>
                       <div className="flex gap-2 items-center">
                         <Badge color="blue" variant="light" size="sm">
                           v{theme.version}
@@ -171,6 +185,11 @@ export default function ThemeList() {
                         )}
                       </div>
                     </div>
+
+                    {/* Description */}
+                    {theme.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">{theme.description}</p>
+                    )}
 
                     <div className="mt-auto flex gap-2">
                       {isSelected && (

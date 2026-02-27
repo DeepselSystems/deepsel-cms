@@ -11,7 +11,7 @@ Deepsel CMS is a monorepo containing all layers of a modern CMS:
 | `backend/` | FastAPI REST API + GraphQL, PostgreSQL |
 | `admin/` | React 18 admin dashboard (Mantine UI, Tiptap editor) |
 | `client/` | Astro 5 server-rendered public website |
-| `themes/` | Astro-based themes (e.g. `interlinked`) |
+| `themes/` | Astro-based themes (e.g. `starter_react`) |
 | `packages/cms-react` | Shared React components (`@deepsel/cms-react`) |
 | `packages/cms-utils` | Shared utilities (`@deepsel/cms-utils`) |
 | `mcp/` | MCP server — exposes CMS operations to AI clients |

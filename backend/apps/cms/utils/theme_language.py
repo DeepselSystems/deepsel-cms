@@ -16,7 +16,7 @@ def ensure_language_theme_exists(
 
     Args:
         lang_code: Language code (e.g., 'de', 'fr')
-        theme_name: Theme name (e.g., 'interlinked', 'darkmode')
+        theme_name: Theme name (e.g., 'starter_react', 'darkmode')
         data_dir_path: Path to data dir directory
 
     Returns:

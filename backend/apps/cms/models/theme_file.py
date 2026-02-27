@@ -10,7 +10,7 @@ class ThemeFileModel(Base, ActivityMixin, BaseModel):
     __tracked_fields__ = ["theme_name", "file_path"]
 
     id = Column(Integer, primary_key=True)
-    theme_name = Column(String(255), nullable=False)  # e.g., "interlinked"
+    theme_name = Column(String(255), nullable=False)  # e.g., "starter_react"
     file_path = Column(Text, nullable=False)  # e.g., "components/Header.tsx"
     contents = relationship(
         "ThemeFileContentModel",
