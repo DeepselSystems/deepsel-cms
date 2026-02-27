@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import Depends, HTTPException, status, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from platformdirs import user_data_dir
 from db import get_db
 from apps.deepsel.utils.get_current_user import get_current_user
 from apps.deepsel.models.user import UserModel
@@ -16,6 +17,15 @@ logger = logging.getLogger(__name__)
 STATE_FILENAME = ".theme_state.json"
 
 router = create_api_router("theme", tags=["Theme"])
+
+
+def get_themes_dir() -> str:
+    """Return the themes directory path, using data_dir if available, else source."""
+    data_dir = user_data_dir("deepsel-cms", "deepsel")
+    data_themes = os.path.join(data_dir, "themes")
+    if os.path.exists(data_themes):
+        return data_themes
+    return "../themes"
 
 
 class ThemeInfo(BaseModel):
@@ -83,7 +93,7 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
     Reads name and version from each theme's package.json.
     """
     themes = []
-    themes_dir = "client_build/themes"
+    themes_dir = get_themes_dir()
 
     try:
         if not os.path.exists(themes_dir):
@@ -140,7 +150,7 @@ def select_theme(
     """
     try:
         # Verify theme exists
-        theme_path = os.path.join("client_build/themes", request.folder_name)
+        theme_path = os.path.join(get_themes_dir(), request.folder_name)
         if not os.path.exists(theme_path) or not os.path.isdir(theme_path):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -239,7 +249,7 @@ def list_theme_files(
     """
     List all files in a theme as a tree structure
     """
-    theme_path = os.path.join("client_build/themes", theme_name)
+    theme_path = os.path.join(get_themes_dir(), theme_name)
 
     if not os.path.exists(theme_path) or not os.path.isdir(theme_path):
         raise HTTPException(
@@ -264,7 +274,7 @@ def get_theme_file(
         ThemeFileModel = models_pool.get("theme_file")
 
         # Read default file from filesystem
-        full_path = os.path.join("client_build/themes", theme_name, file_path)
+        full_path = os.path.join(get_themes_dir(), theme_name, file_path)
 
         if not os.path.exists(full_path):
             raise HTTPException(
