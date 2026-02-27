@@ -1,3 +1,4 @@
+<!-- claude-swe test -->
 # Deepsel CMS
 
 A full-stack content management system built with FastAPI, React, and Astro.
