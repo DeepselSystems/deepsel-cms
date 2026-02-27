@@ -1,5 +1,5 @@
 {
-  "name": "@themes/interlinked",
+  "name": "@themes/starter_react",
   "version": "0.0.1",
   "type": "module",
   "main": "Page.tsx",

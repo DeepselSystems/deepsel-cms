@@ -3,6 +3,7 @@ import os
 import json
 from typing import List, Optional
 from fastapi import Depends, HTTPException, status, BackgroundTasks
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from platformdirs import user_data_dir
@@ -34,6 +35,8 @@ class ThemeInfo(BaseModel):
     name: str
     version: str
     folder_name: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class SelectThemeRequest(BaseModel):
@@ -116,10 +119,31 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
                     with open(package_json_path, "r", encoding="utf-8") as f:
                         package_data = json.load(f)
 
+                    # Read optional theme.json manifest for display metadata
+                    description = None
+                    image_url = None
+                    theme_json_path = os.path.join(folder_path, "theme.json")
+                    if os.path.exists(theme_json_path):
+                        try:
+                            with open(theme_json_path, "r", encoding="utf-8") as f:
+                                theme_manifest = json.load(f)
+                            description = theme_manifest.get("description")
+                            image_filename = theme_manifest.get("image")
+                            if image_filename and os.path.exists(
+                                os.path.join(folder_path, image_filename)
+                            ):
+                                image_url = f"/theme/preview/{folder_name}/{image_filename}"
+                        except Exception as e:
+                            logger.warning(
+                                f"Failed to parse theme.json in {folder_name}: {e}"
+                            )
+
                     theme_info = ThemeInfo(
                         name=package_data.get("name", folder_name),
                         version=package_data.get("version", "unknown"),
                         folder_name=folder_name,
+                        description=description,
+                        image_url=image_url,
                     )
                     themes.append(theme_info)
 
@@ -136,6 +160,24 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list themes: {str(e)}",
         )
+
+
+@router.get("/preview/{theme_name}/{image_filename:path}")
+def get_theme_preview_image(theme_name: str, image_filename: str):
+    """
+    Serve a theme preview image from the theme directory.
+    This endpoint is public so the dashboard can display theme images without auth.
+    """
+    themes_dir = get_themes_dir()
+    image_path = os.path.join(themes_dir, theme_name, image_filename)
+
+    if not os.path.exists(image_path) or not os.path.isfile(image_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Preview image not found for theme '{theme_name}'",
+        )
+
+    return FileResponse(image_path)
 
 
 @router.post("/select")

@@ -1,8 +1,8 @@
 // THEME_IMPORTS_START (auto-managed)
-import Interlinked404 from '../../themes/interlinked/404.astro';
-import InterlinkedBlog from '../../themes/interlinked/blog.astro';
-import InterlinkedIndex from '../../themes/interlinked/index.astro';
-import InterlinkedSingleBlog from '../../themes/interlinked/single-blog.astro';
+import Starter_react404 from '../../themes/starter_react/404.astro';
+import Starter_reactBlog from '../../themes/starter_react/Blog.astro';
+import Starter_reactIndex from '../../themes/starter_react/Index.astro';
+import Starter_reactSingleblog from '../../themes/starter_react/single-blog.astro';
 // THEME_IMPORTS_END
 
 export const themeSystemKeys = {
@@ -14,11 +14,11 @@ export const themeSystemKeys = {
 
 // THEME_MAP_START (auto-managed)
 export const themeMap = {
-  interlinked: {
-    [themeSystemKeys.Page]: InterlinkedIndex,
-    [themeSystemKeys.BlogList]: InterlinkedBlog,
-    [themeSystemKeys.BlogPost]: InterlinkedSingleBlog,
-    [themeSystemKeys.NotFound]: Interlinked404,
+  starter_react: {
+    [themeSystemKeys.Page]: Starter_reactIndex,
+    [themeSystemKeys.BlogList]: Starter_reactBlog,
+    [themeSystemKeys.BlogPost]: Starter_reactSingleblog,
+    [themeSystemKeys.NotFound]: Starter_react404,
   },
 };
 // THEME_MAP_END

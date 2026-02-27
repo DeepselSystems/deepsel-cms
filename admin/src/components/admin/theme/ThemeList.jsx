@@ -157,8 +157,20 @@ export default function ThemeList() {
                   className={`hover:shadow-md transition-shadow ${isSelected ? 'border-green-500 border-2' : ''}`}
                 >
                   <div className="flex flex-col h-full">
+                    {theme.image_url && (
+                      <div className="mb-3 -mx-4 -mt-4 overflow-hidden rounded-t-md">
+                        <img
+                          src={`${backendHost}${theme.image_url}`}
+                          alt={`${theme.name} preview`}
+                          className="w-full h-40 object-cover"
+                        />
+                      </div>
+                    )}
                     <div className="mb-3">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{theme.name}</h3>
+                      {theme.description && (
+                        <p className="text-sm text-gray-500 mb-2">{theme.description}</p>
+                      )}
                       <div className="flex gap-2 items-center">
                         <Badge color="blue" variant="light" size="sm">
                           v{theme.version}
