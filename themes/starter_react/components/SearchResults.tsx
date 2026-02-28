@@ -37,7 +37,7 @@ function SearchResultsContent() {
         <h1 className="text-2xl font-bold mb-2">
           Search results for &ldquo;{data.query}&rdquo;
         </h1>
-        <p className="text-gray-500 mb-6">{data.total} results found</p>
+        <p className="text-gray-500 mb-6">{data.total} {data.total === 1 ? "result" : "results"} found</p>
 
         {data.suggestions?.length > 0 && data.total === 0 && (
           <p className="text-gray-600 mb-4">
