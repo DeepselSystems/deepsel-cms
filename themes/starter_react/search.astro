@@ -1,0 +1,30 @@
+---
+import type { SearchResultsData } from "@deepsel/cms-utils";
+import SearchResults from "./components/SearchResults";
+import "./main.css";
+
+interface Props {
+  data: SearchResultsData;
+}
+
+const { data } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang={data.lang || "en"}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search: {data.query}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <SearchResults client:load data={data} />
+  </body>
+</html>

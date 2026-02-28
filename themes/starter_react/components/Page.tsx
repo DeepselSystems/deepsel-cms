@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import Menu from "./Menu";
 import Footer from "./Footer";
 import LangSwitcher from "./LangSwitcher";
+import SearchForm from "./SearchForm";
 
 export default function Page({ pageData }: { pageData: PageData }) {
   return (
@@ -17,6 +18,7 @@ export default function Page({ pageData }: { pageData: PageData }) {
             </a>
             <div className="flex items-center gap-6">
               <Menu />
+              <SearchForm />
               <LangSwitcher />
             </div>
           </div>

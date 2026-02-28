@@ -4,6 +4,7 @@ import type { BlogPostData } from "@deepsel/cms-utils";
 import Footer from "./Footer";
 import Menu from "./Menu";
 import LangSwitcher from "./LangSwitcher";
+import SearchForm from "./SearchForm";
 import hero from "../assets/images/hero.jpg";
 
 export default function BlogPost({ data }: { data: BlogPostData }) {
@@ -38,6 +39,7 @@ function BlogPostContent() {
             </div>
             <div className="flex items-center gap-6">
               <Menu />
+              <SearchForm />
               <LangSwitcher />
             </div>
           </div>
