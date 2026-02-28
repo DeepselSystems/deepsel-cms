@@ -1,12 +1,12 @@
 import type { MenuItem } from './menus/types';
 import type { SpecialTemplate } from './page/types';
 import type { WebsiteDataType } from './constants';
-import type { PageData } from './page';
+import type { PageData, SearchResultsData } from './page';
 import type { BlogListData, BlogPostData } from './blog';
 
 export type WebsiteData = {
   type: WebsiteDataType;
-  data: PageData | BlogListData | BlogPostData;
+  data: PageData | BlogListData | BlogPostData | SearchResultsData;
   settings?: SiteSettings;
 };
 

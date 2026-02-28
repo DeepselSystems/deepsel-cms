@@ -14,6 +14,10 @@ export function getPathType(path: string): { pathType: WebsiteDataType; paginati
     path = path.slice(1);
   }
 
+  if (path === 'search' || path.startsWith('search?') || path.startsWith('search/')) {
+    return { pathType: WebsiteDataTypes.SearchResults };
+  }
+
   if (path.startsWith('blog')) {
     // split
     const parts = path.split('/');

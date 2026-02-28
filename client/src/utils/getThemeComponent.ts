@@ -1,7 +1,7 @@
 import { themeMap, themeSystemKeys, type ThemeName } from '../themes';
-import type { PageData, BlogListData, BlogPostData } from '@deepsel/cms-utils';
+import type { PageData, BlogListData, BlogPostData, SearchResultsData } from '@deepsel/cms-utils';
 
-function getSelectedThemeSettings(data: PageData | BlogListData | BlogPostData) {
+function getSelectedThemeSettings(data: PageData | BlogListData | BlogPostData | SearchResultsData) {
   const publicSettings = data.public_settings;
   const selectedTheme: ThemeName = publicSettings?.selected_theme as ThemeName;
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
@@ -53,5 +53,17 @@ export function getBlogPostThemeComponent(data: BlogPostData, lang?: string): an
   return (
     themeMap[selectedTheme][`${langPrefix}${themeSystemKeys.BlogPost}`] ||
     themeMap[selectedTheme][themeSystemKeys.BlogPost]
+  );
+}
+
+export function getSearchThemeComponent(data: SearchResultsData, lang?: string): any {
+  const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(data);
+  const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
+  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
+
+  // component key will be eg. "en:search" or just "search"
+  return (
+    themeMap[selectedTheme][`${langPrefix}${themeSystemKeys.SearchResults}`] ||
+    themeMap[selectedTheme][themeSystemKeys.SearchResults]
   );
 }
