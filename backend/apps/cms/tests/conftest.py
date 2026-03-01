@@ -11,7 +11,9 @@ def db():
         connect_args={"check_same_thread": False},
     )
 
-    from db import Base  # noqa: E402 — imported here to avoid circular import at module level
+    from db import (
+        Base,
+    )  # noqa: E402 — imported here to avoid circular import at module level
 
     Base.metadata.create_all(engine)
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
