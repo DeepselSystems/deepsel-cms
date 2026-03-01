@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Boolean, Text
 
 from apps.cms.utils.page_content import (
     check_page_content_slug_with_conflict,
+    generate_slug_from_title,
 )
 from db import Base
 from apps.deepsel.mixins.base_model import BaseModel
@@ -84,6 +85,8 @@ class PageModel(Base, ActivityMixin, BaseModel):
     ) -> "PageModel":
         contents = values.get("contents", [])
         cls._normalize_contents(contents)
+        if values.get("is_homepage"):
+            cls._resolve_homepage_switch(db, current_page_id=None)
         cls._validate_contents(db=db, contents=contents)
         return super().create(db, user, values, *args, **kwargs)
 
@@ -98,8 +101,34 @@ class PageModel(Base, ActivityMixin, BaseModel):
     ) -> "[PageModel]":
         contents = values.get("contents", [])
         self._normalize_contents(contents)
+        if values.get("is_homepage"):
+            self._resolve_homepage_switch(db, current_page_id=self.id)
         self._validate_contents(db=db, contents=contents)
         return super().update(db, user, values, commit, *args, **kwargs)
+
+    @classmethod
+    def _resolve_homepage_switch(cls, db: Session, current_page_id: int = None):
+        """
+        When a page is being set as the new homepage, resolve conflicts with
+        the old homepage by unsetting its is_homepage flag and generating
+        new slugs for its contents.
+        """
+        query = db.query(cls).filter(cls.is_homepage == True)  # noqa: E712
+        if current_page_id is not None:
+            query = query.filter(cls.id != current_page_id)
+
+        old_homepages = query.all()
+        for old_homepage in old_homepages:
+            old_homepage.is_homepage = False
+            for content in old_homepage.contents:
+                if content.slug == "/":
+                    content.slug = generate_slug_from_title(
+                        db=db,
+                        title=content.title,
+                        locale_id=content.locale_id,
+                        current_page_content_id=content.id,
+                    )
+        db.flush()
 
     @classmethod
     def _normalize_slug(cls, slug: str) -> str:
