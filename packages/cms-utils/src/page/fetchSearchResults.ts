@@ -66,8 +66,12 @@ export async function fetchSearchResults({
   // If no query, skip the search call and return empty results
   if (!q.trim()) {
     const public_settings = await settingsPromise;
+    // Normalize lang: replace 'default' with the actual ISO code from settings
+    const resolvedLang = lang === 'default'
+      ? (public_settings.default_language?.iso_code || lang)
+      : lang;
     return {
-      lang,
+      lang: resolvedLang,
       query: q,
       public_settings,
       results: [],
@@ -88,10 +92,15 @@ export async function fetchSearchResults({
     ? public_settings.value
     : ({} as SiteSettings);
 
+  // Normalize lang: replace 'default' with the actual ISO code from settings
+  const resolvedLang = lang === 'default'
+    ? (resolvedSettings.default_language?.iso_code || lang)
+    : lang;
+
   if (searchResponse.status === 'rejected' || !searchResponse.value.ok) {
     console.error('Error fetching search results:', searchResponse.status === 'rejected' ? searchResponse.reason : searchResponse.value.statusText);
     return {
-      lang,
+      lang: resolvedLang,
       query: q,
       public_settings: resolvedSettings,
       results: [],
@@ -103,7 +112,7 @@ export async function fetchSearchResults({
   const apiData = await searchResponse.value.json();
 
   return {
-    lang,
+    lang: resolvedLang,
     query: q,
     public_settings: resolvedSettings,
     results: apiData.results ?? [],
