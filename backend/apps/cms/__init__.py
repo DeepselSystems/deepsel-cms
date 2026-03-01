@@ -150,6 +150,28 @@ async def set_default_domains(db):
             db.commit()
 
 
+async def set_default_theme_if_empty(db):
+    """Set default theme to starter_react if not already set"""
+    logger.info("Checking and setting default theme if needed")
+    try:
+        orgs_without_theme = (
+            db.query(CMSSettingsModel)
+            .filter(CMSSettingsModel.selected_theme == None)  # noqa: E711
+            .all()
+        )
+
+        if orgs_without_theme:
+            for org in orgs_without_theme:
+                logger.info(f"Setting default theme for organization ID: {org.id}")
+                org.selected_theme = "starter_react"
+
+            db.commit()
+            logger.info("Default theme set successfully")
+    except Exception as e:
+        logger.error(f"Error setting default theme: {e}")
+        db.rollback()
+
+
 def upgrade(db, from_version, to_version):
     """Upgrade app from current version in db to version in file settings.py"""
     logger.info(f"Start upgrade from version {from_version} to {to_version}")
@@ -171,3 +193,5 @@ def upgrade(db, from_version, to_version):
     asyncio.create_task(run_cron_fetch_openrouter_model(db))
 
     asyncio.create_task(set_default_domains(db))
+
+    asyncio.create_task(set_default_theme_if_empty(db))
