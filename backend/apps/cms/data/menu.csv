@@ -35,3 +35,21 @@
         ""open_in_new_tab"": false
     }
 }",,"false","1"
+"Blog","2","{
+    ""en"": {
+        ""title"": ""Blog"",
+        ""url"": ""/blog"",
+        ""page_content/page_content_id"": """",
+        ""use_page_title"": false,
+        ""use_custom_url"": true,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": ""Blog"",
+        ""url"": ""/blog"",
+        ""page_content/page_content_id"": """",
+        ""use_page_title"": false,
+        ""use_custom_url"": true,
+        ""open_in_new_tab"": false
+    }
+}",,"false","1"
