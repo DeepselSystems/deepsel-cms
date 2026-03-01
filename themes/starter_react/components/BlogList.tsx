@@ -5,6 +5,7 @@ import { Pagination, MantineProvider } from '@mantine/core';
 import Footer from "./Footer";
 import Menu from "./Menu";
 import LangSwitcher from "./LangSwitcher";
+import SearchForm from "./SearchForm";
 import '@mantine/core/styles.css';
 import hero from '../assets/images/hero.jpg';
 
@@ -31,6 +32,7 @@ function BlogListContent() {
             </a>
             <div className="flex items-center gap-6">
               <Menu />
+              <SearchForm />
               <LangSwitcher />
             </div>
           </div>

@@ -2,6 +2,7 @@
 import StarterReact404 from '../../themes/starter_react/404.astro';
 import StarterReactBlog from '../../themes/starter_react/Blog.astro';
 import StarterReactIndex from '../../themes/starter_react/Index.astro';
+import StarterReactSearch from '../../themes/starter_react/search.astro';
 import StarterReactSingleBlog from '../../themes/starter_react/single-blog.astro';
 // THEME_IMPORTS_END
 
@@ -9,6 +10,7 @@ export const themeSystemKeys = {
   Page: 'index',
   BlogList: 'blog',
   BlogPost: 'single-blog',
+  SearchResults: 'search',
   NotFound: '404',
 };
 
@@ -18,6 +20,7 @@ export const themeMap = {
     [themeSystemKeys.Page]: StarterReactIndex,
     [themeSystemKeys.BlogList]: StarterReactBlog,
     [themeSystemKeys.BlogPost]: StarterReactSingleBlog,
+    [themeSystemKeys.SearchResults]: StarterReactSearch,
     [themeSystemKeys.NotFound]: StarterReact404,
   },
 };

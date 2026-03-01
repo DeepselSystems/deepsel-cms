@@ -4,15 +4,18 @@ import {
   parseSlug,
   fetchBlogList,
   fetchBlogPost,
+  fetchSearchResults,
   WebsiteDataTypes,
   type PageData,
   type BlogListData,
   type BlogPostData,
+  type SearchResultsData,
 } from '@deepsel/cms-utils';
 import {
   getPageThemeComponent,
   getBlogListThemeComponent,
   getBlogPostThemeComponent,
+  getSearchThemeComponent,
 } from '../utils/getThemeComponent';
 
 const { slug = '/' } = Astro.params;
@@ -22,6 +25,7 @@ let ThemeComponent: any;
 let pageData: PageData | null = null;
 let blogListData: BlogListData | null = null;
 let blogPostData: BlogPostData | null = null;
+let searchData: SearchResultsData | null = null;
 
 if (pathType === WebsiteDataTypes.Page) {
   pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
@@ -32,6 +36,11 @@ if (pathType === WebsiteDataTypes.Page) {
 } else if (pathType === WebsiteDataTypes.BlogPost) {
   blogPostData = await fetchBlogPost({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getBlogPostThemeComponent(blogPostData, lang);
+} else if (pathType === WebsiteDataTypes.SearchResults) {
+  const url = new URL(Astro.request.url);
+  const q = url.searchParams.get('q') || '';
+  searchData = await fetchSearchResults({ lang, q, astroRequest: Astro.request });
+  ThemeComponent = getSearchThemeComponent(searchData, lang);
 } else {
   pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getPageThemeComponent(pageData, lang);
@@ -45,5 +54,7 @@ if (pathType === WebsiteDataTypes.Page) {
     <ThemeComponent data={blogListData} />
   ) : pathType === WebsiteDataTypes.BlogPost ? (
     <ThemeComponent data={blogPostData} />
+  ) : pathType === WebsiteDataTypes.SearchResults ? (
+    <ThemeComponent data={searchData} />
   ) : null
 }
