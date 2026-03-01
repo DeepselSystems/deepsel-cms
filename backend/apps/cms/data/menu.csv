@@ -1,9 +1,9 @@
 "string_id","position","json:translations","menu/parent_id","system","organization/organization_id"
-"ListIDP","1","{
+"Welcome","0","{
     ""en"": {
         ""title"": """",
         ""url"": """",
-        ""page_content/page_content_id"": ""ListIDPPage_en"",
+        ""page_content/page_content_id"": ""WelcomePage_en"",
         ""use_page_title"": true,
         ""use_custom_url"": false,
         ""open_in_new_tab"": false
@@ -11,67 +11,13 @@
     ""de"": {
         ""title"": """",
         ""url"": """",
-        ""page_content/page_content_id"": ""ListIDPPage_de"",
+        ""page_content/page_content_id"": ""WelcomePage_de"",
         ""use_page_title"": true,
         ""use_custom_url"": false,
         ""open_in_new_tab"": false
     }
 }",,"false","1"
-"DescriptionServices","0","{
-    ""en"": {
-        ""title"": """",
-        ""url"": """",
-        ""page_content/page_content_id"": ""DescriptionPage_en"",
-        ""use_page_title"": true,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    },
-    ""de"": {
-        ""title"": """",
-        ""url"": """",
-        ""page_content/page_content_id"": ""DescriptionPage_de"",
-        ""use_page_title"": true,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    }
-}","KnowHow","false","1"
-"Home","0","{
-    ""en"": {
-        ""title"": """",
-        ""url"": """",
-        ""page_content/page_content_id"": ""HomePage_en"",
-        ""use_page_title"": true,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    },
-    ""de"": {
-        ""title"": """",
-        ""url"": """",
-        ""page_content/page_content_id"": ""HomePage_de"",
-        ""use_page_title"": true,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    }
-}",,"false","1"
-"KnowHow","2","{
-    ""en"": {
-        ""title"": ""eIAM Know-how"",
-        ""url"": """",
-        ""page_content/page_content_id"": ""DescriptionPage_en"",
-        ""use_page_title"": false,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    },
-    ""de"": {
-        ""title"": ""eIAM Know-how"",
-        ""url"": """",
-        ""page_content/page_content_id"": ""DescriptionPage_de"",
-        ""use_page_title"": false,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    }
-}",,"false","1"
-FormatExamples,3,"{
+"FormatExamples","1","{
     ""en"": {
         ""title"": ""Format Examples"",
         ""url"": """",
@@ -81,11 +27,11 @@ FormatExamples,3,"{
         ""open_in_new_tab"": false
     },
     ""de"": {
-        ""title"": ""Format Examples"",
+        ""title"": ""Formatbeispiele"",
         ""url"": """",
         ""page_content/page_content_id"": ""FormatExamplePage_de"",
         ""use_page_title"": false,
         ""use_custom_url"": false,
         ""open_in_new_tab"": false
     }
-}",,false,1
+}",,"false","1"
