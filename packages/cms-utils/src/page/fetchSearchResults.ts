@@ -61,15 +61,19 @@ export async function fetchSearchResults({
   }
 
   // Always fetch public_settings alongside the search call
-  const settingsPromise = fetchPublicSettings(null, astroRequest ?? null, lang, `http://localhost:8000`);
+  const settingsPromise = fetchPublicSettings(
+    null,
+    astroRequest ?? null,
+    lang,
+    `http://localhost:8000`,
+  );
 
   // If no query, skip the search call and return empty results
   if (!q.trim()) {
     const public_settings = await settingsPromise;
     // Normalize lang: replace 'default' with the actual ISO code from settings
-    const resolvedLang = lang === 'default'
-      ? (public_settings.default_language?.iso_code || lang)
-      : lang;
+    const resolvedLang =
+      lang === 'default' ? public_settings.default_language?.iso_code || lang : lang;
     return {
       lang: resolvedLang,
       query: q,
@@ -88,17 +92,20 @@ export async function fetchSearchResults({
     fetch(searchUrl, { method: 'GET', headers }),
   ]);
 
-  const resolvedSettings = public_settings.status === 'fulfilled'
-    ? public_settings.value
-    : ({} as SiteSettings);
+  const resolvedSettings =
+    public_settings.status === 'fulfilled' ? public_settings.value : ({} as SiteSettings);
 
   // Normalize lang: replace 'default' with the actual ISO code from settings
-  const resolvedLang = lang === 'default'
-    ? (resolvedSettings.default_language?.iso_code || lang)
-    : lang;
+  const resolvedLang =
+    lang === 'default' ? resolvedSettings.default_language?.iso_code || lang : lang;
 
   if (searchResponse.status === 'rejected' || !searchResponse.value.ok) {
-    console.error('Error fetching search results:', searchResponse.status === 'rejected' ? searchResponse.reason : searchResponse.value.statusText);
+    console.error(
+      'Error fetching search results:',
+      searchResponse.status === 'rejected'
+        ? searchResponse.reason
+        : searchResponse.value.statusText,
+    );
     return {
       lang: resolvedLang,
       query: q,
