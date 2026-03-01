@@ -33,15 +33,8 @@ const HomepageSwitch = React.forwardRef(({ page, setPage }, ref) => {
 
   /** @type {boolean} */
   const isDisabledSwitch = React.useMemo(() => {
-    if (isCurrentHomepageLoading || hasError) {
-      return true;
-    }
-    if (currentHomepage && page) {
-      return currentHomepage.id !== page.id;
-    } else {
-      return false;
-    }
-  }, [currentHomepage, hasError, isCurrentHomepageLoading, page]);
+    return isCurrentHomepageLoading || hasError;
+  }, [hasError, isCurrentHomepageLoading]);
 
   /**
    * Fetch current homage
@@ -88,22 +81,29 @@ const HomepageSwitch = React.forwardRef(({ page, setPage }, ref) => {
   return (
     <>
       {!!page && (
-        <Switch
-          size="xl"
-          classNames={{
-            track: 'px-2',
-          }}
-          disabled={isDisabledSwitch}
-          onLabel={t('Homepage')}
-          offLabel={t('Homepage')}
-          checked={!!page.is_homepage}
-          onChange={({ currentTarget: { checked } }) =>
-            setPage((prevState) => ({
-              ...prevState,
-              is_homepage: checked,
-            }))
-          }
-        />
+        <>
+          <Switch
+            size="xl"
+            classNames={{
+              track: 'px-2',
+            }}
+            disabled={isDisabledSwitch}
+            onLabel={t('Homepage')}
+            offLabel={t('Homepage')}
+            checked={!!page.is_homepage}
+            onChange={({ currentTarget: { checked } }) =>
+              setPage((prevState) => ({
+                ...prevState,
+                is_homepage: checked,
+              }))
+            }
+          />
+          {currentHomepage && currentHomepage.id !== page?.id && page?.is_homepage && (
+            <div className="text-xs text-orange-600 mt-1">
+              {t('The current homepage will be replaced and its slug auto-updated.')}
+            </div>
+          )}
+        </>
       )}
     </>
   );
