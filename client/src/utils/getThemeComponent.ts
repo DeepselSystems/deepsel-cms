@@ -63,7 +63,7 @@ export function getSearchThemeComponent(data: SearchResultsData, lang?: string):
 
   // component key will be eg. "en:search" or just "search"
   return (
-    themeMap[selectedTheme][`${langPrefix}${themeSystemKeys.SearchResults}`] ||
-    themeMap[selectedTheme][themeSystemKeys.SearchResults]
+    themeMap[selectedTheme]?.[`${langPrefix}${themeSystemKeys.SearchResults}`] ||
+    themeMap[selectedTheme]?.[themeSystemKeys.SearchResults]
   );
 }
