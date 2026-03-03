@@ -1,6 +1,7 @@
 ---
 import {
   fetchPageData,
+  fetchPublicSettings,
   parseSlug,
   fetchBlogList,
   fetchBlogPost,
@@ -11,6 +12,9 @@ import {
 } from '@deepsel/cms-utils';
 import {
   getPageThemeComponent,
+  isAnyThemeClientPage,
+  getClientPageTheme,
+  buildClientPageData,
   getBlogListThemeComponent,
   getBlogPostThemeComponent,
 } from '../utils/getThemeComponent';
@@ -23,9 +27,13 @@ let pageData: PageData | null = null;
 let blogListData: BlogListData | null = null;
 let blogPostData: BlogPostData | null = null;
 
-if (pathType === WebsiteDataTypes.Page) {
-  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
-  ThemeComponent = getPageThemeComponent(pageData, lang);
+if (pathType === WebsiteDataTypes.Page && isAnyThemeClientPage(path)) {
+  // Client-only page — skip backend page fetch, only fetch public settings for theme resolution
+  const publicSettings = await fetchPublicSettings(null, Astro.request, lang, 'http://localhost:8000/api/v1');
+  const selectedTheme = publicSettings?.selected_theme as any;
+  const clientComponent = getClientPageTheme(path, selectedTheme);
+  pageData = buildClientPageData(path, publicSettings);
+  ThemeComponent = clientComponent;
 } else if (pathType === WebsiteDataTypes.BlogList) {
   blogListData = await fetchBlogList({ lang, pagination, astroRequest: Astro.request });
   ThemeComponent = getBlogListThemeComponent(blogListData, lang);
