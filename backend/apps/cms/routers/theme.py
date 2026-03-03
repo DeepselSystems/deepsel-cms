@@ -10,10 +10,14 @@ from apps.deepsel.utils.get_current_user import get_current_user
 from apps.deepsel.models.user import UserModel
 from apps.deepsel.utils.models_pool import models_pool
 from apps.deepsel.utils.api_router import create_api_router
+from platformdirs import user_data_dir
 
 logger = logging.getLogger(__name__)
 
 STATE_FILENAME = ".theme_state.json"
+DATA_DIR = user_data_dir("deepsel-cms", "deepsel")
+THEMES_DIR = os.path.join(DATA_DIR, "themes")
+SOURCE_THEMES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "themes")
 
 router = create_api_router("theme", tags=["Theme"])
 
@@ -76,49 +80,60 @@ def check_website_admin_role(current_user: UserModel = Depends(get_current_user)
     return current_user
 
 
+def _resolve_theme_path(folder_name: str) -> Optional[str]:
+    """Find a theme's directory, checking data dir first then source dir."""
+    for base in (THEMES_DIR, os.path.normpath(SOURCE_THEMES_DIR)):
+        path = os.path.join(base, folder_name)
+        if os.path.isdir(path):
+            return path
+    return None
+
+
+def _scan_themes_in_dir(themes_dir: str) -> dict:
+    """Scan a directory for themes with package.json, returns dict keyed by folder_name."""
+    themes = {}
+    if not os.path.exists(themes_dir):
+        return themes
+
+    for folder_name in os.listdir(themes_dir):
+        folder_path = os.path.join(themes_dir, folder_name)
+        if not os.path.isdir(folder_path):
+            continue
+
+        package_json_path = os.path.join(folder_path, "package.json")
+        if os.path.exists(package_json_path):
+            try:
+                with open(package_json_path, "r", encoding="utf-8") as f:
+                    package_data = json.load(f)
+
+                themes[folder_name] = ThemeInfo(
+                    name=package_data.get("name", folder_name),
+                    version=package_data.get("version", "unknown"),
+                    folder_name=folder_name,
+                )
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse package.json in {folder_name}: {e}")
+            except Exception as e:
+                logger.error(f"Error reading theme {folder_name}: {e}")
+
+    return themes
+
+
 @router.get("/list", response_model=List[ThemeInfo])
 def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
     """
-    List all available themes from the themes directory.
-    Reads name and version from each theme's package.json.
+    List all available themes from both the source themes/ folder
+    and the data directory. Source themes take priority.
     """
-    themes = []
-    themes_dir = "client_build/themes"
-
     try:
-        if not os.path.exists(themes_dir):
-            logger.warning(f"Themes directory not found: {themes_dir}")
-            return themes
+        # Scan both directories and merge (source themes take priority)
+        themes = _scan_themes_in_dir(THEMES_DIR)
+        source_themes = _scan_themes_in_dir(
+            os.path.normpath(SOURCE_THEMES_DIR)
+        )
+        themes.update(source_themes)
 
-        # List all directories in themes folder
-        for folder_name in os.listdir(themes_dir):
-            folder_path = os.path.join(themes_dir, folder_name)
-
-            # Skip if not a directory
-            if not os.path.isdir(folder_path):
-                continue
-
-            # Look for package.json
-            package_json_path = os.path.join(folder_path, "package.json")
-
-            if os.path.exists(package_json_path):
-                try:
-                    with open(package_json_path, "r", encoding="utf-8") as f:
-                        package_data = json.load(f)
-
-                    theme_info = ThemeInfo(
-                        name=package_data.get("name", folder_name),
-                        version=package_data.get("version", "unknown"),
-                        folder_name=folder_name,
-                    )
-                    themes.append(theme_info)
-
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse package.json in {folder_name}: {e}")
-                except Exception as e:
-                    logger.error(f"Error reading theme {folder_name}: {e}")
-
-        return themes
+        return list(themes.values())
 
     except Exception as e:
         logger.error(f"Error listing themes: {e}")
@@ -139,9 +154,9 @@ def select_theme(
     Updates the selected_theme field in CMSSettingsModel.
     """
     try:
-        # Verify theme exists
-        theme_path = os.path.join("client_build/themes", request.folder_name)
-        if not os.path.exists(theme_path) or not os.path.isdir(theme_path):
+        # Verify theme exists in data dir or source dir
+        theme_path = _resolve_theme_path(request.folder_name)
+        if not theme_path:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Theme '{request.folder_name}' not found",
@@ -239,9 +254,9 @@ def list_theme_files(
     """
     List all files in a theme as a tree structure
     """
-    theme_path = os.path.join("client_build/themes", theme_name)
+    theme_path = _resolve_theme_path(theme_name)
 
-    if not os.path.exists(theme_path) or not os.path.isdir(theme_path):
+    if not theme_path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Theme '{theme_name}' not found",
@@ -263,9 +278,15 @@ def get_theme_file(
     try:
         ThemeFileModel = models_pool.get("theme_file")
 
-        # Read default file from filesystem
-        full_path = os.path.join("client_build/themes", theme_name, file_path)
+        # Read default file from filesystem (check data dir then source dir)
+        theme_path = _resolve_theme_path(theme_name)
+        if not theme_path:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Theme '{theme_name}' not found",
+            )
 
+        full_path = os.path.join(theme_path, file_path)
         if not os.path.exists(full_path):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -340,10 +361,11 @@ def trigger_setup_themes(force_sync=False):
         force_sync: If True, force sync themes folder to restore original files
     """
     try:
-        from apps.cms.utils.setup_themes import setup_themes
+        from apps.cms.utils.setup_themes import setup_themes, load_theme_seed_data
 
         logger.info("Running theme setup after file save...")
         setup_themes(force_build=True, force_sync=force_sync)
+        load_theme_seed_data()
         logger.info("Theme setup completed successfully")
     except Exception as e:
         logger.error(f"Error during theme setup: {e}")
@@ -435,6 +457,22 @@ def save_theme_file(
                 db.add(db_content)
 
         db.commit()
+
+        # Write to source themes directory for dev server hot-reload.
+        # The dev server imports themes from ../themes/ (source), not the data dir.
+        source_themes_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "themes")
+        for content_data in request.contents:
+            if content_data.lang_code:
+                source_file = os.path.join(
+                    source_themes_dir, content_data.lang_code, request.theme_name, request.file_path
+                )
+            else:
+                source_file = os.path.join(
+                    source_themes_dir, request.theme_name, request.file_path
+                )
+            os.makedirs(os.path.dirname(source_file), exist_ok=True)
+            with open(source_file, "w", encoding="utf-8") as f:
+                f.write(content_data.content)
 
         # Trigger full theme setup in background (idempotent)
         # If deletions occurred, force sync themes to restore original files

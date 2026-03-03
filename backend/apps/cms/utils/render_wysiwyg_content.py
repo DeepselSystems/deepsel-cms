@@ -12,6 +12,14 @@ from fastapi import HTTPException
 logger = logging.getLogger(__name__)
 
 
+def _is_jsx_content(content: str) -> bool:
+    """Check if template content is JSX/React code rather than HTML/Jinja2"""
+    if not content:
+        return False
+    stripped = content.strip()
+    return stripped.startswith("import ") or "from 'react'" in content or 'from "react"' in content
+
+
 def load_jinja2_templates(
     organization_id: int,
     db: Session,
@@ -162,6 +170,17 @@ def render_wysiwyg_content(
     jinja2_templates, context = load_jinja2_templates(
         organization_id, db, lang, default_lang_id, user
     )
+
+    # When a theme is active, it handles layout (header, sidebar, footer).
+    # Replace JSX templates with empty content and simplify layout templates
+    # so only the content blocks are rendered by Jinja2.
+    org = db.query(CMSSettingsModel).filter(CMSSettingsModel.id == organization_id).first()
+    if org and org.selected_theme:
+        for name in list(jinja2_templates.keys()):
+            if _is_jsx_content(jinja2_templates[name]):
+                jinja2_templates[name] = ""
+        if "WebsiteLayout" in jinja2_templates:
+            jinja2_templates["WebsiteLayout"] = "{% block content %}{% endblock %}"
 
     def process_object(obj):
         if not isinstance(obj, dict):
