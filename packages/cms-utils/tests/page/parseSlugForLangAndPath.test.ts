@@ -41,4 +41,31 @@ describe('parseSlug', () => {
       pagination: undefined,
     });
   });
+
+  it('parses bare "search" slug as SearchResults without language', () => {
+    expect(parseSlug('search')).toEqual({
+      lang: undefined,
+      path: 'search',
+      pathType: 'SearchResults',
+      pagination: undefined,
+    });
+  });
+
+  it('parses "en/search" slug as SearchResults with language "en"', () => {
+    expect(parseSlug('en/search')).toEqual({
+      lang: 'en',
+      path: '/search',
+      pathType: 'SearchResults',
+      pagination: undefined,
+    });
+  });
+
+  it('parses "es/search" slug as SearchResults with language "es"', () => {
+    expect(parseSlug('es/search')).toEqual({
+      lang: 'es',
+      path: '/search',
+      pathType: 'SearchResults',
+      pagination: undefined,
+    });
+  });
 });

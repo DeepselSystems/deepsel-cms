@@ -65,7 +65,7 @@ export async function fetchSearchResults({
     null,
     astroRequest ?? null,
     lang,
-    `http://localhost:8000`,
+    backendHost,
   );
 
   // If no query, skip the search call and return empty results
