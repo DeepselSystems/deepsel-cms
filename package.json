@@ -14,6 +14,9 @@
     "format:check": "npm run format:check --workspace=client && npm run format:check --workspace=admin && npm run format:check --workspace=packages/cms-react && npm run format:check --workspace=packages/cms-utils",
     "prepush": "npm run prepush --workspace=packages/cms-react && npm run prepush --workspace=packages/cms-utils"
   },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2"
+  },
   "devDependencies": {
     "happy-dom": "^20.0.11",
     "prettier": "^3.8.1",

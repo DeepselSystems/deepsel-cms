@@ -143,58 +143,32 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
 
     try:
         # Scan both directories and merge (source themes take priority)
-        themes = _scan_themes_in_dir(THEMES_DIR)
+        themes_dict = _scan_themes_in_dir(THEMES_DIR)
         source_themes = _scan_themes_in_dir(
             os.path.normpath(SOURCE_THEMES_DIR)
         )
-        themes.update(source_themes)
+        themes_dict.update(source_themes)
 
-        # List all directories in themes folder
-        for folder_name in os.listdir(themes_dir):
-            folder_path = os.path.join(themes_dir, folder_name)
-
-            # Skip if not a directory
-            if not os.path.isdir(folder_path):
+        # Enrich with theme.json metadata
+        for folder_name, theme_info in themes_dict.items():
+            theme_path = _resolve_theme_path(folder_name)
+            if not theme_path:
                 continue
-
-            # Look for package.json
-            package_json_path = os.path.join(folder_path, "package.json")
-
-            if os.path.exists(package_json_path):
+            theme_json_path = os.path.join(theme_path, "theme.json")
+            if os.path.exists(theme_json_path):
                 try:
-                    with open(package_json_path, "r", encoding="utf-8") as f:
-                        package_data = json.load(f)
-
-                    theme_info = ThemeInfo(
-                        name=package_data.get("name", folder_name),
-                        version=package_data.get("version", "unknown"),
-                        folder_name=folder_name,
+                    with open(theme_json_path, "r", encoding="utf-8") as f:
+                        theme_meta = json.load(f)
+                    if theme_meta.get("name"):
+                        theme_info.name = theme_meta["name"]
+                    theme_info.description = theme_meta.get("description")
+                    theme_info.image = theme_meta.get("image")
+                except (json.JSONDecodeError, Exception) as e:
+                    logger.warning(
+                        f"Failed to read theme.json in {folder_name}: {e}"
                     )
 
-                    # Read theme.json manifest if it exists
-                    theme_json_path = os.path.join(folder_path, "theme.json")
-                    if os.path.exists(theme_json_path):
-                        try:
-                            with open(theme_json_path, "r", encoding="utf-8") as f:
-                                theme_meta = json.load(f)
-                            # Prefer theme.json name over package.json name
-                            if theme_meta.get("name"):
-                                theme_info.name = theme_meta["name"]
-                            theme_info.description = theme_meta.get("description")
-                            theme_info.image = theme_meta.get("image")
-                        except (json.JSONDecodeError, Exception) as e:
-                            logger.warning(
-                                f"Failed to read theme.json in {folder_name}: {e}"
-                            )
-
-                    themes.append(theme_info)
-
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse package.json in {folder_name}: {e}")
-                except Exception as e:
-                    logger.error(f"Error reading theme {folder_name}: {e}")
-
-        return themes
+        return list(themes_dict.values())
 
     except Exception as e:
         logger.error(f"Error listing themes: {e}")
