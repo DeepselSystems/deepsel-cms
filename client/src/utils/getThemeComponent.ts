@@ -3,7 +3,11 @@ import type { PageData, BlogListData, BlogPostData, SearchResultsData } from '@d
 
 function getSelectedThemeSettings(data: PageData | BlogListData | BlogPostData | SearchResultsData) {
   const publicSettings = data.public_settings;
-  const selectedTheme: ThemeName = publicSettings?.selected_theme as ThemeName;
+  const themeNames = Object.keys(themeMap) as ThemeName[];
+  const selectedTheme: ThemeName =
+    (publicSettings?.selected_theme as ThemeName) in themeMap
+      ? (publicSettings?.selected_theme as ThemeName)
+      : themeNames[0];
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   return { selectedTheme, defaultLangIsoCode };
 }
