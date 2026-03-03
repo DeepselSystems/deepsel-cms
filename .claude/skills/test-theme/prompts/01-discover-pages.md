@@ -1,7 +1,7 @@
 # Step: Discover All Pages from Database
 
 ## Goal
-Query the database to get a complete list of all pages that need testing. This ensures we test EVERY page, not just the ones we assume exist.
+Query the database to get a complete list of all pages and blog posts that need testing. This ensures we test EVERY page, not just the ones we assume exist.
 
 ## Process
 
@@ -26,27 +26,34 @@ LIMIT 3;
 
 ### Build the complete test page list
 
-From the query results, build:
+From the query results, build the ordered test list:
 ```
-Pages to test:
-- / (homepage — always test)
-- /about (from DB query)
-- /services (from DB query)
-- ... (every slug from DB)
-- /blog (blog list — always test)
-- /blog/<first-post-slug> (from blog query)
-- /nonexistent-page-xyz (404 — always test)
+Pages to test (in order):
+1. / (homepage — always first)
+2. /about (from DB)
+3. /services (from DB)
+4. ... (every other slug from DB)
+5. /blog (blog list — always test)
+6. /blog/<first-post-slug> (from blog query)
+7. /nonexistent-page-xyz (404 — always last)
 ```
 
 ### Map pages to Figma screenshots
 
 For each page, find the corresponding Figma screenshot in `$MIGRATION_DIR/screenshots/`:
 - Homepage → `homepage-desktop.png` or similar
-- Custom pages → look for matching frame names
+- Custom pages → look for matching frame names (e.g., `about-desktop.png`, `contact-desktop.png`)
 
-If a Figma screenshot exists for a page, it will be used for comparison.
-If no Figma screenshot exists (e.g., a CMS page with no Figma design), test it anyway for layout/rendering correctness but skip the visual comparison.
+Also map to vibe_figma output for code-level comparison:
+- Homepage → `$MIGRATION_DIR/vibe-output/homepage/`
+- Custom pages → `$MIGRATION_DIR/vibe-output/<slug>/`
+
+If a Figma screenshot exists for a page, it will be used for visual comparison.
+If a vibe_figma output exists, it will be used for element-level Tailwind class comparison.
+If neither exists (e.g., a CMS page with no Figma design), test it for functionality only (navigation, console errors, interactions) — skip visual comparison.
 
 ## Output
-- List of all URLs to test
-- Mapping of pages to their Figma reference screenshots (if available)
+- Ordered list of all URLs to test
+- Mapping of pages to Figma reference screenshots (if available)
+- Mapping of pages to vibe_figma output directories (if available)
+- Total count: "Found X pages + blog + 404 = Y total test targets"

@@ -1,12 +1,12 @@
 ---
 name: test-theme
-description: Test a Deepsel CMS theme using Playwright. Takes screenshots, compares with Figma design screenshots, and reports differences. Use when asked to test a theme, verify theme rendering, or compare theme against design.
+description: Test a Deepsel CMS theme using Playwright. Takes screenshots, runs interactive tests (clicks, navigation, mobile menu), compares with Figma design, and reports differences. Use when asked to test a theme, verify theme rendering, or compare theme against design.
 argument-hint: <theme-name>
 ---
 
-# Theme Visual Testing
+# Theme Full Testing
 
-Test a Deepsel CMS theme by taking screenshots with Playwright and comparing against Figma design references. Automatically discovers ALL pages from the database, tests at 3 viewports, and runs a fix loop.
+Test a Deepsel CMS theme comprehensively: visual screenshots, interactive testing (clicks, navigation, mobile menu, console errors), and element-level comparison against Figma design references. Tests EVERY page from the database, one page at a time, at 3 viewports.
 
 ## Arguments
 
@@ -36,37 +36,27 @@ curl -s http://localhost:8000/api/v1/health || echo "Backend not running"
 curl -s http://localhost:4322 || echo "Client not running"
 ```
 
+If servers are not running, notify the user and wait. Do NOT proceed without both servers.
+
 ## Subagent & Skill Usage
 
 ### Skills to Invoke
-- **`/playwright-skill`** — Use this skill to capture all screenshots. It auto-detects the dev server and handles Playwright setup. Invoke it with instructions to capture each page at each viewport.
+- **`/playwright-skill`** — Use for all browser automation. It auto-detects dev server and handles Playwright setup.
 
-### Task Subagents for Parallel Comparison
-When comparing screenshots (Step 5), spawn parallel Task subagents to compare multiple pages simultaneously:
-
-```
-Spawn parallel Task agents (subagent_type="general-purpose"):
-- Agent 1: "Compare homepage screenshots. Read $MIGRATION_DIR/screenshots/homepage-desktop.png and $MIGRATION_DIR/test-results/run-NNN/homepage-desktop.png. Score layout, colors, typography, spacing, components, responsive. Return scores and issues."
-- Agent 2: "Compare about page screenshots. Read $MIGRATION_DIR/screenshots/about-desktop.png and $MIGRATION_DIR/test-results/run-NNN/about-desktop.png..."
-- Agent 3: "Compare blog page screenshots..."
-```
-
-Each agent reads both Figma and Playwright screenshots visually, scores them, and returns structured issues. The main conversation then aggregates results into the test report.
-
-### Subagent Guidelines
-- Each comparison agent should compare ONE page across all 3 viewports
-- Agents return structured JSON-like output: `{ page, scores: { layout, colors, ... }, issues: [...] }`
-- After aggregating, apply fixes in the main conversation (don't let subagents edit files)
+### Task Subagents
+- Use parallel Task subagents (subagent_type="general-purpose") for **screenshot comparison only** — spawn one agent per page to compare Figma vs test screenshots simultaneously
+- Do NOT use subagents for interactive testing — run those sequentially in the main conversation to handle failures properly
 
 ## Step-by-Step Workflow
 
 ### Step 1: Verify Theme is Active
+**Prompt:** `prompts/01-discover-pages.md`
 
 ```bash
 PGPASSWORD=dummy psql -h localhost -p 5432 -U user -d deepsel_cms -c "SELECT selected_theme FROM organization LIMIT 1;"
 ```
 
-If the theme is not active, activate it:
+If not active, activate it:
 ```bash
 PGPASSWORD=dummy psql -h localhost -p 5432 -U user -d deepsel_cms -c "UPDATE organization SET selected_theme = '$ARGUMENTS' WHERE id = (SELECT id FROM organization LIMIT 1);"
 ```
@@ -74,237 +64,297 @@ PGPASSWORD=dummy psql -h localhost -p 5432 -U user -d deepsel_cms -c "UPDATE org
 ### Step 2: Discover ALL Pages from Database
 **Prompt:** `prompts/01-discover-pages.md`
 
-Query the database for all pages:
-```bash
-PGPASSWORD=dummy psql -h localhost -p 5432 -U user -d deepsel_cms -t -A -c "SELECT slug FROM page WHERE organization_id = (SELECT id FROM organization LIMIT 1) ORDER BY slug;"
-```
-
-This gives the complete list of pages to test. Build the test page list:
-- Every page slug from the DB query (e.g., `/`, `/about`, `/services`, `/contact`)
+Query for all page slugs and blog posts. Build the complete test page list including:
+- Every page slug from DB
 - `/blog` (blog list)
-- `/blog/<first-post-slug>` (discover from blog list page)
+- A blog post (discovered from DB)
 - `/nonexistent-page-xyz` (404 page)
 
 ### Step 3: Create Versioned Test Directory
 
-Find the next run number:
-```bash
-ls -d $MIGRATION_DIR/test-results/run-* 2>/dev/null | sort -V | tail -1
+Find the next run number and create `$MIGRATION_DIR/test-results/run-NNN/`.
+
+### Step 4: Test Each Page — ONE AT A TIME
+**Prompt:** `prompts/02-full-page-test.md`
+
+For EACH page discovered in Step 2, run a COMPLETE test cycle before moving to the next page. The test cycle per page includes:
+
+1. **Visual screenshots** at 3 viewports (desktop/tablet/mobile)
+2. **Interactive tests** (clicks, navigation, console errors)
+3. **Mobile-specific tests** (hamburger menu, touch interactions)
+4. **Element-level comparison** against Figma reference (if available)
+
+**DO NOT batch all screenshots first then test interactively later.** Test everything per page, then move to the next page. This way, if a page has issues, they're caught immediately.
+
+**Per-page test cycle:**
+
+```
+For each page in test_pages:
+  1. Desktop viewport (1920x1080):
+     - Navigate to page
+     - Wait for load + hydration
+     - Check console for errors
+     - Take full-page screenshot
+     - Test clickable elements (buttons, links)
+     - Verify navigation links work
+
+  2. Tablet viewport (768x1024):
+     - Navigate to page
+     - Take full-page screenshot
+     - Check if hamburger menu appears (responsive breakpoint)
+     - Test visible interactions
+
+  3. Mobile viewport (375x812):
+     - Navigate to page
+     - Take full-page screenshot
+     - Test hamburger menu: click to open, verify menu items visible, click to close
+     - Test mobile-specific interactions
+     - Take screenshot with menu open
+
+  4. Compare against Figma reference (if available)
+  5. Log results for this page
+
+  Print: "Page X/Y tested: <slug> — <pass/fail>"
 ```
 
-Create `$MIGRATION_DIR/test-results/run-NNN/` for this test run.
+### Step 5: Interactive Testing Details
+**Prompt:** `prompts/02-full-page-test.md`
 
-### Step 4: Take Screenshots with Playwright
-**Prompt:** `prompts/02-capture-screenshots.md`
+For each page, run these interactive tests:
 
-Use the `playwright-skill` to take screenshots of ALL discovered pages at 3 viewports.
-
-**Viewports:**
-| Name | Width | Height |
-|------|-------|--------|
-| desktop | 1920 | 1080 |
-| tablet | 768 | 1024 |
-| mobile | 375 | 812 |
-
-**For EVERY page discovered in Step 2, capture at all 3 viewports.**
-
-Save screenshots to the versioned directory with naming:
-- `<slug>-desktop.png` (e.g., `homepage-desktop.png`, `about-desktop.png`)
-- `<slug>-tablet.png`
-- `<slug>-mobile.png`
-
-For the homepage, use `homepage` as the slug name. For other pages, use the slug without leading `/`.
-
-**Playwright script template:**
+#### 5a. Console Error Check
 ```javascript
-const { chromium } = require('playwright');
-const path = require('path');
+const errors = [];
+page.on('console', msg => {
+  if (msg.type() === 'error') errors.push(msg.text());
+});
+page.on('pageerror', err => errors.push(err.message));
+// Navigate and interact...
+// At end: report any errors found
+```
 
-const BASE_URL = 'http://localhost:4322';
-const OUTPUT_DIR = path.join(process.cwd(), 'figma_migration', 'test-results', 'run-NNN');
+#### 5b. Navigation Link Test
+```javascript
+// Collect all internal links on the page
+const links = await page.$$eval('a[href^="/"]', anchors =>
+  anchors.map(a => ({ href: a.href, text: a.textContent.trim() }))
+);
+// Verify each unique internal link responds (not 500)
+for (const link of uniqueLinks) {
+  const response = await page.goto(link.href, { waitUntil: 'domcontentloaded', timeout: 10000 });
+  if (!response || response.status() >= 500) {
+    issues.push(`Broken link: ${link.text} → ${link.href} (${response?.status()})`);
+  }
+  await page.goBack();
+}
+```
 
-const viewports = {
-  desktop: { width: 1920, height: 1080 },
-  tablet: { width: 768, height: 1024 },
-  mobile: { width: 375, height: 812 },
-};
+#### 5c. Button Click Test
+```javascript
+// Find all visible buttons
+const buttons = await page.$$('button:visible');
+for (const button of buttons) {
+  const text = await button.textContent();
+  try {
+    await button.click({ timeout: 3000 });
+    // Wait briefly for any reaction (modal, menu, navigation)
+    await page.waitForTimeout(500);
+    // Check no error occurred
+  } catch (e) {
+    issues.push(`Button not clickable: "${text}"`);
+  }
+}
+```
 
-// Pages discovered from database query
-const pages = [
-  { name: 'homepage', path: '/' },
-  // ... add all discovered pages ...
-  { name: 'blog-list', path: '/blog' },
-  { name: '404', path: '/nonexistent-page-xyz' },
-];
+#### 5d. Mobile Hamburger Menu Test
+```javascript
+// On mobile viewport only
+const hamburger = await page.$([
+  'button[aria-label*="menu" i]',
+  'button[aria-label*="Menu"]',
+  '[data-testid="mobile-menu"]',
+  '.lg\\:hidden button',
+  'button:has(svg[class*="menu"])',
+  'header button.lg\\:hidden',
+].join(', '));
 
-(async () => {
-  const browser = await chromium.launch();
+if (hamburger) {
+  // 1. Click to open
+  await hamburger.click();
+  await page.waitForTimeout(500);
 
-  for (const [viewportName, viewport] of Object.entries(viewports)) {
-    const context = await browser.newContext({ viewport });
-    const page = await context.newPage();
+  // 2. Verify menu is visible
+  const menuVisible = await page.isVisible('nav, [role="navigation"], [data-testid="mobile-nav"]');
 
-    for (const p of pages) {
-      await page.goto(`${BASE_URL}${p.path}`, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(2000);
-      await page.screenshot({
-        path: path.join(OUTPUT_DIR, `${p.name}-${viewportName}.png`),
-        fullPage: true,
-      });
-      console.log(`Captured: ${p.name}-${viewportName}.png`);
-    }
+  // 3. Screenshot with menu open
+  await page.screenshot({ path: `${slug}-mobile-menu-open.png` });
 
-    // Try to find and screenshot a blog post
-    await page.goto(`${BASE_URL}/blog`, { waitUntil: 'networkidle' });
-    const blogLink = await page.$('a[href^="/blog/"]');
-    if (blogLink) {
-      const href = await blogLink.getAttribute('href');
-      await page.goto(`${BASE_URL}${href}`, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(2000);
-      await page.screenshot({
-        path: path.join(OUTPUT_DIR, `blog-post-${viewportName}.png`),
-        fullPage: true,
-      });
-    }
+  // 4. Check menu items are present
+  const menuItems = await page.$$('nav a, [role="navigation"] a');
 
-    await context.close();
+  // 5. Click a menu link — verify it navigates
+  if (menuItems.length > 0) {
+    const firstLink = menuItems[0];
+    const href = await firstLink.getAttribute('href');
+    await firstLink.click();
+    await page.waitForTimeout(1000);
+    // Verify navigation occurred
   }
 
-  await browser.close();
-  console.log('All screenshots captured!');
-})();
+  // 6. Go back, re-open menu, click close/hamburger again
+  await page.goBack();
+  await hamburger.click();
+  await page.waitForTimeout(300);
+  await hamburger.click(); // Close
+  await page.waitForTimeout(300);
+  // Verify menu is hidden again
+}
 ```
 
-### Step 5: Element-Level Comparison
+#### 5e. Blog-Specific Tests (for blog list page)
+```javascript
+// Test pagination if exists
+const paginationLinks = await page.$$('.pagination a, nav[aria-label="pagination"] a');
+if (paginationLinks.length > 0) {
+  await paginationLinks[0].click();
+  await page.waitForTimeout(1000);
+  // Verify page changed (URL or content)
+}
+
+// Test blog post link
+const blogPostLink = await page.$('a[href^="/blog/"]');
+if (blogPostLink) {
+  await blogPostLink.click();
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
+  // Verify blog post rendered (has article content)
+  const hasContent = await page.$('article, .blog-post, .content-renderer');
+}
+```
+
+#### 5f. Language Switcher Test (if present)
+```javascript
+const langSwitcher = await page.$('[data-testid="lang-switcher"], .lang-switcher, select[name="language"]');
+if (langSwitcher) {
+  await langSwitcher.click();
+  await page.waitForTimeout(500);
+  // Take screenshot showing language options
+  await page.screenshot({ path: `${slug}-lang-switcher-open.png` });
+}
+```
+
+### Step 6: Element-Level Visual Comparison
 **Prompt:** `prompts/03-compare-and-fix.md`
 
-This is NOT a high-level "does it look similar" check. This is an **element-by-element** comparison that maps each React component's DOM output to the corresponding Figma element.
+After interactive tests, compare screenshots against Figma references using subagents:
 
-**For each page, load ALL of:**
-1. Figma screenshot (`$MIGRATION_DIR/screenshots/`)
-2. Test screenshot (`$MIGRATION_DIR/test-results/run-NNN/`)
-3. React component source code (`themes/<name>/components/`)
-4. Design tokens (`$MIGRATION_DIR/design-tokens.md`)
+```
+Spawn parallel Task agents (subagent_type="general-purpose"):
+- Agent per page: "Compare <page> screenshots. Read Figma reference and test screenshot.
+  Also read the theme component source code for this page.
+  Compare each element's Tailwind classes against the vibe_figma output.
+  Return: element drift table, match score, and fix list."
+```
 
-**Then for EACH component (Header, Hero, each Section, Footer):**
-1. Read the component's source code
-2. Identify each DOM element (container, logo, links, buttons, images, icons, text)
-3. For each element, compare: code value vs design-token value vs Figma screenshot vs test screenshot
-4. Record match/mismatch in a table with exact fix instructions
+### Step 7: Generate Full Test Report
 
-**Elements to check per component:**
-
-#### Per-element checks
-- Background color: exact hex match against design-tokens.md
-- Font: family, size, weight, color, line-height — all must match
-- Spacing: padding, margin, gap — must match token values
-- Borders: width, color, radius — must match
-- Images: actual Figma asset used? Or placeholder/missing?
-- Icons: actual Figma SVG? Or FontAwesome substitute?
-- Text content: matches Figma word-for-word?
-- Layout: flex direction, alignment, column count — must match
-- Shadows, opacity, gradients: must match token values
-
-#### Missing/Extra element checks
-- [ ] Every photo in Figma appears in test (not gray placeholder)
-- [ ] Every icon in Figma appears in test (actual SVG, not FontAwesome substitute)
-- [ ] Every background image in Figma appears in test (not solid color)
-- [ ] No extra elements in test that don't exist in Figma
-- [ ] No missing elements in test that DO exist in Figma
-- [ ] Text content matches Figma in correct language
-
-**Scoring: count individual elements matching vs total elements checked. Target: ≥ 95% match rate.**
-
-### Step 6: Generate Element-Level Test Report
-
-Create `$MIGRATION_DIR/test-results/run-NNN/test-report.md` with element-level detail:
+Create `$MIGRATION_DIR/test-results/run-NNN/test-report.md`:
 
 ```markdown
-# Element-Level Test Report: <theme-name>
+# Full Test Report: <theme-name>
 Run: NNN | Date: <current-date> | Iteration: N
 
 ## Summary
-- Elements checked: X
-- Elements matching: Y
-- Match rate: Y/X = Z%
-- Target: ≥ 95%
+- Pages tested: X
+- Pages passed: Y/X
+- Interactive tests: Z passed / W total
+- Console errors: N
+- Broken links: N
+- Visual match rate: Z%
 
-## Page: Homepage
+## Per-Page Results
 
-### Component: Header (Page.tsx:15-35)
-| Element | Token Value | Code Value | Match? | Fix |
-|---------|------------|------------|--------|-----|
-| Container bg | #FFFFFF | bg-white | ✓ | — |
-| Logo font | Inter 20px bold #1A1A2E | text-xl font-bold text-[#1A1A2E] | ✓ | — |
-| Menu link color | #4A4A68 | text-gray-700 | ✗ | → text-[#4A4A68] |
-**Header: 2/3 match**
+### Page: Homepage (/)
+**Visual:** desktop ✓ | tablet ✓ | mobile ✓
+**Console errors:** 0
+**Broken links:** 0
+**Interactive tests:**
+- [✓] All buttons clickable
+- [✓] Navigation links work
+- [✓] Mobile hamburger opens/closes
+- [✓] Mobile menu links navigate correctly
+**Visual match:** 87% (12 drifts found)
+**Element drifts:**
+| Element | Expected | Actual | Fix |
+|---------|----------|--------|-----|
+| Header bg | bg-white | bg-slate-900 | Page.tsx:16 |
+| ... | ... | ... | ... |
 
-### Component: Hero (PageHome.tsx:5-40)
-| Element | Token Value | Code Value | Match? | Fix |
-|---------|------------|------------|--------|-----|
-| Background | hero-bg.jpg + overlay | bg-[#0F172A] solid | ✗ | → add img + overlay |
-| Headline | 56px bold white | text-4xl | ✗ | → text-[56px] |
-**Hero: 0/2 match**
+### Page: About (/about)
+**Visual:** desktop ✓ | tablet ✓ | mobile ✓
+**Console errors:** 0
+**Broken links:** 0
+**Interactive tests:**
+- [✓] All buttons clickable
+- [✗] "Contact us" button navigates to 404
+**Issues:**
+- Button href="/kontakt" but page slug is "/contact"
 
-(repeat for every component)
+### Page: Blog (/blog)
+**Visual:** desktop ✓ | tablet ✓ | mobile ✓
+**Console errors:** 0
+**Interactive tests:**
+- [✓] Blog post links work
+- [✓] Pagination works
+- [✗] No pagination — only 2 posts
 
-## Fix List (by priority)
-1. [P1-COLOR] Header bg: bg-slate-900 → bg-white (Page.tsx:16)
-2. [P2-ASSET] Hero bg: add hero-bg.jpg (PageHome.tsx:8)
-3. [P2-ASSET] Icons: replace FontAwesome with actual SVGs (PageHome.tsx:65)
-...
+### Page: 404 (/nonexistent-page-xyz)
+**Visual:** desktop ✓ | tablet ✓ | mobile ✓
+**Console errors:** 0
+**404 behavior:** ✓ Shows custom 404 page (not blank/error)
+
+## Issue Summary
+| # | Severity | Page | Issue | Fix |
+|---|----------|------|-------|-----|
+| 1 | P1 | Homepage | Header bg wrong | Page.tsx:16 bg-slate-900 → bg-white |
+| 2 | P1 | All pages | Console error: Failed to load font | Add Google Fonts link |
+| 3 | P2 | About | Broken button link | Fix href |
+| 4 | P3 | Homepage | Hero padding wrong | PageHome.tsx:8 px-4 → px-16 |
 ```
 
-### Step 7: Fix and Re-test Loop (max 10 iterations)
+### Step 8: Fix and Re-test Loop (max 5 iterations)
 **Prompt:** `prompts/03-compare-and-fix.md`
 
-For each element mismatch found, apply fixes in priority order:
+For each issue found:
 
-1. **Priority 1: Wrong colors/backgrounds** — Most visually impactful, often cascading
-   - Header/footer background color wrong (e.g., dark when should be white)
-   - Section background colors wrong
-   - Button/link colors wrong
-
-2. **Priority 2: Missing assets** — Immediately noticeable
-   - Photos showing as placeholders → import actual Figma photos
-   - Icons replaced with FontAwesome → import actual Figma SVGs
-   - Background images missing → import and add hero/section bg images
-
-3. **Priority 3: Wrong layout/spacing** — Affects overall feel
-   - Wrong flex direction, grid columns, container width
-   - Wrong padding/gap/margin values (use exact token px → Tailwind)
-
-4. **Priority 4: Wrong typography** — Subtle but important
-   - Wrong font family (check Google Fonts `<link>` in .astro files)
-   - Wrong font size/weight/color (use exact token values)
-
-5. **Priority 5: Wrong element details** — Fine-tuning
-   - Wrong border-radius, border color/width, shadow
-   - Wrong hover/active states, wrong opacity
-
-**Fix loop process:**
-1. Read the element-level fix list from the report
-2. Apply ALL P1 (color) fixes first — these cascade (fixing header bg fixes child colors)
-3. Apply ALL P2 (asset) fixes — import actual images, replace FontAwesome substitutes
+1. **Fix all P1 issues first** — colors, console errors, broken critical paths
+2. **Fix all P2 issues** — broken links, missing assets, interaction failures
+3. **Fix P3-P5 issues** — spacing, typography, fine details
 4. Wait for hot-reload (3 seconds)
-5. Re-take screenshots for affected pages
-6. Re-run element-level comparison (code vs tokens vs screenshot)
-7. Update test report with new element match counts
-8. Repeat until match rate ≥ 95% or max 10 iterations
+5. Re-test ONLY the affected pages (not all pages again)
+6. Update test report with new results
+7. Repeat until:
+   - All interactive tests pass (no console errors, no broken links, menu works)
+   - Visual match rate >= 95%
+   - Or max 5 iterations reached
 
-### Step 8: Final Verification
+**IMPORTANT:** Interactive test failures (console errors, broken links, non-functional menu) are HIGHER priority than visual drift. Fix functional issues before cosmetic ones.
 
-After the fix loop:
-1. Run full screenshot capture of ALL pages at ALL viewports (new run directory)
-2. Verify no regressions introduced by fixes
-3. Check for:
-   - Browser console errors (use Playwright to capture)
-   - Missing images/assets (404s in network tab)
-   - Broken navigation links
-   - Language switcher functionality
-   - Blog pagination
-   - Mobile menu open/close
-4. Generate final test report
+### Step 9: Final Verification
+
+After the fix loop, run ONE complete test of all pages:
+1. Fresh screenshots at all viewports
+2. All interactive tests re-run
+3. Generate final test report
+4. Print summary:
+```
+Final Test Results: <theme-name>
+Pages: X/X passed
+Interactive: Y/Y passed
+Visual match: Z%
+Console errors: 0
+Broken links: 0
+Status: PASS / FAIL (with reasons)
+```
 
 ## Troubleshooting
 
@@ -331,3 +381,8 @@ After the fix loop:
 - Verify the `.astro` file slug matches the CMS page slug exactly
 - Check `client/src/themes.ts` has the slug key in the theme map
 - Check `getThemeComponent.ts` logic — it tries `themeMap[theme][slug]` then falls back to `index`
+
+### Hamburger menu not found
+- Check if the theme uses a different breakpoint (e.g., `md:hidden` vs `lg:hidden`)
+- Look for `aria-label` on the hamburger button
+- Try broader selectors: `header button`, `nav button`

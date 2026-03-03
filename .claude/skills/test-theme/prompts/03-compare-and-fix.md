@@ -1,181 +1,180 @@
-# Step: Element-Level Comparison and Fix
+# Step: Compare, Report, and Fix Loop
 
 ## Goal
-Compare Playwright screenshots against Figma design references at the ELEMENT level — not just overall impression. Map each React component's DOM output to the corresponding Figma element and verify every property matches.
-
-## Why Element-Level Comparison
-
-The old approach ("does this page generally look like the design?") produces 50-60% matches. To achieve 95%+ accuracy, we must:
-1. Break each page into individual React components
-2. For each component, identify its DOM output
-3. Map each DOM element to the corresponding Figma element
-4. Compare EXACT properties: background color, font, spacing, border, images, icons
+After all pages are tested (visual + interactive), aggregate results into a comprehensive report, then run a fix loop to resolve issues.
 
 ## Comparison Process
 
-### Step 1: Read source code + design tokens + both screenshots
+### Visual Comparison (using subagents)
 
-For each page, load:
-1. The Figma screenshot (`$MIGRATION_DIR/screenshots/`)
-2. The test screenshot (`$MIGRATION_DIR/test-results/run-NNN/`)
-3. The theme's React component source code (`themes/<name>/components/`)
-4. The design tokens (`$MIGRATION_DIR/design-tokens.md`)
+For pages that have Figma references, spawn parallel Task subagents for comparison:
 
-### Step 2: Compare component by component
+```
+Spawn parallel Task agents (subagent_type="general-purpose"):
 
-For EACH React component on the page, do this comparison:
+- Agent 1: "Compare homepage.
+  Read: $MIGRATION_DIR/screenshots/homepage-desktop.png (Figma reference)
+  Read: $MIGRATION_DIR/test-results/run-NNN/homepage-desktop.png (test result)
+  Read: $MIGRATION_DIR/vibe-output/homepage/<Component>.tsx (vibe_figma code reference)
+  Read: themes/<name>/components/PageHome.tsx (theme code)
 
-```markdown
-## Component: Header
-Source: themes/<name>/components/Page.tsx lines 15-35
+  For each visible element (header, hero, sections, footer):
+  1. Compare visual appearance in screenshots
+  2. Compare Tailwind classes between vibe_figma output and theme code
+  3. Return a drift table with exact fix instructions
 
-### Element: Header container
-- Token: bg #FFFFFF, h 80px, border-b 1px #E5E7EB
-- Code: bg-white h-20 border-b border-[#E5E7EB]
-- Figma screenshot: ✓ white background, thin bottom border
-- Test screenshot: ✗ DARK NAVY background — WRONG
-- Fix: Change bg-slate-900 → bg-white in Page.tsx:16
+  Return JSON: { page: 'homepage', elementsChecked: N, elementsMatch: M, drifts: [...] }"
 
-### Element: Logo text
-- Token: "alcoris." Inter 20px bold #1A1A2E
-- Code: text-xl font-bold text-[#1A1A2E]
-- Figma screenshot: ✓ dark text on white
-- Test screenshot: ✗ white text on dark bg (consequence of wrong header bg)
-- Fix: will be fixed when header bg is fixed
-
-### Element: Menu links
-- Token: Inter 14px medium #4A4A68, gap 32px
-- Code: text-sm font-medium text-gray-700 gap-6
-- Figma screenshot: ✓ medium gray links, well-spaced
-- Test screenshot: ✗ wrong gap (gap-6=24px, should be gap-8=32px), wrong color (#4A4A68 ≠ gray-700)
-- Fix: Change text-gray-700 → text-[#4A4A68], gap-6 → gap-8 in Menu.tsx:12
-
-### Element: "Kontakt" button
-- Token: bg #2563EB, text white 14px medium, px 24px py 10px, rounded 6px
-- Code: bg-primary-600 text-white text-sm px-4 py-2 rounded-lg
-- Figma screenshot: ✓ blue rounded button
-- Test screenshot: ✗ wrong border-radius (rounded-lg=8px, should be rounded-md=6px), wrong padding
-- Fix: Change rounded-lg → rounded-md, px-4 → px-6, py-2 → py-2.5 in Page.tsx:28
+- Agent 2: "Compare about page..." (same structure)
+- Agent 3: "Compare contact page..." (same structure)
 ```
 
-### Step 3: Repeat for EVERY component on the page
+Each agent returns:
+- Element count and match rate
+- Drift table: element name, expected Tailwind class, actual Tailwind class, fix
+- Priority-ordered fix list
 
-Go through the entire page top to bottom:
-1. **Header** — logo, nav links, CTA button, background, border
-2. **Hero** — background (image/color), overlay, headline, subtitle, CTA, positioning
-3. **Each content section** — background, heading, subtitle, grid layout, cards, icons, photos, text content
-4. **Footer** — background, layout, logo, form, contact info, copyright, links
-5. **Overall** — font family loading, max-width container, page background
+### Combine Interactive + Visual Results
 
-### Step 4: Check for missing/extra elements
+Merge the interactive test results (from Step 4-5) with visual comparison results (from subagents) into a single report per page.
 
-| Check | How to verify |
-|-------|--------------|
-| Missing images | Figma has photo → test shows gray box or nothing |
-| Missing icons | Figma has custom icon → test has FontAwesome or nothing |
-| Missing background image | Figma hero has bg image → test has solid color |
-| Extra elements | Test has elements not in Figma (e.g., social icons in footer when Figma has none) |
-| Wrong text content | Figma says "Kontakt" → test says "Contact" |
-| Wrong section order | Figma: Hero → About → Features → CTA → Footer. Test: different order |
+## Full Test Report
 
-### Step 5: Prioritize fixes
-
-**Priority 1: Wrong colors/backgrounds** — Most visually impactful
-- Header/footer background color wrong
-- Section background colors wrong
-- Button/link colors wrong
-
-**Priority 2: Missing assets** — Immediately noticeable
-- Photos showing as placeholders
-- Icons missing or replaced with FontAwesome
-- Background images missing
-
-**Priority 3: Wrong layout/spacing** — Affects overall feel
-- Wrong flex direction or grid columns
-- Wrong padding/gap values
-- Wrong container width
-
-**Priority 4: Wrong typography** — Subtle but important
-- Wrong font family (Google Fonts link missing?)
-- Wrong font size/weight
-- Wrong text color
-
-**Priority 5: Wrong element details** — Fine-tuning
-- Wrong border-radius
-- Wrong border color/width
-- Wrong shadow
-- Wrong hover/active states
-
-## Test Report Format (Element-Level)
+Create `$MIGRATION_DIR/test-results/run-NNN/test-report.md`:
 
 ```markdown
-# Element-Level Test Report: <theme-name>
-Run: NNN | Date: YYYY-MM-DD | Iteration: N
+# Full Test Report: <theme-name>
+Run: NNN | Date: <current-date> | Iteration: N
 
-## Page: Homepage
+## Summary
+| Metric | Result |
+|--------|--------|
+| Pages tested | X |
+| Pages fully passed | Y/X |
+| Console errors | N total across all pages |
+| Network errors (4xx/5xx) | N |
+| Broken internal links | N |
+| Mobile menu | Works / Broken / Not found |
+| Blog navigation | Works / Broken / No posts |
+| 404 page | Correct / Error / Blank |
+| Language switcher | Works / Broken / Not found |
+| Visual match rate | Z% (across pages with Figma reference) |
 
-### Header (Page.tsx:15-35)
-| Element | Token Value | Code Value | Match? | Fix |
-|---------|------------|------------|--------|-----|
-| Container bg | #FFFFFF | bg-slate-900 | ✗ | → bg-white |
-| Container height | 80px | h-16 | ✗ | → h-20 |
-| Container border | 1px #E5E7EB | none | ✗ | → add border-b border-[#E5E7EB] |
-| Logo text | Inter 20px bold #1A1A2E | text-xl font-bold text-white | ✗ | → text-[#1A1A2E] |
-| Menu link font | 14px medium #4A4A68 | text-sm text-gray-300 | ✗ | → text-[#4A4A68] |
-| Menu link gap | 32px | gap-6 | ✗ | → gap-8 |
-| Button bg | #2563EB | bg-blue-500 | ✗ | → bg-[#2563EB] |
-| Button radius | 6px | rounded-lg (8px) | ✗ | → rounded-md |
-**Header score: 1/8 elements match = 12.5%**
+## Critical Issues (must fix)
+1. [P1] Console error on /about: "Cannot read property 'map' of undefined" — PageAbout.tsx:23
+2. [P1] Mobile menu does not close — Menu.tsx:45 missing state toggle
+3. [P1] /services returns 500 — missing PageServices component
 
-### Hero (PageHome.tsx:5-40)
-| Element | Token Value | Code Value | Match? | Fix |
-|---------|------------|------------|--------|-----|
-| Background | hero-bg.jpg + overlay | bg-[#0F172A] solid | ✗ | → add img + overlay |
-| Overlay opacity | 70% | none | ✗ | → bg-[#0F172A]/70 |
-| Headline font | 56px bold white | text-4xl | ✗ | → text-[56px] |
-| Headline text | "Alcoris Treuhand" | "Alcoris Treuhand" | ✓ | |
-| Subtitle | 16px #CBD5E1 | text-lg text-gray-300 | ✗ | → text-base text-[#CBD5E1] |
-**Hero score: 1/5 elements match = 20%**
+## Per-Page Results
 
-### Section: "Ihre Vorteile" (PageHome.tsx:60-100)
-| Element | Token Value | Code Value | Match? | Fix |
-|---------|------------|------------|--------|-----|
-| Section bg | #F1F5F9 | bg-gray-100 | ~close | → bg-[#F1F5F9] |
-| Icons | custom SVG from assets | FontAwesome | ✗ | → import actual SVGs |
-| Icon color | original SVG colors | blue-500 | ✗ | → use original SVG |
-**Section score: 0/3 critical elements match = 0%**
+### Page 1: Homepage (/)
+**Status: PARTIAL PASS**
 
-## Overall Page Score
-- Elements checked: 30
-- Elements matching: 5
-- Match rate: 16.7%
-- Target: ≥ 95%
+#### Functional Tests
+| Test | Result | Details |
+|------|--------|---------|
+| Desktop loads | ✓ | 200 OK, no errors |
+| Tablet loads | ✓ | 200 OK |
+| Mobile loads | ✓ | 200 OK |
+| Console errors | ✓ | 0 errors |
+| Network errors | ✓ | 0 errors |
+| Buttons clickable | ✓ | 3/3 buttons work |
+| Internal links | ✗ | 7/8 links work — "/kontakt" returns 404 |
+| Mobile hamburger | ✓ | Opens, shows 5 items, closes |
+| Mobile menu navigation | ✓ | Links navigate correctly |
 
-## Fix List (ordered by priority)
-1. [P1-COLOR] Header bg: bg-slate-900 → bg-white (Page.tsx:16)
-2. [P1-COLOR] Footer bg: bg-slate-900 → bg-white (Footer.tsx:3)
-3. [P2-ASSET] Hero background: add hero-bg.jpg import + img element (PageHome.tsx:8)
-4. [P2-ASSET] Ihre Vorteile icons: replace FontAwesome with actual SVGs (PageHome.tsx:65-80)
-5. [P2-ASSET] Team photos: replace placeholders with actual photos (PageHome.tsx:45-55)
-6. [P3-SPACING] Header height: h-16 → h-20 (Page.tsx:16)
-7. [P3-SPACING] Menu gap: gap-6 → gap-8 (Menu.tsx:12)
-...
+#### Visual Comparison (vs Figma)
+| Element | vibe_figma class | Theme class | Match | Fix |
+|---------|-----------------|-------------|-------|-----|
+| Header bg | bg-white | bg-white | ✓ | — |
+| Header padding | px-16 py-4 | px-6 py-3 | ✗ | px-6→px-16, py-3→py-4 |
+| Nav link color | text-[#4A4A68] | text-gray-600 | ✗ | → text-[#4A4A68] |
+| Hero bg image | hero-bg.jpg | solid bg-[#0F172A] | ✗ | Add image + overlay |
+| ... | ... | ... | ... | ... |
+
+**Visual score: 15/20 elements match = 75%**
+
+### Page 2: About (/about)
+... (same structure)
+
+### Page N: 404 (/nonexistent-page-xyz)
+**Status: PASS**
+- Shows "Page not found" message ✓
+- No console errors ✓
+- Header/footer render correctly ✓
 ```
 
-## Iteration Rules
-- Max 10 iterations per test run
-- After each iteration, create new screenshots in the SAME run directory (overwrite)
-- Update the test report with new element-level scores
-- Stop iterating when overall match rate ≥ 95% (not just "looks similar")
-- If still below 95% after 10 iterations, generate final report with remaining issues and stop
-- Each iteration should fix at least 3-5 elements; if stuck, escalate to user
+## Fix Loop Process
 
-## Fix Process Per Iteration
-1. Read the fix list from the report
-2. Apply ALL P1 (color) fixes first — these cascade (fixing header bg fixes logo + link colors too)
-3. Apply ALL P2 (asset) fixes — import actual images, replace FontAwesome
-4. Wait for hot-reload (3 seconds)
-5. Re-take screenshots for the affected page
-6. Re-run element-level comparison
-7. Generate updated report with new scores
-8. Move to P3/P4/P5 fixes in subsequent iterations
+### Priority Order (STRICT)
+
+**Round 1: Fix functional issues first**
+1. **P0: Pages that don't load** — missing components, 500 errors, import errors
+2. **P1: Console errors** — JavaScript errors break functionality
+3. **P1: Mobile menu broken** — users can't navigate on mobile
+4. **P1: Broken navigation links** — dead links are critical
+
+**Round 2: Fix visual issues**
+5. **P2: Wrong colors/backgrounds** — most visually impactful
+6. **P2: Missing assets** — images, icons showing as placeholders
+7. **P3: Wrong layout/spacing** — padding, gap, flex direction
+8. **P4: Wrong typography** — font family, size, weight, color
+9. **P5: Fine details** — border-radius, shadows, hover states
+
+### Fix Process Per Round
+
+```
+1. Read the issue list from the report (sorted by priority)
+2. Apply ALL issues of the current priority level
+3. Wait 3 seconds for hot-reload
+4. Re-test ONLY affected pages:
+   - For functional fixes: re-run the interactive test for that page
+   - For visual fixes: re-take screenshots and re-compare
+5. Update the test report with new results
+6. If all P0-P1 issues are fixed, move to P2-P5
+7. Repeat until:
+   - All functional tests pass (P0-P1 = 0 issues)
+   - Visual match rate >= 95%
+   - OR max 5 iterations reached
+```
+
+### Iteration Tracking
+
+```markdown
+## Iteration History
+
+### Iteration 1 (initial)
+- Functional: 3 P0, 2 P1, 1 P2
+- Visual: 60% match
+- Fixed: 3 P0 (missing components), 2 P1 (console errors)
+
+### Iteration 2
+- Functional: 0 P0, 0 P1, 1 P2
+- Visual: 75% match
+- Fixed: 5 visual drifts (colors, padding)
+
+### Iteration 3
+- Functional: 0 P0, 0 P1, 0 P2
+- Visual: 92% match
+- Fixed: 8 visual drifts (typography, spacing)
+
+### Iteration 4
+- Functional: all pass ✓
+- Visual: 96% match ✓
+- Status: COMPLETE
+```
+
+## Rules
+- **Functional issues ALWAYS before visual issues** — a pretty site that crashes is useless
+- **Mobile menu is P1** — most users are on mobile
+- **Never fix visual issues if there are console errors** — errors may cause visual problems that auto-resolve
+- **Re-test only affected pages** — don't re-run everything for a single fix
+- **Max 5 iterations** — if still failing after 5 rounds, generate final report with remaining issues and ask user
+- **Each iteration should fix at least 2-3 issues** — if stuck (same issues reappearing), escalate to user
+- **After all fixes, run ONE final complete test** of all pages to catch regressions
+
+## Output
+- `$MIGRATION_DIR/test-results/run-NNN/test-report.md` — comprehensive report
+- All screenshots saved in run directory
+- Fix log with before/after for each change
+- Final pass/fail status with clear reasoning

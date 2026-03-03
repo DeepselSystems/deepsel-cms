@@ -271,21 +271,26 @@ For EACH Category A page identified in Phase 2:
 - `$MIGRATION_DIR/screenshots/` — visual reference
 - `$MIGRATION_DIR/design-map.md` — page/component mapping
 
-**KEY PRINCIPLE: vibe_figma output is your visual accuracy reference.** Read the generated code to understand exact colors, fonts, spacing, and layout. Then adapt it into CMS theme components that follow the system conventions.
+**KEY PRINCIPLE: Transform code, don't rebuild.** The correct approach is to COPY code from vibe_figma output, then EDIT it to add CMS integration. Never write JSX from scratch — that causes missing styles and visual drift.
 
-**Do NOT copy vibe_figma code verbatim** — it needs adaptation:
-- Wrap in `WebsiteDataProvider`
-- Replace hardcoded nav with `Menu.tsx` (CMS menu integration)
-- Replace static content areas with `ContentRenderer` for CMS-managed pages
-- Add `useLanguage` hook for language switching
-- Add mobile hamburger menu with interactive state
-- Split monolithic output into proper component files (Header, Footer, Menu, etc.)
-- Use CMS import patterns (`@deepsel/cms-react`, `@deepsel/cms-utils`)
+**Transform process per component:**
+1. Find the corresponding section in vibe_figma output
+2. **Copy the entire JSX block** (with all its Tailwind classes)
+3. **Edit** the copied code to add CMS features:
+   - Wrap in `WebsiteDataProvider`
+   - Replace hardcoded nav with `Menu.tsx` (CMS menu integration)
+   - Replace static content areas with `ContentRenderer` for CMS-managed pages
+   - Add `useLanguage` hook for language switching
+   - Add mobile hamburger menu with interactive state
+   - Split monolithic output into proper component files (Header, Footer, Menu, etc.)
+   - Use CMS import patterns (`@deepsel/cms-react`, `@deepsel/cms-utils`)
+4. **Verify** the Tailwind classes survived the transformation — they should be identical to vibe_figma
 
-**DO preserve from vibe_figma code:**
+**MUST preserve from vibe_figma code (never change these):**
 - Exact Tailwind classes (colors, spacing, fonts, borders, shadows)
 - Layout structure (flex/grid patterns, positioning)
 - Asset references (images, icons, SVGs)
+- Arbitrary values (`text-[#4A4A68]`, `px-[72px]`, `gap-[32px]`)
 - Text content from the design
 
 Convert components in this order, reading the prompt file for each:
@@ -376,7 +381,30 @@ Apply any critical fixes before proceeding. Skip cosmetic suggestions that don't
 
 ---
 
-### Phase 5: Colors & Fonts
+### Phase 5: UI Re-verification Against vibe_figma (Code Review)
+**Prompt:** `prompts/05b-reverify-ui.md`
+
+**This is the most important quality gate.** During Phase 4, adapting vibe_figma code into CMS components often introduces visual drift — wrong colors, lost spacing, missing borders, simplified classes. This phase is a **pure code review** — no screenshots, no deployment needed.
+
+**KEY PRINCIPLE: Transform, don't rebuild.** Phase 4 should transform code by copying from vibe_figma and editing (adding CMS wrappers). Never rebuild JSX from scratch — that causes missing styles. This phase verifies the transformation was faithful.
+
+1. For EACH theme component, read the vibe_figma output and theme code
+2. Compare **every JSX element's Tailwind classes** — not visual impression, but actual code
+3. Use parallel subagents (one per page) to speed up comparison:
+   ```
+   Spawn Task agents (subagent_type="general-purpose"):
+   - Agent 1: Compare Header/Footer/Menu against vibe_figma homepage
+   - Agent 2: Compare PageHome sections against vibe_figma homepage sections
+   - Agent 3: Compare PageAbout against vibe_figma about output
+   ```
+4. Fix every drift by **copying the exact classes from vibe_figma** — never guess
+5. Save drift report to `$MIGRATION_DIR/ui-verification-report.md`
+
+**Common drifts to catch:** `text-gray-600` should be `text-[#4A4A68]`, `px-6` should be `px-16`, `rounded-lg` should be `rounded-md`, missing `border-b`, missing `font-medium`, etc.
+
+---
+
+### Phase 6: Colors & Fonts
 **Prompt:** `prompts/14-colors-and-fonts.md`
 
 1. Extract primary color from vibe_figma output (look at button/accent colors in generated code)
@@ -387,7 +415,7 @@ Apply any critical fixes before proceeding. Skip cosmetic suggestions that don't
 
 ---
 
-### Phase 6: Register & Deploy
+### Phase 7: Register & Deploy
 **Prompt:** `prompts/15-register-and-deploy.md`
 
 1. Update `client/src/themes.ts` (between auto-managed markers):
@@ -415,7 +443,7 @@ Apply any critical fixes before proceeding. Skip cosmetic suggestions that don't
 
 ---
 
-### Phase 7: Test & Iterate
+### Phase 8: Test & Iterate
 
 Invoke the test-theme skill:
 ```
@@ -424,10 +452,10 @@ Invoke the test-theme skill:
 
 This will:
 1. Discover all pages from the database
-2. Take Playwright screenshots at 3 viewports for every page
-3. Compare against Figma screenshots
-4. Generate a test report
-5. Fix issues and re-test until pages score >= 8/10
+2. For EACH page (one at a time): take screenshots at 3 viewports, test interactive elements (menu clicks, button clicks, mobile hamburger), check console errors, verify links
+3. Compare screenshots against Figma references
+4. Generate a full test report with visual + interaction results
+5. Fix issues and re-test until all pages pass
 
 ---
 
