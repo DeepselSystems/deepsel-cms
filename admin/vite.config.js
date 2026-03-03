@@ -1,6 +1,9 @@
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+
+const require = createRequire(import.meta.url);
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,8 +12,8 @@ export default defineConfig({
   resolve: {
     // Force a single React copy across the monorepo to avoid invalid hook calls
     alias: {
-      react: path.resolve(process.cwd(), 'node_modules/react'),
-      'react-dom': path.resolve(process.cwd(), 'node_modules/react-dom'),
+      react: path.dirname(require.resolve('react/package.json')),
+      'react-dom': path.dirname(require.resolve('react-dom/package.json')),
     },
     dedupe: ['react', 'react-dom'],
   },

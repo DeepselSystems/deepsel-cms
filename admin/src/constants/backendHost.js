@@ -4,7 +4,8 @@ const DEFAULT_PROD_BACKEND = 'https://deepsel-cms-api.deepsel.com';
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
   const windowPublicBackend = typeof window !== 'undefined' ? window.PUBLIC_BACKEND : undefined;
-  const configuredBackend = import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
+  const configuredBackend =
+    import.meta.env.VITE_PUBLIC_BACKEND || import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
   let host =
     configuredBackend || (import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND);
 

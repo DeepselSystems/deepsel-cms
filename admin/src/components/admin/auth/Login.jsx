@@ -88,7 +88,7 @@ export default function Login() {
       // Strip /admin prefix if present since basename="/admin" is already set
       const redirectPath = redirect?.startsWith('/admin/')
         ? redirect.substring('/admin'.length)
-        : redirect || '/';
+        : redirect || '/pages';
       navigate(redirectPath);
     } catch (err) {
       if (err?.message === 'Incorrect OTP' && !isUseOtpField) {
@@ -128,7 +128,7 @@ export default function Login() {
       // Strip /admin prefix if present since basename="/admin" is already set
       const redirectPath = redirect?.startsWith('/admin/')
         ? redirect.substring('/admin'.length)
-        : redirect || '/';
+        : redirect || '/pages';
       navigate(redirectPath);
     } catch (err) {
       notify({
@@ -219,7 +219,7 @@ export default function Login() {
       // Strip /admin prefix if present since basename="/admin" is already set
       const redirectPath = redirect?.startsWith('/admin/')
         ? redirect.substring('/admin'.length)
-        : redirect || '/';
+        : redirect || '/pages';
       navigate(redirectPath);
     } catch (err) {
       console.error(err);

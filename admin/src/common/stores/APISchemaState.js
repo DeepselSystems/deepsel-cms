@@ -15,7 +15,8 @@ const useAPISchemaStore = create((set) => ({
   fetchAPISchema: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${backendHost}/openapi.json`);
+      const baseUrl = backendHost.replace(/\/api\/v1\/?$/, '');
+      const response = await fetch(`${baseUrl}/openapi.json`);
       const data = await response.json();
       set({ APISchema: data, isLoading: false });
       return response.data;
