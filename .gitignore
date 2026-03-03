@@ -19,3 +19,6 @@ volumes
 .astro
 dist
 client_build
+
+.mcp.json
+figma_migration

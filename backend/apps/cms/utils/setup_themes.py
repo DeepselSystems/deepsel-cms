@@ -1,5 +1,7 @@
 """Theme setup utility - handles cloning, syncing, reconciling, and building themes."""
 
+import importlib.util
+import json
 import os
 import shutil
 
@@ -9,6 +11,7 @@ import logging
 import hashlib
 
 from _pytest.stash import D
+from apps.deepsel.utils.install_apps import import_csv_data
 from apps.deepsel.utils.models_pool import models_pool
 from db import get_db_context
 from .hash_utils import hash_file, hash_directory, hash_theme_files
@@ -114,6 +117,17 @@ def setup_themes(force_build=False, force_sync=False):
         else:
             logger.info("Admin folder unchanged; skipping sync")
 
+        # Sync root package.json and package-lock.json (before package builds
+        # so workspace symlinks resolve inter-package dependencies locally)
+        root_package_json = "../package.json"
+        root_package_lock = "../package-lock.json"
+        if os.path.exists(root_package_json):
+            shutil.copy2(root_package_json, os.path.join(data_dir, "package.json"))
+            logger.debug("Synced root package.json")
+        if os.path.exists(root_package_lock):
+            shutil.copy2(root_package_lock, os.path.join(data_dir, "package-lock.json"))
+            logger.debug("Synced root package-lock.json")
+
         # Sync packages if changed
         if need_packages_sync and os.path.exists(packages_src):
             logger.info("Packages folder changes detected; syncing...")
@@ -124,47 +138,60 @@ def setup_themes(force_build=False, force_sync=False):
             )
             logger.info("Packages folder synced successfully")
 
-            # Run npm ci and npm run build in each package subfolder
-            for subfolder in os.listdir(packages_dst):
-                subfolder_path = os.path.join(packages_dst, subfolder)
-                if os.path.isdir(subfolder_path) and os.path.exists(
-                    os.path.join(subfolder_path, "package.json")
-                ):
-                    install_result = run_npm("npm install", cwd=subfolder_path)
-                    if install_result.returncode != 0:
-                        error_output = (
-                            install_result.stdout + "\n" + install_result.stderr
-                        )
-                        logger.error(
-                            f"npm install failed in {subfolder}: {error_output}"
-                        )
-                        raise RuntimeError(
-                            f"npm install failed in {subfolder}: {error_output}"
-                        )
-                    logger.info(f"npm install completed in {subfolder}")
+            # Install at workspace root so inter-package deps resolve locally
+            logger.info("Running workspace npm install for packages...")
+            install_result = run_npm("npm install", cwd=data_dir)
+            if install_result.returncode != 0:
+                error_output = install_result.stdout + "\n" + install_result.stderr
+                logger.error(f"Workspace npm install failed: {error_output}")
+                raise RuntimeError(
+                    f"Workspace npm install failed: {error_output}"
+                )
+            logger.info("Workspace npm install completed")
 
-                    build_result = run_npm("npm run build", cwd=subfolder_path)
-                    if build_result.returncode != 0:
-                        error_output = build_result.stdout + "\n" + build_result.stderr
-                        logger.error(
-                            f"npm run build failed in {subfolder}: {error_output}"
-                        )
-                        raise RuntimeError(
-                            f"npm run build failed in {subfolder}: {error_output}"
-                        )
-                    logger.info(f"npm run build completed in {subfolder}")
+            # Build packages in dependency order (packages depended on by
+            # siblings build first so their dist/ types are available)
+            pkg_subfolders = [
+                sf
+                for sf in os.listdir(packages_dst)
+                if os.path.isdir(os.path.join(packages_dst, sf))
+                and os.path.exists(
+                    os.path.join(packages_dst, sf, "package.json")
+                )
+            ]
+            pkg_names = set()
+            for sf in pkg_subfolders:
+                pkg_json_path = os.path.join(packages_dst, sf, "package.json")
+                with open(pkg_json_path, "r") as f:
+                    pkg_names.add(json.load(f).get("name", ""))
+
+            def _local_dep_count(sf):
+                """Count how many sibling packages this package depends on."""
+                pkg_json_path = os.path.join(packages_dst, sf, "package.json")
+                with open(pkg_json_path, "r") as f:
+                    pkg = json.load(f)
+                all_deps = {
+                    **pkg.get("dependencies", {}),
+                    **pkg.get("devDependencies", {}),
+                }
+                return sum(1 for d in all_deps if d in pkg_names)
+
+            pkg_subfolders.sort(key=_local_dep_count)
+
+            for subfolder in pkg_subfolders:
+                subfolder_path = os.path.join(packages_dst, subfolder)
+                build_result = run_npm("npm run build", cwd=subfolder_path)
+                if build_result.returncode != 0:
+                    error_output = build_result.stdout + "\n" + build_result.stderr
+                    logger.error(
+                        f"npm run build failed in {subfolder}: {error_output}"
+                    )
+                    raise RuntimeError(
+                        f"npm run build failed in {subfolder}: {error_output}"
+                    )
+                logger.info(f"npm run build completed in {subfolder}")
         else:
             logger.info("Packages folder unchanged; skipping sync")
-
-        # Sync root package.json and package-lock.json
-        root_package_json = "../package.json"
-        root_package_lock = "../package-lock.json"
-        if os.path.exists(root_package_json):
-            shutil.copy2(root_package_json, os.path.join(data_dir, "package.json"))
-            logger.debug("Synced root package.json")
-        if os.path.exists(root_package_lock):
-            shutil.copy2(root_package_lock, os.path.join(data_dir, "package-lock.json"))
-            logger.debug("Synced root package-lock.json")
 
         # Sync client folder
         if need_client_sync:
@@ -321,3 +348,42 @@ def setup_themes(force_build=False, force_sync=False):
         logger.error(f"Error during theme setup: {e}")
         print_exc()
         raise
+
+
+def load_theme_seed_data():
+    """Load CSV seed data from theme data/ directories."""
+    themes_dir = "../themes"
+    if not os.path.exists(themes_dir):
+        return
+
+    with get_db_context() as db:
+        for theme_name in sorted(os.listdir(themes_dir)):
+            data_dir = os.path.join(themes_dir, theme_name, "data")
+            if not os.path.isdir(data_dir):
+                continue
+
+            # Determine import order
+            init_path = os.path.join(data_dir, "__init__.py")
+            if os.path.exists(init_path):
+                spec = importlib.util.spec_from_file_location(
+                    f"theme_data_{theme_name}", init_path
+                )
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                import_order = getattr(module, "import_order", [])
+            else:
+                import_order = sorted(
+                    f for f in os.listdir(data_dir) if f.endswith(".csv")
+                )
+
+            for csv_file in import_order:
+                csv_path = os.path.join(data_dir, csv_file)
+                if os.path.exists(csv_path):
+                    try:
+                        import_csv_data(csv_path, db)
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to load {csv_file} for {theme_name}: {e}"
+                        )
+
+            logger.info(f"Loaded seed data for theme {theme_name}")

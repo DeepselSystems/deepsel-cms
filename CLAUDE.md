@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Deepsel CMS is a full-stack content management system organized as an npm monorepo. It consists of:
+
 - **`backend/`** — FastAPI (Python 3.12) REST API + GraphQL, PostgreSQL
 - **`admin/`** — React 18 + Vite admin dashboard (Mantine UI, Tiptap editor)
 - **`client/`** — Astro 5 server-rendered public website
@@ -14,6 +15,7 @@ Deepsel CMS is a full-stack content management system organized as an npm monore
 ## Commands
 
 ### Backend (run from `backend/`)
+
 ```bash
 make install-dev        # Install with dev dependencies
 make test               # Run pytest with coverage
@@ -27,11 +29,13 @@ uvicorn main:app --reload  # run dev server
 ```
 
 Run a single test file:
+
 ```bash
 pytest apps/deepsel/tests/test_crud_user.py
 ```
 
 ### Admin (run from `admin/`)
+
 ```bash
 npm run dev             # Vite dev server (port 5173)
 npm run build
@@ -41,6 +45,7 @@ npm run format
 ```
 
 ### Client (run from `client/`)
+
 ```bash
 npm run dev             # Astro dev server (port 4322)
 npm run build
@@ -48,6 +53,7 @@ npm run format
 ```
 
 ### Monorepo root
+
 ```bash
 npm run build           # builds client
 npm run format          # format all

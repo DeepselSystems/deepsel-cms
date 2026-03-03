@@ -1,0 +1,27 @@
+---
+import type { BlogListData } from "@deepsel/cms-utils";
+import BlogList from "./components/BlogList";
+import "./main.css";
+
+interface Props {
+    data: BlogListData;
+}
+
+const { data } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang={data.lang || 'de'}>
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Blog | Alcoris Treuhand</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <BlogList client:load data={data} />
+</body>
+</html>

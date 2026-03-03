@@ -180,9 +180,10 @@ def upgrade(db, from_version, to_version):
     _migrate_cms_api_keys_to_encrypted_value(db, __name__, from_version, to_version)
 
     # Setup themes (now uses SQLAlchemy models instead of raw SQL)
-    from .utils.setup_themes import setup_themes
+    from .utils.setup_themes import setup_themes, load_theme_seed_data
 
     setup_themes()
+    load_theme_seed_data()
 
     # Call background task if need start api server as sooon as possible
     asyncio.create_task(demo_running_background_task(db))

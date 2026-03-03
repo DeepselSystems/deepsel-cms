@@ -11,6 +11,9 @@ export default defineConfig({
   }),
   integrations: [react()],
   vite: {
+    resolve: {
+      dedupe: ['react', 'react-dom'],
+    },
     server: {
       fs: {
         // Allow serving files from the admin directory
