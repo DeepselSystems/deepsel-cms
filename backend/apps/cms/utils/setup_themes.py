@@ -144,9 +144,7 @@ def setup_themes(force_build=False, force_sync=False):
             if install_result.returncode != 0:
                 error_output = install_result.stdout + "\n" + install_result.stderr
                 logger.error(f"Workspace npm install failed: {error_output}")
-                raise RuntimeError(
-                    f"Workspace npm install failed: {error_output}"
-                )
+                raise RuntimeError(f"Workspace npm install failed: {error_output}")
             logger.info("Workspace npm install completed")
 
             # Build packages in dependency order (packages depended on by
@@ -155,9 +153,7 @@ def setup_themes(force_build=False, force_sync=False):
                 sf
                 for sf in os.listdir(packages_dst)
                 if os.path.isdir(os.path.join(packages_dst, sf))
-                and os.path.exists(
-                    os.path.join(packages_dst, sf, "package.json")
-                )
+                and os.path.exists(os.path.join(packages_dst, sf, "package.json"))
             ]
             pkg_names = set()
             for sf in pkg_subfolders:
@@ -183,9 +179,7 @@ def setup_themes(force_build=False, force_sync=False):
                 build_result = run_npm("npm run build", cwd=subfolder_path)
                 if build_result.returncode != 0:
                     error_output = build_result.stdout + "\n" + build_result.stderr
-                    logger.error(
-                        f"npm run build failed in {subfolder}: {error_output}"
-                    )
+                    logger.error(f"npm run build failed in {subfolder}: {error_output}")
                     raise RuntimeError(
                         f"npm run build failed in {subfolder}: {error_output}"
                     )
@@ -382,8 +376,6 @@ def load_theme_seed_data():
                     try:
                         import_csv_data(csv_path, db)
                     except Exception as e:
-                        logger.error(
-                            f"Failed to load {csv_file} for {theme_name}: {e}"
-                        )
+                        logger.error(f"Failed to load {csv_file} for {theme_name}: {e}")
 
             logger.info(f"Loaded seed data for theme {theme_name}")
