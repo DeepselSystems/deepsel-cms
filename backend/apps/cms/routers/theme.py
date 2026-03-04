@@ -12,7 +12,6 @@ from apps.deepsel.utils.get_current_user import get_current_user
 from apps.deepsel.models.user import UserModel
 from apps.deepsel.utils.models_pool import models_pool
 from apps.deepsel.utils.api_router import create_api_router
-from platformdirs import user_data_dir
 
 logger = logging.getLogger(__name__)
 
@@ -138,9 +137,6 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
     List all available themes from both the source themes/ folder
     and the data directory. Source themes take priority.
     """
-    themes = []
-    themes_dir = get_themes_dir()
-
     try:
         # Scan both directories and merge (source themes take priority)
         themes_dict = _scan_themes_in_dir(THEMES_DIR)
