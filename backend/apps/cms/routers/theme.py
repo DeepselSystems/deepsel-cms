@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 STATE_FILENAME = ".theme_state.json"
 DATA_DIR = user_data_dir("deepsel-cms", "deepsel")
 THEMES_DIR = os.path.join(DATA_DIR, "themes")
-SOURCE_THEMES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "themes")
+SOURCE_THEMES_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "..", "themes"
+)
 
 router = create_api_router("theme", tags=["Theme"])
 
@@ -140,9 +142,7 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
     try:
         # Scan both directories and merge (source themes take priority)
         themes_dict = _scan_themes_in_dir(THEMES_DIR)
-        source_themes = _scan_themes_in_dir(
-            os.path.normpath(SOURCE_THEMES_DIR)
-        )
+        source_themes = _scan_themes_in_dir(os.path.normpath(SOURCE_THEMES_DIR))
         themes_dict.update(source_themes)
 
         # Enrich with theme.json metadata
@@ -160,9 +160,7 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
                     theme_info.description = theme_meta.get("description")
                     theme_info.image = theme_meta.get("image")
                 except (json.JSONDecodeError, Exception) as e:
-                    logger.warning(
-                        f"Failed to read theme.json in {folder_name}: {e}"
-                    )
+                    logger.warning(f"Failed to read theme.json in {folder_name}: {e}")
 
         return list(themes_dict.values())
 
@@ -507,11 +505,16 @@ def save_theme_file(
 
         # Write to source themes directory for dev server hot-reload.
         # The dev server imports themes from ../themes/ (source), not the data dir.
-        source_themes_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "themes")
+        source_themes_dir = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "..", "themes"
+        )
         for content_data in request.contents:
             if content_data.lang_code:
                 source_file = os.path.join(
-                    source_themes_dir, content_data.lang_code, request.theme_name, request.file_path
+                    source_themes_dir,
+                    content_data.lang_code,
+                    request.theme_name,
+                    request.file_path,
                 )
             else:
                 source_file = os.path.join(

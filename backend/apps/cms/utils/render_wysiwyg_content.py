@@ -17,7 +17,11 @@ def _is_jsx_content(content: str) -> bool:
     if not content:
         return False
     stripped = content.strip()
-    return stripped.startswith("import ") or "from 'react'" in content or 'from "react"' in content
+    return (
+        stripped.startswith("import ")
+        or "from 'react'" in content
+        or 'from "react"' in content
+    )
 
 
 def load_jinja2_templates(
@@ -174,7 +178,11 @@ def render_wysiwyg_content(
     # When a theme is active, it handles layout (header, sidebar, footer).
     # Replace JSX templates with empty content and simplify layout templates
     # so only the content blocks are rendered by Jinja2.
-    org = db.query(CMSSettingsModel).filter(CMSSettingsModel.id == organization_id).first()
+    org = (
+        db.query(CMSSettingsModel)
+        .filter(CMSSettingsModel.id == organization_id)
+        .first()
+    )
     if org and org.selected_theme:
         for name in list(jinja2_templates.keys()):
             if _is_jsx_content(jinja2_templates[name]):
