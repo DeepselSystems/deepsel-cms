@@ -13,6 +13,7 @@ export * from './DateTimePickerInput';
 export * from './DebounceArea';
 export * from './DebounceInput';
 export * from './Divider';
+export * from './EnhancedImageSelector';
 export * from './FormViewSkeleton';
 export * from './H1';
 export * from './H2';
