@@ -5,3 +5,4 @@ export * from './useUpload';
 export * from './useSearchParamState';
 export * from './usePagingTableParams';
 export * from './useModel';
+export * from './useFetch';
