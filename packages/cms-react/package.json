@@ -27,8 +27,8 @@
       "types": "./dist/index.d.ts"
     },
     "./ui/*": {
-      "import": "./dist/common/ui/*.js",
-      "types": "./dist/common/ui/*.d.ts"
+      "import": "./dist/ui/*.js",
+      "types": "./dist/ui/*.d.ts"
     }
   },
   "files": [
