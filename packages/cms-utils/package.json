@@ -20,6 +20,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./common/utils": {
+      "import": "./dist/common/utils/index.js",
+      "types": "./dist/common/utils/index.d.ts"
     }
   },
   "files": [
