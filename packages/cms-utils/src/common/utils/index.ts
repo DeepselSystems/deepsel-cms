@@ -1,3 +1,5 @@
+export * from './cookieUtils';
+
 /**
  * Builds the full URL for an attachment file
  * @param backendHost - The backend host URL (e.g. "https://api.example.com")

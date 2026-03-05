@@ -49,8 +49,11 @@
     "content-management"
   ],
   "dependencies": {
+    "@capacitor/device": "^7.0.4",
     "@deepsel/cms-utils": "^1.1.3",
-    "lodash": "^4.17.23"
+    "lodash": "^4.17.23",
+    "react-device-detect": "^2.2.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -63,6 +66,7 @@
     "@types/lodash": "^4.17.24",
     "@types/node": "^24.10.0",
     "@types/react": "^19.0.0",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9.39.1",
     "eslint-plugin-vitest": "^0.5.4",
     "happy-dom": "^20.0.11",
