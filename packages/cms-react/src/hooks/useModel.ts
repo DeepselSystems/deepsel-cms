@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { modals } from '@mantine/modals';
 import { Alert } from '@mantine/core';
 import React from 'react';
@@ -35,8 +35,6 @@ export interface UseModelConfig {
   user: User | null;
   setUser: (user: User | null) => void;
   organizationId?: number | null;
-  /** Optional router navigate function — used to redirect to /login on 401 */
-  navigate?: (path: string) => void;
   /** Optional i18n translate function */
   t?: (key: string) => string;
 }
@@ -177,8 +175,9 @@ export function useModel<T = Record<string, unknown>>(
   config: UseModelConfig,
   options: UseModelOptions = {},
 ): UseModelReturn<T> {
-  const { backendHost, user, setUser, navigate, t = (key: string) => key } = config;
+  const { backendHost, user, setUser, t = (key: string) => key } = config;
 
+  const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -283,9 +282,9 @@ export function useModel<T = Record<string, unknown>>(
       Preferences.remove({ key: 'userData' }),
     ]);
     setUser(null);
-    if (redirectLoginIfUnauthorized && navigate) {
+    if (redirectLoginIfUnauthorized) {
       console.error('useModel.resetAuth redirect to login');
-      navigate(`/login?redirect=${currentPath}`);
+      void navigate(`/login?redirect=${currentPath}`);
     }
   }
 
