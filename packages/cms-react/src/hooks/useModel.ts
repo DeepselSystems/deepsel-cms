@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { modals } from '@mantine/modals';
 import { Alert } from '@mantine/core';
 import React from 'react';
@@ -178,6 +179,9 @@ export function useModel<T = Record<string, unknown>>(
 ): UseModelReturn<T> {
   const { backendHost, user, setUser, navigate, t = (key: string) => key } = config;
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const {
     id = null,
     autoFetch = false,
@@ -281,7 +285,7 @@ export function useModel<T = Record<string, unknown>>(
     setUser(null);
     if (redirectLoginIfUnauthorized && navigate) {
       console.error('useModel.resetAuth redirect to login');
-      navigate('/login');
+      navigate(`/login?redirect=${currentPath}`);
     }
   }
 
@@ -596,8 +600,9 @@ export function useModel<T = Record<string, unknown>>(
       let endpoint = `${backendHost}/${modelName}/${recordId}`;
       if (force) endpoint += '?force=true';
 
-      const authHeaders = await buildAuthHeaders();
-      const response = await fetch(endpoint, { method: 'DELETE', headers: authHeaders });
+      const headers: Record<string, string> = {};
+      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
+      const response = await fetch(endpoint, { method: 'DELETE', headers });
 
       if (response.status === 401) {
         await resetAuth();
@@ -628,11 +633,13 @@ export function useModel<T = Record<string, unknown>>(
     try {
       setLoading(true);
       const endpoint = `${backendHost}/${modelName}/bulk_delete${force ? '?force=true' : ''}`;
-      const authHeaders = await buildAuthHeaders();
-
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(user?.token && { Authorization: `Bearer ${user.token}` }),
+      };
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers,
         body: JSON.stringify(queryObject),
       });
 
@@ -695,10 +702,9 @@ export function useModel<T = Record<string, unknown>>(
     onErr: ((e: unknown) => void) | null = null,
   ) {
     setLoading(true);
-    const authHeaders = await buildAuthHeaders();
     const res = await fetch(
       `${backendHost}/util/delete_check/${modelName}/${recordIds.join(',')}`,
-      { headers: authHeaders },
+      { headers: { Authorization: `Bearer ${user?.token}` } },
     );
     const response = (await res.json()) as {
       to_delete?: Record<string, string[]>;
@@ -793,10 +799,9 @@ export function useModel<T = Record<string, unknown>>(
       const formData = new FormData();
       formData.append('file', file);
 
-      const authHeaders = await buildAuthHeaders();
       const res = await fetch(`${backendHost}/attachment/`, {
         method: 'POST',
-        headers: authHeaders,
+        headers: { Authorization: `Bearer ${user?.token}` },
         body: formData,
       });
 
