@@ -51,6 +51,7 @@
   "dependencies": {
     "@capacitor/device": "^7.0.4",
     "@deepsel/cms-utils": "^1.1.3",
+    "dayjs": "^1.11.10",
     "lodash": "^4.17.23",
     "react-device-detect": "^2.2.3",
     "uuid": "^11.1.0"
@@ -81,6 +82,7 @@
     "@capacitor/preferences": ">=7.0.0",
     "@mantine/core": ">=7.0.0",
     "@mantine/dates": ">=7.0.0",
+    "@mantine/modals": ">=7.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-i18next": ">=13.0.0",

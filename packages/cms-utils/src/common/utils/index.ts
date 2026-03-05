@@ -1,4 +1,5 @@
 export * from './cookieUtils';
+export * from './isObjectOrArray';
 
 /**
  * Builds the full URL for an attachment file
