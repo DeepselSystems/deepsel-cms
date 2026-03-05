@@ -165,3 +165,5 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
