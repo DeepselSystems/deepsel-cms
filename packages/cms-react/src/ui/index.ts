@@ -17,6 +17,7 @@ export * from './FormViewSkeleton';
 export * from './H1';
 export * from './H2';
 export * from './H3';
+export * from './HtmlComponentsModal';
 export * from './HtmlDisplay';
 export * from './IframeContent';
 export * from './ImageViewModal';
