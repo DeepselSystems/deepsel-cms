@@ -52,6 +52,15 @@ export function downloadFromAttachUrl(url: string): void {
 }
 
 /**
+ * Extracts the file extension from a filename or URL
+ * @param fileName - The filename or path (e.g. "photo.jpg", "/path/to/file.pdf")
+ * @returns The extension without the dot (e.g. "jpg"), or empty string if none
+ */
+export function getFileExtension(fileName: string): string {
+  return fileName?.split('.').pop() ?? '';
+}
+
+/**
  * Format file size in human-readable format
  */
 export const formatFileSize = (bytes: number): string => {
