@@ -6,3 +6,4 @@ export * from './useSearchParamState';
 export * from './usePagingTableParams';
 export * from './useModel';
 export * from './useFetch';
+export * from './useBack';

@@ -5,7 +5,7 @@ import { useNetwork } from '@mantine/hooks';
 import { useLocation } from 'react-router-dom';
 import { useDeviceData } from 'react-device-detect';
 import { v4 as uuidv4 } from 'uuid';
-import type { User } from '../stores/UserState';
+import type { User } from '../stores';
 
 export type { User };
 
@@ -54,16 +54,11 @@ export interface UseAuthenticationReturn {
 /**
  * Hook for managing user authentication — login, signup, logout, session persistence
  */
-export default function useAuthentication(config: UseAuthenticationConfig): UseAuthenticationReturn {
-  const {
-    backendHost,
-    user,
-    setUser,
-    organizationId,
-    setOrganizationId,
-    setCookie,
-    removeCookie,
-  } = config;
+export default function useAuthentication(
+  config: UseAuthenticationConfig,
+): UseAuthenticationReturn {
+  const { backendHost, user, setUser, organizationId, setOrganizationId, setCookie, removeCookie } =
+    config;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,8 +87,7 @@ export default function useAuthentication(config: UseAuthenticationConfig): UseA
       referrer: document.referrer,
       user_agent: navigator.userAgent,
       network,
-      os_version:
-        deviceInfo.osVersion === 'unknown' ? deviceData.os.name : deviceInfo.osVersion,
+      os_version: deviceInfo.osVersion === 'unknown' ? deviceData.os.name : deviceInfo.osVersion,
       browser: deviceData.browser,
       cpu: deviceData.cpu,
     };
@@ -162,9 +156,17 @@ export default function useAuthentication(config: UseAuthenticationConfig): UseA
       }
 
       const responseData: LoginResponse = await response.json();
-      const { is_require_user_config_2fa, access_token: token, user: userData } = responseData || {};
+      const {
+        is_require_user_config_2fa,
+        access_token: token,
+        user: userData,
+      } = responseData || {};
 
-      if (userData?.organization_id && userData.organization_id !== organizationId && setOrganizationId) {
+      if (
+        userData?.organization_id &&
+        userData.organization_id !== organizationId &&
+        setOrganizationId
+      ) {
         setOrganizationId(userData.organization_id as number);
       }
 
@@ -234,9 +236,7 @@ export default function useAuthentication(config: UseAuthenticationConfig): UseA
   async function passwordlessLogin(passwordlessToken: string): Promise<User> {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${backendHost}/passwordless-login?token=${passwordlessToken}`,
-      );
+      const response = await fetch(`${backendHost}/passwordless-login?token=${passwordlessToken}`);
 
       if (response.status !== 200) {
         const { detail } = (await response.json()) as { detail: string };
