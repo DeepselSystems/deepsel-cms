@@ -14,6 +14,8 @@ export * from './DebounceArea';
 export * from './DebounceInput';
 export * from './Divider';
 export * from './EnhancedImageSelector';
+export * from './FileChipDisplay/FileChipDisplay';
+export * from './FileDisplay/FileDisplay';
 export * from './FormViewSkeleton';
 export * from './H1';
 export * from './H2';
