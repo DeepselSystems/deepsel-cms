@@ -305,7 +305,10 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         EmbedVideo,
         EmbedAudio,
         EmbedFiles,
-        PasteHandler,
+        PasteHandler.configure({
+          backendHost,
+          token: user?.token,
+        }),
         AuthenticatedContent,
         jinja2Markdown,
         ...(isAIAvailable
