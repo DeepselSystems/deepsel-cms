@@ -34,6 +34,8 @@ export * from './PasswordInput';
 export * from './Radio';
 export * from './RadioGroup';
 export * from './ReadOnlyField';
+export * from './RecordSelect/RecordSelect';
+export * from './RecordSelectMulti/RecordSelectMulti';
 export * from './RecordChipDisplay';
 export * from './RecordDisplay';
 export * from './SecretInput';
