@@ -42,4 +42,6 @@ export * from './SplitButton';
 export * from './Switch';
 export * from './TextArea';
 export * from './TextInput';
+export * from './RichTextEditor/RichTextEditor';
 export * from './RichTextInput/RichTextInput';
+export * from './RichTextRenderer/RichTextRenderer';
