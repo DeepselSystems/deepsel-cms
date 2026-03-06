@@ -15,7 +15,7 @@ import BlogPostEdit from './components/admin/blog_post/BlogPostEdit.jsx';
 import BlogPostView from './components/admin/blog_post/BlogPostView.jsx';
 import BlogPostList from './components/admin/blog_post/BlogPostList.jsx';
 import CMSLayout from './components/layouts/CMSLayout.jsx';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/admin/auth/Login.jsx';
 import ResetPasswordConfirmation from './components/admin/auth/ResetPasswordConfirmation.jsx';
 import UserList from './components/admin/user/UserList.jsx';
@@ -297,6 +297,8 @@ export default function App(props) {
                   <Route path="/saml-settings" element={<SamlSetting />} />
                 </Route>
               </Route>
+
+              <Route path="*" element={<Navigate to="/pages" replace />} />
             </Routes>
           </BrowserRouter>
         </MuiThemeProvider>

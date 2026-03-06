@@ -28,21 +28,16 @@ export default function SamlAuth() {
       }
     }
 
-    // Navigate to the redirect URL if provided, otherwise go to admin home
-    const redirectUrl = redirect ? decodeURIComponent(redirect) : '/admin/pages';
-
-    // If redirect URL starts with /admin/, strip the /admin prefix for React Router
-    // since we're already in the admin app context (basename="/admin")
-    if (redirectUrl.startsWith('/admin/')) {
-      const adminPath = redirectUrl.substring('/admin'.length) || '/pages';
-      navigate(adminPath);
-    } else if (redirectUrl.startsWith('/')) {
-      // For website paths, use window.location.href to navigate outside admin context
-      window.location.href = redirectUrl;
-    } else {
-      // For relative paths, use React Router navigate
-      navigate(redirectUrl);
+    // Navigate within the admin app
+    // redirect is relative to the admin basename (e.g., "/pages", not "/admin/pages")
+    // If it has /admin prefix (from older redirects or backend), strip it
+    let targetPath = redirect ? decodeURIComponent(redirect) : '/pages';
+    if (targetPath.startsWith('/admin/')) {
+      targetPath = targetPath.substring('/admin'.length) || '/pages';
+    } else if (targetPath.startsWith('/admin')) {
+      targetPath = targetPath.substring('/admin'.length) || '/pages';
     }
+    navigate(targetPath);
   }, [query, navigate, fetchUserData, saveUserData]);
 
   useEffect(() => {

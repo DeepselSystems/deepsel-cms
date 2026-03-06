@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Optional
+from urllib.parse import quote
 from uuid import UUID, uuid4
 
 import jwt
@@ -849,7 +850,7 @@ async def auth_saml(request: Request, db: Session = Depends(get_db)):
             if relay_state:
                 # Redirect to the original intended URL
                 return RedirectResponse(
-                    f"{FRONTEND_URL}/admin/saml-authenticated?access_token={access_token}&redirect={relay_state}"
+                    f"{FRONTEND_URL}/admin/saml-authenticated?access_token={access_token}&redirect={quote(relay_state, safe='')}"
                 )
             else:
                 # Default redirect
