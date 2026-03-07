@@ -10,7 +10,7 @@ import clsx from 'clsx';
 import { getShortUrl, MAX_FILES_COUNT } from '../utils';
 import type { EmbedFileItem } from '../types';
 import { AttachmentFile, ChooseAttachmentModal } from '../../../../ChooseAttachmentModal';
-import type { User } from '../../../../../stores';
+import type { User } from '../../../../../types';
 
 interface FilesSelectorModalProps {
   editor: Editor | null;

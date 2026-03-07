@@ -19,9 +19,9 @@ import { DateTimePickerInput } from '../DateTimePickerInput';
 import { RadioGroup } from '../RadioGroup';
 import { Radio } from '../Radio';
 import { MultiSelect } from '../MultiSelect';
-import { NotificationState } from '../../stores';
 import { useAPISchema } from '../../hooks';
-import type { OpenAPISchema } from '../../stores';
+import type { OpenAPISchema } from '../../types';
+import type { NotifyFn } from '../../types';
 import type { FilterCondition } from '../../hooks';
 
 /** A single available filter definition for a column */
@@ -48,6 +48,13 @@ export interface DataGridColumnMenuProps extends GridColumnMenuProps {
    * Typically sourced from createAPISchemaState in the consuming app.
    */
   apiSchema: OpenAPISchema | null;
+
+  /**
+   * Callback to display toast/snackbar notifications.
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   */
+  notify: NotifyFn;
 }
 
 /**
@@ -60,12 +67,12 @@ export function DataGridColumnMenu({
   open,
   query,
   apiSchema,
+  notify,
   ...other
 }: DataGridColumnMenuProps) {
   const { t } = useTranslation();
   const { modelName, filters, setFilters } = query;
   const { getFieldColTypes } = useAPISchema(modelName, apiSchema);
-  const { notify } = NotificationState();
 
   const [selectedFilter, setSelectedFilter] = useState<AvailableFilter | null>(null);
   const [selectedValue, setSelectedValue] = useState<string>('');

@@ -7,7 +7,7 @@ import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 import { AttachmentFile, ChooseAttachmentModal } from '../../../../ChooseAttachmentModal';
-import type { User } from '../../../../../stores';
+import type { User } from '../../../../../types';
 
 interface EmbedAudioButtonProps {
   editor: Editor | null;

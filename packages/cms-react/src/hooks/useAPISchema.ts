@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import type { OpenAPISchema } from '../stores';
+import type { OpenAPISchema } from '../types';
 
 /** A resolved field type entry (simple, date-time, enum, or null) */
 export interface FieldColType {

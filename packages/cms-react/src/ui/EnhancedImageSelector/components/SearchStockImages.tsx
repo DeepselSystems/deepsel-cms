@@ -17,8 +17,8 @@ import clsx from 'clsx';
 
 import { downloadFromAttachUrl } from '@deepsel/cms-utils';
 import useUpload from '../../../hooks/useUpload';
-import { NotificationState } from '../../../stores';
-import type { User } from '../../../stores';
+import type { User } from '../../../types';
+import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 import { Button } from '../../Button';
 import { Masonry } from '../../Masonry';
@@ -41,6 +41,13 @@ interface SearchStockImagesProps {
   backendHost: string;
   user: User | null;
   setUser: (user: User | null) => void;
+  /**
+   * Callback to display toast/snackbar notifications (save errors, success).
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   * Passed down from EnhancedImageSelector.
+   */
+  notify?: NotifyFn;
 }
 
 /**
@@ -54,10 +61,8 @@ export function SearchStockImages({
   backendHost,
   user,
   setUser,
+  notify,
 }: SearchStockImagesProps) {
-  // Notification
-  const { notify } = NotificationState((state) => state);
-
   // Translation
   const { t } = useTranslation();
 
@@ -100,7 +105,7 @@ export function SearchStockImages({
 
         if (!response.ok) {
           console.error('Failed to download image:', response.status);
-          notify({
+          notify?.({
             type: 'error',
             message: 'Failed to clone this image',
           });
@@ -152,12 +157,12 @@ export function SearchStockImages({
             return prevState;
           }
         });
-        notify({
+        notify?.({
           type: 'success',
           message: t('The attachment image cloned successfully'),
         });
       } catch (error) {
-        notify({
+        notify?.({
           type: 'error',
           message: (error as Error).message ?? String(error),
         });

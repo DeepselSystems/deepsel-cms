@@ -8,7 +8,7 @@ import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ChooseAttachmentModal } from '../../../../ChooseAttachmentModal';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import type { User } from '../../../../../stores';
+import type { User } from '../../../../../types';
 
 interface EmbedVideoButtonProps {
   editor: Editor | null;

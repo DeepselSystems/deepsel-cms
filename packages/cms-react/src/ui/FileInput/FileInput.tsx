@@ -7,7 +7,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { getAttachmentUrl, getFileNameFromAttachUrl } from '@deepsel/cms-utils';
 import { ChooseAttachmentModal } from '../ChooseAttachmentModal';
 import type { AttachmentFile } from '../ChooseAttachmentModal';
-import type { User } from '../../stores';
+import type { User } from '../../types';
 
 /** File object passed to the onChange callback */
 export type FileInputValue = AttachmentFile & { attachUrl: string };

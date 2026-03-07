@@ -7,7 +7,7 @@ import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { EnhancedImageSelectorModal } from '../../../../EnhancedImageSelector';
-import type { User } from '../../../../../stores';
+import type { User } from '../../../../../types';
 
 interface EnhancedImageButtonProps {
   editor: Editor | null;

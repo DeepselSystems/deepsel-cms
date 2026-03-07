@@ -5,7 +5,8 @@ import fromPairs from 'lodash/fromPairs';
 
 import { useModel } from '../../hooks';
 import { useEffectOnce } from '../../hooks';
-import type { User } from '../../stores';
+import type { User } from '../../types';
+import type { NotifyFn } from '../../types';
 import type { AttachmentFile } from '../ChooseAttachmentModal';
 import { InternalImages } from './components/InternalImages';
 import { SearchStockImages } from './components/SearchStockImages';
@@ -46,6 +47,13 @@ export interface EnhancedImageSelectorProps {
   backendHost: string;
   user: User | null;
   setUser: (user: User | null) => void;
+  /**
+   * Callback to display toast/snackbar notifications.
+   * Passed down to InternalImages and SearchStockImages sub-components.
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   */
+  notify?: NotifyFn;
 }
 
 /**
@@ -59,6 +67,7 @@ export function EnhancedImageSelector({
   backendHost,
   user,
   setUser,
+  notify,
 }: EnhancedImageSelectorProps) {
   // Selected images — internal state if not controlled externally
   const [internalSelectedImages, setInternalSelectedImages] = useState<AttachmentFile[]>([]);
@@ -163,6 +172,7 @@ export function EnhancedImageSelector({
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            notify={notify}
           />
         </Tabs.Panel>
         {/*endregion internal image selector*/}
@@ -178,6 +188,7 @@ export function EnhancedImageSelector({
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            notify={notify}
           />
         </Tabs.Panel>
         {/*endregion external image selector*/}

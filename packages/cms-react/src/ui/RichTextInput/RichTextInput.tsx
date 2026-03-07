@@ -69,7 +69,8 @@ import type { GalleryAttachment, GalleryModalSaveData } from './modals/GalleryMo
 import { RichTextModal } from './modals/RichTextModal';
 import type { RichTextModalSaveData } from './modals/RichTextModal';
 import { HtmlComponentsModal } from '../HtmlComponentsModal';
-import type { User } from '../../stores';
+import type { User } from '../../types';
+import type { NotifyFn } from '../../types';
 import type { JumpMarkData } from './extensions/youtube-jumpmarks-extension/types';
 
 /**
@@ -145,6 +146,14 @@ export interface RichTextInputProps {
 
   /** Additional className passed to the Mantine RichTextEditor. */
   className?: string;
+
+  /**
+   * Callback to display toast/snackbar notifications (e.g. upload progress/errors).
+   * Passed through to the PasteHandler extension for file-paste upload feedback.
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   */
+  notify?: NotifyFn;
 }
 
 /**
@@ -228,6 +237,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     siteSettings,
     organizationId = 0,
     className,
+    notify,
   } = props;
 
   const { t } = useTranslation();
@@ -308,6 +318,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         PasteHandler.configure({
           backendHost,
           token: user?.token,
+          notify,
         }),
         AuthenticatedContent,
         jinja2Markdown,

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useModel } from '../hooks';
-import type { User } from '../stores';
+import type { User } from '../types';
 import { Button } from './Button';
 import { TextInput } from './TextInput';
 

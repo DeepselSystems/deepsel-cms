@@ -6,7 +6,6 @@ import clsx from 'clsx';
 import { Skeleton } from '@mantine/core';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { insertAttachmentsToEditor } from '../utils';
-import { NotificationState } from '../../../../../stores';
 import { useEffectOnce } from '../../../../../hooks';
 import useUpload from '../../../../../hooks/useUpload';
 
@@ -22,9 +21,6 @@ interface AttachmentFile {
 const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
   const { t } = useTranslation();
 
-  // Notification
-  const { notify } = NotificationState((state) => state);
-
   const files = (node.attrs.files as File[]) || [];
 
   const [hasUploaded, setHasUploaded] = useState(false);
@@ -32,9 +28,14 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
     (ext) => ext.name === 'pasteHandler',
   );
-  const { backendHost, token } = pasteHandlerExtension?.options || {
+  /**
+   * backendHost, token, and notify are sourced from PasteHandler.configure() options,
+   * which are set in RichTextInput and provided by the consuming app.
+   */
+  const { backendHost, token, notify } = pasteHandlerExtension?.options || {
     backendHost: '',
     token: undefined,
+    notify: undefined,
   };
 
   const { uploadFileModel } = useUpload({ backendHost, token });

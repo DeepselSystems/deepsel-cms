@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { Preferences } from '@capacitor/preferences';
 import { PagingTableParams } from '@deepsel/cms-utils';
-import type { User } from '../stores';
+import type { User } from '../types';
 import { H2 } from '../ui';
 import { useSearchParamState } from './useSearchParamState';
 import { usePagingTableParams } from './usePagingTableParams';
