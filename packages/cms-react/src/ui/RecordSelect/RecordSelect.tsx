@@ -6,7 +6,7 @@ import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useModel } from '../../hooks';
 import type { FilterCondition } from '../../hooks';
-import type { User } from '../../stores';
+import type { User } from '../../types';
 
 /** Generic API record — all fields are unknown at the type level */
 type RecordItem = Record<string, unknown>;

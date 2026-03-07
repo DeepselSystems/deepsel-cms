@@ -18,8 +18,8 @@ import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { useModel } from '../../../hooks';
 import useUpload from '../../../hooks/useUpload';
-import { NotificationState } from '../../../stores';
-import type { User } from '../../../stores';
+import type { User } from '../../../types';
+import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 
 /**
@@ -53,6 +53,13 @@ interface InternalImagesProps {
   backendHost: string;
   user: User | null;
   setUser: (user: User | null) => void;
+  /**
+   * Callback to display toast/snackbar notifications (upload errors, success).
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   * Passed down from EnhancedImageSelector.
+   */
+  notify?: NotifyFn;
 }
 
 /**
@@ -69,12 +76,10 @@ export function InternalImages({
   backendHost,
   user,
   setUser,
+  notify,
 }: InternalImagesProps) {
   // Translation
   const { t } = useTranslation();
-
-  // Notification
-  const { notify } = NotificationState((state) => state);
 
   // Upload query
   const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
@@ -157,12 +162,12 @@ export function InternalImages({
             files,
           )) as AttachmentFile[];
           setAttachmentImages((prevState) => [...newImageAttachments, ...prevState]);
-          notify({
+          notify?.({
             message: t('Uploaded successfully'),
             type: 'success',
           });
         } catch (err) {
-          notify({
+          notify?.({
             message: (err as Error).message,
             type: 'error',
           });

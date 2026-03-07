@@ -5,7 +5,7 @@ import { useNetwork } from '@mantine/hooks';
 import { useLocation } from 'react-router-dom';
 import { useDeviceData } from 'react-device-detect';
 import { v4 as uuidv4 } from 'uuid';
-import type { User } from '../stores';
+import type { User } from '../types';
 
 export type { User };
 

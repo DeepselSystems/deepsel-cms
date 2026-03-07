@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import { useFetch } from '../../../hooks';
-import type { User } from '../../../stores';
+import type { User } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 import { STOCK_IMAGE_PROVIDERS } from '../constants/stockImages';
 

@@ -6,7 +6,7 @@ import isEqualWith from 'lodash/isEqualWith';
 import isEqual from 'lodash/isEqual';
 import { useModel } from '../../hooks';
 import type { FilterCondition } from '../../hooks';
-import type { User } from '../../stores';
+import type { User } from '../../types';
 
 /** Generic API record */
 type RecordItem = Record<string, unknown>;

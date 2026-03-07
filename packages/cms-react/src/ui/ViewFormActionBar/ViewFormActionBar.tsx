@@ -5,9 +5,9 @@ import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { faArrowLeft, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../Button';
-import { NotificationState } from '../../stores';
 import { useBack } from '../../hooks';
-import type { User } from '../../stores';
+import type { User } from '../../types';
+import type { NotifyFn } from '../../types';
 
 /** Subset of useModel return values used by this component */
 interface ViewFormQuery {
@@ -52,6 +52,13 @@ export interface ViewFormActionBarProps {
 
   /** Optional title (reserved for future use, not rendered) */
   title?: string;
+
+  /**
+   * Callback to display toast/snackbar notifications.
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   */
+  notify: NotifyFn;
 }
 
 /**
@@ -67,12 +74,12 @@ export function ViewFormActionBar({
   allowEditRoleIds = [],
   allowDeleteRoleIds = [],
   customActions,
+  notify,
 }: ViewFormActionBarProps) {
   const { t } = useTranslation();
   const { loading, deleteWithConfirm, record, archive } = query;
   const navigate = useNavigate();
   const { back } = useBack();
-  const { notify } = NotificationState();
 
   const userRoleIds =
     (user?.all_roles as Array<{ string_id: string }> | undefined)?.map((rec) => rec.string_id) ??

@@ -17,9 +17,8 @@ import { useModel } from '../hooks';
 import useUpload from '../hooks/useUpload';
 import { useFetch } from '../hooks';
 import { useEffectOnce } from '../hooks';
-import { NotificationState } from '../stores';
-import { FileAttachmentState } from '../stores';
-import type { User } from '../stores';
+import type { User } from '../types';
+import type { NotifyFn } from '../types';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
 
@@ -286,6 +285,27 @@ export interface ChooseAttachmentModalProps {
    * Typically sourced from your `UserState` store.
    */
   setUser: (user: User | null) => void;
+
+  /**
+   * Callback to display toast/snackbar notifications (upload errors, etc.).
+   * Sourced from the consuming app's notification store
+   * (e.g. `NotificationState.getState().notify`).
+   */
+  notify?: NotifyFn;
+
+  /**
+   * Current upload size limit fetched from the backend.
+   * Sourced from the consuming app's FileAttachmentState store.
+   * Used downstream for file-size validation.
+   */
+  uploadSizeLimit?: { max_size: number; unit: string } | null;
+
+  /**
+   * Callback to trigger fetching the upload size limit from the backend.
+   * Sourced from the consuming app's FileAttachmentState store.
+   * The store debounces and caches this call to avoid duplicate requests.
+   */
+  onFetchUploadSizeLimit?: (apiFunc: () => Promise<{ max_size: number; unit: string }>) => void;
 }
 
 /**
@@ -307,6 +327,8 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     backendHost,
     user,
     setUser,
+    notify,
+    onFetchUploadSizeLimit,
   } = props;
 
   const { t } = useTranslation();
@@ -340,8 +362,6 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Set<string | number>>(new Set());
 
-  const { notify } = NotificationState((state) => state);
-
   /**
    * Ref to the FileAttachmentGroup, used to trigger smooth scroll-to-bottom after upload.
    */
@@ -361,16 +381,18 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     { backendHost, setUser },
     { autoFetch: false },
   );
-  const fetchUploadSizeLimitState = FileAttachmentState((state) => state.fetchUploadSizeLimit);
 
   /**
-   * Fetch the upload size limit once on mount so the store is populated for
-   * any file-size validation downstream.
+   * Fetch the upload size limit once on mount via the consuming app's
+   * onFetchUploadSizeLimit callback (sourced from FileAttachmentState).
+   * The store debounces and caches the result internally.
    */
   useEffectOnce(() => {
-    fetchUploadSizeLimitState(
-      getUploadSizeLimitFunc as () => Promise<{ max_size: number; unit: string }>,
-    );
+    if (onFetchUploadSizeLimit) {
+      onFetchUploadSizeLimit(
+        getUploadSizeLimitFunc as () => Promise<{ max_size: number; unit: string }>,
+      );
+    }
   });
 
   useEffect(() => {
@@ -408,7 +430,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
         fileAttachmentGroupRef.current.open({ scrollToBottom: true });
       }
     } catch (err) {
-      notify({
+      notify?.({
         message: (err as Error).message,
         type: 'error',
       });

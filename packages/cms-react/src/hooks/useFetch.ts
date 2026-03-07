@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Preferences } from '@capacitor/preferences';
-import type { User } from '../stores';
+import type { User } from '../types';
 
 export interface UseFetchConfig {
   backendHost: string;

@@ -15,7 +15,7 @@ import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { ChooseAttachmentModal } from '../ChooseAttachmentModal';
 import { Button } from '../Button';
-import type { User } from '../../stores';
+import type { User } from '../../types';
 
 export interface RichTextEditorProps {
   /** Initial HTML content. */

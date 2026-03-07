@@ -14,7 +14,7 @@ import { Button } from '../../Button';
 import { Checkbox } from '../../Checkbox';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { EnhancedImageSelector } from '../../EnhancedImageSelector';
-import type { User } from '../../../stores';
+import type { User } from '../../../types';
 
 /**
  * Gallery layout configuration
