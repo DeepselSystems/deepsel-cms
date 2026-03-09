@@ -15,7 +15,7 @@ export interface UseUploadReturn {
 /**
  * Hook for uploading files to the backend via multipart form data
  */
-export default function useUpload(config: UseUploadConfig): UseUploadReturn {
+export function useUpload(config: UseUploadConfig): UseUploadReturn {
   const { backendHost, token } = config;
 
   const [loading, setLoading] = useState(false);

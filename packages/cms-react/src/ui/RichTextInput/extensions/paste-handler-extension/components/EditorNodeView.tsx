@@ -7,7 +7,7 @@ import { Skeleton } from '@mantine/core';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { insertAttachmentsToEditor } from '../utils';
 import { useEffectOnce } from '../../../../../hooks';
-import useUpload from '../../../../../hooks/useUpload';
+import { useUpload } from '../../../../../hooks/useUpload';
 
 interface AttachmentFile {
   name: string;

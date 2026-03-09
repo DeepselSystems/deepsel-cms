@@ -14,7 +14,7 @@ import { Group, Text, Modal, Indicator } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { useModel } from '../hooks';
-import useUpload from '../hooks/useUpload';
+import { useUpload } from '../hooks/useUpload';
 import { useFetch } from '../hooks';
 import { useEffectOnce } from '../hooks';
 import type { User } from '../types';

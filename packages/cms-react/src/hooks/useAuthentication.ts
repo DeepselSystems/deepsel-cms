@@ -54,7 +54,7 @@ export interface UseAuthenticationReturn {
 /**
  * Hook for managing user authentication — login, signup, logout, session persistence
  */
-export default function useAuthentication(
+export function useAuthentication(
   config: UseAuthenticationConfig,
 ): UseAuthenticationReturn {
   const { backendHost, user, setUser, organizationId, setOrganizationId, setCookie, removeCookie } =
