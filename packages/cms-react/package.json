@@ -29,6 +29,10 @@
     "./ui/*": {
       "import": "./dist/ui/*.js",
       "types": "./dist/ui/*.d.ts"
+    },
+    "./hooks/*": {
+      "import": "./dist/hooks/*.js",
+      "types": "./dist/hooks/*.d.ts"
     }
   },
   "files": [

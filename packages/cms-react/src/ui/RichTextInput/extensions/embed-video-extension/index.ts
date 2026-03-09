@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
-import EditorNodeView from './components/EditorNodeView.jsx';
+import EditorNodeView from './components/EditorNodeView';
 import {
   EMBED_VIDEO_ATTRIBUTES,
   EMBED_VIDEO_CLASSES,

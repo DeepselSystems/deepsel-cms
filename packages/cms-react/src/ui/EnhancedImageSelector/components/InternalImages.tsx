@@ -17,7 +17,7 @@ import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { useModel } from '../../../hooks';
-import useUpload from '../../../hooks/useUpload';
+import { useUpload } from '../../../hooks/useUpload';
 import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
