@@ -14,7 +14,7 @@ import { Group, Text, Modal, Indicator } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { useModel } from '../hooks';
-import { useUpload } from '../hooks/useUpload';
+import { useUpload } from '../hooks';
 import { useFetch } from '../hooks';
 import { useEffectOnce } from '../hooks';
 import type { User } from '../types';
@@ -338,7 +338,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     {
       field: 'owner_id',
       operator: '=',
-      value: user.id,
+      value: user?.id,
     },
   ];
 
