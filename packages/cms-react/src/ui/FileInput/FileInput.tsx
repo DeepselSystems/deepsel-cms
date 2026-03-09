@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faFileLines, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faFile, faFileLines, faImage, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Indicator } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { getAttachmentUrl, getFileNameFromAttachUrl } from '@deepsel/cms-utils';
@@ -89,6 +89,15 @@ export function FileInput({
 }: FileInputProps) {
   const [attachUrl, setAttachUrl] = useState(value || '');
   const [isOpen, { open, close }] = useDisclosure();
+  const defaultPlaceholder = useMemo(
+    () =>
+      type === 'image' ? (
+        <FontAwesomeIcon className="text-gray-300" size="3x" icon={faImage} />
+      ) : (
+        <FontAwesomeIcon className="text-gray-300" size="3x" icon={faFile} />
+      ),
+    [],
+  );
 
   /**
    * Clear the current attachment and notify parent
@@ -183,7 +192,9 @@ export function FileInput({
                 height={height}
                 className="object-cover"
               />
-            ) : null
+            ) : (
+              defaultPlaceholder
+            )
           ) : (
             <FontAwesomeIcon
               icon={faFileLines as IconProp}
