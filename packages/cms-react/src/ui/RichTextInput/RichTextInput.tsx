@@ -6,6 +6,16 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
+import './extensions/styles/base.css';
+import './extensions/styles/custom-paragraph.css';
+import './extensions/styles/embed-audio.css';
+import './extensions/styles/embed-files.css';
+import './extensions/styles/embed-video.css';
+import './extensions/styles/enhanced-code-block.css';
+import './extensions/styles/enhanced-image.css';
+import './extensions/styles/jinja2.css';
+import './extensions/styles/prose-mirror-collapse.css';
+import './extensions/styles/youtube-jump-marks.css';
 import {
   faPlus,
   faMinus,
