@@ -16,7 +16,7 @@ import { faImages, faInfoCircle, faSave, faSearch } from '@fortawesome/free-soli
 import clsx from 'clsx';
 
 import { downloadFromAttachUrl } from '@deepsel/cms-utils';
-import { useUpload } from '../../../hooks/useUpload';
+import { useUpload } from '../../../hooks';
 import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
