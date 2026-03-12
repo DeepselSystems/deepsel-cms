@@ -118,20 +118,70 @@
   },
   "peerDependencies": {
     "@capacitor/preferences": ">=7.0.0",
+    "@fortawesome/free-solid-svg-icons": ">=6.0.0",
+    "@fortawesome/react-fontawesome": ">=0.2.0",
     "@mantine/core": ">=7.0.0",
     "@mantine/dates": ">=7.0.0",
     "@mantine/dropzone": ">=8.0.0",
     "@mantine/modals": ">=7.0.0",
+    "@mantine/tiptap": ">=8.0.0",
+    "@tiptap/core": ">=2.0.0",
+    "@tiptap/extension-highlight": ">=2.0.0",
+    "@tiptap/extension-image": ">=2.0.0",
+    "@tiptap/extension-link": ">=2.0.0",
+    "@tiptap/extension-subscript": ">=2.0.0",
+    "@tiptap/extension-superscript": ">=2.0.0",
+    "@tiptap/extension-text-align": ">=2.0.0",
+    "@tiptap/extension-underline": ">=2.0.0",
+    "@tiptap/react": ">=2.0.0",
+    "@tiptap/starter-kit": ">=2.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-i18next": ">=13.0.0",
-    "react-router-dom": ">=6.0.0"
+    "react-router-dom": ">=6.0.0",
+    "tiptap-extension-font-size": ">=1.0.0"
   },
   "peerDependenciesMeta": {
     "@mantine/dropzone": {
       "optional": true
     },
     "@mantine/modals": {
+      "optional": true
+    },
+    "@mantine/tiptap": {
+      "optional": true
+    },
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-highlight": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/extension-subscript": {
+      "optional": true
+    },
+    "@tiptap/extension-superscript": {
+      "optional": true
+    },
+    "@tiptap/extension-text-align": {
+      "optional": true
+    },
+    "@tiptap/extension-underline": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "tiptap-extension-font-size": {
       "optional": true
     }
   }
