@@ -8,9 +8,13 @@ import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { MAX_FILES_COUNT } from '../utils';
 import FilesSelectorModal from './FilesSelectorModal';
 import type { EmbedFileItem } from '../types';
+import { User } from '../../../../../types';
 
 interface EmbedFilesButtonProps {
   editor: Editor | null;
+  backendHost: string;
+  user: User;
+  setUser: (user: User | null) => void;
   children?: React.ReactNode;
 }
 
@@ -19,7 +23,13 @@ interface EmbedFilesButtonProps {
  *
  * @constructor
  */
-const EmbedFilesButton = ({ editor, children }: EmbedFilesButtonProps) => {
+const EmbedFilesButton = ({
+  editor,
+  backendHost,
+  user,
+  setUser,
+  children,
+}: EmbedFilesButtonProps) => {
   const { t } = useTranslation();
 
   const [isFilesSelectorModalOpened, setIsFilesSelectorModalOpened] = useState(false);
@@ -44,6 +54,9 @@ const EmbedFilesButton = ({ editor, children }: EmbedFilesButtonProps) => {
         </Tooltip>
 
         <FilesSelectorModal
+          backendHost={backendHost}
+          user={user}
+          setUser={setUser}
           editor={editor}
           opened={isFilesSelectorModalOpened}
           setOpened={setIsFilesSelectorModalOpened}

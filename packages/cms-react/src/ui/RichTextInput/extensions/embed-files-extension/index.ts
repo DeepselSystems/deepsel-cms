@@ -22,6 +22,25 @@ declare module '@tiptap/core' {
 /**
  * Embed Files extension for TipTap
  * Allows embedding multiple files with download links
+ *
+ * Paste Handler extension for TipTap
+ * Temporarily displays pasted files in the editor before they are uploaded
+ * This is a transient node that should not be persisted to database
+ *
+ * @example
+ * ```typescript
+ * import { EmbedFiles } from './extensions/embed-files-extension';
+ *
+ * const editor = useEditor({
+ *   extensions: [
+ *     EmbedFiles.configure({
+ *       backendHost: 'https://api.example.com',
+ *       user: user,
+ *       setUser: setUser,
+ *     }),
+ *   ],
+ * });
+ * ```
  */
 export const EmbedFiles = Node.create({
   name: 'embedFiles',
@@ -35,6 +54,9 @@ export const EmbedFiles = Node.create({
       HTMLAttributes: {
         class: EMBED_FILES_CLASSES.WRAPPER,
       },
+      backendHost: '',
+      user: null,
+      setUser: () => {},
     };
   },
 
