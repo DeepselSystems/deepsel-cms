@@ -16,7 +16,20 @@ import type { EmbedFileItem } from '../types';
  * EditorNodeView component for embed files
  * Displays list of files with download links and delete button on hover
  */
-const EditorNodeView = ({ node, deleteNode, updateAttributes }: NodeViewProps) => {
+const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeViewProps) => {
+  /**
+   * backendHost, user, and setUser are sourced from PasteHandler.configure() options,
+   * which are set in RichTextInput and provided by the consuming app.
+   */
+  const pasteHandlerExtension = editor.extensionManager.extensions.find(
+    (ext) => ext.name === 'pasteHandler',
+  );
+  const { backendHost, user, setUser } = pasteHandlerExtension?.options || {
+    backendHost: '',
+    user: null,
+    setUser: () => {},
+  };
+
   const { t } = useTranslation();
   const { files } = node.attrs as { files: EmbedFileItem[] };
 
@@ -128,6 +141,9 @@ const EditorNodeView = ({ node, deleteNode, updateAttributes }: NodeViewProps) =
 
       {/* Edit Modal */}
       <FilesSelectorModal
+        backendHost={backendHost}
+        user={user}
+        setUser={setUser}
         editor={null}
         opened={isEditModalOpened}
         setOpened={setIsEditModalOpened}

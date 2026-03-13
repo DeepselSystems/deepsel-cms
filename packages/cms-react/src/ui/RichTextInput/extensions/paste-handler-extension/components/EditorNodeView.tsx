@@ -28,6 +28,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
     (ext) => ext.name === 'pasteHandler',
   );
+
   /**
    * backendHost, token, and notify are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.

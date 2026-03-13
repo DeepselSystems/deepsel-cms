@@ -324,7 +324,11 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         Placeholder,
         EmbedVideo,
         EmbedAudio,
-        EmbedFiles,
+        EmbedFiles.configure({
+          backendHost,
+          user,
+          setUser,
+        }),
         PasteHandler.configure({
           backendHost,
           token: user?.token,
@@ -752,7 +756,12 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                 />
 
                 {/* Insert Files Button */}
-                <EmbedFilesButton editor={editor} />
+                <EmbedFilesButton
+                  backendHost={backendHost}
+                  user={user}
+                  setUser={setUser}
+                  editor={editor}
+                />
 
                 {/* Insert Table Button */}
                 <Menu shadow="md" width={200} position="bottom-start">
