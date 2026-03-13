@@ -144,13 +144,14 @@ export function RecordSelectMulti({
    * Toggle selection of an item by its ID string
    */
   const handleValueSelect = useCallback(
-    (selectingItem: RecordItem) => {
-      const itemToAdd = data.find((item) => String(item.id) === String(selectingItem.id));
+    (selectingItem: RecordItem | string | number) => {
+      const selectingItemId = typeof selectingItem === 'object' ? selectingItem.id : selectingItem;
+      const itemToAdd = data.find((item) => String(item.id) === String(selectingItemId));
       if (!itemToAdd) return;
 
       setValue((prevState) => {
         const newValue = [...(prevState || [])];
-        const existedItemIdx = newValue.findIndex((o) => String(o.id) === String(selectingItem.id));
+        const existedItemIdx = newValue.findIndex((o) => String(o.id) === String(selectingItemId));
         if (existedItemIdx >= 0) {
           newValue.splice(existedItemIdx, 1);
         } else {
