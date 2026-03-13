@@ -28,7 +28,8 @@
     "./hooks/*": {
       "import": "./dist/hooks/*.js",
       "types": "./dist/hooks/*.d.ts"
-    }
+    },
+    "./styles/richtext.css": "./dist/ui/RichTextInput/extensions/styles/index.css"
   },
   "files": [
     "dist"
