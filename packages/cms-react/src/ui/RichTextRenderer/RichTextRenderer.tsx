@@ -11,6 +11,10 @@ import {
   containsEnhancedCodeBlocks,
   initializeEnhancedCodeBlocks,
 } from '../RichTextInput/extensions/enhanced-code-block-extension/utils';
+import {
+  containsJinja2InRenderedContent,
+  initializeJinja2InRenderedContent,
+} from '../RichTextInput/extensions/jinja2-markdown-extension/utils';
 
 export interface RichTextRendererProps {
   /** HTML content to render. */
@@ -59,6 +63,12 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
 
     if (hasEnhancedCodeBlocks) {
       initializeEnhancedCodeBlocks(containerRef.current);
+    }
+
+    // Initialize Jinja2 syntax highlighting in rendered content
+    const hasJinja2 = containsJinja2InRenderedContent(containerRef.current);
+    if (hasJinja2) {
+      initializeJinja2InRenderedContent(containerRef.current);
     }
   }, [content]);
 

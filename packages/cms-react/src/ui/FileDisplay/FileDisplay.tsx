@@ -29,7 +29,8 @@ interface SubDisplayProps {
 }
 
 interface OtherFileDisplayProps
-  extends SubDisplayProps,
+  extends
+    SubDisplayProps,
     Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'width' | 'height'> {
   disabledLink?: boolean;
 }
@@ -44,16 +45,12 @@ const OtherFileDisplay = forwardRef<HTMLAnchorElement, OtherFileDisplayProps>(
         ref={ref}
         {...otherProps}
         className="flex items-end cursor-pointer text-primary-main"
-        href={
-          disabledLink
-            ? undefined
-            : src?.startsWith('http')
-              ? src
-              : getAttachmentUrl(backendHost, src)
-        }
-        target="_blank"
-        rel="noreferrer"
-        download
+        href={disabledLink ? undefined : '#'}
+        onClick={(e) => {
+          if (disabledLink) return;
+          e.preventDefault();
+          downloadFromAttachUrl(getAttachmentUrl(backendHost, src));
+        }}
       >
         <Indicator label={getFileExtension(src).toUpperCase()} zIndex="auto" size={15}>
           <FontAwesomeIcon

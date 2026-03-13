@@ -33,8 +33,9 @@ export function getFileNameFromAttachUrl(url: string): string {
  * Triggers a browser download for a file from an attachment URL
  * @param url - The attachment URL to download from
  */
-export function downloadFromAttachUrl(url: string): void {
-  fetch(url)
+export function downloadFromAttachUrl(url: string) {
+  const downloadUrl = url.includes('?') ? `${url}&download=true` : `${url}?download=true`;
+  fetch(downloadUrl)
     .then((response) => response.blob())
     .then((blob) => {
       const objectUrl = URL.createObjectURL(blob);
@@ -75,7 +76,7 @@ export function stringToColor(string: string): string {
 export function stringAvatar(name: string): { color: string; children: string } {
   const children = name.includes(' ')
     ? `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`
-    : name[0] ?? '';
+    : (name[0] ?? '');
   return {
     color: stringToColor(name),
     children,

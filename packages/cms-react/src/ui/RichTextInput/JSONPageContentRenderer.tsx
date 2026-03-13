@@ -11,6 +11,10 @@ import {
   containsEnhancedCodeBlocks,
   initializeEnhancedCodeBlocks,
 } from './extensions/enhanced-code-block-extension/utils';
+import {
+  containsJinja2InRenderedContent,
+  initializeJinja2InRenderedContent,
+} from './extensions/jinja2-markdown-extension/utils';
 
 interface ContentValue {
   'ds-label'?: string;
@@ -122,6 +126,12 @@ export const JSONPageContentRenderer = ({ content }: JSONPageContentRendererProp
 
       if (hasEnhancedCodeBlocks) {
         initializeEnhancedCodeBlocks(containerRef.current);
+      }
+
+      // Initialize Jinja2 syntax highlighting in rendered content
+      const hasJinja2 = containsJinja2InRenderedContent(containerRef.current);
+      if (hasJinja2) {
+        initializeJinja2InRenderedContent(containerRef.current);
       }
     }
   }, [content]);
