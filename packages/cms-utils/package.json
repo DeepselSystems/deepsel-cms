@@ -1,6 +1,6 @@
 {
   "name": "@deepsel/cms-utils",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Helper utilities for Deepsel CMS",
   "publishConfig": {
     "access": "public"
@@ -20,6 +20,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./common/utils": {
+      "import": "./dist/common/utils/index.js",
+      "types": "./dist/common/utils/index.d.ts"
     }
   },
   "files": [

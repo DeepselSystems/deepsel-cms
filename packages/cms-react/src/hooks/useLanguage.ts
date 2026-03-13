@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { parseSlug, type LanguageAlternative } from '@deepsel/cms-utils';
-import { useWebsiteData } from '../contexts/WebsiteDataContext';
+import { useWebsiteData } from '../contexts';
 
 /**
  * React hook to read and change the current language.
