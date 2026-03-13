@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon, Combobox, Group, Pill, PillsInput, useCombobox } from '@mantine/core';
+import { Box, CheckIcon, Combobox, Group, Pill, PillsInput, useCombobox } from '@mantine/core';
 import { useShallowEffect } from '@mantine/hooks';
 import isEqualWith from 'lodash/isEqualWith';
 import isEqual from 'lodash/isEqual';
@@ -144,13 +144,13 @@ export function RecordSelectMulti({
    * Toggle selection of an item by its ID string
    */
   const handleValueSelect = useCallback(
-    (itemId: string) => {
-      const itemToAdd = data.find((item) => String(item.id) === itemId);
+    (selectingItem: RecordItem) => {
+      const itemToAdd = data.find((item) => String(item.id) === String(selectingItem.id));
       if (!itemToAdd) return;
 
       setValue((prevState) => {
         const newValue = [...(prevState || [])];
-        const existedItemIdx = newValue.findIndex((o) => String(o.id) === itemId);
+        const existedItemIdx = newValue.findIndex((o) => String(o.id) === String(selectingItem.id));
         if (existedItemIdx >= 0) {
           newValue.splice(existedItemIdx, 1);
         } else {
@@ -197,21 +197,24 @@ export function RecordSelectMulti({
         active={!!value?.find((v) => String(v.id) === String(item.id))}
       >
         <Group gap="sm">
-          {value?.find((v) => String(v.id) === String(item.id)) ? <CheckIcon size={12} /> : null}
-          {slots?.preOptionItem && slots.preOptionItem(item)}
-          <span>{item[displayField] as React.ReactNode}</span>
+          <Box className="text-nowrap gap-1">
+            {value?.find((v) => String(v.id) === String(item.id)) ? <CheckIcon size={12} /> : null}
+            <Box>
+              {slots?.preOptionItem && slots.preOptionItem(item)}
+              <span>{item[displayField] as React.ReactNode}</span>
+            </Box>
+          </Box>
         </Group>
       </Combobox.Option>
     ),
   );
 
   return (
-    <Combobox store={combobox} onOptionSubmit={handleValueSelect} withinPortal={false}>
+    <Combobox store={combobox} onOptionSubmit={handleValueSelect as any} withinPortal={false}>
       <Combobox.DropdownTarget>
         <PillsInput onClick={() => combobox.openDropdown()} label={label}>
           <Pill.Group>
             {selectedValues}
-
             <Combobox.EventsTarget>
               <PillsInput.Field
                 onFocus={() => combobox.openDropdown()}
