@@ -141,7 +141,7 @@ export function SearchStockImages({
 
         // Upload the file
         const attachmentResult = await uploadFileModel('attachment', [file]);
-        const attachment = (attachmentResult[0] ?? null) as AttachmentFile | null;
+        const attachment = ((attachmentResult as AttachmentFile[])[0] ?? null) as AttachmentFile | null;
         if (!attachment) return;
         onNewAttachment?.(attachment);
         setSelectedImage(null);
