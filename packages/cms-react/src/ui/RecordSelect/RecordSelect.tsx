@@ -97,6 +97,23 @@ export interface RecordSelectProps {
  * Requires backendHost, user, setUser props
  * (sourced from BackendHostURLState / UserState in the consuming app).
  */
+/**
+ * Convert value to number if possible, otherwise keep as string or null
+ * @param val - The value to normalize
+ * @returns Normalized value (number, string, or null)
+ */
+function normalizeValue(val: string | number | null): string | number | null {
+  if (val === null || val === undefined) return null;
+  if (typeof val === 'number') return val;
+
+  const numVal = Number(val);
+  if (!isNaN(numVal) && val !== '') {
+    return numVal;
+  }
+
+  return val;
+}
+
 export function RecordSelect({
   label,
   description,
@@ -149,7 +166,7 @@ export function RecordSelect({
     autoFetch: isStringId,
   });
 
-  const [value, setValue] = useState<string | number | null>(initialValue ?? null);
+  const [value, setValue] = useState<string | number | null>(normalizeValue(initialValue ?? null));
   const [showModal, setShowModal] = useState(false);
 
   const combobox = useCombobox({
@@ -195,7 +212,7 @@ export function RecordSelect({
 
   // Sync internal value when the prop changes
   useEffect(() => {
-    setValue(initialValue ?? null);
+    setValue(normalizeValue(initialValue ?? null));
   }, [initialValue]);
 
   /**
@@ -215,8 +232,9 @@ export function RecordSelect({
         {...otherProps}
         store={combobox}
         onOptionSubmit={(val) => {
-          onChange(val as string | number);
-          setValue(val as string | number);
+          const normalized = normalizeValue(val as string | number);
+          onChange(normalized);
+          setValue(normalized);
           const selectedItem = data.find((item) => item.id === val);
           if (selectedItem) {
             const displayText = renderValue
@@ -294,8 +312,9 @@ export function RecordSelect({
           <CreateView
             modalMode={true}
             onSuccess={(record) => {
-              setValue(record.id as string | number);
-              onChange(record.id as string | number);
+              const normalized = normalizeValue(record.id as string | number);
+              setValue(normalized);
+              onChange(normalized);
               setSearchTerm(record[displayField] as string);
               setShowModal(false);
             }}
