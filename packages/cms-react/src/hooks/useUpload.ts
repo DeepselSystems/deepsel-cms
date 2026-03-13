@@ -25,37 +25,33 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
    * Uploads one or more files to the given API endpoint
    * @param api - API path (e.g. "file/upload")
    * @param files - Files to upload
-   * @returns Array of parsed JSON responses, one per file
+   * @returns Array of uploaded attachments from the server
    */
   async function uploadFileModel(api: string, files: File[] | FileList): Promise<unknown[]> {
     try {
       setLoading(true);
       setError(null);
 
-      const fileArray = Array.from(files);
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
+      });
 
-      return await Promise.all(
-        fileArray.map(async (file) => {
-          const formData = new FormData();
-          formData.append('files', file);
+      const response = await fetch(`${backendHost}/${api}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-          const response = await fetch(`${backendHost}/${api}`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          });
+      if (response.status !== 200) {
+        const { detail } = (await response.json()) as { detail: string };
+        setError(detail);
+        throw new Error(detail);
+      }
 
-          if (response.status !== 200) {
-            const { detail } = (await response.json()) as { detail: string };
-            setError(detail);
-            throw new Error(detail);
-          }
-
-          return response.json();
-        }),
-      );
+      return await response.json();
     } finally {
       setLoading(false);
     }

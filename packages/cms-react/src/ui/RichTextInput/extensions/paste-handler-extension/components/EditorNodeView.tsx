@@ -7,7 +7,7 @@ import { Skeleton } from '@mantine/core';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { insertAttachmentsToEditor } from '../utils';
 import { useEffectOnce } from '../../../../../hooks';
-import { useUpload } from '../../../../../hooks/useUpload';
+import { useUpload } from '../../../../../hooks';
 
 interface AttachmentFile {
   name: string;
@@ -51,7 +51,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
     });
     uploadFileModel('attachment', files)
       .then((attachments) => {
-        if (attachments && attachments.length > 0 && editor && getPos) {
+        if (attachments && (attachments as AttachmentFile[]).length > 0 && editor && getPos) {
           const pos = getPos();
           editor
             .chain()
