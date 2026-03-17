@@ -248,6 +248,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     organizationId = 0,
     className,
     notify,
+    ...restProps
   } = props;
 
   const { t } = useTranslation();
@@ -486,6 +487,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           editor={editor}
           variant={variant as 'subtle' | 'filled' | 'outline' | 'default'}
           className={`w-full ${className ?? ''}`}
+          {...restProps}
         >
           <MantineRichTextEditor.Toolbar sticky stickyOffset={60} className="!z-50">
             <MantineRichTextEditor.ControlsGroup>
