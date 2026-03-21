@@ -1,7 +1,7 @@
 from typing import Any, Callable, Optional, Type, Union
 from fastapi_crudrouter.core import _utils
 from fastapi_crudrouter.core._types import DEPENDENCIES, PAGINATION, PYDANTIC_SCHEMA
-from apps.core.utils.generate_crud_schemas import (
+from deepsel.utils.generate_crud_schemas import (
     generate_create_schema,
     generate_update_schema,
 )

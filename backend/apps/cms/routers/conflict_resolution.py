@@ -4,7 +4,7 @@ from db import get_db
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.generate_crud_schemas import generate_CRUD_schemas
+from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime

@@ -36,7 +36,7 @@ from apps.core.utils import (
     get_valid_recovery_code_index,
     hash_text,
 )
-from apps.core.utils.generate_crud_schemas import generate_read_schema
+from deepsel.utils.generate_crud_schemas import generate_read_schema
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
 from apps.core.utils.pwd_context import pwd_context

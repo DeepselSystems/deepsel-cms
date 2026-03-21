@@ -17,7 +17,7 @@ from settings import (
 from db import get_db
 from apps.core.models.attachment import AttachmentTypeOptions
 from apps.core.utils.crud_router import CRUDRouter
-from apps.core.utils.generate_crud_schemas import generate_CRUD_schemas
+from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
 from clamd import ClamdNetworkSocket
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions, BlobServiceClient
