@@ -9,6 +9,38 @@ import logging
 from constants import DEFAULT_ORG_ID
 
 logger = logging.getLogger(__name__)
+app_folders = [f"apps/{app_name}" for app_name in installed_apps]
+
+
+def install_routers(fastapi_app: FastAPI):
+    for app_folder in app_folders:
+        logger.info(f"Installing routers for {app_folder}...")
+        if os.path.isdir(f"{app_folder}/routers"):
+            files = os.listdir(f"{app_folder}/routers")
+            files = list(
+                filter(lambda x: x[-3:] == ".py" and x != "__init__.py", files)
+            )
+            for file in files:
+                module_name = f'{app_folder.replace("/", ".")}.routers.{file[:-3]}'
+                module = importlib.import_module(module_name)
+                fastapi_app.include_router(module.router)
+
+
+def install_seed_data():
+    with get_db_context() as db:
+        try:
+            for app_folder in app_folders:
+                logger.info(f"Installing seed data for {app_folder}...")
+                if os.path.isdir(f"{app_folder}/data"):
+                    module = importlib.import_module(
+                        f'{app_folder.replace("/", ".")}.data'
+                    )
+                    import_order = getattr(module, "import_order", [])
+
+                    for file in import_order:
+                        import_csv_data(f"{app_folder}/data/{file}", db)
+        finally:
+            db.close()
 
 
 def import_csv_data(
@@ -34,41 +66,3 @@ def import_csv_data(
             force_update=force_update,
             auto_commit=auto_commit,
         )
-
-
-def install_apps(fasptapi_app: FastAPI):
-    app_folders = [f"apps/{app_name}" for app_name in installed_apps]
-
-    with get_db_context() as db:
-        # import routers for installed apps
-        try:
-            for app_folder in app_folders:
-                logger.info(f"Installing app {app_folder}...")
-                # check if routers folder exists, if yes, import routers
-                if os.path.isdir(f"{app_folder}/routers"):
-                    # list files in routers folder
-                    files = os.listdir(f"{app_folder}/routers")
-                    # filter files only python files, and not __init__.py
-                    files = list(
-                        filter(lambda x: x[-3:] == ".py" and x != "__init__.py", files)
-                    )
-                    # loop through router files and import them
-                    for file in files:
-                        module_name = (
-                            f'{app_folder.replace("/", ".")}.routers.{file[:-3]}'
-                        )
-                        module = importlib.import_module(module_name)
-                        fasptapi_app.include_router(module.router)
-                        # print(f'Router {module_name} included')
-
-                # check if data folder exists, if yes import data
-                if os.path.isdir(f"{app_folder}/data"):
-                    module = importlib.import_module(
-                        f'{app_folder.replace("/", ".")}.data'
-                    )
-                    import_order = getattr(module, "import_order", [])
-
-                    for file in import_order:
-                        import_csv_data(f"{app_folder}/data/{file}", db)
-        finally:
-            db.close()

@@ -1,7 +1,12 @@
+"""Server lifecycle event handlers for startup and shutdown.
+
+Runs version upgrade checks for each installed app on startup by comparing
+the database-stored version against the source version, invoking each app's
+upgrade() function when available.
+"""
+
 import logging
-import signal
 import importlib
-from contextlib import contextmanager
 from db import get_db_context
 from apps.deepsel.models.organization import OrganizationModel
 from settings import installed_apps
@@ -31,4 +36,4 @@ def on_startup():
 
 
 def on_shutdown():
-    print("Server has shutdown.")
+    logger.info("Server has shutdown.")

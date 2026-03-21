@@ -71,4 +71,8 @@ AUTHLESS = os.getenv("AUTHLESS", "false").lower() in ["true", "1", "yes"]
 # Server flags
 ONLY_MIGRATE = os.getenv("ONLY_MIGRATE", "").lower() in ("true", "1", "yes")
 NO_MIGRATE = os.getenv("NO_MIGRATE", "").lower() in ("true", "1", "yes")
+
+if ONLY_MIGRATE and NO_MIGRATE:
+    raise ValueError("Cannot use both ONLY_MIGRATE and NO_MIGRATE")
 ENABLE_GRAPHQL = os.getenv("ENABLE_GRAPHQL", "").lower() in ("true", "1", "yes")
+ENABLE_DOCS = os.getenv("ENABLE_DOCS", "").lower() in ("true", "1", "yes")
