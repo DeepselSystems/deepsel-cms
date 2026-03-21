@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useWebsiteData } from '../contexts/WebsiteDataContext';
+import { useWebsiteData } from '../contexts';
 import {
   fetchPageData,
   fetchBlogList,
@@ -120,7 +120,7 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
         });
       } else if (pathType == WebsiteDataTypes.BlogList) {
         const data: BlogListData = await fetchBlogList({ lang, pagination });
-        console.log({ currentPath, lang, path, pathType, pagination, data });
+        console.warn({ currentPath, lang, path, pathType, pagination, data });
         setWebsiteData({
           type: pathType,
           data: data,
