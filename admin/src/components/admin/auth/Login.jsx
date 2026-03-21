@@ -85,10 +85,12 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/')
-        ? redirect.substring('/admin'.length)
-        : redirect || '/pages';
+      let redirectPath = redirect || '/pages';
+      if (redirectPath.startsWith('/admin/')) {
+        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
+      } else if (redirectPath === '/admin') {
+        redirectPath = '/pages';
+      }
       navigate(redirectPath);
     } catch (err) {
       if (err?.message === 'Incorrect OTP' && !isUseOtpField) {
@@ -125,10 +127,12 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/')
-        ? redirect.substring('/admin'.length)
-        : redirect || '/pages';
+      let redirectPath = redirect || '/pages';
+      if (redirectPath.startsWith('/admin/')) {
+        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
+      } else if (redirectPath === '/admin') {
+        redirectPath = '/pages';
+      }
       navigate(redirectPath);
     } catch (err) {
       notify({
@@ -216,10 +220,12 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      // Strip /admin prefix if present since basename="/admin" is already set
-      const redirectPath = redirect?.startsWith('/admin/')
-        ? redirect.substring('/admin'.length)
-        : redirect || '/pages';
+      let redirectPath = redirect || '/pages';
+      if (redirectPath.startsWith('/admin/')) {
+        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
+      } else if (redirectPath === '/admin') {
+        redirectPath = '/pages';
+      }
       navigate(redirectPath);
     } catch (err) {
       console.error(err);
