@@ -13,14 +13,17 @@ from settings import (
     NO_MIGRATE,
     ENABLE_GRAPHQL,
     ENABLE_DOCS,
+    DEFAULT_ORG_ID,
     installed_apps,
+    version as src_version,
 )
 from deepsel.sqlalchemy import DatabaseManager
-from apps.core.utils.init_graphql import init_graphql
 from deepsel.utils.install_apps import install_routers, install_seed_data
+from deepsel.utils.server_events import on_startup, on_shutdown
+from apps.core.utils.init_graphql import init_graphql
 from apps.core.utils.models_pool import models_pool
+from apps.core.models.organization import OrganizationModel
 from db import Base, get_db_context
-from apps.core.utils.server_events import on_startup, on_shutdown
 
 app_folders = [f"apps/{app_name}" for app_name in installed_apps]
 
@@ -55,7 +58,15 @@ async def lifespan(application: FastAPI):
         with get_db_context() as db:
             install_seed_data(app_folders, db)
         # Check app versions and run app upgrade tasks
-        on_startup()
+        with get_db_context() as db:
+            org = db.query(OrganizationModel).get(DEFAULT_ORG_ID)
+            on_startup(
+                db=db,
+                app_names=installed_apps,
+                src_version=src_version,
+                current_version=org.current_version,
+                set_version=lambda db, v: setattr(org, "current_version", v),
+            )
 
         # ONLY_MIGRATE — exit before server starts
         if ONLY_MIGRATE:
