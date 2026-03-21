@@ -86,13 +86,6 @@ async def send_email_with_limit(
     update_global_limits(rate_limit)
     doser = get_global_email_doser()
 
-    # DOSER DEBUG: Show current status
-    pre_status = doser.get_current_usage(scope)
-    print(
-        f"📊 DOSER: {pre_status['current_count']}/{pre_status['max_emails']} → sending {len(to)} email(s)",
-        flush=True,
-    )
-
     # Check rate limiting unless bypassed
     if not bypass_rate_limit:
         if not doser.can_send_email(scope):
@@ -100,13 +93,10 @@ async def send_email_with_limit(
             error_msg = (
                 f"Rate limit exceeded. Can send again in {next_available:.1f} seconds."
             )
-            print(f"🚫 RATE LIMITED! Wait {next_available:.1f}s", flush=True)
             logger.warning(
                 f"Email rate limit exceeded for scope '{scope}': {error_msg}"
             )
             raise EmailRateLimitError(error_msg, next_available)
-    else:
-        print(f"🔧 BYPASSED rate limiting", flush=True)
 
     try:
         # Create message
@@ -137,34 +127,15 @@ async def send_email_with_limit(
         result = await _try_send_email_with_retry(fm, message)
 
         if result["success"]:
-            # DOSER DEBUG: Record successful send in rate limiter (unless bypassed)
             if not bypass_rate_limit:
-                print(f"📈 DOSER: Recording successful send...")
                 doser.record_send(scope)
-                print(f"✅ DOSER: Send recorded successfully!")
-            else:
-                print(f"🔧 DOSER: Bypassed - NOT recording send")
 
-            # DOSER DEBUG: Show status AFTER successful send
-            post_status = doser.get_current_usage(scope)
-            print(
-                f"📊 DOSER AFTER: {post_status['current_count']}/{post_status['max_emails']} emails used (scope: {scope})"
-            )
-            print(
-                f"🎉 DOSER: Email sent successfully! Remaining: {post_status['max_emails'] - post_status['current_count']} emails"
-            )
             return {
                 "success": True,
                 "status": "sent",
                 "recipients_count": len(to),
             }
         else:
-            # DOSER DEBUG: Show status (no change on failure)
-            current_status = doser.get_current_usage(scope)
-            print(
-                f"❌ DOSER: Email send failed - count unchanged: {current_status['current_count']}/{current_status['max_emails']}"
-            )
-
             logger.error(f"Failed to send email: {result['error']}")
             return {
                 "success": False,
@@ -173,12 +144,6 @@ async def send_email_with_limit(
             }
 
     except Exception as e:
-        # DOSER DEBUG: Show status (no change on exception)
-        current_status = doser.get_current_usage(scope)
-        print(
-            f"💥 DOSER: Unexpected error - count unchanged: {current_status['current_count']}/{current_status['max_emails']}"
-        )
-
         logger.error(f"Unexpected error sending email: {e}")
         return {
             "success": False,
@@ -241,26 +206,6 @@ def get_current_rate_limit_status(scope: str = "global") -> Dict[str, Any]:
     return doser.get_current_usage(scope)
 
 
-def print_doser_status(scope: str = "global") -> None:
-    """
-    Print current doser status to console - useful for testing.
-
-    Args:
-        scope: Rate limiting scope (default: "global")
-    """
-    status = get_current_rate_limit_status(scope)
-    print(f"📊 CURRENT DOSER STATUS:")
-    print(f"   Scope: {status['scope']}")
-    print(f"   Usage: {status['current_count']}/{status['max_emails']} emails per hour")
-    print(f"   Time Window: {status['time_window_seconds']} seconds")
-    if status["next_available_seconds"] > 0:
-        print(f"   Next Available: {status['next_available_seconds']:.1f} seconds")
-    else:
-        print(f"   Status: ✅ Ready to send")
-    print(f"   Remaining: {status['max_emails'] - status['current_count']} emails")
-    logger.info(f"📊 Manual doser status check: {status}")
-
-
 def cleanup_rate_limiter():
     """
     Clean up expired rate limiting data.
@@ -269,36 +214,3 @@ def cleanup_rate_limiter():
     doser = get_global_email_doser()
     doser.cleanup_expired()
     logger.info("Rate limiter cleanup completed")
-
-
-# Legacy wrapper for backward compatibility
-async def send_email(
-    db: Session,
-    to: List[EmailStr],
-    subject: str,
-    content: str,
-    organization_id: int = 1,
-    **kwargs,
-) -> bool:
-    """
-    Legacy wrapper for backward compatibility.
-
-    DEPRECATED: Use send_email_with_limit() for new code.
-    """
-    logger.warning(
-        "Using deprecated send_email() function. Use send_email_with_limit() instead."
-    )
-
-    try:
-        result = await send_email_with_limit(
-            db=db,
-            to=to,
-            subject=subject,
-            content=content,
-            organization_id=organization_id,
-            **kwargs,
-        )
-        return result["success"]
-    except EmailRateLimitError:
-        # For backward compatibility, return False instead of raising
-        return False

@@ -77,8 +77,15 @@ class EmailDoser:
         """
         if self._lock.acquire(timeout=0.1):  # Quick timeout to avoid blocking signals
             try:
-                if self.can_send_email(scope):
-                    self.sent_timestamps[scope].append(time.time())
+                now = time.time()
+                timestamps = self.sent_timestamps[scope]
+
+                # Remove timestamps older than the time window
+                while timestamps and now - timestamps[0] > self.per_seconds:
+                    timestamps.popleft()
+
+                if len(timestamps) < self.max_emails:
+                    timestamps.append(now)
                     return True
                 return False
             finally:
@@ -126,11 +133,16 @@ class EmailDoser:
                 while timestamps and now - timestamps[0] > self.per_seconds:
                     timestamps.popleft()
 
+                if len(timestamps) < self.max_emails:
+                    next_available = 0.0
+                else:
+                    next_available = max(0.0, timestamps[0] + self.per_seconds - now)
+
                 return {
                     "current_count": len(timestamps),
                     "max_emails": self.max_emails,
                     "time_window_seconds": self.per_seconds,
-                    "next_available_seconds": self.get_next_available_time(scope),
+                    "next_available_seconds": next_available,
                     "scope": scope,
                 }
             finally:
