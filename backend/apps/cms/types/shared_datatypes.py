@@ -1,9 +1,6 @@
-from typing import Optional, List, Any
-from enum import Enum
-
+from typing import Optional
 from pydantic import BaseModel, field_serializer, computed_field
-
-from apps.core.utils.secret_utils import truncate_secret
+from deepsel.utils.secret_utils import truncate_secret
 
 
 class LocaleData(BaseModel):
