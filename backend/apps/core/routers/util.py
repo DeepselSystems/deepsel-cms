@@ -17,7 +17,6 @@ from apps.core.utils.models_pool import models_pool
 from deepsel.utils.check_delete_cascade import (
     get_delete_cascade_records_recursively,
 )
-from apps.core.utils.get_class_info import get_class_info
 from apps.core.utils.install_apps import import_csv_data
 from apps.core.utils.api_router import create_api_router
 
@@ -96,28 +95,6 @@ class HealthResponse(BaseModel):
 def health():
     return HealthResponse(status="ok")
 
-
-@router.get("/model_info/{model}", response_model=dict)
-def model_info(
-    model: str,  # table name
-    user: UserModel = Depends(get_current_user),
-):
-    # check if user has Admin or Super Admin role
-    if not any(
-        role.string_id in ["admin_role", "super_admin_role"] for role in user.roles
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this information",
-        )
-
-    Model = models_pool.get(model, None)
-    if Model is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Model not found"
-        )
-
-    return get_class_info(Model).model_dump()
 
 
 # New route without organization_id - uses domain detection
