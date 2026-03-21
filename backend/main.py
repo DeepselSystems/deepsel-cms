@@ -20,7 +20,7 @@ from settings import (
 from deepsel.sqlalchemy import DatabaseManager
 from deepsel.utils.install_apps import install_routers, install_seed_data
 from deepsel.utils.server_events import on_startup, on_shutdown
-from apps.core.utils.init_graphql import init_graphql
+from deepsel.utils import init_graphql
 from apps.core.utils.models_pool import models_pool
 from apps.core.models.organization import OrganizationModel
 from db import Base, get_db_context
@@ -80,7 +80,9 @@ async def lifespan(application: FastAPI):
 
     # GraphQL (optional, disabled by default to save RAM)
     if ENABLE_GRAPHQL:
-        init_graphql(application)
+        from apps.core.utils.graphql_context import get_graphql_context
+
+        init_graphql(application, context_getter=get_graphql_context)
 
     yield
 
