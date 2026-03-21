@@ -6,7 +6,7 @@ from apps.deepsel.utils.models_pool import models_pool
 from sqlalchemy.orm import Session
 from db import get_db_context
 import logging
-from constants import DEFAULT_ORG_ID
+from settings import DEFAULT_ORG_ID
 
 logger = logging.getLogger(__name__)
 app_folders = [f"apps/{app_name}" for app_name in installed_apps]

@@ -21,7 +21,7 @@ from .theme_language import ensure_language_theme_exists
 from .sync_utils import sync_directory
 from platformdirs import user_data_dir
 from traceback import print_exc
-from constants import ENVIRONMENT
+from settings import ENVIRONMENT
 
 logger = logging.getLogger(__name__)
 

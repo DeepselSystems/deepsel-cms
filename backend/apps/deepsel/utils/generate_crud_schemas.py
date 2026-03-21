@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel as PydanticModel
 from pydantic import create_model, ConfigDict
 from apps.deepsel.utils.types import DBModel, CRUDSchema
-from apps.deepsel.utils.get_relationships import get_relationships, FieldInfo
+from deepsel.utils.get_relationships import get_relationships, FieldInfo
 from apps.deepsel.utils.models_pool import models_pool
 
 

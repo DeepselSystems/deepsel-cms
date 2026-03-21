@@ -4,11 +4,10 @@ from sqlalchemy.orm import relationship, Session
 from sqlalchemy.types import UUID
 from fastapi import HTTPException, status
 from db import Base
-from apps.deepsel.mixins.address import AddressMixin
+from deepsel.orm import AddressMixin, ProfileMixin
 from apps.deepsel.mixins.orm import ORMBaseMixin
-from apps.deepsel.mixins.profile import ProfileMixin
 from apps.deepsel.utils.models_pool import models_pool
-from constants import AUTH_ALGORITHM, APP_SECRET, FRONTEND_URL, AUTHLESS, DEFAULT_ORG_ID
+from settings import AUTH_ALGORITHM, APP_SECRET, FRONTEND_URL, AUTHLESS, DEFAULT_ORG_ID
 import jwt
 import logging
 from datetime import datetime, timedelta, UTC

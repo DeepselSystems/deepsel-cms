@@ -11,7 +11,7 @@ from db import get_db_context
 from apps.deepsel.models.organization import OrganizationModel
 from settings import installed_apps
 from settings import version as src_version
-from constants import DEFAULT_ORG_ID
+from settings import DEFAULT_ORG_ID
 
 logger = logging.getLogger(__name__)
 

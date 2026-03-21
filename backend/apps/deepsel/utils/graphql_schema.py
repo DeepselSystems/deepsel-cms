@@ -10,7 +10,7 @@ from strawberry import asdict
 from strawberry.schema.config import StrawberryConfig
 from apps.deepsel.utils.models_pool import models_pool
 from apps.deepsel.utils.technical_fields import technical_fields as TECHNICAL_FIELDS
-from apps.deepsel.mixins.orm import (
+from deepsel.orm import (
     SearchQuery,
     SearchCriteria,
     OrderByCriteria,

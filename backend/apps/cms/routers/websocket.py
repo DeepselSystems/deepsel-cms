@@ -30,7 +30,7 @@ async def get_current_user_websocket(
         import jwt
         from jwt import PyJWTError
         from fastapi import status
-        from constants import APP_SECRET, AUTH_ALGORITHM
+        from settings import APP_SECRET, AUTH_ALGORITHM
 
         if not token:
             raise HTTPException(

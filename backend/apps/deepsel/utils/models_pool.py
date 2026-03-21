@@ -2,6 +2,7 @@ from settings import installed_apps
 import os
 import inspect
 from typing import Any
+from deepsel.utils.models_pool import set_models_pool
 
 app_folders = [f"apps/{app_name}" for app_name in installed_apps]
 models_pool: dict[str:Any] = {}
@@ -25,3 +26,6 @@ for app_folder in app_folders:
                 hasattr(cls, "__tablename__") and cls.__module__ == module.__name__
             ]
             models_pool.update({model.__tablename__: model for model in models})
+
+# Sync with deepsel-core so the ORM mixin can access the pool
+set_models_pool(models_pool)

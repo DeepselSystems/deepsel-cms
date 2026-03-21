@@ -7,7 +7,7 @@ import jwt
 from cryptography.fernet import Fernet
 from passlib.context import CryptContext
 
-from constants import APP_SECRET, AUTH_ALGORITHM
+from settings import APP_SECRET, AUTH_ALGORITHM
 
 crypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -6,7 +6,7 @@ Centralized API configuration and router helpers to ensure consistent API versio
 
 from typing import Optional, Any
 from fastapi import APIRouter
-from constants import API_PREFIX
+from settings import API_PREFIX
 
 # ============================================================================
 # Router Helper Functions

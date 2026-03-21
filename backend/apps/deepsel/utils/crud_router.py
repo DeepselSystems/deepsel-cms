@@ -20,7 +20,7 @@ from fastapi_crudrouter.core.sqlalchemy import NOT_FOUND, IntegrityError
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.deepsel.mixins.base_model import BaseModel as Model
-from apps.deepsel.mixins.orm import (
+from deepsel.orm import (
     DeleteResponse,
     OrderByCriteria,
     SearchQuery,
@@ -29,7 +29,7 @@ from apps.deepsel.mixins.orm import (
 from apps.deepsel.models.user import UserModel
 from apps.deepsel.utils.get_current_user import get_current_user
 from apps.deepsel.utils.models_pool import models_pool
-from constants import API_PREFIX
+from settings import API_PREFIX
 
 
 # monkey patch this broken shit

@@ -20,7 +20,7 @@ from typing_extensions import Annotated
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 
-from constants import (
+from settings import (
     APP_SECRET,
     AUTH_ALGORITHM,
     DEFAULT_ORG_ID,

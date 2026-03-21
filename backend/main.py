@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from constants import (
+from settings import (
     APP_SECRET,
     DATABASE_URL,
     ONLY_MIGRATE,

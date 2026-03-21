@@ -7,7 +7,7 @@ from apps.cms.utils.page_content import (
 from db import Base
 from apps.deepsel.mixins.base_model import BaseModel
 from apps.deepsel.mixins.activity import ActivityMixin
-from apps.deepsel.mixins.orm import (
+from deepsel.orm import (
     PAGINATION,
     SearchQuery,
     OrderByCriteria,

@@ -10,7 +10,7 @@ from sqlalchemy import Column, Enum, Integer, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from constants import (
+from settings import (
     FILESYSTEM,
     S3,
     S3_BUCKET,
@@ -21,7 +21,7 @@ from constants import (
 )
 from db import Base
 from apps.deepsel.mixins.base_model import BaseModel
-from apps.deepsel.mixins.orm import DeleteResponse, PermissionAction
+from deepsel.orm import DeleteResponse, PermissionAction
 import random
 import string
 from azure.storage.blob import BlobServiceClient, ContentSettings

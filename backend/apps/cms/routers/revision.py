@@ -6,7 +6,7 @@ from db import get_db
 from apps.deepsel.utils.models_pool import models_pool
 from apps.deepsel.utils.get_current_user import get_current_user
 from apps.deepsel.models.user import UserModel
-from apps.deepsel.mixins.orm import PermissionAction
+from deepsel.orm import PermissionAction
 from apps.deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)

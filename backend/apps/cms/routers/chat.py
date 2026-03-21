@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.deepsel.utils.models_pool import models_pool
-from constants import DEFAULT_ORG_ID
+from settings import DEFAULT_ORG_ID
 import json
 import asyncio
 import requests

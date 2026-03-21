@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, JSON, Text
 from db import Base
 from sqlalchemy.orm import Session
 from apps.deepsel.mixins.base_model import BaseModel
-from constants import DEFAULT_ORG_ID
+from settings import DEFAULT_ORG_ID
 
 
 class OpenRouterModelModel(Base, BaseModel):

@@ -4,10 +4,10 @@ from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from fastapi import HTTPException
 from db import Base
-from apps.deepsel.mixins.address import AddressMixin
+from deepsel.orm import AddressMixin
 from apps.deepsel.mixins.orm import ORMBaseMixin
 from sqlalchemy.orm import Session
-from constants import DEFAULT_ORG_ID, AUTHLESS
+from settings import DEFAULT_ORG_ID, AUTHLESS
 
 
 class OrganizationModel(Base, ORMBaseMixin, AddressMixin):

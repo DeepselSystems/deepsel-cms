@@ -4,7 +4,7 @@ from fastapi import Depends, File, Response, UploadFile, status, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from constants import (
+from settings import (
     S3,
     S3_BUCKET,
     AZURE_STORAGE_CONNECTION_STRING,

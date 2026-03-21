@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, Boolean, JSON
 from db import Base
 from apps.deepsel.mixins.base_model import BaseModel
-from apps.deepsel.mixins.orm import (
+from deepsel.orm import (
     PAGINATION,
     SearchQuery,
     OrderByCriteria,

@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
-from constants import APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, AUTHLESS
+from settings import APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, AUTHLESS
 from db import get_db
 from apps.deepsel.utils.models_pool import models_pool
 

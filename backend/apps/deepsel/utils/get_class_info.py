@@ -1,5 +1,5 @@
-from apps.deepsel.utils.get_field_info import get_field_info, FieldInfo
-from apps.deepsel.utils.get_relationships import (
+from deepsel.utils.get_field_info import get_field_info, FieldInfo
+from deepsel.utils.get_relationships import (
     get_relationships,
     RelationshipInfoResult,
     RelationshipInfo,
