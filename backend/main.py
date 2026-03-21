@@ -1,211 +1,206 @@
-"""Enhanced FastAPI server with migration control capabilities.
-
-This module provides a FastAPI server with environment variable support for controlling
-database migration behavior, particularly useful for Kubernetes deployments.
+"""FastAPI server with migration control and optional GraphQL.
 
 Environment Variables:
-- ONLY_MIGRATE: When set, runs migrations only and exits (for init containers)
-- NO_MIGRATE: When set, skips migrations (for main containers)
-
-If not set, the server runs normally with migrations on startup.
+- ONLY_MIGRATE: Run migrations only and exit (for K8s init containers)
+- NO_MIGRATE: Skip migrations (for main containers)
+- ENABLE_GRAPHQL: Enable GraphQL endpoint at /graphql (default: false)
 """
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from constants import APP_SECRET, DATABASE_URL
-from apps.deepsel.utils.install_apps import install_apps
-from apps.deepsel.utils.server_events import on_startup, on_shutdown
-from apps.deepsel.utils.graphql_context import get_graphql_context
-from apps.deepsel.utils.models_pool import models_pool
-from strawberry.fastapi import GraphQLRouter
-from contextlib import asynccontextmanager
 import logging
 import os
 import sys
-from starlette.middleware.sessions import SessionMiddleware
+from contextlib import asynccontextmanager
 from traceback import format_exc
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+
+from constants import APP_SECRET, DATABASE_URL, ONLY_MIGRATE, NO_MIGRATE, ENABLE_GRAPHQL
 from deepsel.sqlalchemy import DatabaseManager
+from apps.deepsel.utils.install_apps import install_apps
+from apps.deepsel.utils.models_pool import models_pool
 from db import Base
+from apps.deepsel.utils.server_events import on_startup, on_shutdown
+
+# =============================================================================
+# Logging
+# =============================================================================
 
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
     format="%(levelname)s:     [%(asctime)s] %(name)s %(message)s",
     datefmt="%d-%m-%Y %H:%M:%S",
 )
-
-# Initialize logger for this module
 logger = logging.getLogger(__name__)
+err_logger = logging.getLogger("global_exception_handler")
 
-
-# =============================================================================
-# MIGRATION CONFIGURATION FROM ENVIRONMENT VARIABLES
-# =============================================================================
-
-# Migration flags from environment variables
-only_migrate = os.getenv("ONLY_MIGRATE", "").lower() in ("true", "1", "yes")
-no_migrate = os.getenv("NO_MIGRATE", "").lower() in ("true", "1", "yes")
-
-# Validate mutually exclusive options
-if only_migrate and no_migrate:
-    logger.error("Cannot use both ONLY_MIGRATE and NO_MIGRATE environment variables")
+if ONLY_MIGRATE and NO_MIGRATE:
+    logger.error("Cannot use both ONLY_MIGRATE and NO_MIGRATE")
     sys.exit(1)
 
-# Global flag to track if startup logic has been executed
+# =============================================================================
+# Startup logic
+# =============================================================================
+
 _startup_logic_executed = False
 
 
 def startup_logic():
-    """Application startup logic."""
+    """Run on_startup() once, respecting migration flags."""
     global _startup_logic_executed
 
     if _startup_logic_executed:
-        logger.info("Startup logic already executed, skipping...")
         return
 
-    if no_migrate:
-        logger.info("Skipping startup logic due to NO_MIGRATE env set")
+    if NO_MIGRATE:
+        logger.info("Skipping startup logic (NO_MIGRATE)")
         return
 
-    if only_migrate:
+    if ONLY_MIGRATE:
         logger.info("Running startup logic for migration only")
     else:
-        logger.info("Application startup logic executed")
+        logger.info("Running startup logic")
 
-    # Call the original on_startup function
     on_startup()
     _startup_logic_executed = True
+
+
+# =============================================================================
+# Lifespan
+# =============================================================================
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     try:
-        logger.info("Starting application initialization")
-
-        # Execute startup logic (will check internally if already executed)
         startup_logic()
         logger.info("Application startup completed")
-
         yield
     except Exception as e:
         logger.error(f"Failed to initialize application: {e}", exc_info=True)
         raise
     finally:
-        # Always run shutdown logic
         logger.info("Application shutdown initiated")
         on_shutdown()
         logger.info("Application shutdown completed")
 
 
-app = FastAPI(
-    title="Deepsel Template API",
-    description="© Deepsel Inc.",
-    version="3.0",
-    lifespan=lifespan,
-    docs_url="/",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.add_middleware(SessionMiddleware, secret_key=APP_SECRET)
-
-# we want error raises to also be captured by the logger
-# for log shipping purposes
-err_logger = logging.getLogger("global_exception_handler")
+# =============================================================================
+# App factory
+# =============================================================================
 
 
-@app.exception_handler(Exception)
-def global_exception_handler(request: Request, exc: Exception):
-    try:
+def create_app() -> FastAPI:
+    application = FastAPI(
+        title="Deepsel Template API",
+        description="© Deepsel Inc.",
+        version="4.0",
+        lifespan=lifespan,
+        docs_url="/",
+    )
+
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    application.add_middleware(SessionMiddleware, secret_key=APP_SECRET)
+
+    @application.exception_handler(Exception)
+    def global_exception_handler(request: Request, exc: Exception):
+        try:
+            raise exc
+        except Exception:
+            err_logger.error(format_exc())
         raise exc
-    except Exception:
-        err_logger.error(format_exc())
-    raise exc
+
+    return application
 
 
-# Handle migration flags
-if only_migrate:
-    # Only run migrations and exit (proper order: database migration -> install apps -> startup logic)
-    try:
-        logger.info("Running database migrations only (ONLY_MIGRATE env set)")
-        logger.info("Step 1/3: Running database migrations...")
-        # startup_database_update()
-        DatabaseManager(
-            sqlalchemy_declarative_base=Base,
-            db_url=DATABASE_URL,
-            models_pool=models_pool,
-        )
-        logger.info("Step 2/3: Installing apps and importing data...")
-        install_apps(app)
-        logger.info("Step 3/3: Running startup logic...")
-        startup_logic()
-        logger.info("Migration process completed successfully, exiting...")
-        sys.exit(0)
-    except Exception as e:
-        logger.error(f"Failed during migration process: {e}", exc_info=True)
-        sys.exit(1)
+# =============================================================================
+# GraphQL (conditional)
+# =============================================================================
 
-# Initialize database and install apps (skip if no-migrate)
-try:
-    if not no_migrate:
-        logger.info("Initializing database and installing apps")
-        # startup_database_update()
-        DatabaseManager(
-            sqlalchemy_declarative_base=Base,
-            db_url=DATABASE_URL,
-            models_pool=models_pool,
-        )
-        logger.info("Database migrations completed successfully")
-    else:
-        logger.info("Skipping database migrations due to NO_MIGRATE env set")
 
-    install_apps(app)
-    logger.info("Apps initialized successfully")
+def init_graphql(application: FastAPI):
+    """Generate GraphQL schema and mount at /graphql."""
+    from apps.deepsel.utils.graphql_context import get_graphql_context
 
-    # Initialize GraphQL
-    logger.info("Initializing GraphQL schema generation")
+    logger.info("Initializing GraphQL schema")
 
     try:
         from apps.deepsel.utils.graphql_schema import create_auto_schema
 
         graphql_schema = create_auto_schema()
-        logger.info("GraphQL schema generation completed successfully")
-
+        logger.info("GraphQL schema generated successfully")
     except Exception as e:
-        logger.error(f"Failed to generate GraphQL schema: {e}")
-        import traceback
+        logger.error(f"Failed to generate GraphQL schema: {e}", exc_info=True)
 
-        logger.error(f"Full traceback: {traceback.format_exc()}")
-
-        # Create minimal fallback schema
         import strawberry
 
         @strawberry.type
         class Query:
             hello: str = strawberry.field(resolver=lambda: "Hello from GraphQL!")
 
-        @strawberry.type
-        class Mutation:
-            pass
-
-        graphql_schema = strawberry.Schema(query=Query, mutation=None)
+        graphql_schema = strawberry.Schema(query=Query)
         logger.info("Using minimal fallback GraphQL schema")
 
-    # Create GraphQL router
+    from strawberry.fastapi import GraphQLRouter
+
     graphql_router = GraphQLRouter(
         schema=graphql_schema, context_getter=get_graphql_context
     )
-
-    # Add GraphQL endpoint
-    app.include_router(graphql_router, prefix="/graphql", tags=["GraphQL"])
+    application.include_router(graphql_router, prefix="/graphql", tags=["GraphQL"])
     logger.info("GraphQL endpoint initialized at /graphql")
 
+
+# =============================================================================
+# Bootstrap
+# =============================================================================
+
+app = create_app()
+
+# Migration-only mode: migrate, install apps, run startup, then exit
+# For use cases such as k8s initContainers
+if ONLY_MIGRATE:
+    try:
+        logger.info("ONLY_MIGRATE mode: running migrations and exiting")
+        DatabaseManager(
+            sqlalchemy_declarative_base=Base,
+            db_url=DATABASE_URL,
+            models_pool=models_pool,
+        )
+        install_apps(app)
+        startup_logic()
+        logger.info("Migration completed successfully, exiting")
+        sys.exit(0)
+    except Exception as e:
+        logger.error(f"Migration failed: {e}", exc_info=True)
+        sys.exit(1)
+
+# Normal startup
+try:
+    if not NO_MIGRATE:
+        DatabaseManager(
+            sqlalchemy_declarative_base=Base,
+            db_url=DATABASE_URL,
+            models_pool=models_pool,
+        )
+    else:
+        logger.info("Skipping database migrations (NO_MIGRATE)")
+
+    install_apps(app)
+    logger.info("Apps initialized successfully")
+
+    if ENABLE_GRAPHQL:
+        init_graphql(app)
+    else:
+        logger.info("GraphQL disabled (set ENABLE_GRAPHQL=true to enable)")
+
 except Exception as e:
-    logger.error(f"Failed to initialize database, apps, or GraphQL: {e}", exc_info=True)
+    logger.error(f"Failed to initialize application: {e}", exc_info=True)
     raise

@@ -67,3 +67,8 @@ LOKI_ENDPOINT = os.getenv("LOKI_ENDPOINT")
 DEFAULT_ORG_ID = 1
 
 AUTHLESS = os.getenv("AUTHLESS", "false").lower() in ["true", "1", "yes"]
+
+# Server flags
+ONLY_MIGRATE = os.getenv("ONLY_MIGRATE", "").lower() in ("true", "1", "yes")
+NO_MIGRATE = os.getenv("NO_MIGRATE", "").lower() in ("true", "1", "yes")
+ENABLE_GRAPHQL = os.getenv("ENABLE_GRAPHQL", "").lower() in ("true", "1", "yes")
