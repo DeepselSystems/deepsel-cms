@@ -8,13 +8,13 @@ from apps.cms.utils.get_page_content import get_page_content, PageContentRespons
 from apps.cms.utils.search import SearchResponse, search_pages_and_posts
 from apps.cms.utils.translate_page_content import translate_page_content
 from db import get_db
-from apps.deepsel.utils.crud_router import CRUDRouter
-from apps.deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
-from apps.deepsel.utils.get_current_user import (
+from apps.core.utils.crud_router import CRUDRouter
+from apps.core.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.core.utils.get_current_user import (
     get_current_user,
     get_current_user_optional,
 )
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.models_pool import models_pool
 
 table_name = "page"
 CRUDSchemas = generate_CRUD_schemas(table_name)

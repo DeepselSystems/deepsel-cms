@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, ForeignKey, Text, String
 from db import Base
-from apps.deepsel.mixins.base_model import BaseModel
+from apps.core.mixins.base_model import BaseModel
 from sqlalchemy.orm import relationship
 
 

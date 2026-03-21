@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.models_pool import models_pool
 from traceback import format_exc
 
 logger = logging.getLogger(__name__)

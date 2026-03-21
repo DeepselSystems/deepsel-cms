@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, DateTime
 from datetime import datetime, timezone
 from db import Base
-from apps.deepsel.mixins.base_model import BaseModel
+from apps.core.mixins.base_model import BaseModel
 from sqlalchemy.orm import relationship, Session
-from apps.deepsel.models.user import UserModel
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.models.user import UserModel
+from apps.core.utils.models_pool import models_pool
 from typing import Optional
 
 

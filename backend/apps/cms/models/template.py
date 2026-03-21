@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Text, Boolean
 from db import Base
-from apps.deepsel.mixins.base_model import BaseModel
-from apps.deepsel.mixins.activity import ActivityMixin
+from apps.core.mixins.base_model import BaseModel
+from apps.core.mixins.activity import ActivityMixin
 from sqlalchemy.orm import relationship
 
 

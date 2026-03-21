@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from db import Base
-from apps.deepsel.mixins.orm import ORMBaseMixin
+from apps.core.mixins.orm import ORMBaseMixin
 
 
 class CurrencyModel(Base, ORMBaseMixin):

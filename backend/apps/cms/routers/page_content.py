@@ -4,12 +4,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from db import get_db
-from apps.deepsel.utils.crud_router import CRUDRouter
-from apps.deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
-from apps.deepsel.utils.get_current_user import get_current_user
+from apps.core.utils.crud_router import CRUDRouter
+from apps.core.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends
 
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.models_pool import models_pool
 from apps.cms.utils.page_content import (
     generate_slug_from_title,
     check_page_content_slug_with_conflict,

@@ -15,11 +15,11 @@ from settings import (
     ENABLE_DOCS,
 )
 from deepsel.sqlalchemy import DatabaseManager
-from apps.deepsel.utils.init_graphql import init_graphql
-from apps.deepsel.utils.install_apps import install_routers, install_seed_data
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.init_graphql import init_graphql
+from apps.core.utils.install_apps import install_routers, install_seed_data
+from apps.core.utils.models_pool import models_pool
 from db import Base
-from apps.deepsel.utils.server_events import on_startup, on_shutdown
+from apps.core.utils.server_events import on_startup, on_shutdown
 
 # =============================================================================
 # Logging

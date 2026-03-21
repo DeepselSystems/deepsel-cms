@@ -2,7 +2,7 @@ import requests
 from sqlalchemy import Column, Integer, String, JSON, Text
 from db import Base
 from sqlalchemy.orm import Session
-from apps.deepsel.mixins.base_model import BaseModel
+from apps.core.mixins.base_model import BaseModel
 from settings import DEFAULT_ORG_ID
 
 

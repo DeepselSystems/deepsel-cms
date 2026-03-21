@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 installed_apps = [
-    "deepsel",
+    "core",
     "locales",
     "cms",
 ]

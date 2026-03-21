@@ -5,15 +5,15 @@ from apps.cms.utils.page_content import (
     generate_slug_from_title,
 )
 from db import Base
-from apps.deepsel.mixins.base_model import BaseModel
-from apps.deepsel.mixins.activity import ActivityMixin
+from apps.core.mixins.base_model import BaseModel
+from apps.core.mixins.activity import ActivityMixin
 from deepsel.orm import (
     PAGINATION,
     SearchQuery,
     OrderByCriteria,
     SearchCriteria,
 )
-from apps.deepsel.models.user import UserModel
+from apps.core.models.user import UserModel
 from sqlalchemy.orm import relationship, Session
 from fastapi import HTTPException, status
 from typing import Optional

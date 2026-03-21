@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from db import get_db
 from apps.cms.models.organization import CMSSettingsModel
 from apps.cms.utils.domain_detection import detect_domain_from_request
-from apps.deepsel.utils.get_current_user import get_current_user_optional
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.get_current_user import get_current_user_optional
+from apps.core.utils.models_pool import models_pool
 from settings import DEFAULT_ORG_ID
 
 logger = logging.getLogger(__name__)

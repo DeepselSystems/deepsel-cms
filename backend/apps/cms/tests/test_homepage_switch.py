@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from apps.cms.models.page import PageModel
 from apps.cms.models.page_content import PageContentModel
 from apps.locales.models.locale import LocaleModel
-from apps.deepsel.models.organization import OrganizationModel
+from apps.core.models.organization import OrganizationModel
 
 
 @pytest.fixture

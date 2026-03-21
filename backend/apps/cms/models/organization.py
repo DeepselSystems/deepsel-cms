@@ -1,13 +1,13 @@
 import logging
 
-from apps.deepsel.models.organization import OrganizationModel
+from apps.core.models.organization import OrganizationModel
 from sqlalchemy import Column, Integer, ForeignKey, JSON, Boolean, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 
-from apps.deepsel.utils.models_pool import models_pool
+from apps.core.utils.models_pool import models_pool
 from apps.cms.utils.process_menu_item import build_localized_menus, LocalizedMenuItem
-from apps.deepsel.utils import decrypt, encrypt
+from apps.core.utils import decrypt, encrypt
 from apps.cms.types.public_settings import PublicSettings
 
 logger = logging.getLogger(__name__)
