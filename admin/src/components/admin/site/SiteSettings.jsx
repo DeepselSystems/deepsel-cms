@@ -81,7 +81,7 @@ export default function SiteSettings() {
       // Since it's an API call, we might need to use fetch/blob.
 
       const response = await fetch(
-        `${backendHost}/util/backup/export?organization_id=${organizationId}`,
+        `${backendHost}/backup/export?organization_id=${organizationId}`,
         {
           headers: {
             Authorization: `Bearer ${user?.token}`,
@@ -134,7 +134,7 @@ export default function SiteSettings() {
       formData.append('file', importFile);
       formData.append('organization_id', organizationId);
 
-      const response = await fetch(`${backendHost}/util/backup/import`, {
+      const response = await fetch(`${backendHost}/backup/import`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${user?.token}`,
