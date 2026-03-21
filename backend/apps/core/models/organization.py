@@ -4,17 +4,24 @@ from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from fastapi import HTTPException
 from db import Base
-from deepsel.orm import AddressMixin
 from apps.core.mixins.orm import ORMBaseMixin
 from sqlalchemy.orm import Session
 from settings import DEFAULT_ORG_ID, AUTHLESS
 
 
-class OrganizationModel(Base, ORMBaseMixin, AddressMixin):
+class OrganizationModel(Base, ORMBaseMixin):
     __tablename__ = "organization"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
+
+    # address fields
+    street = Column(String)
+    street2 = Column(String)
+    city = Column(String)
+    state = Column(String)
+    zip = Column(String)
+    country = Column(String)
 
     image_attachment_id = Column(Integer, ForeignKey("attachment.id"))
     image = relationship("AttachmentModel", foreign_keys=[image_attachment_id])

@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship, Session
 from sqlalchemy.types import UUID
 from fastapi import HTTPException, status
 from db import Base
-from deepsel.orm import AddressMixin, ProfileMixin
 from apps.core.mixins.orm import ORMBaseMixin
 from apps.core.utils.models_pool import models_pool
 from settings import AUTH_ALGORITHM, APP_SECRET, FRONTEND_URL, AUTHLESS, DEFAULT_ORG_ID
@@ -16,7 +15,7 @@ from apps.core.utils.pwd_context import pwd_context
 logger = logging.getLogger(__name__)
 
 
-class UserModel(Base, ORMBaseMixin, AddressMixin, ProfileMixin):
+class UserModel(Base, ORMBaseMixin):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
@@ -24,6 +23,24 @@ class UserModel(Base, ORMBaseMixin, AddressMixin, ProfileMixin):
 
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False)
+
+    # profile fields
+    name = Column(String)
+    last_name = Column(String)
+    first_name = Column(String)
+    middle_name = Column(String)
+    title = Column(String)
+    phone = Column(String)
+    mobile = Column(String)
+    website = Column(String)
+
+    # address fields
+    street = Column(String)
+    street2 = Column(String)
+    city = Column(String)
+    state = Column(String)
+    zip = Column(String)
+    country = Column(String)
     hashed_password = Column(String)
     signed_up = Column(Boolean, default=False)
     internal = Column(Boolean, default=False, nullable=False)
