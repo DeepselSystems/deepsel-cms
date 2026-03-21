@@ -13,7 +13,7 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
 from apps.core.models.organization import OrganizationModel
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.send_email import send_email_with_limit, EmailRateLimitError
+from deepsel.utils.send_email import send_email_with_limit, EmailRateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -43,15 +43,34 @@ class EmailTemplateModel(Base, BaseModel):
 
             final_subject = subject or rendered_subject
 
+            # Get organization for SMTP settings
+            org = db.query(OrganizationModel).get(self.organization_id)
+            if not org:
+                logger.error(f"Organization {self.organization_id} not found")
+                return False
+
+            rate_limit = getattr(org, "mail_send_rate_limit_per_hour", 200)
+            if rate_limit is None:
+                rate_limit = 200
+
             # Use the unified email sending function with rate limiting
             result = await send_email_with_limit(
-                db=db,
                 to=to,
                 subject=final_subject,
                 content=rendered_template,
-                organization_id=self.organization_id,
+                mail_username=org.mail_username,
+                mail_password=org.mail_password,
+                mail_from=org.mail_from,
+                mail_from_name=org.mail_from_name,
+                mail_port=org.mail_port,
+                mail_server=org.mail_server,
+                mail_ssl_tls=org.mail_ssl_tls,
+                mail_starttls=org.mail_starttls,
+                mail_use_credentials=org.mail_use_credentials,
+                mail_validate_certs=org.mail_validate_certs,
+                mail_timeout=getattr(org, "mail_timeout", 60),
+                rate_limit_per_hour=rate_limit,
                 content_type="html",
-                template_context=context,
             )
 
             return result["success"]
