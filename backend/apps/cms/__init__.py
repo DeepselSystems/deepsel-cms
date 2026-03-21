@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.migration_utils import migration_task
+from deepsel.utils import migration_task
 from apps.core.utils import encrypt, decrypt
 from .models.organization import CMSSettingsModel
 from apps.locales.models.locale import LocaleModel
