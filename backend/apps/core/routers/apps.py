@@ -8,7 +8,7 @@ from apps.core.utils.models_pool import models_pool
 from db import get_db
 from fastapi import HTTPException, status
 import importlib
-from apps.core.utils.install_apps import import_csv_data
+from deepsel.utils.install_apps import import_csv_data
 from sqlalchemy.exc import IntegrityError
 import logging
 

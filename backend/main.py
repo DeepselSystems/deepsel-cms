@@ -13,13 +13,16 @@ from settings import (
     NO_MIGRATE,
     ENABLE_GRAPHQL,
     ENABLE_DOCS,
+    installed_apps,
 )
 from deepsel.sqlalchemy import DatabaseManager
 from apps.core.utils.init_graphql import init_graphql
-from apps.core.utils.install_apps import install_routers, install_seed_data
+from deepsel.utils.install_apps import install_routers, install_seed_data
 from apps.core.utils.models_pool import models_pool
-from db import Base
+from db import Base, get_db_context
 from apps.core.utils.server_events import on_startup, on_shutdown
+
+app_folders = [f"apps/{app_name}" for app_name in installed_apps]
 
 # =============================================================================
 # Logging
@@ -49,7 +52,8 @@ async def lifespan(application: FastAPI):
         )
 
         # Import seed CSV data for each installed app
-        install_seed_data()
+        with get_db_context() as db:
+            install_seed_data(app_folders, db)
         # Check app versions and run app upgrade tasks
         on_startup()
 
@@ -61,7 +65,7 @@ async def lifespan(application: FastAPI):
         logger.info("Skipping database setup (NO_MIGRATE)")
 
     # Register routers for each installed app
-    install_routers(application)
+    install_routers(application, app_folders)
 
     # GraphQL (optional, disabled by default to save RAM)
     if ENABLE_GRAPHQL:

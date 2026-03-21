@@ -11,7 +11,7 @@ import logging
 import hashlib
 
 from _pytest.stash import D
-from apps.core.utils.install_apps import import_csv_data
+from deepsel.utils.install_apps import import_csv_data
 from apps.core.utils.models_pool import models_pool
 from db import get_db_context
 from .hash_utils import hash_file, hash_directory, hash_theme_files

@@ -87,7 +87,6 @@ def health():
     return HealthResponse(status="ok")
 
 
-
 # New route without organization_id - uses domain detection
 @router.get("/public_settings")
 def get_public_settings_by_domain(
