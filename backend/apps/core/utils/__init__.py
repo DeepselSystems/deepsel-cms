@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet
 from passlib.context import CryptContext
 
 from settings import APP_SECRET, AUTH_ALGORITHM
+from deepsel.utils.filename import sanitize_filename  # noqa: F401, E402
 
 crypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -81,11 +82,3 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=AUTH_ALGORITHM)
     return encoded_jwt
-
-
-def sanitize_filename(filename):
-    if not filename:
-        return ""
-    special_chars = "~!@#$%^&*()"
-    sanitized = "".join(char for char in filename if char not in special_chars)
-    return sanitized

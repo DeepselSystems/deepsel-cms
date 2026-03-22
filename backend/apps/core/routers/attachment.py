@@ -13,7 +13,7 @@ from settings import (
     MAX_STORAGE_LIMIT,
 )
 from db import get_db
-from apps.core.models.attachment import AttachmentTypeOptions
+from deepsel.orm.attachment_mixin import AttachmentTypeOptions
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
@@ -142,10 +142,8 @@ def serve_file(
         response.status_code = status.HTTP_404_NOT_FOUND
         return {"detail": "File not found"}
     if instance.type == AttachmentTypeOptions.s3:
-        from apps.core.utils.storage import get_s3_client
-
         # Redirect to the S3 pre-signed URL
-        presigned_url = get_s3_client().generate_presigned_url(
+        presigned_url = Model.get_s3_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={"Bucket": S3_BUCKET, "Key": instance.name},
             ExpiresIn=S3_PRESIGN_EXPIRATION.total_seconds(),
@@ -157,9 +155,8 @@ def serve_file(
 
     elif instance.type == AttachmentTypeOptions.azure:
         from azure.storage.blob import generate_blob_sas, BlobSasPermissions
-        from apps.core.utils.storage import get_blob_service_client
 
-        blob_service_client = get_blob_service_client()
+        blob_service_client = Model.get_azure_blob_client()
         # Get the account key
         account_key = blob_service_client.credential.account_key
         account_name = blob_service_client.account_name
