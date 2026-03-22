@@ -5,9 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from settings import (
-    S3,
     S3_BUCKET,
-    AZURE_STORAGE_CONNECTION_STRING,
     AZURE_STORAGE_CONTAINER,
     CLAMAV_HOST,
     S3_PRESIGN_EXPIRATION,
@@ -16,11 +14,10 @@ from settings import (
 )
 from db import get_db
 from apps.core.models.attachment import AttachmentTypeOptions
-from apps.core.utils.crud_router import CRUDRouter
+from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
 from clamd import ClamdNetworkSocket
-from azure.storage.blob import generate_blob_sas, BlobSasPermissions, BlobServiceClient
 from datetime import datetime, timedelta, UTC
 from apps.core.utils.models_pool import models_pool
 from urllib.parse import quote
@@ -145,8 +142,10 @@ def serve_file(
         response.status_code = status.HTTP_404_NOT_FOUND
         return {"detail": "File not found"}
     if instance.type == AttachmentTypeOptions.s3:
+        from apps.core.utils.storage import get_s3_client
+
         # Redirect to the S3 pre-signed URL
-        presigned_url = S3.generate_presigned_url(
+        presigned_url = get_s3_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={"Bucket": S3_BUCKET, "Key": instance.name},
             ExpiresIn=S3_PRESIGN_EXPIRATION.total_seconds(),
@@ -157,9 +156,10 @@ def serve_file(
         return response
 
     elif instance.type == AttachmentTypeOptions.azure:
-        blob_service_client = BlobServiceClient.from_connection_string(
-            AZURE_STORAGE_CONNECTION_STRING
-        )
+        from azure.storage.blob import generate_blob_sas, BlobSasPermissions
+        from apps.core.utils.storage import get_blob_service_client
+
+        blob_service_client = get_blob_service_client()
         # Get the account key
         account_key = blob_service_client.credential.account_key
         account_name = blob_service_client.account_name

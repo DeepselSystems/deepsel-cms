@@ -1,4 +1,4 @@
-from apps.core.utils.crud_router import CRUDRouter
+from deepsel.utils.crud_router import CRUDRouter
 from apps.core.utils.models_pool import models_pool
 from deepsel.utils.generate_crud_schemas import (
     generate_CRUD_schemas,

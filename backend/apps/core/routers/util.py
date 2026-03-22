@@ -9,7 +9,7 @@ from apps.core.utils.models_pool import models_pool
 from deepsel.utils.check_delete_cascade import (
     get_delete_cascade_records_recursively,
 )
-from apps.core.utils.api_router import create_api_router
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 

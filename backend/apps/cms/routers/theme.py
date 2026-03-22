@@ -11,7 +11,7 @@ from db import get_db
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.api_router import create_api_router
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 

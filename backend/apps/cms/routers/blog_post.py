@@ -9,7 +9,7 @@ from apps.cms.utils.get_blog_list import BlogListResponse, get_blog_list
 from apps.cms.utils.get_blog_post import BlogPostResponse, get_blog_post
 from apps.cms.utils.translate_blog_content import translate_blog_content
 from db import get_db
-from apps.core.utils.crud_router import CRUDRouter
+from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
 import logging

@@ -16,7 +16,7 @@ from datetime import datetime
 import json
 import logging
 from typing import Optional
-from apps.core.utils.api_router import create_api_router
+from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)
 router = create_api_router(tags=["WebSocket APIs"])

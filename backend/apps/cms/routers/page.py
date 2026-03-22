@@ -8,7 +8,7 @@ from apps.cms.utils.get_page_content import get_page_content, PageContentRespons
 from apps.cms.utils.search import SearchResponse, search_pages_and_posts
 from apps.cms.utils.translate_page_content import translate_page_content
 from db import get_db
-from apps.core.utils.crud_router import CRUDRouter
+from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import (
     get_current_user,

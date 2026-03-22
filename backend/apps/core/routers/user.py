@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.core.utils import decrypt, encrypt, generate_recovery_codes, hash_text
-from apps.core.utils.crud_router import CALLABLE, CRUDRouter
+from deepsel.utils.crud_router import CALLABLE, CRUDRouter
 from deepsel.utils.generate_crud_schemas import (
     generate_CRUD_schemas,
     generate_read_schema,

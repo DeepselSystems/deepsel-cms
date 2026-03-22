@@ -12,11 +12,9 @@ from sqlalchemy.orm import Session
 
 from settings import (
     FILESYSTEM,
-    S3,
     S3_BUCKET,
     UPLOAD_SIZE_LIMIT,
     AZURE_STORAGE_CONTAINER,
-    AZURE_STORAGE_CONNECTION_STRING,
     DEFAULT_ORG_ID,
 )
 from db import Base
@@ -24,7 +22,6 @@ from apps.core.mixins.base_model import BaseModel
 from deepsel.orm import DeleteResponse, PermissionAction
 import random
 import string
-from azure.storage.blob import BlobServiceClient, ContentSettings
 from apps.core.utils import sanitize_filename
 from apps.core.utils.models_pool import models_pool
 
@@ -274,8 +271,10 @@ class AttachmentModel(Base, BaseModel):
 
             # Save file based on FILESYSTEM environment variable
             if FILESYSTEM == "s3":
+                from apps.core.utils.storage import get_s3_client
+
                 s3_key = f"{new_filename}"
-                S3.upload_fileobj(
+                get_s3_client().upload_fileobj(
                     file.file,
                     S3_BUCKET,
                     new_filename,
@@ -294,10 +293,10 @@ class AttachmentModel(Base, BaseModel):
                 kwargs["name"] = s3_key
 
             elif FILESYSTEM == "azure":
-                blob_service_client = BlobServiceClient.from_connection_string(
-                    AZURE_STORAGE_CONNECTION_STRING
-                )
-                container_client = blob_service_client.get_container_client(
+                from azure.storage.blob import ContentSettings
+                from apps.core.utils.storage import get_blob_service_client
+
+                container_client = get_blob_service_client().get_container_client(
                     AZURE_STORAGE_CONTAINER
                 )
                 blob_client = container_client.get_blob_client(new_filename)
@@ -346,7 +345,9 @@ class AttachmentModel(Base, BaseModel):
         response = super().delete(db=db, user=user, force=force, *args, **kwargs)
         if self.type == AttachmentTypeOptions.s3:
             try:
-                S3.delete_object(Bucket=S3_BUCKET, Key=self.name)
+                from apps.core.utils.storage import get_s3_client
+
+                get_s3_client().delete_object(Bucket=S3_BUCKET, Key=self.name)
             except Exception:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -354,10 +355,9 @@ class AttachmentModel(Base, BaseModel):
                 )
         elif self.type == AttachmentTypeOptions.azure:
             try:
-                blob_service_client = BlobServiceClient.from_connection_string(
-                    AZURE_STORAGE_CONNECTION_STRING
-                )
-                container_client = blob_service_client.get_container_client(
+                from apps.core.utils.storage import get_blob_service_client
+
+                container_client = get_blob_service_client().get_container_client(
                     AZURE_STORAGE_CONTAINER
                 )
                 blob_client = container_client.get_blob_client(self.name)
@@ -385,7 +385,9 @@ class AttachmentModel(Base, BaseModel):
     def get_data(self):
         if self.type == AttachmentTypeOptions.s3:
             try:
-                response = S3.get_object(Bucket=S3_BUCKET, Key=self.name)
+                from apps.core.utils.storage import get_s3_client
+
+                response = get_s3_client().get_object(Bucket=S3_BUCKET, Key=self.name)
                 return response["Body"].read()
             except Exception as e:
                 logger.error(f"Failed to get file from S3: {str(e)}")
@@ -395,10 +397,9 @@ class AttachmentModel(Base, BaseModel):
                 )
         elif self.type == AttachmentTypeOptions.azure:
             try:
-                blob_service_client = BlobServiceClient.from_connection_string(
-                    AZURE_STORAGE_CONNECTION_STRING
-                )
-                container_client = blob_service_client.get_container_client(
+                from apps.core.utils.storage import get_blob_service_client
+
+                container_client = get_blob_service_client().get_container_client(
                     AZURE_STORAGE_CONTAINER
                 )
                 blob_client = container_client.get_blob_client(self.name)

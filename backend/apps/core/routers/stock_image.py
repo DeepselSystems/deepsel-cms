@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from apps.core.utils.stock_image import (
+from deepsel.utils.stock_image import (
     search_pexels_provider,
     StockImageProviderEnum,
 )

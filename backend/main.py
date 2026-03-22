@@ -8,6 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from settings import (
     APP_SECRET,
+    API_PREFIX,
     DATABASE_URL,
     ONLY_MIGRATE,
     NO_MIGRATE,
@@ -21,9 +22,12 @@ from deepsel.sqlalchemy import DatabaseManager
 from deepsel.utils.install_apps import install_routers, install_seed_data
 from deepsel.utils.server_events import on_startup, on_shutdown
 from deepsel.utils import init_graphql
+from deepsel.utils.api_router import set_api_prefix
+from deepsel.utils.crud_router import configure_crud_router
 from apps.core.utils.models_pool import models_pool
+from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.organization import OrganizationModel
-from db import Base, get_db_context
+from db import Base, get_db, get_db_context
 
 app_folders = [f"apps/{app_name}" for app_name in installed_apps]
 
@@ -74,6 +78,10 @@ async def lifespan(application: FastAPI):
             sys.exit(0)
     else:
         logger.info("Skipping database setup (NO_MIGRATE)")
+
+    # Configure deepsel router utilities before importing routers
+    set_api_prefix(API_PREFIX)
+    configure_crud_router(db_func=get_db, get_current_user_func=get_current_user)
 
     # Register routers for each installed app
     install_routers(application, app_folders)
