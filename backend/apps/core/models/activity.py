@@ -1,8 +1,6 @@
 import enum
-import inspect
 import logging
-from datetime import datetime, timedelta, UTC
-from ast import literal_eval
+from datetime import datetime, UTC
 from sqlalchemy import (
     Boolean,
     Column,
@@ -10,15 +8,12 @@ from sqlalchemy import (
     Enum,
     Integer,
     String,
-    func,
     ForeignKey,
     JSON,
 )
-from sqlalchemy.orm import Session, relationship
-
+from sqlalchemy.orm import relationship
 from db import Base
 from apps.core.mixins.orm import ORMBaseMixin
-from apps.core.utils.models_pool import models_pool
 
 logger = logging.getLogger(__name__)
 

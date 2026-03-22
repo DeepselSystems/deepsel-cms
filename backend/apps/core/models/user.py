@@ -1,21 +1,12 @@
-import json
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import UUID
-from fastapi import HTTPException, status
 from db import Base
 from apps.core.mixins.orm import ORMBaseMixin
-from apps.core.utils.models_pool import models_pool
-from settings import AUTH_ALGORITHM, APP_SECRET, FRONTEND_URL, AUTHLESS, DEFAULT_ORG_ID
-import jwt
-import logging
-from datetime import datetime, timedelta, UTC
-from apps.core.utils.pwd_context import pwd_context
-
-logger = logging.getLogger(__name__)
+from deepsel.orm.user_mixin import UserMixin
 
 
-class UserModel(Base, ORMBaseMixin):
+class UserModel(Base, UserMixin, ORMBaseMixin):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
@@ -68,195 +59,60 @@ class UserModel(Base, ORMBaseMixin):
     anonymous_id = Column(UUID(as_uuid=True))
     preferences = Column(JSON, default={})
 
-    def get_org_ids(self):
-        org_ids = [org.id for org in self.organizations]
-        if self.organization_id:
-            org_ids.append(self.organization_id)
-        return org_ids
-
-    def check_and_raise_if_not_admin_or_super_admin(self):
-        if not any(
-            role.string_id in ["admin_role", "super_admin_role", "website_admin_role"]
-            for role in self.roles
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only admin or super admin can update user",
-            )
-
-    def is_public_user(self):
-        return not self.signed_up or self.string_id == "public_user"
-
-    def is_admin(self):
-        roles = self.get_user_roles()
-        return any(
-            [role.string_id in ["admin_role", "super_admin_role"] for role in roles]
-        )
-
-    def _get_roles_recursively(self, role, processed_roles: list = None) -> set:
-        # Avoid circular references
-        if processed_roles is None:
-            processed_roles = set()
-
-        if role in processed_roles:
-            return set()
-
-        processed_roles.add(role)
-
-        roles = set()
-        roles.add(role)
-
-        for implied_role in role.implied_roles:
-            roles.update(self._get_roles_recursively(implied_role, processed_roles))
-
-        return roles
-
-    def _get_permissions_recursively(
-        self, role, processed_roles: list = None
-    ) -> set[str]:
-        # Avoid circular references
-        if processed_roles is None:
-            processed_roles = set()
-
-        if role in processed_roles:
-            return set()
-
-        processed_roles.add(role)
-
-        permissions = set()
-        if role.permissions:
-            these_permissions = json.loads(role.permissions)
-            for permission in these_permissions:
-                permissions.add(permission)
-
-        for implied_role in role.implied_roles:
-            permissions.update(
-                self._get_permissions_recursively(implied_role, processed_roles)
-            )
-
-        return permissions
-
-    def get_user_permissions(self, user: "UserModel" = None) -> list[str]:
-        user = user or self
-        roles = user.roles
-        permissions = set()  # Avoid duplicates
-
-        for role in roles:
-            permissions.update(self._get_permissions_recursively(role))
-
-        return list(permissions)
-
-    def get_user_roles(self, user: "UserModel" = None) -> list:
-        user = user or self
-        roles = user.roles
-        all_roles = set()
-
-        for role in roles:
-            all_roles.update(self._get_roles_recursively(role))
-
-        return list(all_roles)
+    # --- UserMixin settings ---
 
     @classmethod
-    def get_user_has_roles(cls, role_string_ids: list[str], db: Session):
-        ImpliedRoleModel = models_pool["implied_role"]
-        UserRoleModel = models_pool["user_role"]
-        RoleModel = models_pool["role"]
+    def _get_app_secret(cls):
+        from settings import APP_SECRET
 
-        roles = (
-            db.query(RoleModel).filter(RoleModel.string_id.in_(role_string_ids)).all()
-        )
-        role_ids = [role.id for role in roles]
-        # also check main role that implied the checking roles
-        main_roles = (
-            db.query(ImpliedRoleModel)
-            .filter(ImpliedRoleModel.implied_role_id.in_(role_ids))
-            .all()
-        )
-        role_ids += [role.role_id for role in main_roles]
-        users = (
-            db.query(cls)
-            .join(UserRoleModel)
-            .filter(UserRoleModel.role_id.in_(list(set(role_ids))))
-        ).all()
-        return users
+        return APP_SECRET
 
-    async def send_set_password_email(self, db: Session):
-        EmailTemplateModel = models_pool["email_template"]
-        OrganizationModel = models_pool["organization"]
-        org = db.query(OrganizationModel).get(self.organization_id)
-        token = jwt.encode({"uid": self.id}, APP_SECRET, algorithm=AUTH_ALGORITHM)
-        context = {
-            "name": self.name or self.username,
-            "username": self.username,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "action_url": FRONTEND_URL + "?t=" + token,
-            "business_name": org.name,
-        }
+    @classmethod
+    def _get_auth_algorithm(cls):
+        from settings import AUTH_ALGORITHM
 
-        template = (
-            db.query(EmailTemplateModel)
-            .filter_by(string_id="setup_password_template")
-            .first()
-        )
-        ok = await template.send(db, [self.email], context)
-        if not ok:
-            logger.error(f"Failed to send password setup email to {self.email}")
-        else:
-            logger.info(f"Password setup email sent to {self.email}")
-        return ok
+        return AUTH_ALGORITHM
 
-    async def email_reset_password(self, db: Session):
-        token = jwt.encode(
-            {
-                "uid": self.id,
-                "exp": datetime.now(UTC) + timedelta(hours=24),
-            },
-            APP_SECRET,
-            algorithm=AUTH_ALGORITHM,
-        )
+    @classmethod
+    def _get_frontend_url(cls):
+        from settings import FRONTEND_URL
 
-        context = {
-            "name": self.name or self.username,
-            "username": self.username,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "action_url": FRONTEND_URL + "/reset-password" + "?t=" + token,
-            "business_name": self.organization.name,
-        }
+        return FRONTEND_URL
 
-        EmailTemplateModel = models_pool["email_template"]
-        template = (
-            db.query(EmailTemplateModel)
-            .filter_by(string_id="reset_password_template")
-            .first()
-        )
-        ok = await template.send(db, [self.email], context)
-        return ok
+    @classmethod
+    def _get_is_authless(cls):
+        from settings import AUTHLESS
 
-    @staticmethod
-    def authenticate_user(db: Session, username: str, password: str):
-        UserModel = models_pool["user"]
-        OrgModel = models_pool["organization"]
-        org = db.query(OrgModel).get(DEFAULT_ORG_ID)
-        if AUTHLESS and org and not org.enable_auth:
-            # In authless mode, return admin user
-            user = (
-                db.query(UserModel)
-                .filter_by(
-                    string_id="admin_user",
-                )
-                .first()
-            )
-            return user
-        user = (
-            db.query(UserModel)
-            .filter(UserModel.username == username)
-            .filter(UserModel.active == True)
-            .first()
-        )
-        if not user:
-            return False
-        if not pwd_context.verify(password, user.hashed_password):
-            return False
-        return user
+        return AUTHLESS
+
+    @classmethod
+    def _get_default_org_id(cls):
+        from settings import DEFAULT_ORG_ID
+
+        return DEFAULT_ORG_ID
+
+    @classmethod
+    def _get_password_context(cls):
+        from apps.core.utils.pwd_context import pwd_context
+
+        return pwd_context
+
+    @classmethod
+    def _get_admin_role_string_ids(cls):
+        return ["admin_role", "super_admin_role", "website_admin_role"]
+
+    @classmethod
+    def _get_public_user_string_id(cls):
+        return "public_user"
+
+    @classmethod
+    def _get_admin_user_string_id(cls):
+        return "admin_user"
+
+    @classmethod
+    def _get_set_password_template_id(cls):
+        return "setup_password_template"
+
+    @classmethod
+    def _get_reset_password_template_id(cls):
+        return "reset_password_template"

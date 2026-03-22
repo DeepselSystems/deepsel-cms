@@ -1,15 +1,11 @@
-from typing import Optional
-
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from fastapi import HTTPException
 from db import Base
 from apps.core.mixins.orm import ORMBaseMixin
-from sqlalchemy.orm import Session
-from settings import DEFAULT_ORG_ID, AUTHLESS
+from deepsel.orm.organization_mixin import OrganizationMixin
 
 
-class OrganizationModel(Base, ORMBaseMixin):
+class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     __tablename__ = "organization"
 
     id = Column(Integer, primary_key=True)
@@ -71,70 +67,37 @@ class OrganizationModel(Base, ORMBaseMixin):
 
     current_version = Column(String)
 
+    # --- OrganizationMixin settings ---
+
     @classmethod
-    def get_public_settings(cls, organization_id: int, db: Session):
-        organization = db.query(cls).get(organization_id)
-        default_org = db.query(cls).get(DEFAULT_ORG_ID)
-        if not organization:
-            raise HTTPException(status_code=404, detail="Organization not found")
+    def _get_default_org_id(cls):
+        from settings import DEFAULT_ORG_ID
 
-        return {
-            "id": organization.id,
-            "name": organization.name,
-            "access_token_expire_minutes": organization.access_token_expire_minutes,
-            "require_2fa_all_users": organization.require_2fa_all_users,
-            "allow_public_signup": organization.allow_public_signup,
-            "is_enabled_google_sign_in": organization.is_enabled_google_sign_in,
-            "is_enabled_saml": organization.is_enabled_saml,
-            "saml_sp_entity_id": organization.saml_sp_entity_id,
-            "authless": not default_org.enable_auth and AUTHLESS,
-        }
+        return DEFAULT_ORG_ID
 
-    # dont let anyone other than admin and super_admin roles to get settings
     @classmethod
-    def get_one(
-        cls, db: Session, user, item_id: int, *args, **kwargs
-    ) -> "OrganizationModel":
-        org = super().get_one(db, user, item_id, *args, **kwargs)
-        user_roles = user.get_user_roles()
-        is_admin = any(
-            [
-                role.string_id
-                in ["admin_role", "super_admin_role", "website_admin_role"]
-                for role in user_roles
-            ]
-        )
+    def _get_is_authless(cls):
+        from settings import AUTHLESS
 
-        if is_admin:
-            return org
-        else:
-            return org.get_public_settings(org.id, db)
+        return AUTHLESS
 
-    def update(
-        self,
-        db: Session,
-        user,
-        values: dict,
-        commit: Optional[bool] = True,
-        *args,
-        **kwargs,
-    ):
-        """
-        Update OrganizationModel while preserving existing secret values.
-
-        If a secret values is not provided in the values dict, the existing value
-        from the organization will be retained to prevent accidental key deletion.
-        """
-        # Get updating organization
-        organization = db.query(OrganizationModel).get(self.id)
-
-        # Check if secret values is not existed in api payload then keeps existing values
-        api_keys = [
-            "openrouter_api_key",
+    @classmethod
+    def _get_public_settings_fields(cls):
+        return [
+            "id",
+            "name",
+            "access_token_expire_minutes",
+            "require_2fa_all_users",
+            "allow_public_signup",
+            "is_enabled_google_sign_in",
+            "is_enabled_saml",
+            "saml_sp_entity_id",
         ]
 
-        for key in api_keys:
-            if not values.get(key):
-                values[key] = getattr(organization, key)
+    @classmethod
+    def _get_protected_api_key_fields(cls):
+        return ["openrouter_api_key"]
 
-        return super().update(db, user, values, commit, *args, **kwargs)
+    @classmethod
+    def _get_admin_role_string_ids(cls):
+        return ["admin_role", "super_admin_role", "website_admin_role"]
