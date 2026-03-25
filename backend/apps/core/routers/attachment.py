@@ -14,31 +14,30 @@ from settings import (
 from db import get_db
 from deepsel.orm.attachment_mixin import AttachmentTypeOptions
 from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
 from clamd import ClamdNetworkSocket
 from datetime import datetime, timedelta, UTC
 from apps.core.utils.models_pool import models_pool
 from urllib.parse import quote
 from apps.core.schemas.attachment import (
+    AttachmentRead,
+    AttachmentUpdate,
+    AttachmentSearch,
     UploadSizeLimitResponse,
     StorageInfoResponse,
 )
 
 table_name = "attachment"
-CRUDSchemas = generate_CRUD_schemas(table_name)
 Model = models_pool[table_name]
 UserModel = models_pool["user"]
 
 router = CRUDRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=AttachmentRead,
+    search_schema=AttachmentSearch,
+    update_schema=AttachmentUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
     create_route=False,
-    update_route=False,
 )
 
 
@@ -58,8 +57,8 @@ def get_storage_info(db: Session = Depends(get_db)):
     )
 
 
-@router.post("", response_model=list[CRUDSchemas.Read])
-@router.post("/", response_model=list[CRUDSchemas.Read])
+@router.post("", response_model=list[AttachmentRead])
+@router.post("/", response_model=list[AttachmentRead])
 def upload_files(
     files: list[UploadFile] = File(...),
     alt_text: str = None,
