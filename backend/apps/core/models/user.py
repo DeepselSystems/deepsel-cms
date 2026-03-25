@@ -93,9 +93,9 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
 
     @classmethod
     def _get_password_context(cls):
-        from apps.core.utils.pwd_context import pwd_context
+        from deepsel.utils.crypto import crypt_context
 
-        return pwd_context
+        return crypt_context
 
     @classmethod
     def _get_admin_role_string_ids(cls):

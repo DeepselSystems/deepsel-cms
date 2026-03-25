@@ -33,7 +33,7 @@ from apps.core.schemas.auth import (
 from deepsel.utils.crypto import encrypt, decrypt
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.pwd_context import pwd_context
+from deepsel.utils.crypto import crypt_context as pwd_context
 from deepsel.utils.api_router import create_api_router
 from deepsel.auth.service import AuthService
 from deepsel.auth.google_oauth import GoogleOAuthService
