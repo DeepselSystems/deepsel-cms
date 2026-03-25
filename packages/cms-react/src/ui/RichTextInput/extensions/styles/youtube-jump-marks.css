@@ -1,5 +1,5 @@
 .youtube-jump-mark-wrapper {
-  @apply bg-gray-zumthor w-full my-4;
+  @apply bg-blue-50 w-full my-4;
 }
 
 .jump-mark-youtube-title {
@@ -31,7 +31,7 @@
 }
 
 .jump-mark-item {
-  @apply flex items-start gap-3 p-1 rounded cursor-pointer hover:bg-gray-athens-gray border border-transparent transition-colors;
+  @apply flex items-start gap-3 p-1 rounded cursor-pointer hover:bg-gray-200 border border-transparent transition-colors;
 }
 
 .youtube-embed-wrapper {
