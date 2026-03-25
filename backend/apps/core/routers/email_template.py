@@ -8,13 +8,11 @@ from apps.core.schemas.email_template import (
     EmailTemplateUpdate,
 )
 
-table_name = "email_template"
-
 router = CRUDRouter(
     read_schema=EmailTemplateRead,
     search_schema=EmailTemplateSearch,
     create_schema=EmailTemplateCreate,
     update_schema=EmailTemplateUpdate,
-    table_name=table_name,
+    table_name="email_template",
     dependencies=[Depends(get_current_user)],
 )
