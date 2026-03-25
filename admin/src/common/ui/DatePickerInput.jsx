@@ -1,5 +1,1 @@
-import { DatePickerInput as MantineDatePickerInput } from '@mantine/dates';
-
-export default function DatePickerInput(props) {
-  return <MantineDatePickerInput {...props} />;
-}
+export { DatePickerInput as default } from '@deepsel/cms-react';

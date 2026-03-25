@@ -1,36 +1,13 @@
-export function getAttachmentUrl(backendHost, name) {
-  return name ? `${backendHost}/attachment/serve/${name}` : '';
-}
-
-export function getAttachmentRelativeUrl(name) {
-  return name ? `/attachment/serve/${name}` : '';
-}
-
-export function getFileNameFromAttachUrl(url) {
-  return url?.substring(url.lastIndexOf('/') + 1) || '';
-}
-
-export function downloadFromAttachUrl(url) {
-  fetch(url)
-    .then((response) => response.blob())
-    .then((blob) => {
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.setAttribute('download', getFileNameFromAttachUrl(url));
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(objectUrl);
-    })
-    .catch((error) => {
-      console.error('Error downloading the file:', error);
-    });
-}
-
-export function getFileExtension(fileName) {
-  return fileName.split('.').pop();
-}
+export {
+  getAttachmentUrl,
+  getAttachmentRelativeUrl,
+  getFileNameFromAttachUrl,
+  downloadFromAttachUrl,
+  getFileExtension,
+  formatFileSize,
+  stringAvatar,
+  stringToColor,
+} from '@deepsel/cms-utils/common/utils';
 
 export function renameKeys(keysMap, obj) {
   return Object.keys(obj).reduce(
@@ -96,19 +73,6 @@ export const generateSlugFromStr = (str) => {
   s = s.toLowerCase();
 
   return s.length ? `/${s}` : '/';
-};
-
-/**
- * Format file size in human-readable format
- *
- * @param {number} bytes
- * @returns {string}
- */
-export const formatFileSize = (bytes) => {
-  if (!bytes) return '';
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 /**

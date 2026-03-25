@@ -1,5 +1,1 @@
-import { Badge as MantineBadge } from '@mantine/core';
-
-export default function Badge(props) {
-  return <MantineBadge {...props} />;
-}
+export { Badge as default } from '@deepsel/cms-react';

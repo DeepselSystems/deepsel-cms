@@ -1,5 +1,1 @@
-import { NumberFormatter as MantineNumberFormatter } from '@mantine/core';
-
-export default function NumberFormatter(props) {
-  return <MantineNumberFormatter {...props} />;
-}
+export { NumberFormatter as default } from '@deepsel/cms-react';

@@ -1,5 +1,1 @@
-import { Divider as MantineDivider } from '@mantine/core';
-
-export default function Divider(props) {
-  return <MantineDivider {...props} />;
-}
+export { Divider as default } from '@deepsel/cms-react';

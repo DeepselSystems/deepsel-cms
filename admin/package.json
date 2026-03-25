@@ -36,6 +36,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deepsel/cms-react": "*",
+    "@deepsel/cms-utils": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
     "localforage": "^1.10.0",
