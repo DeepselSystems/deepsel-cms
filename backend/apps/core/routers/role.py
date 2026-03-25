@@ -1,24 +1,15 @@
 from deepsel.utils.crud_router import CRUDRouter
-from apps.core.utils.models_pool import models_pool
-from deepsel.utils.generate_crud_schemas import (
-    generate_CRUD_schemas,
-    generate_search_schema,
-)
 from apps.core.utils.get_current_user import get_current_user
+from apps.core.schemas.role import RoleRead, RoleCreate, RoleUpdate, RoleSearch
 from fastapi import Depends
-from apps.core.schemas.role import ReadSchema
 
 table_name = "role"
-CRUDSchemas = generate_CRUD_schemas(table_name)
-Model = models_pool[table_name]
-
-SearchSchema = generate_search_schema(Model, ReadSchema)
 
 router = CRUDRouter(
-    read_schema=ReadSchema,
-    search_schema=SearchSchema,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=RoleRead,
+    search_schema=RoleSearch,
+    create_schema=RoleCreate,
+    update_schema=RoleUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )

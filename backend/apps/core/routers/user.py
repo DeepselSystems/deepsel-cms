@@ -9,7 +9,14 @@ from apps.core.utils import decrypt, encrypt, generate_recovery_codes, hash_text
 from deepsel.utils.crud_router import CALLABLE, CRUDRouter
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
-from apps.core.schemas.user import CurrentUser, Info2Fa, CRUDSchemas
+from apps.core.schemas.user import (
+    CurrentUser,
+    Info2Fa,
+    UserRead,
+    UserSearch,
+    UserCreate,
+    UserUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +54,10 @@ class UserCustomRouter(CRUDRouter):
 
 
 router = UserCustomRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=UserRead,
+    search_schema=UserSearch,
+    create_schema=UserCreate,
+    update_schema=UserUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )
@@ -64,7 +71,7 @@ def get_me(user: Model = Depends(get_current_user)):
     )  # list of all explicitly assigned roles and implied roles, recursively
 
     current_user = CurrentUser(
-        **CRUDSchemas.Read.model_validate(user).model_dump(),  # return without password
+        **UserRead.model_validate(user).model_dump(),  # return without password
         permissions=permissions,
         all_roles=all_roles,
     )
