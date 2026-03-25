@@ -10,10 +10,6 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import PasswordInput from '../../../common/ui/PasswordInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
-import FindGoodConfigModal from './components/FindGoodConfigModal.jsx';
-import Button from '../../../common/ui/Button.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFlask } from '@fortawesome/free-solid-svg-icons';
 
 export default function SMTPSettings() {
   const { t } = useTranslation();
@@ -24,14 +20,6 @@ export default function SMTPSettings() {
   const { record, setRecord, update, loading } = query;
   const { notify } = NotificationState();
   const navigate = useNavigate();
-
-  /**
-   * React Ref - Find good config modal
-   * @type {React.MutableRefObject<{open: *}>}
-   */
-  const findGoodConfigModalRef = React.useRef({
-    open: () => {},
-  });
 
   async function handleSubmit(e) {
     try {
@@ -169,11 +157,6 @@ export default function SMTPSettings() {
                     })
                   }
                 />
-
-                <Button onClick={findGoodConfigModalRef.current.open}>
-                  <FontAwesomeIcon icon={faFlask} className="mr-2" />
-                  Find Good Configuration
-                </Button>
               </div>
 
               {/* Right section - Send Rate Limit */}
@@ -200,10 +183,6 @@ export default function SMTPSettings() {
           <FormViewSkeleton />
         )}
       </form>
-
-      {/*region modal for finding good config modal*/}
-      <FindGoodConfigModal ref={findGoodConfigModalRef} />
-      {/*endregion modal for finding good config modal*/}
     </>
   );
 }

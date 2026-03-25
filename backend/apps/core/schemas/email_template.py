@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import EmailStr, BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class EmailTemplateRead(BaseModel):
@@ -35,8 +35,3 @@ class EmailTemplateUpdate(BaseModel):
     name: Optional[str] = None
     subject: Optional[str] = None
     content: Optional[str] = None
-
-
-class EmailTemplateFindGoodConfigRequestSchema(BaseModel):
-    test_recipient: EmailStr
-    sleep_interval: Optional[float] = 0
