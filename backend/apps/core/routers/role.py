@@ -6,17 +6,11 @@ from deepsel.utils.generate_crud_schemas import (
 )
 from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends
+from apps.core.schemas.role import ReadSchema
 
 table_name = "role"
 CRUDSchemas = generate_CRUD_schemas(table_name)
 Model = models_pool[table_name]
-
-
-class ReadSchema(CRUDSchemas.Read):
-    implied_roles: list[CRUDSchemas.Read] = (
-        []
-    )  # This is skipped by the generator to avoid infinite recursion
-
 
 SearchSchema = generate_search_schema(Model, ReadSchema)
 

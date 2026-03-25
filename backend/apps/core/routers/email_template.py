@@ -1,31 +1,28 @@
-from typing import Optional
-
-from pydantic import EmailStr, BaseModel
 from sqlalchemy.orm import Session
 
 from db import get_db
 from apps.core.models.email_template import EmailTemplateModel
 from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends, HTTPException, status
+from apps.core.schemas.email_template import (
+    EmailTemplateRead,
+    EmailTemplateSearch,
+    EmailTemplateCreate,
+    EmailTemplateUpdate,
+    EmailTemplateFindGoodConfigRequestSchema,
+)
 
 table_name = "email_template"
-CRUDSchemas = generate_CRUD_schemas(table_name)
 
 router = CRUDRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=EmailTemplateRead,
+    search_schema=EmailTemplateSearch,
+    create_schema=EmailTemplateCreate,
+    update_schema=EmailTemplateUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )
-
-
-class EmailTemplateFindGoodConfigRequestSchema(BaseModel):
-    test_recipient: EmailStr
-    sleep_interval: Optional[float] = 0
 
 
 @router.post("/util/find-good-config", response_model=dict)

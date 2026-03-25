@@ -3,7 +3,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 from typing import Optional
 from urllib.parse import quote
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import jwt
 import pyotp
@@ -13,7 +13,6 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from starlette.config import Config
@@ -29,7 +28,22 @@ from settings import (
     BACKEND_URL,
 )
 from db import get_db
-from apps.core.routers.user import CurrentUser
+from apps.core.schemas.user import CurrentUser
+from apps.core.schemas.auth import (
+    UserInitSubmission,
+    UserSignupSubmission,
+    TokenResponse,
+    InitAnonymousUserResponse,
+    SignupResponse,
+    ResetPasswordResponse,
+    ResetPasswordRequestSubmission,
+    ResetPasswordSubmission,
+    ChangePasswordSubmission,
+    GoogleUser,
+    SamlUser,
+    Info2FaDto,
+    UserReadSchema,
+)
 from apps.core.utils import (
     decrypt,
     encrypt,
@@ -37,7 +51,6 @@ from apps.core.utils import (
     get_valid_recovery_code_index,
     hash_text,
 )
-from deepsel.utils.generate_crud_schemas import generate_read_schema
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
 from apps.core.utils.pwd_context import pwd_context
@@ -51,69 +64,6 @@ RoleModel = models_pool["role"]
 UserModel = models_pool["user"]
 OrganizationModel = models_pool["organization"]
 EmailTemplateModel = models_pool["email_template"]
-UserReadSchema = generate_read_schema(UserModel)
-
-
-class UserInitSubmission(BaseModel):
-    device_info: dict
-    organization_id: int
-    anonymous_id: UUID
-
-
-class UserSignupSubmission(BaseModel):
-    email: str
-    password: str
-    organization_id: int
-    token: Optional[str] = None
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    user: CurrentUser | None
-    is_require_user_config_2fa: bool
-
-
-class InitAnonymousUserResponse(BaseModel):
-    token: str
-    user: UserReadSchema
-
-
-class SignupResponse(BaseModel):
-    success: bool
-    id: int
-
-
-class ResetPasswordResponse(BaseModel):
-    success: bool
-    recovery_codes: list[str] = []
-
-
-class ResetPasswordRequestSubmission(BaseModel):
-    mixin_id: str  # email or username
-
-
-class ResetPasswordSubmission(BaseModel):
-    token: str
-    new_password: str
-    should_confirm_2fa_when_change_password: bool = False
-    crosscheck_otp: str = None
-
-
-class ChangePasswordSubmission(BaseModel):
-    old_password: str
-    new_password: str
-
-
-class GoogleUser(BaseModel):
-    sub: str
-    email: str
-    name: str
-
-
-class SamlUser(BaseModel):
-    nameid: str
-    email: str
-    name: Optional[str] = None
 
 
 @router.post("/token", response_model=TokenResponse)
@@ -466,12 +416,6 @@ def change_password(
     user.hashed_password = hashed_password
     db.commit()
     return {"success": True}
-
-
-class Info2FaDto(BaseModel):
-    is_organization_require_2fa: bool = False
-    is_already_config_2fa: bool = False
-    totp_uri: str = ""
 
 
 # This API is used to get the QR code URI on the password reset page

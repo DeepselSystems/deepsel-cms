@@ -1,6 +1,5 @@
 from typing import Optional
 import logging
-from pydantic import BaseModel
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from db import get_db
@@ -10,6 +9,7 @@ from deepsel.utils.check_delete_cascade import (
     get_delete_cascade_records_recursively,
 )
 from deepsel.utils.api_router import create_api_router
+from apps.core.schemas.util import DeleteCheckResponse, HealthResponse
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +31,6 @@ except ImportError:
         """Extract host from request headers"""
         host = request.headers.get("host", "")
         return host.split(":")[0] if host else ""
-
-
-class DeleteCheckResponse(BaseModel):
-    to_delete: dict[str, list[str]]
-    to_set_null: dict[str, list[str]]
 
 
 @router.get("/delete_check/{model}/{ids}", response_model=DeleteCheckResponse)
@@ -76,10 +71,6 @@ def delete_check(
             for k, v in affected_records.to_set_null.items()
         },
     }
-
-
-class HealthResponse(BaseModel):
-    status: str = "ok"
 
 
 @router.get("/health", response_model=HealthResponse)

@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel as PydanticModel
 from settings import installed_apps
-from typing import Optional
 from apps.core.utils.get_current_user import get_current_user
 from sqlalchemy.orm import Session
 from apps.core.utils.models_pool import models_pool
@@ -11,21 +9,11 @@ import importlib
 from deepsel.utils.install_apps import import_csv_data
 from sqlalchemy.exc import IntegrityError
 import logging
+from apps.core.schemas.apps import GetAppsResponse
 
 router = APIRouter(tags=["Apps"], prefix="/apps")
 logger = logging.getLogger(__name__)
 UserModel = models_pool["user"]
-
-
-class App(PydanticModel):
-    name: str
-    display_name: Optional[str] = None
-    description: Optional[str] = None
-
-
-class GetAppsResponse(PydanticModel):
-    total: int
-    data: list[App]
 
 
 @router.post("/search", response_model=GetAppsResponse)

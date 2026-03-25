@@ -1,29 +1,23 @@
 import json
 import logging
-from typing import Annotated, Any, List, Optional
+from typing import Annotated, Any
 import pyotp
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.core.utils import decrypt, encrypt, generate_recovery_codes, hash_text
 from deepsel.utils.crud_router import CALLABLE, CRUDRouter
-from deepsel.utils.generate_crud_schemas import (
-    generate_CRUD_schemas,
-    generate_read_schema,
-)
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
+from apps.core.schemas.user import CurrentUser, Info2Fa, CRUDSchemas
 
 logger = logging.getLogger(__name__)
 
 table_name = "user"
-CRUDSchemas = generate_CRUD_schemas(table_name)
 Model = models_pool[table_name]
 RoleModel = models_pool["role"]
 EmailTemplateModel = models_pool["email_template"]
 OrganizationModel = models_pool["organization"]
-RoleReadSchema = generate_read_schema(RoleModel)
 
 
 class UserCustomRouter(CRUDRouter):
@@ -62,11 +56,6 @@ router = UserCustomRouter(
 )
 
 
-class CurrentUser(CRUDSchemas.Read):
-    permissions: Optional[List[str]]
-    all_roles: Optional[List[RoleReadSchema]]
-
-
 @router.get("/util/me", response_model=CurrentUser)
 def get_me(user: Model = Depends(get_current_user)):
     permissions = user.get_user_permissions()
@@ -80,12 +69,6 @@ def get_me(user: Model = Depends(get_current_user)):
         all_roles=all_roles,
     )
     return current_user
-
-
-class Info2Fa(BaseModel):
-    is_use_2fa: bool = False
-    totp_uri: str = ""
-    recovery_codes: list[str] = []
 
 
 @router.put("/me/2fa-config")

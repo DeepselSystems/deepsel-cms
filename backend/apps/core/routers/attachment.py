@@ -1,7 +1,6 @@
 import os
 
 from fastapi import Depends, File, Response, UploadFile, status, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from settings import (
@@ -21,6 +20,10 @@ from clamd import ClamdNetworkSocket
 from datetime import datetime, timedelta, UTC
 from apps.core.utils.models_pool import models_pool
 from urllib.parse import quote
+from apps.core.schemas.attachment import (
+    UploadSizeLimitResponse,
+    StorageInfoResponse,
+)
 
 table_name = "attachment"
 CRUDSchemas = generate_CRUD_schemas(table_name)
@@ -37,26 +40,6 @@ router = CRUDRouter(
     create_route=False,
     update_route=False,
 )
-
-
-class UploadFileResponse(BaseModel):
-    success: bool
-    filename: str
-
-
-class FileUploadData(BaseModel):
-    alt_text: str = None
-
-
-class UploadSizeLimitResponse(BaseModel):
-    value: float
-    unit: str
-
-
-class StorageInfoResponse(BaseModel):
-    used_storage: float  # in MB
-    max_storage: float | None  # in MB, None means unlimited
-    unit: str
 
 
 @router.get("/config/upload_size_limit", response_model=UploadSizeLimitResponse)
