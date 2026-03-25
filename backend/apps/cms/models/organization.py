@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from apps.core.utils.models_pool import models_pool
 from apps.cms.utils.process_menu_item import build_localized_menus, LocalizedMenuItem
-from apps.core.utils import decrypt, encrypt
+from settings import APP_SECRET
+from deepsel.utils.crypto import encrypt as _encrypt, decrypt as _decrypt
 from apps.cms.types.public_settings import PublicSettings
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class __CMSSettingsEncryptedData:
         """Decrypt and return the secret key."""
         if self._openrouter_api_key:
             try:
-                return decrypt(self._openrouter_api_key).decode("utf-8")
+                return _decrypt(self._openrouter_api_key, APP_SECRET).decode("utf-8")
             except Exception as e:
                 logger.error(f"Failed to decrypt Openrouter api key: {e}")
                 # If decryption fails, return None or handle gracefully
@@ -33,7 +34,7 @@ class __CMSSettingsEncryptedData:
     def openrouter_api_key(self, value):
         """Encrypt and store the secret key."""
         if value:
-            self._openrouter_api_key = encrypt(value)
+            self._openrouter_api_key = _encrypt(value, APP_SECRET)
         else:
             self._openrouter_api_key = None
 

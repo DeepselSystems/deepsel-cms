@@ -5,7 +5,8 @@ import pyotp
 from fastapi import BackgroundTasks, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from db import get_db
-from apps.core.utils import decrypt, encrypt, generate_recovery_codes, hash_text
+from settings import APP_SECRET
+from deepsel.utils.crypto import encrypt as _encrypt, decrypt as _decrypt, generate_recovery_codes, hash_text
 from deepsel.utils.crud_router import CALLABLE, CRUDRouter
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
@@ -88,7 +89,7 @@ def update_2fa_config(
 ) -> Info2Fa:
     if confirmed:
         # cross check otp to make sure user already scan qr code
-        totp = pyotp.TOTP(decrypt(user.secret_key_2fa))
+        totp = pyotp.TOTP(_decrypt(user.secret_key_2fa, APP_SECRET))
         if not totp.verify(crosscheck_otp):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid OTP"
@@ -121,9 +122,9 @@ def update_2fa_config(
     # if not confirmed => only get secret_key (create if not exist) for showing QR
     if not user.secret_key_2fa:
         secret_key = pyotp.random_base32()
-        user.secret_key_2fa = encrypt(secret_key)
+        user.secret_key_2fa = _encrypt(secret_key, APP_SECRET)
         db.commit()
-    totp_uri = pyotp.totp.TOTP(decrypt(user.secret_key_2fa)).provisioning_uri(
+    totp_uri = pyotp.totp.TOTP(_decrypt(user.secret_key_2fa, APP_SECRET)).provisioning_uri(
         name=user.username, issuer_name=user.organization.name
     )
     return Info2Fa(totp_uri=totp_uri)
@@ -134,7 +135,7 @@ def get_2fa_uri(
     user: Model = Depends(get_current_user),
 ) -> Info2Fa:
     if user.is_use_2fa:
-        totp_uri = pyotp.totp.TOTP(decrypt(user.secret_key_2fa)).provisioning_uri(
+        totp_uri = pyotp.totp.TOTP(_decrypt(user.secret_key_2fa, APP_SECRET)).provisioning_uri(
             name=user.username, issuer_name=user.organization.name
         )
         return Info2Fa(is_use_2fa=user.is_use_2fa, totp_uri=totp_uri)

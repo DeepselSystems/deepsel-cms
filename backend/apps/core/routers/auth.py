@@ -30,7 +30,7 @@ from apps.core.schemas.auth import (
     Info2FaDto,
     UserReadSchema,
 )
-from apps.core.utils import encrypt, decrypt
+from deepsel.utils.crypto import encrypt, decrypt
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
 from apps.core.utils.pwd_context import pwd_context
@@ -49,8 +49,8 @@ auth_service = AuthService(
     auth_algorithm=AUTH_ALGORITHM,
     default_org_id=DEFAULT_ORG_ID,
     password_context=pwd_context,
-    encrypt_fn=encrypt,
-    decrypt_fn=decrypt,
+    encrypt_fn=lambda text: encrypt(text, APP_SECRET),
+    decrypt_fn=lambda text: decrypt(text, APP_SECRET),
 )
 google_service = GoogleOAuthService(APP_SECRET, AUTH_ALGORITHM, FRONTEND_URL)
 saml_service = SamlService(

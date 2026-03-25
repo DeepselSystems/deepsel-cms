@@ -2,7 +2,8 @@ import logging
 import asyncio
 from apps.core.utils.models_pool import models_pool
 from deepsel.utils import migration_task
-from apps.core.utils import encrypt, decrypt
+from settings import APP_SECRET
+from deepsel.utils.crypto import encrypt as _encrypt, decrypt as _decrypt
 from .models.organization import CMSSettingsModel
 from apps.core.models.locale import LocaleModel
 from db import get_db_context
@@ -114,14 +115,14 @@ def _migrate_cms_api_keys_to_encrypted_value(db, *args, **kwargs):
                 try:
                     # Check if it's already encrypted by trying to decrypt it
                     try:
-                        decrypt(cms_settings._openrouter_api_key)
+                        _decrypt(cms_settings._openrouter_api_key, APP_SECRET)
                         internal_logger.info(
                             f"OpenRouter API key for org {cms_settings.id} is already encrypted"
                         )
                     except (ValueError, Exception):
                         # If decryption fails, it means it's plain text, so encrypt it
-                        cms_settings._openrouter_api_key = encrypt(
-                            cms_settings._openrouter_api_key
+                        cms_settings._openrouter_api_key = _encrypt(
+                            cms_settings._openrouter_api_key, APP_SECRET
                         )
                         internal_logger.info(
                             f"Encrypted 'OpenRouter API key' for org {cms_settings.id} successfully"
