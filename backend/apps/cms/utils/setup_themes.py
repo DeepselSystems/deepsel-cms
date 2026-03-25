@@ -79,13 +79,26 @@ def setup_themes(force_build=False, force_sync=False):
             logger.info(f"Creating {client_build_path} directory...")
             os.makedirs(client_build_path, exist_ok=True)
 
-        # Clean up stale workspace files when not using local packages
+        # When not using local packages, replace the root package.json
+        # with a minimal workspace config (client + themes only) and
+        # clean up stale admin/packages directories
         if not LOCAL_PACKAGES:
-            for stale in ("package.json", "package-lock.json"):
-                stale_path = os.path.join(data_dir, stale)
-                if os.path.exists(stale_path):
-                    os.remove(stale_path)
-                    logger.info(f"Removed stale workspace file {stale}")
+            minimal_root = {
+                "name": "deepsel-cms-build",
+                "private": True,
+                "workspaces": ["client", "themes/*"],
+                "scripts": {
+                    "build": "npm run build --workspace=client",
+                },
+            }
+            root_pkg_path = os.path.join(data_dir, "package.json")
+            with open(root_pkg_path, "w") as f:
+                json.dump(minimal_root, f, indent=2)
+            # Don't copy root package-lock.json — it references stale
+            # admin/packages workspaces that would cause npm to recreate them
+            stale_lock = os.path.join(data_dir, "package-lock.json")
+            if os.path.exists(stale_lock):
+                os.remove(stale_lock)
             for stale_dir in ("admin", "packages"):
                 stale_path = os.path.join(data_dir, stale_dir)
                 if os.path.exists(stale_path):
@@ -93,7 +106,7 @@ def setup_themes(force_build=False, force_sync=False):
                     logger.info(f"Removed stale workspace directory {stale_dir}")
 
         # Directories to exclude from sync
-        EXCLUDE_DIRS = {"node_modules", "dist", ".astro", ".git"}
+        EXCLUDE_DIRS = {"node_modules", "dist", ".astro", ".git", "tsconfig.json"}
 
         # Calculate hashes for core folders (always needed)
         package_lock_hash = hash_file(os.path.join(client_path, "package-lock.json"))
@@ -284,7 +297,7 @@ def setup_themes(force_build=False, force_sync=False):
         generate_theme_imports(data_dir_path=data_dir)
 
         # Determine if npm install is needed
-        node_modules_path = os.path.join(client_build_path, "node_modules")
+        node_modules_path = os.path.join(data_dir, "node_modules")
         need_install = (
             not os.path.exists(node_modules_path)
             or previous_state.get("package_lock_hash") != package_lock_hash
@@ -315,11 +328,10 @@ def setup_themes(force_build=False, force_sync=False):
         if LOCAL_PACKAGES:
             need_build = need_build or need_admin_sync or need_packages_sync
 
-        # Run npm install
-        install_cwd = data_dir if LOCAL_PACKAGES else client_build_path
+        # Run npm install (always at workspace root for hoisted node_modules)
         if need_install:
             logger.info("Running npm install...")
-            install_result = run_npm("npm install", cwd=install_cwd)
+            install_result = run_npm("npm install", cwd=data_dir)
 
             if install_result.returncode != 0:
                 error_output = install_result.stdout + "\n" + install_result.stderr
@@ -333,10 +345,9 @@ def setup_themes(force_build=False, force_sync=False):
             logger.info("Dependencies unchanged; skipping npm install")
 
         # Run npm build
-        build_cwd = data_dir if LOCAL_PACKAGES else client_build_path
         if need_build:
             logger.info("Running client build...")
-            build_result = run_npm("npm run build", cwd=build_cwd, timeout=600)
+            build_result = run_npm("npm run build", cwd=data_dir, timeout=600)
 
             if build_result.returncode != 0:
                 error_output = build_result.stdout + "\n" + build_result.stderr
