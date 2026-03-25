@@ -6,7 +6,7 @@ from apps.cms.utils.page_content import (
 )
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from apps.core.mixins.activity import ActivityMixin
+from deepsel.orm import ActivityMixin
 from deepsel.orm import (
     PAGINATION,
     SearchQuery,
@@ -22,6 +22,12 @@ from typing import Optional
 class PageModel(Base, ActivityMixin, BaseModel):
     __tablename__ = "page"
     __tracked_fields__ = ["published"]
+
+    @classmethod
+    def _get_activity_model(cls):
+        from apps.core.models.activity import ActivityModel, ActivityType
+
+        return ActivityModel, ActivityType
 
     id = Column(Integer, primary_key=True)
     published = Column(Boolean, default=False)

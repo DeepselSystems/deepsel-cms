@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, T
 from datetime import datetime
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from apps.core.mixins.activity import ActivityMixin
+from deepsel.orm import ActivityMixin
 from deepsel.orm import (
     PAGINATION,
     SearchQuery,
@@ -18,6 +18,12 @@ from typing import Optional
 class BlogPostModel(Base, ActivityMixin, BaseModel):
     __tablename__ = "blog_post"
     __tracked_fields__ = ["published"]
+
+    @classmethod
+    def _get_activity_model(cls):
+        from apps.core.models.activity import ActivityModel, ActivityType
+
+        return ActivityModel, ActivityType
 
     id = Column(Integer, primary_key=True)
     published = Column(Boolean, default=False)
