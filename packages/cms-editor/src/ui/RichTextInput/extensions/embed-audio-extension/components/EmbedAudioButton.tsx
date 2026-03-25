@@ -1,35 +1,33 @@
 import React, { useState } from 'react';
-import type { ReactNode } from 'react';
 import type { Editor } from '@tiptap/core';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faVideoCamera } from '@fortawesome/free-solid-svg-icons';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { ChooseAttachmentModal } from '../../../../ChooseAttachmentModal';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import type { User } from '../../../../../types';
+import { faVolumeUp } from '@fortawesome/free-solid-svg-icons';
+import { AttachmentFile, ChooseAttachmentModal } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 
-interface EmbedVideoButtonProps {
+interface EmbedAudioButtonProps {
   editor: Editor | null;
+  children?: React.ReactNode;
   backendHost: string;
   user: User;
   setUser: (user: User | null) => void;
-  children?: ReactNode;
 }
 
 /**
- * Button to insert video into the editor
- *
+ * Button to insert audio into the editor
  * @constructor
  */
-const EmbedVideoButton = ({
+const EmbedAudioButton = ({
   backendHost,
   user,
   setUser,
   editor,
   children,
-}: EmbedVideoButtonProps) => {
+}: EmbedAudioButtonProps) => {
   const { t } = useTranslation();
 
   const [isAttachmentModalOpened, setAttachmentModalOpened] = useState(false);
@@ -37,14 +35,14 @@ const EmbedVideoButton = ({
   return (
     <>
       <Box>
-        <Tooltip label={t('Insert video')}>
+        <Tooltip label={t('Insert audio')}>
           <button
             type="button"
             onClick={() => setAttachmentModalOpened(true)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon icon={faVideoCamera as IconProp} className="text-[#808496]" />
+              <FontAwesomeIcon icon={faVolumeUp as IconProp} className="text-[#808496]" />
             )}
           </button>
         </Tooltip>
@@ -57,24 +55,24 @@ const EmbedVideoButton = ({
             {
               field: 'content_type',
               operator: 'like',
-              value: 'video%',
+              value: 'audio%',
             },
           ]}
-          filterFunc={(attachments) =>
+          filterFunc={(attachments: Array<AttachmentFile>) =>
             attachments.filter((attachment) =>
-              attachment.content_type?.toLowerCase().startsWith('video'),
+              attachment.content_type?.toLowerCase().startsWith('audio'),
             )
           }
           isOpen={isAttachmentModalOpened}
           close={() => setAttachmentModalOpened(false)}
-          onChange={(attachment) => {
+          onChange={(attachment: AttachmentFile) => {
             const attachUrl = getAttachmentRelativeUrl(attachment.name);
 
             if (editor) {
               editor
                 .chain()
                 .focus()
-                .setEmbedVideo({
+                .setEmbedAudio({
                   src: attachUrl,
                 })
                 .run();
@@ -90,4 +88,4 @@ const EmbedVideoButton = ({
   );
 };
 
-export default EmbedVideoButton;
+export default EmbedAudioButton;

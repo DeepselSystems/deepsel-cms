@@ -1,1 +1,1 @@
-export { RichTextRenderer as default } from '@deepsel/cms-react';
+export { RichTextRenderer as default } from '@deepsel/cms-editor';

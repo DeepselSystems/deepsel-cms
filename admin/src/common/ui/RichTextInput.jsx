@@ -1,5 +1,5 @@
 import React from 'react';
-import { RichTextInput as BaseRichTextInput } from '@deepsel/cms-react';
+import { RichTextInput as BaseRichTextInput } from '@deepsel/cms-editor';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 import NotificationState from '../stores/NotificationState.js';

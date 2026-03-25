@@ -6,8 +6,8 @@ import { faImage } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelectorModal } from '../../../../EnhancedImageSelector';
-import type { User } from '../../../../../types';
+import { EnhancedImageSelectorModal } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 
 interface EnhancedImageButtonProps {
   editor: Editor | null;

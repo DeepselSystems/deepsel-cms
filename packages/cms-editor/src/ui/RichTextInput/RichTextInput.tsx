@@ -52,7 +52,7 @@ import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
 import { Menu, Modal, NumberInput, Select, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../Button';
+import { Button } from '@deepsel/cms-react';
 import { YoutubeJumpMarks } from './extensions/youtube-jumpmarks-extension';
 import { EnhancedDetails, DetailsContent, DetailsSummary } from './extensions/details-extension';
 import { AutocompleteExtension } from './extensions/autocomplete-extension';
@@ -78,9 +78,9 @@ import { GalleryModal } from './modals/GalleryModal';
 import type { GalleryAttachment, GalleryModalSaveData } from './modals/GalleryModal';
 import { RichTextModal } from './modals/RichTextModal';
 import type { RichTextModalSaveData } from './modals/RichTextModal';
-import { HtmlComponentsModal } from '../HtmlComponentsModal';
-import type { User } from '../../types';
-import type { NotifyFn } from '../../types';
+import { HtmlComponentsModal } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
+import type { NotifyFn } from '@deepsel/cms-react';
 import type { JumpMarkData } from './extensions/youtube-jumpmarks-extension/types';
 
 /**

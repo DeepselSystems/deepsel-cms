@@ -1,4 +1,4 @@
-import { RichTextEditor as BaseRichTextEditor } from '@deepsel/cms-react';
+import { RichTextEditor as BaseRichTextEditor } from '@deepsel/cms-editor';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 

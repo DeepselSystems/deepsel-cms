@@ -9,8 +9,8 @@ import { faFile, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 import { getShortUrl, MAX_FILES_COUNT } from '../utils';
 import type { EmbedFileItem } from '../types';
-import { AttachmentFile, ChooseAttachmentModal } from '../../../../ChooseAttachmentModal';
-import type { User } from '../../../../../types';
+import { AttachmentFile, ChooseAttachmentModal } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 
 interface FilesSelectorModalProps {
   editor: Editor | null;

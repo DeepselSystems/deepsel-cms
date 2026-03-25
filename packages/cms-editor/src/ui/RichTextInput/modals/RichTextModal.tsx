@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal, ColorInput, NumberInput } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
-import { Button } from '../../Button';
-import { TextInput } from '../../TextInput';
-import type { User } from '../../../types';
+import { Button } from '@deepsel/cms-react';
+import { TextInput } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 import { RichTextInput } from '../RichTextInput';
 
 /**

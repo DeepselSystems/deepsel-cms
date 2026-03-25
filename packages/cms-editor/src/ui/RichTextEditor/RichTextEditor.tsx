@@ -13,9 +13,9 @@ import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { ChooseAttachmentModal } from '../ChooseAttachmentModal';
-import { Button } from '../Button';
-import type { User } from '../../types';
+import { ChooseAttachmentModal } from '@deepsel/cms-react';
+import { Button } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 
 export interface RichTextEditorProps {
   /** Initial HTML content. */

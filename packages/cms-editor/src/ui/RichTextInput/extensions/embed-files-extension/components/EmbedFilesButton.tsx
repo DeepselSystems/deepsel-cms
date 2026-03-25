@@ -8,7 +8,7 @@ import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { MAX_FILES_COUNT } from '../utils';
 import FilesSelectorModal from './FilesSelectorModal';
 import type { EmbedFileItem } from '../types';
-import { User } from '../../../../../types';
+import { User } from '@deepsel/cms-react';
 
 interface EmbedFilesButtonProps {
   editor: Editor | null;

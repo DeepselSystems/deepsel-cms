@@ -6,8 +6,8 @@ import clsx from 'clsx';
 import { Skeleton } from '@mantine/core';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { insertAttachmentsToEditor } from '../utils';
-import { useEffectOnce } from '../../../../../hooks';
-import { useUpload } from '../../../../../hooks';
+import { useEffectOnce } from '@deepsel/cms-react';
+import { useUpload } from '@deepsel/cms-react';
 
 interface AttachmentFile {
   name: string;

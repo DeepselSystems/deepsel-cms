@@ -36,6 +36,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deepsel/cms-editor": "*",
     "@deepsel/cms-react": "*",
     "@deepsel/cms-utils": "*",
     "class-variance-authority": "^0.7.1",
@@ -50,6 +51,7 @@
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
+    "@deepsel/cms-editor": ">=1.0.0",
     "@deepsel/cms-react": ">=1.0.0",
     "@deepsel/cms-utils": ">=1.1.0",
     "@capacitor/app": ">=7.0.0",

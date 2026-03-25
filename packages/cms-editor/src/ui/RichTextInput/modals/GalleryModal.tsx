@@ -10,11 +10,11 @@ import {
   faImage,
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
-import { Button } from '../../Button';
-import { Checkbox } from '../../Checkbox';
+import { Button } from '@deepsel/cms-react';
+import { Checkbox } from '@deepsel/cms-react';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelector } from '../../EnhancedImageSelector';
-import type { User } from '../../../types';
+import { EnhancedImageSelector } from '@deepsel/cms-react';
+import type { User } from '@deepsel/cms-react';
 
 /**
  * Gallery layout configuration
