@@ -13,7 +13,11 @@ interface ListViewSkeletonProps {
 /**
  * Skeleton loader for list/table views
  */
-export const ListViewSkeleton = ({ rows = 10, rowHeight = 35, margin = 8 }: ListViewSkeletonProps) => {
+export const ListViewSkeleton = ({
+  rows = 10,
+  rowHeight = 35,
+  margin = 8,
+}: ListViewSkeletonProps) => {
   return (
     <div>
       {Array(rows)

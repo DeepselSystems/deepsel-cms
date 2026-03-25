@@ -21,11 +21,7 @@ const EnhancedCodeBlockButton = ({ editor, children }: EnhancedCodeBlockButtonPr
    */
   const handleClick = () => {
     if (editor) {
-      editor
-        .chain()
-        .focus()
-        .toggleEnhancedCodeBlock({ language: 'javascript' })
-        .run();
+      editor.chain().focus().toggleEnhancedCodeBlock({ language: 'javascript' }).run();
     }
   };
 

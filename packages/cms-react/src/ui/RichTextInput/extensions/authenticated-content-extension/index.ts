@@ -53,7 +53,7 @@ export const AuthenticatedContent = Node.create({
   renderHTML({ HTMLAttributes }) {
     return [
       'div',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+      mergeAttributes(this.options.HTMLAttributes as Record<string, string>, HTMLAttributes, {
         [AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER]: 'true',
       }),
       0,

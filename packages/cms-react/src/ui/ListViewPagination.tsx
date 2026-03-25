@@ -28,8 +28,7 @@ export const ListViewPagination = ({ query, className }: ListViewPaginationProps
   };
 
   /** Total number of pages */
-  const totalPages =
-    total % pageSize === 0 ? total / pageSize : Math.floor(total / pageSize) + 1;
+  const totalPages = total % pageSize === 0 ? total / pageSize : Math.floor(total / pageSize) + 1;
 
   return (
     <div className={clsx('flex w-full justify-between items-center mt-3', className)}>

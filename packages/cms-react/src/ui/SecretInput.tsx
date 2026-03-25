@@ -11,27 +11,30 @@ interface LabelAndDescriptionProps {
 }
 
 /** Renders label and description for SecretInput */
-const LabelAndDescription = React.memo(({ label, description, required = false }: LabelAndDescriptionProps) => {
-  return (
-    <>
-      {label && (
-        <Text size="sm" fw={500} mb={0}>
-          {label}{' '}
-          {required && (
-            <Box component="span" className="text-danger-main">
-              {' '}*
-            </Box>
-          )}
-        </Text>
-      )}
-      {description && (
-        <Text size="xs" c="dimmed" mb={8}>
-          {description}
-        </Text>
-      )}
-    </>
-  );
-});
+const LabelAndDescription = React.memo(
+  ({ label, description, required = false }: LabelAndDescriptionProps) => {
+    return (
+      <>
+        {label && (
+          <Text size="sm" fw={500} mb={0}>
+            {label}{' '}
+            {required && (
+              <Box component="span" className="text-danger-main">
+                {' '}
+                *
+              </Box>
+            )}
+          </Text>
+        )}
+        {description && (
+          <Text size="xs" c="dimmed" mb={8}>
+            {description}
+          </Text>
+        )}
+      </>
+    );
+  },
+);
 
 LabelAndDescription.displayName = 'LabelAndDescription';
 
@@ -52,7 +55,10 @@ interface SecretInputProps {
  * Secret input control - displays truncated secrets with edit/reset capability
  */
 export const SecretInput = React.forwardRef<SecretInputRef, SecretInputProps>(
-  ({ truncateSecret, editingValue, setEditingValue, label, description, required = false }, ref) => {
+  (
+    { truncateSecret, editingValue, setEditingValue, label, description, required = false },
+    ref,
+  ) => {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = React.useState(false);
 
@@ -138,7 +144,7 @@ export const SecretInput = React.forwardRef<SecretInputRef, SecretInputProps>(
         </Group>
       </Box>
     );
-  }
+  },
 );
 
 SecretInput.displayName = 'SecretInput';

@@ -14,7 +14,7 @@ export const Card = ({ className, hoverEffect: _hoverEffect, ...props }: CardPro
     <div
       className={clsx(
         'bg-white rounded-xl border border-gray-300 shadow-lg cursor-auto p-6',
-        className
+        className,
       )}
       {...props}
     />

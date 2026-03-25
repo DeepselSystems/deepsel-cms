@@ -62,7 +62,12 @@ export const DebounceArea = ({
   };
 
   if (native) {
-    return <textarea {...textareaProps} {...(others as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />;
+    return (
+      <textarea
+        {...textareaProps}
+        {...(others as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+      />
+    );
   }
 
   return <Textarea {...textareaProps} {...others} />;

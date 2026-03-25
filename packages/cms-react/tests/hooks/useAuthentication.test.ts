@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import useAuthentication from '../../src/hooks/useAuthentication';
+import { useAuthentication } from '../../src/hooks/useAuthentication';
 import type {
   UseAuthenticationConfig,
   User,
@@ -14,6 +14,42 @@ vi.mock('@capacitor/preferences', () => ({
     get: vi.fn(() => Promise.resolve({ value: null })),
     remove: vi.fn(() => Promise.resolve()),
   },
+}));
+
+// Mock Capacitor Device
+vi.mock('@capacitor/device', () => ({
+  Device: {
+    getInfo: vi.fn(() =>
+      Promise.resolve({
+        platform: 'web',
+        osVersion: 'unknown',
+      }),
+    ),
+  },
+}));
+
+// Mock @mantine/hooks
+vi.mock('@mantine/hooks', () => ({
+  useNetwork: vi.fn(() => ({ online: true })),
+}));
+
+// Mock react-router-dom
+vi.mock('react-router-dom', () => ({
+  useLocation: vi.fn(() => ({ pathname: '/', search: '', hash: '' })),
+}));
+
+// Mock react-device-detect
+vi.mock('react-device-detect', () => ({
+  useDeviceData: vi.fn(() => ({
+    os: { name: 'Mac OS' },
+    browser: { name: 'Chrome' },
+    cpu: { architecture: 'amd64' },
+  })),
+}));
+
+// Mock uuid
+vi.mock('uuid', () => ({
+  v4: vi.fn(() => 'mock-uuid'),
 }));
 
 describe('useAuthentication', () => {

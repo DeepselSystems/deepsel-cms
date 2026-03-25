@@ -12,10 +12,7 @@ export function usePagingTableParams(
   searchQueryKey: string,
   initialValue: number,
 ): [number, (newState: number) => void] {
-  const [searchParamState, setSearchParamState] = useSearchParamState(
-    searchQueryKey,
-    initialValue,
-  );
+  const [searchParamState, setSearchParamState] = useSearchParamState(searchQueryKey, initialValue);
 
   const [state, setState] = React.useState<number>(() => searchParamState || initialValue);
 

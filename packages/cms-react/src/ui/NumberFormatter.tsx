@@ -1,5 +1,8 @@
 import React from 'react';
-import { NumberFormatter as MantineNumberFormatter, type NumberFormatterProps } from '@mantine/core';
+import {
+  NumberFormatter as MantineNumberFormatter,
+  type NumberFormatterProps,
+} from '@mantine/core';
 
 export type { NumberFormatterProps };
 

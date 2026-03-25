@@ -1,4 +1,4 @@
-import {useRef, useCallback} from 'react';
+import { useRef, useCallback } from 'react';
 
 /**
  * Custom hook for debouncing function calls
@@ -8,8 +8,8 @@ import {useRef, useCallback} from 'react';
  */
 export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,
-  delay: number
-): {debouncedCallback: (...args: Parameters<T>) => void; cancel: () => void} {
+  delay: number,
+): { debouncedCallback: (...args: Parameters<T>) => void; cancel: () => void } {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const debouncedCallback = useCallback(
@@ -22,7 +22,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
         callback(...args);
       }, delay);
     },
-    [callback, delay]
+    [callback, delay],
   );
 
   const cancel = useCallback(() => {
@@ -32,5 +32,5 @@ export function useDebounce<T extends (...args: any[]) => any>(
     }
   }, []);
 
-  return {debouncedCallback, cancel};
+  return { debouncedCallback, cancel };
 }

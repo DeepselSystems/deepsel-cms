@@ -349,7 +349,9 @@ export const EnhancedImage = Node.create({
           node.attrs.width?.toString() || IMAGE_WIDTH_DEFAULT.toString(),
         [ENHANCED_IMAGE_ATTRIBUTES.HEIGHT]: node.attrs.height?.toString() || '',
         [ENHANCED_IMAGE_ATTRIBUTES.DESCRIPTION]: description || '',
-        style: alignmentStyles[alignment as keyof typeof alignmentStyles] || alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER],
+        style:
+          alignmentStyles[alignment as keyof typeof alignmentStyles] ||
+          alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER],
       }),
       ...elements,
     ];

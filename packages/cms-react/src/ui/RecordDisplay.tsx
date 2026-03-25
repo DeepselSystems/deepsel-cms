@@ -40,9 +40,7 @@ export const RecordDisplay = ({
         style={{ fontSize: `var(--mantine-font-size-${size})` }}
       >
         {children || value}
-        {(children || value) && (
-          <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
-        )}
+        {(children || value) && <FontAwesomeIcon icon={faArrowRight} className="ml-1" />}
       </Link>
     </div>
   );

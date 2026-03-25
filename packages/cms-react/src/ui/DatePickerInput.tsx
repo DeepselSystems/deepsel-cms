@@ -1,5 +1,8 @@
 import React from 'react';
-import { DatePickerInput as MantineDatePickerInput, type DatePickerInputProps } from '@mantine/dates';
+import {
+  DatePickerInput as MantineDatePickerInput,
+  type DatePickerInputProps,
+} from '@mantine/dates';
 
 export type { DatePickerInputProps };
 

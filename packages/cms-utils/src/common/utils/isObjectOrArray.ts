@@ -4,7 +4,6 @@
 export function isObjectOrArray(value: unknown): boolean {
   return (
     value !== null &&
-    (Array.isArray(value) ||
-      Object.prototype.toString.call(value) === '[object Object]')
+    (Array.isArray(value) || Object.prototype.toString.call(value) === '[object Object]')
   );
 }

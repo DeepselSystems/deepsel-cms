@@ -6,10 +6,6 @@ export type { SwitchProps };
 /**
  * Switch component - thin wrapper around Mantine's Switch
  */
-export const Switch = ({
-  size = 'md',
-  withThumbIndicator = false,
-  ...props
-}: SwitchProps) => {
+export const Switch = ({ size = 'md', withThumbIndicator = false, ...props }: SwitchProps) => {
   return <MantineSwitch size={size} withThumbIndicator={withThumbIndicator} {...props} />;
 };
