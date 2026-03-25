@@ -2,6 +2,11 @@
   "name": "@deepsel/cms-utils",
   "version": "1.1.4",
   "description": "Helper utilities for Deepsel CMS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DeepselSystems/deepsel-cms",
+    "directory": "packages/cms-utils"
+  },
   "publishConfig": {
     "access": "public"
   },

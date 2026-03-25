@@ -2,6 +2,11 @@
   "name": "@deepsel/cms-react",
   "version": "1.0.5",
   "description": "React utilities for Deepsel CMS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DeepselSystems/deepsel-cms",
+    "directory": "packages/cms-react"
+  },
   "publishConfig": {
     "access": "public"
   },
