@@ -1,18 +1,18 @@
 /**
  * Default video dimensions
  */
-export const VIDEO_WIDTH_DEFAULT = '100%';
-export const VIDEO_HEIGHT_DEFAULT = 'auto';
+export const VIDEO_WIDTH_DEFAULT = "100%";
+export const VIDEO_HEIGHT_DEFAULT = "auto";
 
 /**
  * Constants for embed video attributes
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const EMBED_VIDEO_ATTRIBUTES = {
-  CONTAINER: 'data-embed-video',
-  SRC: 'data-video-src',
-  WIDTH: 'data-video-width',
-  HEIGHT: 'data-video-height',
+  CONTAINER: "data-embed-video",
+  SRC: "data-video-src",
+  WIDTH: "data-video-width",
+  HEIGHT: "data-video-height",
 } as const;
 
 /**
@@ -20,9 +20,9 @@ export const EMBED_VIDEO_ATTRIBUTES = {
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const EMBED_VIDEO_CLASSES = {
-  WRAPPER: 'embed-video-wrapper',
-  VIDEO_CONTAINER: 'embed-video-container',
-  VIDEO_CONTENT: 'embed-video-content',
+  WRAPPER: "embed-video-wrapper",
+  VIDEO_CONTAINER: "embed-video-container",
+  VIDEO_CONTENT: "embed-video-content",
 } as const;
 
 /**
@@ -47,8 +47,12 @@ export const initializeEmbedVideos = (container: HTMLElement | null): void => {
   if (!container) return;
 
   const embedVideoWrappers = [
-    ...Array.from(container.querySelectorAll(`[${EMBED_VIDEO_ATTRIBUTES.CONTAINER}]`)),
-    ...Array.from(container.querySelectorAll(`.${EMBED_VIDEO_CLASSES.WRAPPER}`)),
+    ...Array.from(
+      container.querySelectorAll(`[${EMBED_VIDEO_ATTRIBUTES.CONTAINER}]`),
+    ),
+    ...Array.from(
+      container.querySelectorAll(`.${EMBED_VIDEO_CLASSES.WRAPPER}`),
+    ),
   ];
 
   embedVideoWrappers.forEach((wrapper) => {
@@ -58,17 +62,17 @@ export const initializeEmbedVideos = (container: HTMLElement | null): void => {
     ) as HTMLElement | null;
 
     if (videoContainer) {
-      videoContainer.style.position = 'relative';
-      videoContainer.style.width = '100%';
-      videoContainer.style.paddingBottom = '56.25%';
+      videoContainer.style.position = "relative";
+      videoContainer.style.width = "100%";
+      videoContainer.style.paddingBottom = "56.25%";
 
-      const video = videoContainer.querySelector('video');
+      const video = videoContainer.querySelector("video");
       if (video) {
-        video.style.position = 'absolute';
-        video.style.top = '0';
-        video.style.left = '0';
-        video.style.width = '100%';
-        video.style.height = '100%';
+        video.style.position = "absolute";
+        video.style.top = "0";
+        video.style.left = "0";
+        video.style.width = "100%";
+        video.style.height = "100%";
       }
     }
   });

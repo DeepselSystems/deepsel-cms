@@ -5,7 +5,8 @@
 
 /* Jinja2 syntax highlighting */
 .ProseMirror .jinja2-syntax {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-family:
+    "Monaco", "Menlo", "Ubuntu Mono", "Consolas", "source-code-pro", monospace;
   font-size: 0.9em;
   background-color: #f4f4f5;
   padding: 0.125rem 0.25rem;
@@ -17,7 +18,8 @@
 
 /* Jinja2 syntax highlighting - Preview & Public site */
 code.jinja2-syntax {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-family:
+    "Monaco", "Menlo", "Ubuntu Mono", "Consolas", "source-code-pro", monospace;
   font-size: 0.9em;
   background-color: #f4f4f5;
   padding: 0.125rem 0.25rem;

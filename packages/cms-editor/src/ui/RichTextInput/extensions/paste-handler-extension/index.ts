@@ -1,17 +1,17 @@
-import { Node } from '@tiptap/core';
-import type { Command } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import type { EditorView } from '@tiptap/pm/view';
-import { ReactNodeViewRenderer } from '@tiptap/react';
-import EditorNodeView from './components/EditorNodeView';
-import { PASTE_HANDLER_ATTRIBUTES } from './utils';
-import type { PasteHandlerOptions } from './types';
+import { Node } from "@tiptap/core";
+import type { Command } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import EditorNodeView from "./components/EditorNodeView";
+import { PASTE_HANDLER_ATTRIBUTES } from "./utils";
+import type { PasteHandlerOptions } from "./types";
 
 interface SetPastedFilesOptions {
   files: File[];
 }
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     pasteHandler: {
       setPastedFiles: (options: SetPastedFilesOptions) => ReturnType;
@@ -42,9 +42,9 @@ declare module '@tiptap/core' {
  * @requires token - JWT authentication token for API requests
  */
 export const PasteHandler = Node.create<PasteHandlerOptions>({
-  name: 'pasteHandler',
+  name: "pasteHandler",
 
-  group: 'block',
+  group: "block",
 
   atom: true,
 
@@ -53,7 +53,7 @@ export const PasteHandler = Node.create<PasteHandlerOptions>({
       enabled: true,
       onPaste: null,
       HTMLAttributes: {},
-      backendHost: '',
+      backendHost: "",
       token: undefined,
       notify: undefined,
     };
@@ -89,7 +89,10 @@ export const PasteHandler = Node.create<PasteHandlerOptions>({
    * The node is removed after files are uploaded via EditorNodeView component
    */
   renderHTML() {
-    return ['div', { [PASTE_HANDLER_ATTRIBUTES.CONTAINER]: '', style: 'display: none;' }];
+    return [
+      "div",
+      { [PASTE_HANDLER_ATTRIBUTES.CONTAINER]: "", style: "display: none;" },
+    ];
   },
 
   /**
@@ -98,8 +101,8 @@ export const PasteHandler = Node.create<PasteHandlerOptions>({
    */
   addNodeView() {
     return ReactNodeViewRenderer(EditorNodeView, {
-      as: 'div',
-      contentDOMElementTag: 'div',
+      as: "div",
+      contentDOMElementTag: "div",
     });
   },
 
@@ -135,7 +138,7 @@ export const PasteHandler = Node.create<PasteHandlerOptions>({
 
     return [
       new Plugin({
-        key: new PluginKey('pasteHandler'),
+        key: new PluginKey("pasteHandler"),
         props: {
           handlePaste: (view: EditorView, event: ClipboardEvent) => {
             if (event.clipboardData && event.clipboardData.files.length > 0) {

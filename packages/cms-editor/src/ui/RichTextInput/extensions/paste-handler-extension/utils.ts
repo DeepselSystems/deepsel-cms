@@ -1,12 +1,12 @@
-import type { Editor } from '@tiptap/core';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import type { Editor } from "@tiptap/core";
+import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
 
 /**
  * Constants for paste handler attributes
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const PASTE_HANDLER_ATTRIBUTES = {
-  CONTAINER: 'data-paste-handler',
+  CONTAINER: "data-paste-handler",
 } as const;
 
 interface AttachmentFile {
@@ -35,25 +35,27 @@ export const insertAttachmentsToEditor = async (
     let needAddLineBreak = true;
 
     switch (fileType) {
-      case 'image': {
-        if (editor.can().setEnhancedImage({ src: '', description: '' })) {
+      case "image": {
+        if (editor.can().setEnhancedImage({ src: "", description: "" })) {
           const imageUrl = getAttachmentRelativeUrl(attachment.name);
           editor
             .chain()
             .focus()
             .setEnhancedImage({
               src: imageUrl,
-              description: '',
+              description: "",
             })
             .run();
         } else {
-          console.warn('EnhancedImage extension is not enabled. Cannot insert image');
+          console.warn(
+            "EnhancedImage extension is not enabled. Cannot insert image",
+          );
         }
         break;
       }
 
-      case 'video': {
-        if (editor.can().setEmbedVideo({ src: '' })) {
+      case "video": {
+        if (editor.can().setEmbedVideo({ src: "" })) {
           const videoUrl = getAttachmentRelativeUrl(attachment.name);
           editor
             .chain()
@@ -63,13 +65,15 @@ export const insertAttachmentsToEditor = async (
             })
             .run();
         } else {
-          console.warn('EmbedVideo extension is not enabled. Cannot insert video');
+          console.warn(
+            "EmbedVideo extension is not enabled. Cannot insert video",
+          );
         }
         break;
       }
 
-      case 'audio': {
-        if (editor.can().setEmbedAudio({ src: '' })) {
+      case "audio": {
+        if (editor.can().setEmbedAudio({ src: "" })) {
           const audioUrl = getAttachmentRelativeUrl(attachment.name);
           editor
             .chain()
@@ -79,7 +83,9 @@ export const insertAttachmentsToEditor = async (
             })
             .run();
         } else {
-          console.warn('EmbedAudio extension is not enabled. Cannot insert audio');
+          console.warn(
+            "EmbedAudio extension is not enabled. Cannot insert audio",
+          );
         }
         break;
       }
@@ -97,7 +103,7 @@ export const insertAttachmentsToEditor = async (
         .chain()
         .focus()
         .createParagraphNear()
-        .insertContent([{ type: 'paragraph' }, { type: 'paragraph' }])
+        .insertContent([{ type: "paragraph" }, { type: "paragraph" }])
         .run();
     }
   }
@@ -112,13 +118,15 @@ export const insertAttachmentsToEditor = async (
             const attachUrl = getAttachmentRelativeUrl(attachment.name);
             return {
               url: attachUrl,
-              name: attachment.name.split('/').pop() || attachment.name,
+              name: attachment.name.split("/").pop() || attachment.name,
             };
           }),
         })
         .run();
     } else {
-      console.warn('EmbedFiles extension is not enabled. Cannot insert unknown file');
+      console.warn(
+        "EmbedFiles extension is not enabled. Cannot insert unknown file",
+      );
     }
   }
 };

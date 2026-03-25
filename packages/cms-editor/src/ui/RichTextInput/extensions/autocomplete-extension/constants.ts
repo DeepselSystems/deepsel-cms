@@ -8,22 +8,22 @@ export const AUTOCOMPLETE_CONSTANTS = {
   MIN_TEXT_LENGTH: 3,
 
   CSS_CLASSES: {
-    GHOST_TEXT: 'autocomplete-ghost-text',
-    TAB_BADGE: 'autocomplete-tab-badge',
-    CONTAINER: 'autocomplete-container',
+    GHOST_TEXT: "autocomplete-ghost-text",
+    TAB_BADGE: "autocomplete-tab-badge",
+    CONTAINER: "autocomplete-container",
   },
 
-  TAB_BADGE_TEXT: '⇥ Tab',
+  TAB_BADGE_TEXT: "⇥ Tab",
 
-  API_ENDPOINT: '/autocomplete/suggest',
+  API_ENDPOINT: "/autocomplete/suggest",
 
   KEYS: {
-    TAB: 'Tab',
-    ESCAPE: 'Escape',
+    TAB: "Tab",
+    ESCAPE: "Escape",
   },
 
   EVENTS: {
-    DISMISS: 'ai-dismiss',
-    SUGGESTION_UPDATE: 'suggestion-update',
+    DISMISS: "ai-dismiss",
+    SUGGESTION_UPDATE: "suggestion-update",
   },
 } as const;

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import type { Editor } from '@tiptap/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Box, Tooltip } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
-import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import { MAX_FILES_COUNT } from '../utils';
-import FilesSelectorModal from './FilesSelectorModal';
-import type { EmbedFileItem } from '../types';
-import { User } from '@deepsel/cms-react';
+import React, { useState } from "react";
+import type { Editor } from "@tiptap/core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { Box, Tooltip } from "@mantine/core";
+import { useTranslation } from "react-i18next";
+import { faFileAlt } from "@fortawesome/free-solid-svg-icons";
+import { MAX_FILES_COUNT } from "../utils";
+import FilesSelectorModal from "./FilesSelectorModal";
+import type { EmbedFileItem } from "../types";
+import { User } from "@deepsel/cms-react";
 
 interface EmbedFilesButtonProps {
   editor: Editor | null;
@@ -32,7 +32,8 @@ const EmbedFilesButton = ({
 }: EmbedFilesButtonProps) => {
   const { t } = useTranslation();
 
-  const [isFilesSelectorModalOpened, setIsFilesSelectorModalOpened] = useState(false);
+  const [isFilesSelectorModalOpened, setIsFilesSelectorModalOpened] =
+    useState(false);
   const [selectedFiles, setSelectedFiles] = useState<EmbedFileItem[]>([]);
 
   return (
@@ -48,7 +49,10 @@ const EmbedFilesButton = ({
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-[#808496]" />
+              <FontAwesomeIcon
+                icon={faFileAlt as IconProp}
+                className="text-[#808496]"
+              />
             )}
           </button>
         </Tooltip>

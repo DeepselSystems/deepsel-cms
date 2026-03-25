@@ -47,9 +47,7 @@ export default defineConfig({
           'react-simple-code-editor',
           'prismjs',
         ];
-        return externalPrefixes.some(
-          (prefix) => id === prefix || id.startsWith(prefix + '/'),
-        );
+        return externalPrefixes.some((prefix) => id === prefix || id.startsWith(prefix + '/'));
       },
     },
     outDir: 'dist',

@@ -1,9 +1,9 @@
-import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import type { EditorState } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { JINJA2_ATTRIBUTES, JINJA2_PATTERNS } from './utils';
-import type { Jinja2HighlightOptions } from './types';
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { EditorState } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { JINJA2_ATTRIBUTES, JINJA2_PATTERNS } from "./utils";
+import type { Jinja2HighlightOptions } from "./types";
 
 /**
  * Jinja2 Markdown Extension for TipTap
@@ -15,7 +15,7 @@ import type { Jinja2HighlightOptions } from './types';
  * without modifying the actual content or saved HTML
  */
 export const jinja2Markdown = Extension.create<Jinja2HighlightOptions>({
-  name: 'jinja2Markdown',
+  name: "jinja2Markdown",
 
   /**
    * Extension options
@@ -38,7 +38,7 @@ export const jinja2Markdown = Extension.create<Jinja2HighlightOptions>({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey('jinja2Highlight'),
+        key: new PluginKey("jinja2Highlight"),
         props: {
           /**
            * Apply decorations for Jinja2 syntax

@@ -1,7 +1,7 @@
-import { mergeAttributes } from '@tiptap/core';
-import Paragraph from '@tiptap/extension-paragraph';
-import type { Node } from '@tiptap/pm/model';
-import { CUSTOM_PARAGRAPH_ATTRIBUTES, isParagraphEmpty } from './utils';
+import { mergeAttributes } from "@tiptap/core";
+import Paragraph from "@tiptap/extension-paragraph";
+import type { Node } from "@tiptap/pm/model";
+import { CUSTOM_PARAGRAPH_ATTRIBUTES, isParagraphEmpty } from "./utils";
 
 /**
  * Custom Paragraph extension for TipTap
@@ -9,7 +9,7 @@ import { CUSTOM_PARAGRAPH_ATTRIBUTES, isParagraphEmpty } from './utils';
  * Extends the default Paragraph to include data-placeholder and class="is-empty" when empty
  */
 export const CustomParagraph = Paragraph.extend({
-  name: 'paragraph',
+  name: "paragraph",
 
   addOptions() {
     return {
@@ -20,7 +20,7 @@ export const CustomParagraph = Paragraph.extend({
   parseHTML() {
     return [
       {
-        tag: 'p',
+        tag: "p",
         getAttrs: () => {
           return {};
         },
@@ -28,7 +28,13 @@ export const CustomParagraph = Paragraph.extend({
     ];
   },
 
-  renderHTML({ HTMLAttributes, node }: { HTMLAttributes: Record<string, any>; node: Node }) {
+  renderHTML({
+    HTMLAttributes,
+    node,
+  }: {
+    HTMLAttributes: Record<string, any>;
+    node: Node;
+  }) {
     const isEmpty = isParagraphEmpty(node);
 
     const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes);
@@ -39,7 +45,7 @@ export const CustomParagraph = Paragraph.extend({
         : CUSTOM_PARAGRAPH_ATTRIBUTES.EMPTY_CLASS;
     }
 
-    return ['p', attrs, 0];
+    return ["p", attrs, 0];
   },
 });
 

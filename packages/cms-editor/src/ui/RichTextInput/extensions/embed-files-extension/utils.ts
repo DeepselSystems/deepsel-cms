@@ -8,8 +8,8 @@ export const MAX_FILES_COUNT = 10;
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const EMBED_FILES_ATTRIBUTES = {
-  CONTAINER: 'data-embed-files',
-  FILES: 'data-files',
+  CONTAINER: "data-embed-files",
+  FILES: "data-files",
 } as const;
 
 /**
@@ -17,12 +17,12 @@ export const EMBED_FILES_ATTRIBUTES = {
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const EMBED_FILES_CLASSES = {
-  WRAPPER: 'embed-files-wrapper',
-  FILES_CONTAINER: 'embed-files-container',
-  FILE_ITEM: 'embed-file-item',
-  FILE_CONTENT: 'embed-file-content',
-  FILE_ICON: 'embed-file-icon',
-  FILE_LINK: 'embed-file-link',
+  WRAPPER: "embed-files-wrapper",
+  FILES_CONTAINER: "embed-files-container",
+  FILE_ITEM: "embed-file-item",
+  FILE_CONTENT: "embed-file-content",
+  FILE_ICON: "embed-file-icon",
+  FILE_LINK: "embed-file-link",
 } as const;
 
 /**
@@ -31,8 +31,8 @@ export const EMBED_FILES_CLASSES = {
  * @returns {string} Short URL (filename only)
  */
 export const getShortUrl = (url: string): string => {
-  if (!url) return '';
-  const parts = url.split('/');
+  if (!url) return "";
+  const parts = url.split("/");
   return parts[parts.length - 1];
 };
 
@@ -58,15 +58,21 @@ export const initializeEmbedFiles = (container: HTMLElement | null): void => {
   if (!container) return;
 
   const embedFilesWrappers = [
-    ...Array.from(container.querySelectorAll(`[${EMBED_FILES_ATTRIBUTES.CONTAINER}]`)),
-    ...Array.from(container.querySelectorAll(`.${EMBED_FILES_CLASSES.WRAPPER}`)),
+    ...Array.from(
+      container.querySelectorAll(`[${EMBED_FILES_ATTRIBUTES.CONTAINER}]`),
+    ),
+    ...Array.from(
+      container.querySelectorAll(`.${EMBED_FILES_CLASSES.WRAPPER}`),
+    ),
   ];
 
   embedFilesWrappers.forEach((wrapper) => {
-    const filesContainer = wrapper.querySelector(`.${EMBED_FILES_CLASSES.FILES_CONTAINER}`);
+    const filesContainer = wrapper.querySelector(
+      `.${EMBED_FILES_CLASSES.FILES_CONTAINER}`,
+    );
 
     if (filesContainer && filesContainer instanceof HTMLElement) {
-      filesContainer.style.width = '100%';
+      filesContainer.style.width = "100%";
     }
   });
 };

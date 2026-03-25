@@ -115,63 +115,177 @@
     "zustand": ">=5.0.0"
   },
   "peerDependenciesMeta": {
-    "@capacitor/app": { "optional": true },
-    "@capacitor/core": { "optional": true },
-    "@capacitor/device": { "optional": true },
-    "@capacitor/preferences": { "optional": true },
-    "@emotion/react": { "optional": true },
-    "@emotion/styled": { "optional": true },
-    "@fortawesome/fontawesome-svg-core": { "optional": true },
-    "@fortawesome/free-brands-svg-icons": { "optional": true },
-    "@fortawesome/free-solid-svg-icons": { "optional": true },
-    "@fortawesome/react-fontawesome": { "optional": true },
-    "@hello-pangea/dnd": { "optional": true },
-    "@mantine/charts": { "optional": true },
-    "@mantine/core": { "optional": true },
-    "@mantine/dates": { "optional": true },
-    "@mantine/dropzone": { "optional": true },
-    "@mantine/form": { "optional": true },
-    "@mantine/hooks": { "optional": true },
-    "@mantine/modals": { "optional": true },
-    "@mantine/tiptap": { "optional": true },
-    "@mui/material": { "optional": true },
-    "@mui/x-data-grid": { "optional": true },
-    "@tiptap/core": { "optional": true },
-    "@tiptap/extension-color": { "optional": true },
-    "@tiptap/extension-details": { "optional": true },
-    "@tiptap/extension-details-content": { "optional": true },
-    "@tiptap/extension-details-summary": { "optional": true },
-    "@tiptap/extension-highlight": { "optional": true },
-    "@tiptap/extension-image": { "optional": true },
-    "@tiptap/extension-link": { "optional": true },
-    "@tiptap/extension-placeholder": { "optional": true },
-    "@tiptap/extension-subscript": { "optional": true },
-    "@tiptap/extension-superscript": { "optional": true },
-    "@tiptap/extension-table": { "optional": true },
-    "@tiptap/extension-table-cell": { "optional": true },
-    "@tiptap/extension-table-header": { "optional": true },
-    "@tiptap/extension-table-row": { "optional": true },
-    "@tiptap/extension-text-align": { "optional": true },
-    "@tiptap/extension-text-style": { "optional": true },
-    "@tiptap/extension-underline": { "optional": true },
-    "@tiptap/extension-youtube": { "optional": true },
-    "@tiptap/pm": { "optional": true },
-    "@tiptap/react": { "optional": true },
-    "@tiptap/starter-kit": { "optional": true },
-    "dayjs": { "optional": true },
-    "i18next": { "optional": true },
-    "i18next-browser-languagedetector": { "optional": true },
-    "i18next-http-backend": { "optional": true },
-    "lodash": { "optional": true },
-    "prismjs": { "optional": true },
-    "react-device-detect": { "optional": true },
-    "react-helmet": { "optional": true },
-    "react-i18next": { "optional": true },
-    "react-router-dom": { "optional": true },
-    "react-simple-code-editor": { "optional": true },
-    "recharts": { "optional": true },
-    "tiptap-extension-font-size": { "optional": true },
-    "zustand": { "optional": true }
+    "@capacitor/app": {
+      "optional": true
+    },
+    "@capacitor/core": {
+      "optional": true
+    },
+    "@capacitor/device": {
+      "optional": true
+    },
+    "@capacitor/preferences": {
+      "optional": true
+    },
+    "@emotion/react": {
+      "optional": true
+    },
+    "@emotion/styled": {
+      "optional": true
+    },
+    "@fortawesome/fontawesome-svg-core": {
+      "optional": true
+    },
+    "@fortawesome/free-brands-svg-icons": {
+      "optional": true
+    },
+    "@fortawesome/free-solid-svg-icons": {
+      "optional": true
+    },
+    "@fortawesome/react-fontawesome": {
+      "optional": true
+    },
+    "@hello-pangea/dnd": {
+      "optional": true
+    },
+    "@mantine/charts": {
+      "optional": true
+    },
+    "@mantine/core": {
+      "optional": true
+    },
+    "@mantine/dates": {
+      "optional": true
+    },
+    "@mantine/dropzone": {
+      "optional": true
+    },
+    "@mantine/form": {
+      "optional": true
+    },
+    "@mantine/hooks": {
+      "optional": true
+    },
+    "@mantine/modals": {
+      "optional": true
+    },
+    "@mantine/tiptap": {
+      "optional": true
+    },
+    "@mui/material": {
+      "optional": true
+    },
+    "@mui/x-data-grid": {
+      "optional": true
+    },
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-color": {
+      "optional": true
+    },
+    "@tiptap/extension-details": {
+      "optional": true
+    },
+    "@tiptap/extension-details-content": {
+      "optional": true
+    },
+    "@tiptap/extension-details-summary": {
+      "optional": true
+    },
+    "@tiptap/extension-highlight": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/extension-placeholder": {
+      "optional": true
+    },
+    "@tiptap/extension-subscript": {
+      "optional": true
+    },
+    "@tiptap/extension-superscript": {
+      "optional": true
+    },
+    "@tiptap/extension-table": {
+      "optional": true
+    },
+    "@tiptap/extension-table-cell": {
+      "optional": true
+    },
+    "@tiptap/extension-table-header": {
+      "optional": true
+    },
+    "@tiptap/extension-table-row": {
+      "optional": true
+    },
+    "@tiptap/extension-text-align": {
+      "optional": true
+    },
+    "@tiptap/extension-text-style": {
+      "optional": true
+    },
+    "@tiptap/extension-underline": {
+      "optional": true
+    },
+    "@tiptap/extension-youtube": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "dayjs": {
+      "optional": true
+    },
+    "i18next": {
+      "optional": true
+    },
+    "i18next-browser-languagedetector": {
+      "optional": true
+    },
+    "i18next-http-backend": {
+      "optional": true
+    },
+    "lodash": {
+      "optional": true
+    },
+    "prismjs": {
+      "optional": true
+    },
+    "react-device-detect": {
+      "optional": true
+    },
+    "react-helmet": {
+      "optional": true
+    },
+    "react-i18next": {
+      "optional": true
+    },
+    "react-router-dom": {
+      "optional": true
+    },
+    "react-simple-code-editor": {
+      "optional": true
+    },
+    "recharts": {
+      "optional": true
+    },
+    "tiptap-extension-font-size": {
+      "optional": true
+    },
+    "zustand": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@swc/core": "^1.15.17",

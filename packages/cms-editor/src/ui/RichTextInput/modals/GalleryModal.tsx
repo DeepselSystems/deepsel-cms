@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Group, Modal, Text, TextInput } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Group, Modal, Text, TextInput } from "@mantine/core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faArrowDown,
   faArrowUp,
   faEdit,
   faImage,
   faTrash,
-} from '@fortawesome/free-solid-svg-icons';
-import { Button } from '@deepsel/cms-react';
-import { Checkbox } from '@deepsel/cms-react';
-import { getAttachmentUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelector } from '@deepsel/cms-react';
-import type { User } from '@deepsel/cms-react';
+} from "@fortawesome/free-solid-svg-icons";
+import { Button } from "@deepsel/cms-react";
+import { Checkbox } from "@deepsel/cms-react";
+import { getAttachmentUrl } from "@deepsel/cms-utils";
+import { EnhancedImageSelector } from "@deepsel/cms-react";
+import type { User } from "@deepsel/cms-react";
 
 /**
  * Gallery layout configuration
@@ -113,9 +113,13 @@ export function GalleryModal({
   const { t } = useTranslation();
 
   const [config, setConfig] = useState<GalleryConfig>(initialConfig);
-  const [selectedAttachments, setSelectedAttachments] = useState<GalleryAttachment[]>([]);
-  const [editingCaption, setEditingCaption] = useState<string | number | null>(null);
-  const [newCaption, setNewCaption] = useState('');
+  const [selectedAttachments, setSelectedAttachments] = useState<
+    GalleryAttachment[]
+  >([]);
+  const [editingCaption, setEditingCaption] = useState<string | number | null>(
+    null,
+  );
+  const [newCaption, setNewCaption] = useState("");
 
   // Set initial values when modal opens - only on first open
   useEffect(() => {
@@ -132,13 +136,19 @@ export function GalleryModal({
   /**
    * Move attachment up or down in the list
    */
-  const moveAttachment = (index: number, direction: 'up' | 'down') => {
+  const moveAttachment = (index: number, direction: "up" | "down") => {
     const newOrder = [...selectedAttachments];
-    if (direction === 'up' && index > 0) {
-      [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
+    if (direction === "up" && index > 0) {
+      [newOrder[index], newOrder[index - 1]] = [
+        newOrder[index - 1],
+        newOrder[index],
+      ];
       setSelectedAttachments(newOrder);
-    } else if (direction === 'down' && index < selectedAttachments.length - 1) {
-      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+    } else if (direction === "down" && index < selectedAttachments.length - 1) {
+      [newOrder[index], newOrder[index + 1]] = [
+        newOrder[index + 1],
+        newOrder[index],
+      ];
       setSelectedAttachments(newOrder);
     }
   };
@@ -155,11 +165,16 @@ export function GalleryModal({
   /**
    * Update caption for a specific attachment
    */
-  const handleCaptionUpdate = (attachmentId: string | number, caption: string) => {
+  const handleCaptionUpdate = (
+    attachmentId: string | number,
+    caption: string,
+  ) => {
     setSelectedAttachments((prev) =>
       prev.map((attachment, index) => {
         const currentId = attachment.id || attachment.name || index;
-        return currentId === attachmentId ? { ...attachment, caption: caption.trim() } : attachment;
+        return currentId === attachmentId
+          ? { ...attachment, caption: caption.trim() }
+          : attachment;
       }),
     );
   };
@@ -185,7 +200,7 @@ export function GalleryModal({
           <div className="flex items-center">
             <FontAwesomeIcon icon={faImage as IconProp} className="mr-2" />
             <Text size="lg" fw={500}>
-              {galleryId ? t('Edit Gallery') : t('Create Gallery')}
+              {galleryId ? t("Edit Gallery") : t("Create Gallery")}
             </Text>
           </div>
         }
@@ -203,12 +218,12 @@ export function GalleryModal({
                 selectedImages={
                   selectedAttachments as Parameters<
                     typeof EnhancedImageSelector
-                  >[0]['selectedImages']
+                  >[0]["selectedImages"]
                 }
                 setSelectedImages={
                   setSelectedAttachments as Parameters<
                     typeof EnhancedImageSelector
-                  >[0]['setSelectedImages']
+                  >[0]["setSelectedImages"]
                 }
               />
             </div>
@@ -219,13 +234,17 @@ export function GalleryModal({
               <div className="mb-3 border border-gray-300 rounded-md p-3 bg-gray-50">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{t('Images per row')}:</span>
+                    <span className="text-sm font-medium">
+                      {t("Images per row")}:
+                    </span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4].map((num) => (
                         <button
                           key={num}
-                          className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.imagesPerRow === num ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                          onClick={() => setConfig({ ...config, imagesPerRow: num })}
+                          className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.imagesPerRow === num ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                          onClick={() =>
+                            setConfig({ ...config, imagesPerRow: num })
+                          }
                         >
                           {num}
                         </button>
@@ -236,19 +255,21 @@ export function GalleryModal({
                   <div className="flex items-center">
                     <Checkbox
                       checked={config.rounded}
-                      onChange={() => setConfig({ ...config, rounded: !config.rounded })}
+                      onChange={() =>
+                        setConfig({ ...config, rounded: !config.rounded })
+                      }
                       className="cursor-pointer"
                     />
-                    <span className="ml-2 text-sm">{t('Rounded corners')}</span>
+                    <span className="ml-2 text-sm">{t("Rounded corners")}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{t('Gap')}:</span>
+                    <span className="text-sm font-medium">{t("Gap")}:</span>
                     <div className="flex gap-1">
                       {[2, 4, 8, 12].map((num) => (
                         <button
                           key={num}
-                          className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.gap === num ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                          className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded ${config.gap === num ? "bg-blue-500 text-white" : "bg-gray-200"}`}
                           onClick={() => setConfig({ ...config, gap: num })}
                         >
                           {num}
@@ -261,11 +282,13 @@ export function GalleryModal({
 
               {/* Preview panel with fixed width */}
               <div className="border border-gray-300 rounded-md p-4 h-full">
-                <h3 className="text-lg font-medium mb-4">{t('Gallery Preview')}</h3>
+                <h3 className="text-lg font-medium mb-4">
+                  {t("Gallery Preview")}
+                </h3>
                 <div
                   className="mx-auto w-[300px] lg:w-[500px] xl:w-[600px]"
                   style={{
-                    display: 'grid',
+                    display: "grid",
                     gridTemplateColumns: `repeat(${config.imagesPerRow}, 1fr)`,
                     gap: `${config.gap}px`,
                   }}
@@ -276,14 +299,14 @@ export function GalleryModal({
                       <div className="relative group">
                         <img
                           src={getAttachmentUrl(backendHost, attachment.name)}
-                          alt={attachment.alt_text || ''}
+                          alt={attachment.alt_text || ""}
                           className="group-hover:blur-xs transition-all duration-200"
                           style={{
-                            width: '100%',
-                            height: 'auto',
-                            objectFit: 'cover',
-                            aspectRatio: '1 / 1',
-                            borderRadius: config.rounded ? '6px' : '0',
+                            width: "100%",
+                            height: "auto",
+                            objectFit: "cover",
+                            aspectRatio: "1 / 1",
+                            borderRadius: config.rounded ? "6px" : "0",
                           }}
                         />
 
@@ -292,9 +315,10 @@ export function GalleryModal({
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
-                                const attachmentId = attachment.id || attachment.name || index;
+                                const attachmentId =
+                                  attachment.id || attachment.name || index;
                                 setEditingCaption(attachmentId);
-                                setNewCaption(attachment.caption || '');
+                                setNewCaption(attachment.caption || "");
                               }}
                               className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
                               title="Edit Caption"
@@ -305,8 +329,8 @@ export function GalleryModal({
                               />
                             </button>
                             <button
-                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
-                              onClick={() => moveAttachment(index, 'up')}
+                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white"}`}
+                              onClick={() => moveAttachment(index, "up")}
                               disabled={index === 0}
                             >
                               <FontAwesomeIcon
@@ -315,9 +339,11 @@ export function GalleryModal({
                               />
                             </button>
                             <button
-                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
-                              onClick={() => moveAttachment(index, 'down')}
-                              disabled={index === selectedAttachments.length - 1}
+                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white"}`}
+                              onClick={() => moveAttachment(index, "down")}
+                              disabled={
+                                index === selectedAttachments.length - 1
+                              }
                             >
                               <FontAwesomeIcon
                                 icon={faArrowDown as IconProp}
@@ -341,12 +367,12 @@ export function GalleryModal({
                       {attachment.caption && (
                         <div
                           style={{
-                            padding: '8px 4px',
-                            fontSize: '14px',
-                            color: '#666',
-                            textAlign: 'center',
-                            lineHeight: '1.4',
-                            wordWrap: 'break-word',
+                            padding: "8px 4px",
+                            fontSize: "14px",
+                            color: "#666",
+                            textAlign: "center",
+                            lineHeight: "1.4",
+                            wordWrap: "break-word",
                           }}
                         >
                           {attachment.caption}
@@ -359,10 +385,10 @@ export function GalleryModal({
                       className="text-center p-4 bg-gray-100 text-gray-500"
                       style={{
                         gridColumn: `span ${config.imagesPerRow}`,
-                        borderRadius: '6px',
+                        borderRadius: "6px",
                       }}
                     >
-                      {t('No images selected')}
+                      {t("No images selected")}
                     </div>
                   )}
                 </div>
@@ -373,9 +399,9 @@ export function GalleryModal({
 
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={close}>
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
-          <Button onClick={handleSave}>{t('Save')}</Button>
+          <Button onClick={handleSave}>{t("Save")}</Button>
         </Group>
       </Modal>
 
@@ -383,16 +409,16 @@ export function GalleryModal({
       <Modal
         opened={!!editingCaption}
         onClose={() => setEditingCaption(null)}
-        title={t('Edit Caption')}
+        title={t("Edit Caption")}
       >
         <TextInput
           value={newCaption}
           onChange={(e) => setNewCaption(e.target.value)}
-          placeholder={t('Enter caption')}
+          placeholder={t("Enter caption")}
         />
         <Group justify="flex-end" mt="md">
           <Button variant="outline" onClick={() => setEditingCaption(null)}>
-            {t('Cancel')}
+            {t("Cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -402,7 +428,7 @@ export function GalleryModal({
               setEditingCaption(null);
             }}
           >
-            {t('Save')}
+            {t("Save")}
           </Button>
         </Group>
       </Modal>

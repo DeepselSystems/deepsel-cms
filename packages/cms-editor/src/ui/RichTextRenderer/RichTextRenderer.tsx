@@ -1,20 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   containsYouTubeJumpMarks,
   initializeYouTubeJumpMarks,
-} from '../RichTextInput/extensions/youtube-jumpmarks-extension/utils';
+} from "../RichTextInput/extensions/youtube-jumpmarks-extension/utils";
 import {
   containsEnhancedImages,
   initializeEnhancedImages,
-} from '../RichTextInput/extensions/enhanced-image-extension/utils';
+} from "../RichTextInput/extensions/enhanced-image-extension/utils";
 import {
   containsEnhancedCodeBlocks,
   initializeEnhancedCodeBlocks,
-} from '../RichTextInput/extensions/enhanced-code-block-extension/utils';
+} from "../RichTextInput/extensions/enhanced-code-block-extension/utils";
 import {
   containsJinja2InRenderedContent,
   initializeJinja2InRenderedContent,
-} from '../RichTextInput/extensions/jinja2-markdown-extension/utils';
+} from "../RichTextInput/extensions/jinja2-markdown-extension/utils";
 
 export interface RichTextRendererProps {
   /** HTML content to render. */
@@ -31,7 +31,10 @@ export interface RichTextRendererProps {
  * Initializes YouTube jump marks, enhanced images, and enhanced code blocks
  * after content is rendered into the DOM.
  */
-export function RichTextRenderer({ content, className = '' }: RichTextRendererProps) {
+export function RichTextRenderer({
+  content,
+  className = "",
+}: RichTextRendererProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -45,7 +48,8 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
 
     // Initialize YouTube jump marks after content is rendered
     const hasYouTubeJumpMarks =
-      containerRef.current.innerHTML && containsYouTubeJumpMarks(containerRef.current.innerHTML);
+      containerRef.current.innerHTML &&
+      containsYouTubeJumpMarks(containerRef.current.innerHTML);
 
     if (hasYouTubeJumpMarks) {
       initializeYouTubeJumpMarks(containerRef.current);
@@ -59,7 +63,9 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
     }
 
     // Initialize enhanced code blocks after content is rendered
-    const hasEnhancedCodeBlocks = containsEnhancedCodeBlocks(containerRef.current);
+    const hasEnhancedCodeBlocks = containsEnhancedCodeBlocks(
+      containerRef.current,
+    );
 
     if (hasEnhancedCodeBlocks) {
       initializeEnhancedCodeBlocks(containerRef.current);
@@ -72,7 +78,9 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
     }
   }, [content]);
 
-  return <div ref={containerRef} className={`rich-text-content ${className}`} />;
+  return (
+    <div ref={containerRef} className={`rich-text-content ${className}`} />
+  );
 }
 
 /**
@@ -80,15 +88,18 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
  * rendering escaped HTML content stored in .richtext-content nodes.
  */
 function processRichTextContainers(element: HTMLElement): void {
-  const richtextContainers = element.querySelectorAll('.richtext-container');
+  const richtextContainers = element.querySelectorAll(".richtext-container");
 
   richtextContainers.forEach((container) => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const contentDiv = container.querySelector('.richtext-content') as HTMLElement | null;
+    const contentDiv = container.querySelector(
+      ".richtext-content",
+    ) as HTMLElement | null;
     if (contentDiv) {
       const htmlContent =
-        contentDiv.textContent || (contentDiv as HTMLElement & { innerText?: string }).innerText;
-      if (htmlContent && htmlContent.trim().startsWith('<')) {
+        contentDiv.textContent ||
+        (contentDiv as HTMLElement & { innerText?: string }).innerText;
+      if (htmlContent && htmlContent.trim().startsWith("<")) {
         contentDiv.innerHTML = htmlContent;
         processRichTextContainers(contentDiv);
       }

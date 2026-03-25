@@ -1,4 +1,4 @@
-import { DETAILS_ANIMATION } from './constants';
+import { DETAILS_ANIMATION } from "./constants";
 
 /**
  * Toggle details element with smooth animation
@@ -11,7 +11,7 @@ export function toggleDetailsWithAnimation(
 ): void {
   if (!detailsElement || !contentDiv) return;
 
-  const isOpen = detailsElement.hasAttribute('open');
+  const isOpen = detailsElement.hasAttribute("open");
 
   if (isOpen) {
     closeDetails(detailsElement, contentDiv);
@@ -25,19 +25,22 @@ export function toggleDetailsWithAnimation(
  * @param {HTMLElement} detailsElement - The details element
  * @param {HTMLElement} contentDiv - The content div to animate
  */
-function openDetails(detailsElement: HTMLElement, contentDiv: HTMLElement): void {
-  detailsElement.setAttribute('open', '');
-  contentDiv.removeAttribute('hidden');
-  contentDiv.style.maxHeight = '0';
-  contentDiv.style.opacity = '0';
+function openDetails(
+  detailsElement: HTMLElement,
+  contentDiv: HTMLElement,
+): void {
+  detailsElement.setAttribute("open", "");
+  contentDiv.removeAttribute("hidden");
+  contentDiv.style.maxHeight = "0";
+  contentDiv.style.opacity = "0";
 
   requestAnimationFrame(() => {
     contentDiv.style.maxHeight = `${contentDiv.scrollHeight}px`;
-    contentDiv.style.opacity = '1';
+    contentDiv.style.opacity = "1";
   });
 
   setTimeout(() => {
-    contentDiv.style.maxHeight = 'none';
+    contentDiv.style.maxHeight = "none";
   }, DETAILS_ANIMATION.DURATION);
 }
 
@@ -46,16 +49,19 @@ function openDetails(detailsElement: HTMLElement, contentDiv: HTMLElement): void
  * @param {HTMLElement} detailsElement - The details element
  * @param {HTMLElement} contentDiv - The content div to animate
  */
-function closeDetails(detailsElement: HTMLElement, contentDiv: HTMLElement): void {
+function closeDetails(
+  detailsElement: HTMLElement,
+  contentDiv: HTMLElement,
+): void {
   contentDiv.style.maxHeight = `${contentDiv.scrollHeight}px`;
 
   requestAnimationFrame(() => {
-    contentDiv.style.maxHeight = '0';
-    contentDiv.style.opacity = '0';
+    contentDiv.style.maxHeight = "0";
+    contentDiv.style.opacity = "0";
   });
 
   setTimeout(() => {
-    contentDiv.setAttribute('hidden', '');
-    detailsElement.removeAttribute('open');
+    contentDiv.setAttribute("hidden", "");
+    detailsElement.removeAttribute("open");
   }, DETAILS_ANIMATION.DURATION);
 }

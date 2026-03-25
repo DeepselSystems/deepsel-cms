@@ -1,4 +1,4 @@
-import type { NotifyFn } from '@deepsel/cms-react';
+import type { NotifyFn } from "@deepsel/cms-react";
 
 /**
  * Paste handler options interface.

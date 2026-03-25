@@ -1,6 +1,6 @@
-import { mergeAttributes, Node } from '@tiptap/core';
-import type { Command } from '@tiptap/core';
-import { Plugin, PluginKey } from 'prosemirror-state';
+import { mergeAttributes, Node } from "@tiptap/core";
+import type { Command } from "@tiptap/core";
+import { Plugin, PluginKey } from "prosemirror-state";
 
 interface RichTextConfig {
   maxWidth: number | null;
@@ -16,7 +16,7 @@ interface RichTextAttributes {
   config: RichTextConfig;
 }
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     richtext: {
       setRichText: (attributes: Partial<RichTextAttributes>) => ReturnType;
@@ -26,7 +26,7 @@ declare module '@tiptap/core' {
 }
 
 export const RichText = Node.create({
-  name: 'richtext',
+  name: "richtext",
 
   addAttributes() {
     return {
@@ -34,23 +34,23 @@ export const RichText = Node.create({
         default: null,
       },
       content: {
-        default: '',
+        default: "",
       },
       config: {
         default: {
           maxWidth: null,
-          backgroundColor: '#f5f5f5',
+          backgroundColor: "#f5f5f5",
           padding: 16,
           borderRadius: 8,
-          border: '1px solid #e0e0e0',
+          border: "1px solid #e0e0e0",
         },
       },
     };
   },
 
-  group: 'block',
-  content: '',
-  marks: '',
+  group: "block",
+  content: "",
+  marks: "",
   selectable: true,
   draggable: true,
   isolating: true,
@@ -63,26 +63,26 @@ export const RichText = Node.create({
           if (!(node instanceof HTMLElement)) return {};
 
           try {
-            const configStr = node.getAttribute('data-config');
-            const content = node.getAttribute('data-content');
+            const configStr = node.getAttribute("data-config");
+            const content = node.getAttribute("data-content");
 
             const parsedConfig = configStr
               ? JSON.parse(configStr)
               : {
                   maxWidth: null,
-                  backgroundColor: '#f5f5f5',
+                  backgroundColor: "#f5f5f5",
                   padding: 16,
                   borderRadius: 8,
-                  border: '1px solid #e0e0e0',
+                  border: "1px solid #e0e0e0",
                 };
 
             return {
               config: parsedConfig,
-              content: content || '',
-              richtextId: node.getAttribute('data-richtext-id') || null,
+              content: content || "",
+              richtextId: node.getAttribute("data-richtext-id") || null,
             };
           } catch (error) {
-            console.error('Error parsing richtext attributes:', error);
+            console.error("Error parsing richtext attributes:", error);
             return {};
           }
         },
@@ -93,50 +93,52 @@ export const RichText = Node.create({
   renderHTML({ node }) {
     const config = (node.attrs.config as RichTextConfig) || {
       maxWidth: null,
-      backgroundColor: '#f5f5f5',
+      backgroundColor: "#f5f5f5",
       padding: 16,
       borderRadius: 8,
-      border: '1px solid #e0e0e0',
+      border: "1px solid #e0e0e0",
     };
-    const content = node.attrs.content || '';
+    const content = node.attrs.content || "";
     const richtextId = node.attrs.richtextId || null;
 
     const dataAttrs = {
-      'data-type': 'richtext',
-      'data-richtext-id': richtextId,
-      'data-config': JSON.stringify(config),
-      'data-content': content,
+      "data-type": "richtext",
+      "data-richtext-id": richtextId,
+      "data-config": JSON.stringify(config),
+      "data-content": content,
     };
 
-    if (typeof window === 'undefined') {
-      return ['div', mergeAttributes(dataAttrs)];
+    if (typeof window === "undefined") {
+      return ["div", mergeAttributes(dataAttrs)];
     }
 
     const richtextStyle: Record<string, string> = {
-      margin: '1rem 0',
+      margin: "1rem 0",
       padding: `${config.padding}px`,
-      'background-color': config.backgroundColor,
-      'border-radius': `${config.borderRadius}px`,
+      "background-color": config.backgroundColor,
+      "border-radius": `${config.borderRadius}px`,
       border: config.border,
-      ...(config.maxWidth ? { 'max-width': `${config.maxWidth}px`, margin: '1rem auto' } : {}),
+      ...(config.maxWidth
+        ? { "max-width": `${config.maxWidth}px`, margin: "1rem auto" }
+        : {}),
     };
 
     const styleStr = Object.entries(richtextStyle)
       .map(([key, value]) => `${key}: ${value};`)
-      .join(' ');
+      .join(" ");
 
     const richtextAttrs = {
       ...dataAttrs,
-      class: 'richtext-container',
+      class: "richtext-container",
       style: styleStr,
     };
 
     return [
-      'div',
+      "div",
       mergeAttributes(richtextAttrs),
-      ['div', { class: 'richtext-content' }, content],
+      ["div", { class: "richtext-content" }, content],
       [
-        'script',
+        "script",
         {},
         `(function() {
           const script = document.currentScript;
@@ -177,28 +179,30 @@ export const RichText = Node.create({
 
   addNodeView() {
     return ({ node, editor, getPos }) => {
-      const dom = document.createElement('div');
-      dom.classList.add('richtext-container');
+      const dom = document.createElement("div");
+      dom.classList.add("richtext-container");
 
       let config: RichTextConfig = {
         maxWidth: null,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: "#f5f5f5",
         padding: 16,
         borderRadius: 8,
-        border: '1px solid #e0e0e0',
+        border: "1px solid #e0e0e0",
       };
-      let content = '';
+      let content = "";
 
       if (node.attrs.config) {
         config =
-          typeof node.attrs.config === 'string' ? JSON.parse(node.attrs.config) : node.attrs.config;
+          typeof node.attrs.config === "string"
+            ? JSON.parse(node.attrs.config)
+            : node.attrs.config;
       }
 
       if (node.attrs.content) {
         content = node.attrs.content;
       }
 
-      dom.style.margin = '1rem 0';
+      dom.style.margin = "1rem 0";
       dom.style.padding = `${config.padding}px`;
       dom.style.backgroundColor = config.backgroundColor;
       dom.style.borderRadius = `${config.borderRadius}px`;
@@ -206,11 +210,11 @@ export const RichText = Node.create({
 
       if (config.maxWidth) {
         dom.style.maxWidth = `${config.maxWidth}px`;
-        dom.style.margin = '1rem auto';
+        dom.style.margin = "1rem auto";
       }
 
-      const contentContainer = document.createElement('div');
-      contentContainer.classList.add('richtext-content');
+      const contentContainer = document.createElement("div");
+      contentContainer.classList.add("richtext-content");
 
       if (content) {
         contentContainer.innerHTML = content;
@@ -218,46 +222,50 @@ export const RichText = Node.create({
 
       dom.appendChild(contentContainer);
 
-      const editButton = document.createElement('button');
-      editButton.classList.add('richtext-edit-button');
-      editButton.setAttribute('type', 'button');
-      editButton.innerHTML = 'Edit Content';
-      editButton.style.position = 'absolute';
-      editButton.style.top = '10px';
-      editButton.style.right = '10px';
-      editButton.style.backgroundColor = 'white';
-      editButton.style.border = '1px solid #ddd';
-      editButton.style.borderRadius = '4px';
-      editButton.style.padding = '4px 8px';
-      editButton.style.fontSize = '12px';
-      editButton.style.cursor = 'pointer';
-      editButton.style.display = 'none';
-      editButton.style.zIndex = '10';
+      const editButton = document.createElement("button");
+      editButton.classList.add("richtext-edit-button");
+      editButton.setAttribute("type", "button");
+      editButton.innerHTML = "Edit Content";
+      editButton.style.position = "absolute";
+      editButton.style.top = "10px";
+      editButton.style.right = "10px";
+      editButton.style.backgroundColor = "white";
+      editButton.style.border = "1px solid #ddd";
+      editButton.style.borderRadius = "4px";
+      editButton.style.padding = "4px 8px";
+      editButton.style.fontSize = "12px";
+      editButton.style.cursor = "pointer";
+      editButton.style.display = "none";
+      editButton.style.zIndex = "10";
 
-      dom.addEventListener('mouseenter', () => {
-        editButton.style.display = 'block';
+      dom.addEventListener("mouseenter", () => {
+        editButton.style.display = "block";
       });
 
-      dom.addEventListener('mouseleave', () => {
-        editButton.style.display = 'none';
+      dom.addEventListener("mouseleave", () => {
+        editButton.style.display = "none";
       });
 
-      editButton.addEventListener('click', (e) => {
+      editButton.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const event = new CustomEvent('editRichText', {
+        const event = new CustomEvent("editRichText", {
           detail: {
             richtextId: node.attrs.richtextId,
             config: node.attrs.config,
-            content: node.attrs.content || '',
+            content: node.attrs.content || "",
             updateRichText: (newAttrs: Partial<RichTextAttributes>) => {
               const pos = getPos();
-              if (typeof pos === 'number') {
-                const transaction = editor.view.state.tr.setNodeMarkup(pos, undefined, {
-                  ...node.attrs,
-                  ...newAttrs,
-                });
+              if (typeof pos === "number") {
+                const transaction = editor.view.state.tr.setNodeMarkup(
+                  pos,
+                  undefined,
+                  {
+                    ...node.attrs,
+                    ...newAttrs,
+                  },
+                );
                 editor.view.dispatch(transaction);
               }
             },
@@ -266,26 +274,26 @@ export const RichText = Node.create({
         window.dispatchEvent(event);
       });
 
-      dom.style.position = 'relative';
+      dom.style.position = "relative";
       dom.appendChild(editButton);
 
       return {
         dom,
         update: (updatedNode) => {
-          if (updatedNode.type.name !== 'richtext') return false;
+          if (updatedNode.type.name !== "richtext") return false;
 
           let updatedConfig: RichTextConfig = {
             maxWidth: null,
-            backgroundColor: '#f5f5f5',
+            backgroundColor: "#f5f5f5",
             padding: 16,
             borderRadius: 8,
-            border: '1px solid #e0e0e0',
+            border: "1px solid #e0e0e0",
           };
-          let updatedContent = '';
+          let updatedContent = "";
 
           if (updatedNode.attrs.config) {
             updatedConfig =
-              typeof updatedNode.attrs.config === 'string'
+              typeof updatedNode.attrs.config === "string"
                 ? JSON.parse(updatedNode.attrs.config)
                 : updatedNode.attrs.config;
           }
@@ -302,21 +310,21 @@ export const RichText = Node.create({
           if (updatedConfig.maxWidth) {
             dom.style.maxWidth = `${updatedConfig.maxWidth}px`;
           } else {
-            dom.style.maxWidth = '';
+            dom.style.maxWidth = "";
           }
 
           if (updatedContent) {
             contentContainer.innerHTML = updatedContent;
           } else {
-            contentContainer.innerHTML = '';
+            contentContainer.innerHTML = "";
           }
 
           return true;
         },
         destroy: () => {
-          dom.removeEventListener('mouseenter', () => {});
-          dom.removeEventListener('mouseleave', () => {});
-          editButton.removeEventListener('click', () => {});
+          dom.removeEventListener("mouseenter", () => {});
+          dom.removeEventListener("mouseleave", () => {});
+          editButton.removeEventListener("click", () => {});
         },
       };
     };
@@ -325,17 +333,20 @@ export const RichText = Node.create({
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey('richtextPlugin'),
+        key: new PluginKey("richtextPlugin"),
         view: () => ({
           update: () => {
             setTimeout(() => {
-              const richtextContainers = document.querySelectorAll('.richtext-container');
+              const richtextContainers = document.querySelectorAll(
+                ".richtext-container",
+              );
               richtextContainers.forEach((container) => {
-                const contentDiv = container.querySelector('.richtext-content');
+                const contentDiv = container.querySelector(".richtext-content");
                 if (contentDiv) {
                   const htmlContent =
-                    contentDiv.textContent || (contentDiv as HTMLElement).innerText;
-                  if (htmlContent && htmlContent.trim().startsWith('<')) {
+                    contentDiv.textContent ||
+                    (contentDiv as HTMLElement).innerText;
+                  if (htmlContent && htmlContent.trim().startsWith("<")) {
                     (contentDiv as HTMLElement).innerHTML = htmlContent;
                   }
                 }

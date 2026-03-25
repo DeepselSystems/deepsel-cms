@@ -1,15 +1,19 @@
-import { mergeAttributes, Node } from '@tiptap/core';
-import type { Command } from '@tiptap/core';
-import { ReactNodeViewRenderer } from '@tiptap/react';
-import EditorNodeView from './components/EditorNodeView';
-import { AUDIO_WIDTH_DEFAULT, EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES } from './utils';
+import { mergeAttributes, Node } from "@tiptap/core";
+import type { Command } from "@tiptap/core";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import EditorNodeView from "./components/EditorNodeView";
+import {
+  AUDIO_WIDTH_DEFAULT,
+  EMBED_AUDIO_ATTRIBUTES,
+  EMBED_AUDIO_CLASSES,
+} from "./utils";
 
 interface EmbedAudioOptions {
   src: string;
   width?: number;
 }
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     embedAudio: {
       setEmbedAudio: (options: EmbedAudioOptions) => ReturnType;
@@ -23,9 +27,9 @@ declare module '@tiptap/core' {
  * Allows embedding audio files with basic player controls
  */
 export const EmbedAudio = Node.create({
-  name: 'embedAudio',
+  name: "embedAudio",
 
-  group: 'block',
+  group: "block",
 
   atom: true,
 
@@ -44,7 +48,7 @@ export const EmbedAudio = Node.create({
         parseHTML: (element) => {
           return (
             element.getAttribute(EMBED_AUDIO_ATTRIBUTES.SRC) ||
-            element.querySelector('audio')?.getAttribute('src') ||
+            element.querySelector("audio")?.getAttribute("src") ||
             null
           );
         },
@@ -62,7 +66,7 @@ export const EmbedAudio = Node.create({
         parseHTML: (element) => {
           const width =
             element.getAttribute(EMBED_AUDIO_ATTRIBUTES.WIDTH) ||
-            element.querySelector('audio')?.getAttribute('width');
+            element.querySelector("audio")?.getAttribute("width");
           return width ? parseInt(width, 10) : AUDIO_WIDTH_DEFAULT;
         },
         renderHTML: (attributes) => {
@@ -90,12 +94,12 @@ export const EmbedAudio = Node.create({
     const { src, width } = node.attrs;
 
     const audioElement = [
-      'div',
+      "div",
       {
         class: EMBED_AUDIO_CLASSES.AUDIO_CONTAINER,
       },
       [
-        'audio',
+        "audio",
         {
           src,
           controls: true,
@@ -107,12 +111,13 @@ export const EmbedAudio = Node.create({
     const elements = [audioElement];
 
     return [
-      'div',
+      "div",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true',
+        [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: "true",
         [EMBED_AUDIO_ATTRIBUTES.SRC]: src,
-        [EMBED_AUDIO_ATTRIBUTES.WIDTH]: width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
+        [EMBED_AUDIO_ATTRIBUTES.WIDTH]:
+          width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
       }),
       ...elements,
     ];

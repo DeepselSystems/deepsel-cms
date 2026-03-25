@@ -1,4 +1,4 @@
-import { AUTOCOMPLETE_CONSTANTS } from './constants';
+import { AUTOCOMPLETE_CONSTANTS } from "./constants";
 
 /**
  * Check if the current sentence is incomplete
@@ -71,7 +71,7 @@ export function createGhostTextCSS(): string {
  * @returns {string} - Escaped text
  */
 export function escapeHTML(text: string): string {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
@@ -104,6 +104,9 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function isRelevantKey(event: KeyboardEvent): boolean {
   return (
-    [AUTOCOMPLETE_CONSTANTS.KEYS.TAB, AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE] as string[]
+    [
+      AUTOCOMPLETE_CONSTANTS.KEYS.TAB,
+      AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE,
+    ] as string[]
   ).includes(event.key);
 }

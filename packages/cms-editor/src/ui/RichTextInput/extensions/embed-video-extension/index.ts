@@ -1,16 +1,16 @@
-import { mergeAttributes, Node } from '@tiptap/core';
-import type { Command } from '@tiptap/core';
-import { ReactNodeViewRenderer } from '@tiptap/react';
-import EditorNodeView from './components/EditorNodeView';
+import { mergeAttributes, Node } from "@tiptap/core";
+import type { Command } from "@tiptap/core";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import EditorNodeView from "./components/EditorNodeView";
 import {
   EMBED_VIDEO_ATTRIBUTES,
   EMBED_VIDEO_CLASSES,
   VIDEO_WIDTH_DEFAULT,
   VIDEO_HEIGHT_DEFAULT,
-} from './utils';
-import type { EmbedVideoOptions } from './types';
+} from "./utils";
+import type { EmbedVideoOptions } from "./types";
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     embedVideo: {
       setEmbedVideo: (options: EmbedVideoOptions) => ReturnType;
@@ -24,9 +24,9 @@ declare module '@tiptap/core' {
  * Allows embedding video files with basic player controls
  */
 export const EmbedVideo = Node.create({
-  name: 'embedVideo',
+  name: "embedVideo",
 
-  group: 'block',
+  group: "block",
 
   atom: true,
 
@@ -45,7 +45,7 @@ export const EmbedVideo = Node.create({
         parseHTML: (element) => {
           return (
             element.getAttribute(EMBED_VIDEO_ATTRIBUTES.SRC) ||
-            element.querySelector('video')?.getAttribute('src') ||
+            element.querySelector("video")?.getAttribute("src") ||
             null
           );
         },
@@ -63,7 +63,7 @@ export const EmbedVideo = Node.create({
         parseHTML: (element) => {
           const width =
             element.getAttribute(EMBED_VIDEO_ATTRIBUTES.WIDTH) ||
-            element.querySelector('video')?.getAttribute('width');
+            element.querySelector("video")?.getAttribute("width");
           return width ? width : VIDEO_WIDTH_DEFAULT;
         },
         renderHTML: (attributes) => {
@@ -78,7 +78,7 @@ export const EmbedVideo = Node.create({
         parseHTML: (element) => {
           const height =
             element.getAttribute(EMBED_VIDEO_ATTRIBUTES.HEIGHT) ||
-            element.querySelector('video')?.getAttribute('height');
+            element.querySelector("video")?.getAttribute("height");
           return height ? height : VIDEO_HEIGHT_DEFAULT;
         },
         renderHTML: (attributes) => {
@@ -106,12 +106,12 @@ export const EmbedVideo = Node.create({
     const { src, width, height } = node.attrs;
 
     const videoElement = [
-      'div',
+      "div",
       {
         class: EMBED_VIDEO_CLASSES.VIDEO_CONTAINER,
       },
       [
-        'video',
+        "video",
         {
           src: src,
           width: width,
@@ -125,13 +125,15 @@ export const EmbedVideo = Node.create({
     const elements = [videoElement];
 
     return [
-      'div',
+      "div",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        [EMBED_VIDEO_ATTRIBUTES.CONTAINER]: 'true',
+        [EMBED_VIDEO_ATTRIBUTES.CONTAINER]: "true",
         [EMBED_VIDEO_ATTRIBUTES.SRC]: src,
-        [EMBED_VIDEO_ATTRIBUTES.WIDTH]: width?.toString() || VIDEO_WIDTH_DEFAULT.toString(),
-        [EMBED_VIDEO_ATTRIBUTES.HEIGHT]: height?.toString() || VIDEO_HEIGHT_DEFAULT.toString(),
+        [EMBED_VIDEO_ATTRIBUTES.WIDTH]:
+          width?.toString() || VIDEO_WIDTH_DEFAULT.toString(),
+        [EMBED_VIDEO_ATTRIBUTES.HEIGHT]:
+          height?.toString() || VIDEO_HEIGHT_DEFAULT.toString(),
       }),
       ...elements,
     ];
@@ -156,7 +158,7 @@ export const EmbedVideo = Node.create({
               src: options.src,
               width: options.width || VIDEO_WIDTH_DEFAULT,
               height: options.height || VIDEO_HEIGHT_DEFAULT,
-              title: options.title || '',
+              title: options.title || "",
             },
           });
         },
