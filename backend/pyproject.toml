@@ -51,7 +51,7 @@ dependencies = [
     "PyYAML==6.0.2",
     "python3-saml==1.16.0",
     "strawberry-graphql[fastapi]",
-    "deepsel==0.6.0",
+    "deepsel==0.7.2",
 ]
 
 [project.optional-dependencies]
