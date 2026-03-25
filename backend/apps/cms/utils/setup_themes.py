@@ -10,7 +10,6 @@ import time
 import logging
 import hashlib
 
-from _pytest.stash import D
 from deepsel.utils.install_apps import import_csv_data
 from apps.core.utils.models_pool import models_pool
 from db import get_db_context
@@ -21,21 +20,23 @@ from .theme_language import ensure_language_theme_exists
 from .sync_utils import sync_directory
 from platformdirs import user_data_dir
 from traceback import print_exc
-from settings import ENVIRONMENT
 
 logger = logging.getLogger(__name__)
 
 STATE_FILENAME = ".theme_state.json"
 
+LOCAL_PACKAGES = os.getenv("LOCAL_PACKAGES", "").lower() in ("true", "1", "yes")
+
 
 def setup_themes(force_build=False, force_sync=False):
     """
     Setup themes - idempotent function that can be called on server start or after file edits:
-    0. Generate theme imports in [...slug].astro
-    1. Sync client folder to client_build (only if source changed)
-    2. Reconcile files from DB (DB is source of truth for edited files)
-    3. Run npm install (only if dependencies changed)
-    4. Run npm build (only if inputs changed, or force_build=True)
+    1. Sync client and themes folders to data dir (only if source changed)
+    2. If LOCAL_PACKAGES: also sync admin/, packages/, root workspace files,
+       and build local packages (for development before packages are published)
+    3. Reconcile files from DB (DB is source of truth for edited files)
+    4. Run npm install (only if dependencies changed)
+    5. Run npm build (only if inputs changed, or force_build=True)
 
     Args:
         force_build: If True, always run build regardless of hash checks
@@ -43,7 +44,10 @@ def setup_themes(force_build=False, force_sync=False):
     """
     start_time = time.time()
     data_dir = user_data_dir("deepsel-cms", "deepsel")
-    logger.info(f"Setting up themes with data dir {data_dir}")
+    logger.info(
+        f"Setting up themes with data dir {data_dir} "
+        f"(LOCAL_PACKAGES={'on' if LOCAL_PACKAGES else 'off'})"
+    )
 
     user_shell = os.environ.get("SHELL", "/bin/sh")
 
@@ -75,29 +79,46 @@ def setup_themes(force_build=False, force_sync=False):
             logger.info(f"Creating {client_build_path} directory...")
             os.makedirs(client_build_path, exist_ok=True)
 
+        # Clean up stale workspace files when not using local packages
+        if not LOCAL_PACKAGES:
+            for stale in ("package.json", "package-lock.json"):
+                stale_path = os.path.join(data_dir, stale)
+                if os.path.exists(stale_path):
+                    os.remove(stale_path)
+                    logger.info(f"Removed stale workspace file {stale}")
+            for stale_dir in ("admin", "packages"):
+                stale_path = os.path.join(data_dir, stale_dir)
+                if os.path.exists(stale_path):
+                    shutil.rmtree(stale_path)
+                    logger.info(f"Removed stale workspace directory {stale_dir}")
+
         # Directories to exclude from sync
         EXCLUDE_DIRS = {"node_modules", "dist", ".astro", ".git"}
 
-        # Step 1: Calculate hashes for each major folder independently
+        # Calculate hashes for core folders (always needed)
         package_lock_hash = hash_file(os.path.join(client_path, "package-lock.json"))
-
-        # Hash individual folders
         themes_src = "../themes"
-        admin_src = "../admin"
-        packages_src = "../packages"
-
         themes_hash = hash_directory(themes_src)
-        admin_hash = hash_directory(admin_src)
-        packages_hash = hash_directory(packages_src)
         client_hash = hash_directory(client_path)
 
-        # Check what needs syncing
         need_themes_sync = (
             force_sync or previous_state.get("themes_hash") != themes_hash
         )
-        need_admin_sync = previous_state.get("admin_hash") != admin_hash
-        need_packages_sync = previous_state.get("packages_hash") != packages_hash
         need_client_sync = previous_state.get("client_hash") != client_hash
+
+        # Hashes for local package development (only computed when needed)
+        admin_hash = None
+        packages_hash = None
+        need_admin_sync = False
+        need_packages_sync = False
+
+        if LOCAL_PACKAGES:
+            admin_src = "../admin"
+            packages_src = "../packages"
+            admin_hash = hash_directory(admin_src)
+            packages_hash = hash_directory(packages_src)
+            need_admin_sync = previous_state.get("admin_hash") != admin_hash
+            need_packages_sync = previous_state.get("packages_hash") != packages_hash
 
         # Sync themes if changed
         if need_themes_sync and os.path.exists(themes_src):
@@ -108,84 +129,91 @@ def setup_themes(force_build=False, force_sync=False):
         else:
             logger.info("Themes folder unchanged; skipping sync")
 
-        # Sync admin if changed
-        if need_admin_sync and os.path.exists(admin_src):
-            admin_dst = os.path.join(data_dir, "admin")
-            os.makedirs(admin_dst, exist_ok=True)
-            sync_directory(src=admin_src, dst=admin_dst, exclude_dirs=EXCLUDE_DIRS)
-            logger.info("Admin folder synced successfully")
-        else:
-            logger.info("Admin folder unchanged; skipping sync")
+        # Local packages: sync admin, root workspace files, and packages
+        if LOCAL_PACKAGES:
+            admin_src = "../admin"
+            packages_src = "../packages"
 
-        # Sync root package.json and package-lock.json (before package builds
-        # so workspace symlinks resolve inter-package dependencies locally)
-        root_package_json = "../package.json"
-        root_package_lock = "../package-lock.json"
-        if os.path.exists(root_package_json):
-            shutil.copy2(root_package_json, os.path.join(data_dir, "package.json"))
-            logger.debug("Synced root package.json")
-        if os.path.exists(root_package_lock):
-            shutil.copy2(root_package_lock, os.path.join(data_dir, "package-lock.json"))
-            logger.debug("Synced root package-lock.json")
+            if need_admin_sync and os.path.exists(admin_src):
+                admin_dst = os.path.join(data_dir, "admin")
+                os.makedirs(admin_dst, exist_ok=True)
+                sync_directory(src=admin_src, dst=admin_dst, exclude_dirs=EXCLUDE_DIRS)
+                logger.info("Admin folder synced successfully")
+            else:
+                logger.info("Admin folder unchanged; skipping sync")
 
-        # Sync packages if changed
-        if need_packages_sync and os.path.exists(packages_src):
-            logger.info("Packages folder changes detected; syncing...")
-            packages_dst = os.path.join(data_dir, "packages")
-            os.makedirs(packages_dst, exist_ok=True)
-            sync_directory(
-                src=packages_src, dst=packages_dst, exclude_dirs=EXCLUDE_DIRS
-            )
-            logger.info("Packages folder synced successfully")
+            # Sync root workspace files so npm workspaces resolve locally
+            root_package_json = "../package.json"
+            root_package_lock = "../package-lock.json"
+            if os.path.exists(root_package_json):
+                shutil.copy2(root_package_json, os.path.join(data_dir, "package.json"))
+                logger.debug("Synced root package.json")
+            if os.path.exists(root_package_lock):
+                shutil.copy2(
+                    root_package_lock, os.path.join(data_dir, "package-lock.json")
+                )
+                logger.debug("Synced root package-lock.json")
 
-            # Install at workspace root so inter-package deps resolve locally
-            logger.info("Running workspace npm install for packages...")
-            install_result = run_npm("npm install", cwd=data_dir)
-            if install_result.returncode != 0:
-                error_output = install_result.stdout + "\n" + install_result.stderr
-                logger.error(f"Workspace npm install failed: {error_output}")
-                raise RuntimeError(f"Workspace npm install failed: {error_output}")
-            logger.info("Workspace npm install completed")
+            # Sync and build packages if changed
+            if need_packages_sync and os.path.exists(packages_src):
+                logger.info("Packages folder changes detected; syncing...")
+                packages_dst = os.path.join(data_dir, "packages")
+                os.makedirs(packages_dst, exist_ok=True)
+                sync_directory(
+                    src=packages_src, dst=packages_dst, exclude_dirs=EXCLUDE_DIRS
+                )
+                logger.info("Packages folder synced successfully")
 
-            # Build packages in dependency order (packages depended on by
-            # siblings build first so their dist/ types are available)
-            pkg_subfolders = [
-                sf
-                for sf in os.listdir(packages_dst)
-                if os.path.isdir(os.path.join(packages_dst, sf))
-                and os.path.exists(os.path.join(packages_dst, sf, "package.json"))
-            ]
-            pkg_names = set()
-            for sf in pkg_subfolders:
-                pkg_json_path = os.path.join(packages_dst, sf, "package.json")
-                with open(pkg_json_path, "r") as f:
-                    pkg_names.add(json.load(f).get("name", ""))
+                # Install at workspace root so inter-package deps resolve locally
+                logger.info("Running workspace npm install for packages...")
+                install_result = run_npm("npm install", cwd=data_dir)
+                if install_result.returncode != 0:
+                    error_output = install_result.stdout + "\n" + install_result.stderr
+                    logger.error(f"Workspace npm install failed: {error_output}")
+                    raise RuntimeError(f"Workspace npm install failed: {error_output}")
+                logger.info("Workspace npm install completed")
 
-            def _local_dep_count(sf):
-                """Count how many sibling packages this package depends on."""
-                pkg_json_path = os.path.join(packages_dst, sf, "package.json")
-                with open(pkg_json_path, "r") as f:
-                    pkg = json.load(f)
-                all_deps = {
-                    **pkg.get("dependencies", {}),
-                    **pkg.get("devDependencies", {}),
-                }
-                return sum(1 for d in all_deps if d in pkg_names)
+                # Build packages in dependency order
+                packages_dst = os.path.join(data_dir, "packages")
+                pkg_subfolders = [
+                    sf
+                    for sf in os.listdir(packages_dst)
+                    if os.path.isdir(os.path.join(packages_dst, sf))
+                    and os.path.exists(os.path.join(packages_dst, sf, "package.json"))
+                ]
+                pkg_names = set()
+                for sf in pkg_subfolders:
+                    pkg_json_path = os.path.join(packages_dst, sf, "package.json")
+                    with open(pkg_json_path, "r") as f:
+                        pkg_names.add(json.load(f).get("name", ""))
 
-            pkg_subfolders.sort(key=_local_dep_count)
+                def _local_dep_count(sf):
+                    """Count how many sibling packages this package depends on."""
+                    pkg_json_path = os.path.join(packages_dst, sf, "package.json")
+                    with open(pkg_json_path, "r") as f:
+                        pkg = json.load(f)
+                    all_deps = {
+                        **pkg.get("dependencies", {}),
+                        **pkg.get("devDependencies", {}),
+                    }
+                    return sum(1 for d in all_deps if d in pkg_names)
 
-            for subfolder in pkg_subfolders:
-                subfolder_path = os.path.join(packages_dst, subfolder)
-                build_result = run_npm("npm run build", cwd=subfolder_path)
-                if build_result.returncode != 0:
-                    error_output = build_result.stdout + "\n" + build_result.stderr
-                    logger.error(f"npm run build failed in {subfolder}: {error_output}")
-                    raise RuntimeError(
-                        f"npm run build failed in {subfolder}: {error_output}"
-                    )
-                logger.info(f"npm run build completed in {subfolder}")
-        else:
-            logger.info("Packages folder unchanged; skipping sync")
+                pkg_subfolders.sort(key=_local_dep_count)
+
+                for subfolder in pkg_subfolders:
+                    subfolder_path = os.path.join(packages_dst, subfolder)
+                    build_result = run_npm("npm run build", cwd=subfolder_path)
+                    if build_result.returncode != 0:
+                        error_output = build_result.stdout + "\n" + build_result.stderr
+                        logger.error(
+                            f"npm run build failed in {subfolder}: {error_output}"
+                        )
+                        raise RuntimeError(
+                            f"npm run build failed in {subfolder}: {error_output}"
+                        )
+                    logger.info(f"npm run build completed in {subfolder}")
+            else:
+                logger.info("Packages folder unchanged; skipping sync")
 
         # Sync client folder
         if need_client_sync:
@@ -196,14 +224,13 @@ def setup_themes(force_build=False, force_sync=False):
         else:
             logger.info("Client folder unchanged; skipping sync")
 
-        # Step 2: Reconcile files from DB using SQLAlchemy models (only if themes changed)
+        # Reconcile files from DB (DB is source of truth for edited files)
         with get_db_context() as db:
             ThemeFileModel = models_pool.get("theme_file")
             theme_files = db.query(ThemeFileModel).all()
             db_hash = None
 
             if theme_files:
-                # Calculate hash from database models
                 db_hash = hash_theme_files(theme_files)
                 need_db_sync = (
                     need_themes_sync or previous_state.get("db_hash") != db_hash
@@ -217,9 +244,7 @@ def setup_themes(force_build=False, force_sync=False):
                             if not content.content:
                                 continue
 
-                            # Determine file path based on language
                             if content.lang_code:
-                                # Language version: ensure theme folder exists first
                                 ensure_language_theme_exists(
                                     lang_code=content.lang_code,
                                     theme_name=theme_file.theme_name,
@@ -233,7 +258,6 @@ def setup_themes(force_build=False, force_sync=False):
                                     theme_file.file_path,
                                 )
                             else:
-                                # Default version: data_dir/themes/{theme}/...
                                 file_path = os.path.join(
                                     data_dir,
                                     "themes",
@@ -241,10 +265,8 @@ def setup_themes(force_build=False, force_sync=False):
                                     theme_file.file_path,
                                 )
 
-                            # Ensure directory exists
                             os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-                            # Write content from DB (DB is source of truth)
                             with open(file_path, "w", encoding="utf-8") as f:
                                 f.write(content.content)
 
@@ -258,9 +280,10 @@ def setup_themes(force_build=False, force_sync=False):
             else:
                 logger.info("No theme edits in database to reconcile")
 
-        # Step 2.5: Generate theme imports for client_build (after cloning and reconciliation)
+        # Generate theme imports for client_build (after sync and reconciliation)
         generate_theme_imports(data_dir_path=data_dir)
 
+        # Determine if npm install is needed
         node_modules_path = os.path.join(client_build_path, "node_modules")
         need_install = (
             not os.path.exists(node_modules_path)
@@ -268,6 +291,7 @@ def setup_themes(force_build=False, force_sync=False):
             or need_themes_sync
         )
 
+        # Compute composite build inputs hash
         build_inputs_hasher = hashlib.sha256()
         for value in (
             themes_hash,
@@ -283,17 +307,19 @@ def setup_themes(force_build=False, force_sync=False):
         need_build = (
             force_build
             or need_themes_sync
-            or need_admin_sync
             or need_client_sync
             or need_install
             or previous_state.get("build_inputs_hash") != build_inputs_hash
             or not os.path.exists(dist_path)
         )
+        if LOCAL_PACKAGES:
+            need_build = need_build or need_admin_sync or need_packages_sync
 
-        # Step 3: Run npm install and npm build
+        # Run npm install
+        install_cwd = data_dir if LOCAL_PACKAGES else client_build_path
         if need_install:
             logger.info("Running npm install...")
-            install_result = run_npm("npm install", cwd=data_dir)
+            install_result = run_npm("npm install", cwd=install_cwd)
 
             if install_result.returncode != 0:
                 error_output = install_result.stdout + "\n" + install_result.stderr
@@ -306,10 +332,11 @@ def setup_themes(force_build=False, force_sync=False):
         else:
             logger.info("Dependencies unchanged; skipping npm install")
 
+        # Run npm build
+        build_cwd = data_dir if LOCAL_PACKAGES else client_build_path
         if need_build:
-            # Build main project
             logger.info("Running client build...")
-            build_result = run_npm("npm run build", cwd=data_dir, timeout=600)
+            build_result = run_npm("npm run build", cwd=build_cwd, timeout=600)
 
             if build_result.returncode != 0:
                 error_output = build_result.stdout + "\n" + build_result.stderr
@@ -324,13 +351,15 @@ def setup_themes(force_build=False, force_sync=False):
 
         state_payload = {
             "themes_hash": themes_hash,
-            "admin_hash": admin_hash,
             "client_hash": client_hash,
             "db_hash": db_hash,
             "package_lock_hash": package_lock_hash,
-            "packages_hash": packages_hash,
             "build_inputs_hash": build_inputs_hash,
         }
+        if LOCAL_PACKAGES:
+            state_payload["admin_hash"] = admin_hash
+            state_payload["packages_hash"] = packages_hash
+
         save_setup_state(state_path, state_payload)
 
         logger.info(f"Theme setup completed in {time.time() - start_time:.2f} seconds")
