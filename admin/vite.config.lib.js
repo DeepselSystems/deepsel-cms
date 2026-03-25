@@ -83,6 +83,8 @@ export default defineConfig({
         'react-device-detect',
         'react-simple-code-editor',
         'prismjs',
+        '@deepsel/cms-react',
+        '@deepsel/cms-utils',
       ],
     },
     outDir: 'dist',

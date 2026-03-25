@@ -50,6 +50,8 @@
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
+    "@deepsel/cms-react": ">=1.0.0",
+    "@deepsel/cms-utils": ">=1.1.0",
     "@capacitor/app": ">=7.0.0",
     "@capacitor/core": ">=7.0.0",
     "@capacitor/device": ">=7.0.0",
