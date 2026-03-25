@@ -1,24 +1,13 @@
 import os
 
 from fastapi import Depends, File, Response, UploadFile, status, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from settings import (
-    S3_BUCKET,
-    AZURE_STORAGE_CONTAINER,
-    CLAMAV_HOST,
-    S3_PRESIGN_EXPIRATION,
-    UPLOAD_SIZE_LIMIT,
-    MAX_STORAGE_LIMIT,
-)
+from settings import UPLOAD_SIZE_LIMIT
 from db import get_db
-from deepsel.orm.attachment_mixin import AttachmentTypeOptions
 from deepsel.utils.crud_router import CRUDRouter
 from apps.core.utils.get_current_user import get_current_user
-from clamd import ClamdNetworkSocket
-from datetime import datetime, timedelta, UTC
 from apps.core.utils.models_pool import models_pool
-from urllib.parse import quote
 from apps.core.schemas.attachment import (
     AttachmentRead,
     AttachmentUpdate,
@@ -48,12 +37,9 @@ def get_upload_size_limit():
 
 @router.get("/storage/info", response_model=StorageInfoResponse)
 def get_storage_info(db: Session = Depends(get_db)):
-    # Calculate total storage used
-    total_size_bytes = db.query(func.sum(Model.filesize)).scalar() or 0
-    total_size_mb = total_size_bytes / (1024 * 1024)  # Convert bytes to MB
-
+    info = Model.check_storage_quota(db)
     return StorageInfoResponse(
-        used_storage=total_size_mb, max_storage=MAX_STORAGE_LIMIT, unit="MB"
+        used_storage=info["used_mb"], max_storage=info["max_mb"], unit="MB"
     )
 
 
@@ -65,41 +51,17 @@ def upload_files(
     user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Check storage limit if MAX_STORAGE_LIMIT is set
-    if MAX_STORAGE_LIMIT is not None:
-        # Calculate current total storage used
-        current_size_bytes = db.query(func.sum(Model.filesize)).scalar() or 0
-        current_size_mb = current_size_bytes / (1024 * 1024)  # Convert bytes to MB
+    # Calculate total size of new files for quota check
+    total_new_bytes = 0
+    for file in files:
+        file.file.seek(0, os.SEEK_END)
+        total_new_bytes += file.file.tell()
+        file.file.seek(0)
 
-        # Calculate size of new files
-        new_files_size = 0
-        for file in files:
-            file.file.seek(0, os.SEEK_END)
-            new_files_size += file.file.tell()
-            file.file.seek(0)  # Reset file pointer
-
-        new_files_size_mb = new_files_size / (1024 * 1024)  # Convert bytes to MB
-
-        # Check if upload would exceed the storage limit
-        if current_size_mb + new_files_size_mb > MAX_STORAGE_LIMIT:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Upload would exceed storage limit of {MAX_STORAGE_LIMIT} MB. Current usage: {current_size_mb:.2f} MB",
-            )
+    Model.check_storage_quota(db, total_new_bytes)
 
     instances = []
     for file in files:
-        if CLAMAV_HOST:
-            clamav = ClamdNetworkSocket(CLAMAV_HOST, 3310)
-            scan_result = clamav.instream(file.file)
-            file.file.seek(0)  # reset file pointer to the beginning
-            ok = scan_result["stream"][0] == "OK"
-            if not ok:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail="File infected!"
-                )
-
-        # Include alt_text if provided
         kwargs = {}
         if alt_text:
             kwargs["alt_text"] = alt_text
@@ -116,57 +78,13 @@ def serve_file(
     user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Retrieve the file instance from the database
-    instance = Model.get_by_name(
-        db, file_name
-    )  # Update with your actual method to retrieve the file instance
+    instance = Model.get_by_name(db, file_name)
     if not instance:
-        response.status_code = status.HTTP_404_NOT_FOUND
-        return {"detail": "File not found"}
-    if instance.type == AttachmentTypeOptions.s3:
-        # Redirect to the S3 pre-signed URL
-        presigned_url = Model.get_s3_client().generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": S3_BUCKET, "Key": instance.name},
-            ExpiresIn=S3_PRESIGN_EXPIRATION.total_seconds(),
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
         )
-        response.headers["Location"] = presigned_url
-        response.status_code = status.HTTP_302_FOUND
-        response.media_type = instance.content_type
-        return response
 
-    elif instance.type == AttachmentTypeOptions.azure:
-        from azure.storage.blob import generate_blob_sas, BlobSasPermissions
-
-        blob_service_client = Model.get_azure_blob_client()
-        # Get the account key
-        account_key = blob_service_client.credential.account_key
-        account_name = blob_service_client.account_name
-        # Generate the SAS token
-        sas_token = generate_blob_sas(
-            blob_name=file_name,
-            account_name=account_name,
-            account_key=account_key,
-            container_name=AZURE_STORAGE_CONTAINER,
-            permission=BlobSasPermissions(read=True),
-            expiry=datetime.now(UTC) + timedelta(minutes=30),
-        )
-        presigned_url = f"https://{account_name}.blob.core.windows.net/{AZURE_STORAGE_CONTAINER}/{quote(file_name)}?{sas_token}"
-        response.headers["Location"] = presigned_url
-        response.status_code = status.HTTP_302_FOUND
-        response.media_type = instance.content_type
-        return response
-    elif instance.type == AttachmentTypeOptions.local:
-        # Serve the file from the local disk
-        try:
-            local_path = os.path.join(Model.local_directory, instance.name)
-            with open(local_path, "rb") as f:
-                content = f.read()
-            response.headers["Content-Type"] = instance.content_type
-            return Response(content, media_type=instance.content_type)
-        except FileNotFoundError:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"detail": "File not found"}
-    else:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"detail": "Unsupported file type or storage mechanism"}
+    result = instance.get_serve_result()
+    if result.redirect_url:
+        return RedirectResponse(url=result.redirect_url, status_code=302)
+    return Response(content=result.content, media_type=result.content_type)

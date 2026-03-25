@@ -59,3 +59,32 @@ class AttachmentModel(Base, AttachmentMixin, BaseModel):
         from settings import UPLOAD_SIZE_LIMIT
 
         return UPLOAD_SIZE_LIMIT
+
+    @classmethod
+    def _get_s3_presign_expiration(cls):
+        from settings import S3_PRESIGN_EXPIRATION
+
+        return int(S3_PRESIGN_EXPIRATION.total_seconds())
+
+    @classmethod
+    def _get_max_storage_limit(cls):
+        from settings import MAX_STORAGE_LIMIT
+
+        return MAX_STORAGE_LIMIT
+
+    @classmethod
+    def _pre_upload_check(cls, file):
+        from settings import CLAMAV_HOST
+
+        if CLAMAV_HOST:
+            from clamd import ClamdNetworkSocket
+            from fastapi import HTTPException, status
+
+            clamav = ClamdNetworkSocket(CLAMAV_HOST, 3310)
+            scan_result = clamav.instream(file.file)
+            file.file.seek(0)
+            if scan_result["stream"][0] != "OK":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="File infected!",
+                )
