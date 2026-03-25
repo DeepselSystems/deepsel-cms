@@ -1,5 +1,8 @@
 import_order = [
     "organization.csv",
+    "currency.csv",
+    "country.csv",
+    "locale.csv",
     "role.csv",
     "user.csv",
     "user_role.csv",

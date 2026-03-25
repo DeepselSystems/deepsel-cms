@@ -4,7 +4,7 @@ from apps.core.utils.models_pool import models_pool
 from deepsel.utils import migration_task
 from apps.core.utils import encrypt, decrypt
 from .models.organization import CMSSettingsModel
-from apps.locales.models.locale import LocaleModel
+from apps.core.models.locale import LocaleModel
 from db import get_db_context
 
 logger = logging.getLogger(__name__)

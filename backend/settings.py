@@ -7,7 +7,6 @@ load_dotenv()
 
 installed_apps = [
     "core",
-    "locales",
     "cms",
 ]
 

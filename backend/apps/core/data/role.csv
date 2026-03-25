@@ -30,3 +30,9 @@ user_role,User,"[
     ""activity:*:own""
 ]",false,false,true
 public_role,Public User,[],false,true,true
+locales_public_role,Locales Public Role,"[
+    ""currency:read:org"",
+    ""country:read:org"",
+    ""locale:read:org"",
+    ""form_submission:*:*""
+]",true,true

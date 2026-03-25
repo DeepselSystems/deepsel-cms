@@ -1,3 +1,4 @@
 string_id,role/role_id,role/implied_role_id
 imply_user_public_user,user_role,public_role
 imply_admin_normal_user,admin_role,user_role
+imply_locales_public_role,public_role,locales_public_role
