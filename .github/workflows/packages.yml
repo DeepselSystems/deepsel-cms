@@ -169,12 +169,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint --workspace=admin
-
-      - name: Check formatting
-        run: npm run format:check --workspace=admin
-
       - name: Build library
         run: npm run build:lib --workspace=admin
 

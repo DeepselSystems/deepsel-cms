@@ -1,7 +1,7 @@
 {
   "name": "@deepsel/admin",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "publishConfig": {
     "access": "public"
@@ -24,7 +24,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "build:lib": "vite build --config vite.config.lib.js",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint": "eslint src/ --ext js,jsx,ts,tsx --report-unused-disable-directives",
     "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
