@@ -162,32 +162,86 @@
     "tiptap-extension-font-size": ">=1.0.0"
   },
   "peerDependenciesMeta": {
-    "@mantine/dropzone": { "optional": true },
-    "@mantine/modals": { "optional": true },
-    "@mantine/tiptap": { "optional": true },
-    "@tiptap/core": { "optional": true },
-    "@tiptap/extension-code-block-lowlight": { "optional": true },
-    "@tiptap/extension-details": { "optional": true },
-    "@tiptap/extension-details-content": { "optional": true },
-    "@tiptap/extension-details-summary": { "optional": true },
-    "@tiptap/extension-highlight": { "optional": true },
-    "@tiptap/extension-image": { "optional": true },
-    "@tiptap/extension-link": { "optional": true },
-    "@tiptap/extension-paragraph": { "optional": true },
-    "@tiptap/extension-placeholder": { "optional": true },
-    "@tiptap/extension-subscript": { "optional": true },
-    "@tiptap/extension-superscript": { "optional": true },
-    "@tiptap/extension-table": { "optional": true },
-    "@tiptap/extension-table-cell": { "optional": true },
-    "@tiptap/extension-table-header": { "optional": true },
-    "@tiptap/extension-table-row": { "optional": true },
-    "@tiptap/extension-text-align": { "optional": true },
-    "@tiptap/extension-text-style": { "optional": true },
-    "@tiptap/extension-underline": { "optional": true },
-    "@tiptap/extension-youtube": { "optional": true },
-    "@tiptap/pm": { "optional": true },
-    "@tiptap/react": { "optional": true },
-    "@tiptap/starter-kit": { "optional": true },
-    "tiptap-extension-font-size": { "optional": true }
+    "@mantine/dropzone": {
+      "optional": true
+    },
+    "@mantine/modals": {
+      "optional": true
+    },
+    "@mantine/tiptap": {
+      "optional": true
+    },
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-code-block-lowlight": {
+      "optional": true
+    },
+    "@tiptap/extension-details": {
+      "optional": true
+    },
+    "@tiptap/extension-details-content": {
+      "optional": true
+    },
+    "@tiptap/extension-details-summary": {
+      "optional": true
+    },
+    "@tiptap/extension-highlight": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/extension-paragraph": {
+      "optional": true
+    },
+    "@tiptap/extension-placeholder": {
+      "optional": true
+    },
+    "@tiptap/extension-subscript": {
+      "optional": true
+    },
+    "@tiptap/extension-superscript": {
+      "optional": true
+    },
+    "@tiptap/extension-table": {
+      "optional": true
+    },
+    "@tiptap/extension-table-cell": {
+      "optional": true
+    },
+    "@tiptap/extension-table-header": {
+      "optional": true
+    },
+    "@tiptap/extension-table-row": {
+      "optional": true
+    },
+    "@tiptap/extension-text-align": {
+      "optional": true
+    },
+    "@tiptap/extension-text-style": {
+      "optional": true
+    },
+    "@tiptap/extension-underline": {
+      "optional": true
+    },
+    "@tiptap/extension-youtube": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "tiptap-extension-font-size": {
+      "optional": true
+    }
   }
 }
