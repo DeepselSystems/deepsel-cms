@@ -100,7 +100,7 @@ jobs:
 
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-utils'
-        run: npm publish --workspace=packages/cms-utils
+        run: npm publish --provenance --workspace=packages/cms-utils
 
   # cms-react CI
   cms-react:
@@ -145,7 +145,7 @@ jobs:
 
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'cms-react'
-        run: npm publish --workspace=packages/cms-react
+        run: npm publish --provenance --workspace=packages/cms-react
 
   # admin CI
   admin:
@@ -178,4 +178,4 @@ jobs:
 
       - name: Publish package
         if: needs.detect-changes.outputs.tagged-package == 'admin'
-        run: npm publish --workspace=admin
+        run: npm publish --provenance --workspace=admin
