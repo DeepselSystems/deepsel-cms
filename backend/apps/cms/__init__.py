@@ -186,6 +186,13 @@ def upgrade(db, from_version, to_version):
     setup_themes()
     load_theme_seed_data()
 
+    # Start the Astro client after themes are built
+    from .utils.client_process import get_client_manager
+
+    manager = get_client_manager()
+    if manager:
+        manager.start()
+
     # Call background task if need start api server as sooon as possible
     asyncio.create_task(demo_running_background_task(db))
 

@@ -84,6 +84,17 @@ cd client && npm run dev
 
 The client proxies `/api/v1` to `http://localhost:8000`. Default login: `admin` / `1234`.
 
+### Backend Environment Variables
+
+Key env vars in `backend/.env.sample` (beyond DB/auth config):
+
+- **`LOCAL_PACKAGES`** (`false`) — Set to `true` to build `@deepsel` packages from local source instead of npm
+- **`NO_CLIENT`** (`false`) — Set to `true` to skip starting the Astro client (useful when running the client separately via `cd client && npm run dev`)
+- **`CLIENT_HOST`** (`0.0.0.0`) — Host for the Astro client server
+- **`CLIENT_PORT`** (`4321`) — Port for the Astro client server
+- **`ONLY_MIGRATE`** (`false`) — Run DB migrations only and exit (for K8s init containers)
+- **`NO_MIGRATE`** (`false`) — Skip DB migrations and startup logic (for K8s main containers)
+
 ## After Making Edits
 
 Run `make prepush` from `backend/` after any backend changes. This runs lint, security, format-check, and tests and must pass before committing.

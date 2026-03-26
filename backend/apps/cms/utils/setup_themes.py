@@ -106,7 +106,7 @@ def setup_themes(force_build=False, force_sync=False):
                     logger.info(f"Removed stale workspace directory {stale_dir}")
 
         # Directories to exclude from sync
-        EXCLUDE_DIRS = {"node_modules", "dist", ".astro", ".git", "tsconfig.json"}
+        EXCLUDE_DIRS = {"node_modules", "dist", ".astro", ".git"}
 
         # Calculate hashes for core folders (always needed)
         package_lock_hash = hash_file(os.path.join(client_path, "package-lock.json"))
@@ -227,6 +227,18 @@ def setup_themes(force_build=False, force_sync=False):
                     logger.info(f"npm run build completed in {subfolder}")
             else:
                 logger.info("Packages folder unchanged; skipping sync")
+
+            # Build admin library (depends on packages, so runs after them)
+            if need_admin_sync or need_packages_sync:
+                admin_dst = os.path.join(data_dir, "admin")
+                if os.path.exists(admin_dst):
+                    logger.info("Building admin library...")
+                    admin_build = run_npm("npm run build:lib", cwd=admin_dst)
+                    if admin_build.returncode != 0:
+                        error_output = admin_build.stdout + "\n" + admin_build.stderr
+                        logger.error(f"Admin build:lib failed: {error_output}")
+                        raise RuntimeError(f"Admin build:lib failed: {error_output}")
+                    logger.info("Admin library build completed")
 
         # Sync client folder
         if need_client_sync:

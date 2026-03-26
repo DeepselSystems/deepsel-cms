@@ -18,6 +18,6 @@ WORKDIR /usr/src/app/backend
 COPY crontab /tmp/crontab
 RUN cat /tmp/crontab > /etc/crontabs/root
 
-EXPOSE 8000
+EXPOSE 8000 4321
 
 CMD [ "sh", "./entrypoint.sh" ]

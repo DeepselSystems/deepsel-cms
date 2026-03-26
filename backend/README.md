@@ -33,6 +33,28 @@ uvicorn main:app --reload
 
 The application supports environment variables to control database migration behavior, particularly useful for Kubernetes deployments:
 
+#### `LOCAL_PACKAGES`
+
+- **Purpose**: Build `@deepsel` packages from local source instead of npm
+- **Usage**: `LOCAL_PACKAGES=true`
+- **Behavior**: When true, builds `@deepsel/cms-utils` and `@deepsel/cms-react` from the local `packages/` directory instead of pulling from npm
+
+#### `NO_CLIENT`
+
+- **Purpose**: Skip starting the Astro client during backend startup
+- **Usage**: `NO_CLIENT=true`
+- **Behavior**: Useful for local development when running the client separately via `cd client && npm run dev`
+
+#### `CLIENT_HOST`
+
+- **Purpose**: Set the host for the Astro client server
+- **Default**: `0.0.0.0`
+
+#### `CLIENT_PORT`
+
+- **Purpose**: Set the port for the Astro client server
+- **Default**: `4321`
+
 #### `ONLY_MIGRATE`
 
 - **Purpose**: Run database migrations only and exit (for init containers)

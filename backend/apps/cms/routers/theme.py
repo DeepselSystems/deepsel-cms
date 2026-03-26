@@ -412,6 +412,14 @@ def trigger_setup_themes(force_sync=False):
         setup_themes(force_build=True, force_sync=force_sync)
         load_theme_seed_data()
         logger.info("Theme setup completed successfully")
+
+        # Restart client to pick up the new build
+        from apps.cms.utils.client_process import get_client_manager
+
+        manager = get_client_manager()
+        if manager:
+            logger.info("Restarting Astro client after theme rebuild...")
+            manager.restart()
     except Exception as e:
         logger.error(f"Error during theme setup: {e}")
 

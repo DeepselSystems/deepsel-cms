@@ -95,6 +95,12 @@ async def lifespan(application: FastAPI):
     yield
 
     # --- Shutdown ---
+    from apps.cms.utils.client_process import get_client_manager
+
+    manager = get_client_manager()
+    if manager:
+        manager.shutdown()
+
     on_shutdown()
 
 
