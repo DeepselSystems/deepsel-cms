@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Function to check if PostgreSQL is ready
 wait_for_postgres() {
