@@ -1,3 +1,3 @@
-export * from './contexts';
-export * from './components';
-export { useLanguage } from './hooks/useLanguage';
+export * from './contexts/index.js';
+export * from './components/index.js';
+export { useLanguage } from './hooks/useLanguage.js';

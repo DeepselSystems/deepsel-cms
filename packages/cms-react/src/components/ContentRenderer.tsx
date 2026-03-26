@@ -1,5 +1,5 @@
 import React from 'react';
-import { useWebsiteData } from '../contexts/WebsiteDataContext';
+import { useWebsiteData } from '../contexts/WebsiteDataContext.js';
 
 export function ContentRenderer() {
   const { websiteData } = useWebsiteData();

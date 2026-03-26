@@ -1,2 +1,2 @@
-export * from './PageTransition';
-export * from './ContentRenderer';
+export * from './PageTransition.js';
+export * from './ContentRenderer.js';
