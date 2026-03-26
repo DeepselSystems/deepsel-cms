@@ -1,5 +1,5 @@
-import type { BlogListData } from './types';
-import type { Pagination } from '../page/getPathType';
+import type { BlogListData } from './types.js';
+import type { Pagination } from '../page/getPathType.js';
 
 interface FetchBlogListProps {
   lang?: string;

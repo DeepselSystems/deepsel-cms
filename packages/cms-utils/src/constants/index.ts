@@ -1,2 +1,2 @@
-export * from './websiteDataTypes';
-export * from './pagingTableParams';
+export * from './websiteDataTypes.js';
+export * from './pagingTableParams.js';

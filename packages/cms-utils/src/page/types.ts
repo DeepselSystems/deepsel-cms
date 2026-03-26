@@ -1,5 +1,5 @@
-import type { SiteSettings } from '../types';
-import type { MenuItem } from '../menus/types';
+import type { SiteSettings } from '../types.js';
+import type { MenuItem } from '../menus/types.js';
 
 export interface Language {
   id: number;

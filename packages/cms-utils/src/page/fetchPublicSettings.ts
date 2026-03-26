@@ -1,4 +1,4 @@
-import type { SiteSettings } from '../types';
+import type { SiteSettings } from '../types.js';
 
 /**
  * Fetches public settings from the backend

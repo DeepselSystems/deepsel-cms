@@ -1,5 +1,5 @@
-import { fetchPublicSettings } from './fetchPublicSettings';
-import type { SiteSettings } from '../types';
+import { fetchPublicSettings } from './fetchPublicSettings.js';
+import type { SiteSettings } from '../types.js';
 
 export interface SearchResultItem {
   id: string;

@@ -1,4 +1,4 @@
-import { WebsiteDataTypes, type WebsiteDataType } from '../constants';
+import { WebsiteDataTypes, type WebsiteDataType } from '../constants/index.js';
 
 export interface Pagination {
   page?: number;

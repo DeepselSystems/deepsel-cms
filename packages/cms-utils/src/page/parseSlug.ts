@@ -1,7 +1,7 @@
-import { isValidLanguageCode } from './isValidLanguageCode';
-import { getPathType } from './getPathType';
-import type { Pagination } from './getPathType';
-import type { WebsiteDataType } from '../constants';
+import { isValidLanguageCode } from './isValidLanguageCode.js';
+import { getPathType } from './getPathType.js';
+import type { Pagination } from './getPathType.js';
+import type { WebsiteDataType } from '../constants/index.js';
 
 export interface SlugParseResult {
   lang?: string;

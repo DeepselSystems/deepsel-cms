@@ -1,5 +1,5 @@
-import type { MenuItem } from './types';
-import type { WebsiteData } from '../types';
+import type { MenuItem } from './types.js';
+import type { WebsiteData } from '../types.js';
 
 // Check if a menu item should be marked as active
 export const isActiveMenu = (menuItem: MenuItem, websiteData: WebsiteData) => {

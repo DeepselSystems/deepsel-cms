@@ -1,6 +1,6 @@
-import type { BlogPostData } from './types';
-import { fetchPublicSettings } from '../page';
-import type { SiteSettings } from '../types';
+import type { BlogPostData } from './types.js';
+import { fetchPublicSettings } from '../page/index.js';
+import type { SiteSettings } from '../types.js';
 
 interface FetchBlogPostProps {
   path: string;

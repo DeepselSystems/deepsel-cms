@@ -1,2 +1,2 @@
-export * from './isActiveMenu';
-export * from './types';
+export * from './isActiveMenu.js';
+export * from './types.js';

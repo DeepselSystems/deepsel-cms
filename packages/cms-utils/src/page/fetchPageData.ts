@@ -1,6 +1,6 @@
-import { fetchPublicSettings } from './fetchPublicSettings';
-import type { PageData } from './types';
-import type { SiteSettings } from '../types';
+import { fetchPublicSettings } from './fetchPublicSettings.js';
+import type { PageData } from './types.js';
+import type { SiteSettings } from '../types.js';
 
 interface FetchPageDataProps {
   path: string;

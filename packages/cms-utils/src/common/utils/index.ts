@@ -1,5 +1,5 @@
-export * from './cookieUtils';
-export * from './isObjectOrArray';
+export * from './cookieUtils.js';
+export * from './isObjectOrArray.js';
 
 /**
  * Builds the full URL for an attachment file

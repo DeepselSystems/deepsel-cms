@@ -1,5 +1,5 @@
-import type { SiteSettings } from '../types';
-import type { SeoMetadata, LanguageAlternative } from '../page/types';
+import type { SiteSettings } from '../types.js';
+import type { SeoMetadata, LanguageAlternative } from '../page/types.js';
 
 export interface BlogPostAuthor {
   id: number;
