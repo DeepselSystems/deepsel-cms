@@ -9,7 +9,7 @@ from apps.cms.utils.search import SearchResponse, search_pages_and_posts
 from apps.cms.utils.translate_page_content import translate_page_content
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.cms.schemas.page import PageCreate, PageRead, PageSearch, PageUpdate
 from apps.core.utils.get_current_user import (
     get_current_user,
     get_current_user_optional,
@@ -17,14 +17,12 @@ from apps.core.utils.get_current_user import (
 from apps.core.utils.models_pool import models_pool
 
 table_name = "page"
-CRUDSchemas = generate_CRUD_schemas(table_name)
-
 
 router = CRUDRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=PageRead,
+    search_schema=PageSearch,
+    create_schema=PageCreate,
+    update_schema=PageUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )

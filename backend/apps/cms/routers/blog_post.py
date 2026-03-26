@@ -10,20 +10,24 @@ from apps.cms.utils.get_blog_post import BlogPostResponse, get_blog_post
 from apps.cms.utils.translate_blog_content import translate_blog_content
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.cms.schemas.blog_post import (
+    BlogPostCreate,
+    BlogPostRead,
+    BlogPostSearch,
+    BlogPostUpdate,
+)
 from apps.core.utils.get_current_user import get_current_user
 import logging
 
 logger = logging.getLogger(__name__)
 
 table_name = "blog_post"
-CRUDSchemas = generate_CRUD_schemas(table_name)
 
 router = CRUDRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=BlogPostRead,
+    search_schema=BlogPostSearch,
+    create_schema=BlogPostCreate,
+    update_schema=BlogPostUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )

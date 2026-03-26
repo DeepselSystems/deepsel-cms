@@ -4,7 +4,8 @@ from db import get_db
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.cms.schemas.blog_post import BlogPostRead
+from apps.cms.schemas.page import PageRead
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -236,11 +237,6 @@ Conflicts found:
         return "Conflicts detected between your version and the server version. Please review and resolve manually."
 
 
-# Generate proper response schemas using the same system as other CRUD routers
-BlogPostSchemas = generate_CRUD_schemas("blog_post")
-PageSchemas = generate_CRUD_schemas("page")
-
-
 class ConflictCheckRequest(BaseModel):
     record_type: str  # 'blog_post' or 'page'
     record_id: int
@@ -277,10 +273,10 @@ async def check_for_conflicts(
         # Get the main record (blog_post or page)
         if request.record_type == "blog_post":
             main_model = models_pool["blog_post"]
-            record_schema = BlogPostSchemas.Read
+            record_schema = BlogPostRead
         elif request.record_type == "page":
             main_model = models_pool["page"]
-            record_schema = PageSchemas.Read
+            record_schema = PageRead
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid record type"

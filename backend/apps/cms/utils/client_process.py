@@ -1,5 +1,6 @@
 """Client process manager - controls the Astro Node.js process lifecycle."""
 
+import atexit
 import logging
 import os
 import signal
@@ -32,6 +33,7 @@ class ClientProcessManager:
         self._process: subprocess.Popen | None = None
         self._process_lock = threading.Lock()
         self._shutting_down = False
+        self._cleanup_registered = False
         self._initialized = True
 
     # ------------------------------------------------------------------
@@ -90,6 +92,9 @@ class ClientProcessManager:
         host = os.environ.get("CLIENT_HOST", "0.0.0.0")  # nosec B104
         port = os.environ.get("CLIENT_PORT", "4321")
 
+        # Kill any orphaned process from a previous run
+        self._kill_stale_port(int(port))
+
         env = os.environ.copy()
         env["HOST"] = host
         env["PORT"] = port
@@ -115,6 +120,14 @@ class ClientProcessManager:
             t.start()
 
         logger.info("Astro client started (PID %d)", self._process.pid)
+
+        # Register cleanup handlers once so the child is killed on unexpected exit
+        if not self._cleanup_registered:
+            atexit.register(self._atexit_cleanup)
+            for sig in (signal.SIGHUP, signal.SIGTERM):
+                prev = signal.getsignal(sig)
+                signal.signal(sig, self._make_signal_handler(prev))
+            self._cleanup_registered = True
 
     def _stop_process(self, timeout: float = 5.0):
         """Stop the running process. Caller must hold _process_lock."""
@@ -150,6 +163,56 @@ class ClientProcessManager:
             logger.info("Client process killed")
 
         self._process = None
+
+    def _atexit_cleanup(self):
+        """Called by atexit — best-effort kill of the child process."""
+        try:
+            self.shutdown(timeout=3)
+        except Exception:  # nosec B110
+            pass
+
+    def _make_signal_handler(self, prev_handler):
+        """Return a signal handler that shuts down the client then chains."""
+
+        def handler(signum, frame):
+            try:
+                self.shutdown(timeout=3)
+            except Exception:  # nosec B110
+                pass
+            # Chain to the previous handler
+            if callable(prev_handler) and prev_handler not in (
+                signal.SIG_DFL,
+                signal.SIG_IGN,
+            ):
+                prev_handler(signum, frame)
+            else:
+                raise SystemExit(128 + signum)
+
+        return handler
+
+    @staticmethod
+    def _kill_stale_port(port: int):
+        """Kill any process listening on the given port (handles orphans)."""
+        if os.name == "nt":
+            return
+        try:
+            result = subprocess.run(  # nosec B603 B607
+                ["lsof", "-ti", f":{port}"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            pids = result.stdout.strip()
+            if pids:
+                for pid_str in pids.split("\n"):
+                    pid = int(pid_str.strip())
+                    if pid != os.getpid():
+                        logger.info(
+                            "Killing stale process on port %d (PID %d)", port, pid
+                        )
+                        os.kill(pid, signal.SIGKILL)
+        except Exception:  # nosec B110
+            pass
 
     @staticmethod
     def _stream_output(pipe, logger_name: str):

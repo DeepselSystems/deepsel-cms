@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
+from apps.cms.schemas.page_content import (
+    PageContentCreate,
+    PageContentRead,
+    PageContentSearch,
+    PageContentUpdate,
+)
 from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends
 
@@ -16,13 +21,12 @@ from apps.cms.utils.page_content import (
 )
 
 table_name = "page_content"
-CRUDSchemas = generate_CRUD_schemas(table_name)
 
 router = CRUDRouter(
-    read_schema=CRUDSchemas.Read,
-    search_schema=CRUDSchemas.Search,
-    create_schema=CRUDSchemas.Create,
-    update_schema=CRUDSchemas.Update,
+    read_schema=PageContentRead,
+    search_schema=PageContentSearch,
+    create_schema=PageContentCreate,
+    update_schema=PageContentUpdate,
     table_name=table_name,
     dependencies=[Depends(get_current_user)],
 )
