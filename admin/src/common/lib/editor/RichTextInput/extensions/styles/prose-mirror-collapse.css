@@ -4,7 +4,7 @@
 }
 .prose .collapse-details summary::marker,
 .ProseMirror .collapse-details summary::marker {
-  content: "";
+  content: '';
 }
 .prose .collapse-details summary,
 .ProseMirror .collapse-details summary {
@@ -23,8 +23,8 @@
 }
 .prose .collapse-details summary::after,
 .ProseMirror .collapse-details summary::after {
-  content: "";
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgYXJpYS1oaWRkZW49J3RydWUnPjxwYXRoIGQ9J201LjcwNiAxMC4wMTUgNi42NjkgMy44NSA2LjY2OS0zLjg1LjM3NS42NDktNy4wNDQgNC4wNjctNy4wNDQtNC4wNjd6JyBmaWxsPSdjdXJyZW50Q29sb3InLz48L3N2Zz4=");
+  content: '';
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgYXJpYS1oaWRkZW49J3RydWUnPjxwYXRoIGQ9J201LjcwNiAxMC4wMTUgNi42NjkgMy44NSA2LjY2OS0zLjg1LjM3NS42NDktNy4wNDQgNC4wNjctNy4wNDQtNC4wNjd6JyBmaWxsPSdjdXJyZW50Q29sb3InLz48L3N2Zz4=');
   position: absolute;
   width: 32px;
   height: 32px;
@@ -35,7 +35,7 @@
 }
 .prose .collapse-details summary:hover::after,
 .ProseMirror .collapse-details summary:hover::after {
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHBhdGggZD0nbTUuNzA2IDEwLjAxNSA2LjY2OSAzLjg1IDYuNjY5LTMuODUuMzc1LjY0OS03LjA0NCA0LjA2Ny03LjA0NC00LjA2N3onIGZpbGw9JyNlNTM5NDAnLz48L3N2Zz4=");
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHBhdGggZD0nbTUuNzA2IDEwLjAxNSA2LjY2OSAzLjg1IDYuNjY5LTMuODUuMzc1LjY0OS03LjA0NCA0LjA2Ny03LjA0NC00LjA2N3onIGZpbGw9JyNlNTM5NDAnLz48L3N2Zz4=');
 }
 .prose .collapse-details[open] summary::after,
 .ProseMirror .collapse-details[open] summary::after {
@@ -67,18 +67,18 @@
 }
 
 /* Specific css for collapse content editor */
-.ProseMirror .collapse-details div[data-type="detailsContent"] {
+.ProseMirror .collapse-details div[data-type='detailsContent'] {
   overflow: hidden;
   transition:
     max-height 0.2s ease-in-out,
     opacity 0.2s ease-in-out;
 }
 
-.ProseMirror .collapse-details[open] div[data-type="detailsContent"] {
+.ProseMirror .collapse-details[open] div[data-type='detailsContent'] {
   opacity: 1;
 }
 
-.ProseMirror .collapse-details:not([open]) div[data-type="detailsContent"] {
+.ProseMirror .collapse-details:not([open]) div[data-type='detailsContent'] {
   max-height: 0;
   opacity: 0;
 }

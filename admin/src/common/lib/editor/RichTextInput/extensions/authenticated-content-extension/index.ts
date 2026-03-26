@@ -1,12 +1,12 @@
-import { mergeAttributes, Node } from "@tiptap/core";
-import type { Command } from "@tiptap/core";
+import { mergeAttributes, Node } from '@tiptap/core';
+import type { Command } from '@tiptap/core';
 import {
   AUTHENTICATED_CONTENT_ATTRIBUTES,
   AUTHENTICATED_CONTENT_CLASSES,
   AUTHENTICATED_CONTENT_DEFAULT_CONTENT,
-} from "./utils";
+} from './utils';
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     authenticatedContent: {
       setAuthenticatedContent: () => ReturnType;
@@ -19,11 +19,11 @@ declare module "@tiptap/core" {
  * Allows defining regions that are only visible to authenticated users
  */
 export const AuthenticatedContent = Node.create({
-  name: "authenticatedContent",
+  name: 'authenticatedContent',
 
-  group: "block",
+  group: 'block',
 
-  content: "text*",
+  content: 'text*',
 
   defining: true,
 
@@ -52,14 +52,10 @@ export const AuthenticatedContent = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return [
-      "div",
-      mergeAttributes(
-        this.options.HTMLAttributes as Record<string, string>,
-        HTMLAttributes,
-        {
-          [AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER]: "true",
-        },
-      ),
+      'div',
+      mergeAttributes(this.options.HTMLAttributes as Record<string, string>, HTMLAttributes, {
+        [AUTHENTICATED_CONTENT_ATTRIBUTES.CONTAINER]: 'true',
+      }),
       0,
     ];
   },
@@ -73,7 +69,7 @@ export const AuthenticatedContent = Node.create({
             type: this.name,
             content: [
               {
-                type: "text",
+                type: 'text',
                 text: AUTHENTICATED_CONTENT_DEFAULT_CONTENT,
               },
             ],

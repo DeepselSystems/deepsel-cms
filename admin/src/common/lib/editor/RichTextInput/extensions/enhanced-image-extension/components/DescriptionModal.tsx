@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Button, Group, Modal, Textarea } from "@mantine/core";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useState } from 'react';
+import { Button, Group, Modal, Textarea } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 interface DescriptionModalProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ const DescriptionModal = ({
   isOpen,
   onClose,
   onSave,
-  initialDescription = "",
+  initialDescription = '',
 }: DescriptionModalProps) => {
   const { t } = useTranslation();
 
@@ -33,10 +33,10 @@ const DescriptionModal = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
       handleSave();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       event.preventDefault();
       handleCancel();
     }
@@ -50,7 +50,7 @@ const DescriptionModal = ({
     <Modal
       opened={isOpen}
       onClose={handleCancel}
-      title={t("Edit Image Description")}
+      title={t('Edit Image Description')}
       size="md"
       centered
       closeOnClickOutside={false}
@@ -59,8 +59,8 @@ const DescriptionModal = ({
       <div className="space-y-4">
         <div>
           <Textarea
-            label={t("Description (Optional)")}
-            placeholder={t("Enter a description for this image...")}
+            label={t('Description (Optional)')}
+            placeholder={t('Enter a description for this image...')}
             value={description}
             onChange={(event) => setDescription(event.currentTarget.value)}
             onKeyDown={handleKeyDown}
@@ -69,17 +69,17 @@ const DescriptionModal = ({
             autosize
             autoFocus
             description={t(
-              "This description will appear below the image. Leave empty to hide description.",
+              'This description will appear below the image. Leave empty to hide description.',
             )}
           />
         </div>
 
         <Group justify="flex-end" gap="sm">
           <Button variant="subtle" onClick={handleCancel}>
-            {t("Cancel")}
+            {t('Cancel')}
           </Button>
           <Button onClick={handleSave} variant="filled">
-            {t("Save")}
+            {t('Save')}
           </Button>
         </Group>
       </div>

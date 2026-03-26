@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import type { Editor } from "@tiptap/core";
-import { Button, Modal } from "@mantine/core";
-import { useTranslation } from "react-i18next";
-import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faFile, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import clsx from "clsx";
-import { getShortUrl, MAX_FILES_COUNT } from "../utils";
-import type { EmbedFileItem } from "../types";
-import { ChooseAttachmentModal } from "../../../../../ui/ChooseAttachmentModal";
-import type { AttachmentFile } from "../../../../../ui/ChooseAttachmentModal";
-import type { User } from "../../../../../types";
+import React, { useState } from 'react';
+import type { Editor } from '@tiptap/core';
+import { Button, Modal } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { faFile, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import clsx from 'clsx';
+import { getShortUrl, MAX_FILES_COUNT } from '../utils';
+import type { EmbedFileItem } from '../types';
+import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
+import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
+import type { User } from '../../../../../types';
 
 interface FilesSelectorModalProps {
   editor: Editor | null;
@@ -54,11 +54,11 @@ const FilesSelectorModal = ({
    */
   const filterFunc = (attachments: AttachmentFile[]) =>
     attachments.filter((attachment) => {
-      const contentType = attachment.content_type?.toLowerCase() || "";
+      const contentType = attachment.content_type?.toLowerCase() || '';
       return (
-        !contentType.startsWith("video") &&
-        !contentType.startsWith("audio") &&
-        !contentType.startsWith("image")
+        !contentType.startsWith('video') &&
+        !contentType.startsWith('audio') &&
+        !contentType.startsWith('image')
       );
     });
 
@@ -107,15 +107,15 @@ const FilesSelectorModal = ({
   const handleFileSelect = (attachment: AttachmentFile) => {
     if (selectedFiles.some((f) => f.url === attachment.name)) {
       notify({
-        type: "warning",
-        message: t("This file is already selected"),
+        type: 'warning',
+        message: t('This file is already selected'),
       });
       return;
     }
 
     if (selectedFiles.length >= MAX_FILES_COUNT) {
       notify({
-        type: "warning",
+        type: 'warning',
         message: t(`You can only select up to ${MAX_FILES_COUNT} files`),
       });
       return;
@@ -127,7 +127,7 @@ const FilesSelectorModal = ({
       ...selectedFiles,
       {
         url: attachUrl,
-        name: attachment.name.split("/").pop() || attachment.name,
+        name: attachment.name.split('/').pop() || attachment.name,
       },
     ];
 
@@ -142,7 +142,7 @@ const FilesSelectorModal = ({
         opened={opened}
         title={
           <div className="text-lg font-semibold">
-            {isEditMode ? t("Edit files") : t("Select files")}
+            {isEditMode ? t('Edit files') : t('Select files')}
           </div>
         }
         onClose={() => setOpened(false)}
@@ -153,7 +153,7 @@ const FilesSelectorModal = ({
           {selectedFiles.length > 0 ? (
             <div className="space-y-2">
               <div className="text-sm font-medium text-gray-700">
-                {t("Selected files")} ({selectedFiles.length}/{MAX_FILES_COUNT})
+                {t('Selected files')} ({selectedFiles.length}/{MAX_FILES_COUNT})
               </div>
               {selectedFiles.map((file, index) => {
                 const shortUrl = getShortUrl(file.url);
@@ -161,23 +161,17 @@ const FilesSelectorModal = ({
                   <div
                     key={index}
                     className={clsx(
-                      "flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200",
+                      'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200',
                     )}
                   >
-                    <FontAwesomeIcon
-                      icon={faFile as IconProp}
-                      className="text-blue-500 text-lg"
-                    />
-                    <div
-                      className="flex-1 truncate"
-                      title={file.name || shortUrl}
-                    >
+                    <FontAwesomeIcon icon={faFile as IconProp} className="text-blue-500 text-lg" />
+                    <div className="flex-1 truncate" title={file.name || shortUrl}>
                       {file.name || shortUrl}
                     </div>
                     <button
                       onClick={() => handleRemoveFile(index)}
                       className="p-2 text-primary-main hover:bg-red-50 rounded transition"
-                      title={t("Remove")}
+                      title={t('Remove')}
                     >
                       <FontAwesomeIcon icon={faTrash as IconProp} />
                     </button>
@@ -199,18 +193,15 @@ const FilesSelectorModal = ({
               onClick={() => setIsAttachmentModalOpened(true)}
               disabled={selectedFiles.length >= MAX_FILES_COUNT}
             >
-              {t("Add file")}
+              {t('Add file')}
             </Button>
 
             <div className="flex gap-2">
               <Button variant="subtle" onClick={() => setOpened(false)}>
-                {t("Cancel")}
+                {t('Cancel')}
               </Button>
-              <Button
-                onClick={insertFiles}
-                disabled={selectedFiles.length === 0}
-              >
-                {isEditMode ? t("Update") : t("Insert")}
+              <Button onClick={insertFiles} disabled={selectedFiles.length === 0}>
+                {isEditMode ? t('Update') : t('Insert')}
               </Button>
             </div>
           </div>

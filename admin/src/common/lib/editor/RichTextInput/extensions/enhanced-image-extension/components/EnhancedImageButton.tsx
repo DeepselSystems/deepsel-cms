@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import type { Editor } from "@tiptap/core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faImage } from "@fortawesome/free-solid-svg-icons";
-import { Tooltip } from "@mantine/core";
-import { useTranslation } from "react-i18next";
-import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
-import { EnhancedImageSelectorModal } from "../../../../../ui/EnhancedImageSelector";
-import type { User } from "../../../../../types";
+import React, { useState } from 'react';
+import type { Editor } from '@tiptap/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import { Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { EnhancedImageSelectorModal } from '../../../../../ui/EnhancedImageSelector';
+import type { User } from '../../../../../types';
 
 interface EnhancedImageButtonProps {
   editor: Editor | null;
@@ -37,22 +37,13 @@ const EnhancedImageButton = ({
 }: EnhancedImageButtonProps) => {
   const { t } = useTranslation();
 
-  const [enhanceImageSelectorModalOpened, setEnhanceImageSelectorModalOpened] =
-    useState(false);
+  const [enhanceImageSelectorModalOpened, setEnhanceImageSelectorModalOpened] = useState(false);
 
   return (
     <>
-      <Tooltip label={t("Insert Image")}>
-        <button
-          type="button"
-          onClick={() => setEnhanceImageSelectorModalOpened(true)}
-        >
-          {children || (
-            <FontAwesomeIcon
-              icon={faImage as IconProp}
-              className="text-[#808496]"
-            />
-          )}
+      <Tooltip label={t('Insert Image')}>
+        <button type="button" onClick={() => setEnhanceImageSelectorModalOpened(true)}>
+          {children || <FontAwesomeIcon icon={faImage as IconProp} className="text-[#808496]" />}
         </button>
       </Tooltip>
 

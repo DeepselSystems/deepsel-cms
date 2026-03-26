@@ -1,14 +1,14 @@
-import { mergeAttributes } from "@tiptap/core";
-import type { Command } from "@tiptap/core";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { common, createLowlight } from "lowlight";
-import EditorNodeView from "./components/EditorNodeView";
+import { mergeAttributes } from '@tiptap/core';
+import type { Command } from '@tiptap/core';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { common, createLowlight } from 'lowlight';
+import EditorNodeView from './components/EditorNodeView';
 import {
   ENHANCED_CODE_BLOCK_ATTRIBUTES,
   ENHANCED_CODE_BLOCK_CLASSES,
   getLanguageLabel,
-} from "./utils";
+} from './utils';
 
 /**
  * Create lowlight instance with common languages
@@ -19,15 +19,11 @@ interface EnhancedCodeBlockAttributes {
   language?: string;
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     enhancedCodeBlock: {
-      setEnhancedCodeBlock: (
-        attributes?: EnhancedCodeBlockAttributes,
-      ) => ReturnType;
-      toggleEnhancedCodeBlock: (
-        attributes?: EnhancedCodeBlockAttributes,
-      ) => ReturnType;
+      setEnhancedCodeBlock: (attributes?: EnhancedCodeBlockAttributes) => ReturnType;
+      toggleEnhancedCodeBlock: (attributes?: EnhancedCodeBlockAttributes) => ReturnType;
     };
   }
 }
@@ -37,13 +33,13 @@ declare module "@tiptap/core" {
  * Extends CodeBlockLowlight with language selection and line numbers
  */
 export const EnhancedCodeBlock = CodeBlockLowlight.extend({
-  name: "enhancedCodeBlock",
+  name: 'enhancedCodeBlock',
 
   addOptions() {
     return {
       ...this.parent?.(),
       lowlight,
-      defaultLanguage: "plaintext",
+      defaultLanguage: 'plaintext',
       HTMLAttributes: {
         class: ENHANCED_CODE_BLOCK_CLASSES.WRAPPER,
       },
@@ -56,21 +52,17 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
       language: {
         default: this.options.defaultLanguage,
         parseHTML: (element) => {
-          const dataLanguage = element.getAttribute(
-            ENHANCED_CODE_BLOCK_ATTRIBUTES.LANGUAGE,
-          );
+          const dataLanguage = element.getAttribute(ENHANCED_CODE_BLOCK_ATTRIBUTES.LANGUAGE);
           if (dataLanguage) {
             return dataLanguage;
           }
 
           const { languageClassPrefix } = this.options;
 
-          const classNames = Array.from(
-            element.firstElementChild?.classList || [],
-          );
+          const classNames = Array.from(element.firstElementChild?.classList || []);
           const languages = classNames
             .filter((className) => className.startsWith(languageClassPrefix))
-            .map((className) => className.replace(languageClassPrefix, ""));
+            .map((className) => className.replace(languageClassPrefix, ''));
           const language = languages[0];
 
           if (!language) {
@@ -88,9 +80,9 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
     return [
       {
         tag: `div[${ENHANCED_CODE_BLOCK_ATTRIBUTES.CONTAINER}]`,
-        preserveWhitespace: "full",
+        preserveWhitespace: 'full',
         contentElement: (element) => {
-          return element.querySelector("pre") || element;
+          return element.querySelector('pre') || element;
         },
         getAttrs: (element) => {
           const language =
@@ -104,9 +96,9 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
       },
       {
         tag: `div.${ENHANCED_CODE_BLOCK_CLASSES.WRAPPER}`,
-        preserveWhitespace: "full",
+        preserveWhitespace: 'full',
         contentElement: (element) => {
-          return element.querySelector("pre") || element;
+          return element.querySelector('pre') || element;
         },
         getAttrs: (element) => {
           const language =
@@ -119,17 +111,17 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
         },
       },
       {
-        tag: "pre",
-        preserveWhitespace: "full",
+        tag: 'pre',
+        preserveWhitespace: 'full',
         getAttrs: (element) => {
-          const code = element.querySelector("code");
+          const code = element.querySelector('code');
           if (!code) return false;
 
           const { languageClassPrefix } = this.options;
           const classNames = Array.from(code.classList || []);
           const languages = classNames
             .filter((className) => className.startsWith(languageClassPrefix))
-            .map((className) => className.replace(languageClassPrefix, ""));
+            .map((className) => className.replace(languageClassPrefix, ''));
           const language = languages[0] || this.options.defaultLanguage;
 
           return {
@@ -144,22 +136,22 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
     const { language } = node.attrs;
 
     const codeElement = [
-      "code",
+      'code',
       {
         class: this.options.languageClassPrefix + language,
       },
       0,
     ];
 
-    const preElement = ["pre", codeElement];
+    const preElement = ['pre', codeElement];
 
     const headerElement = [
-      "div",
+      'div',
       {
         class: ENHANCED_CODE_BLOCK_CLASSES.HEADER,
       },
       [
-        "span",
+        'span',
         {
           class: ENHANCED_CODE_BLOCK_CLASSES.LANGUAGE_LABEL,
         },
@@ -169,7 +161,7 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
     ];
 
     const contentElement = [
-      "div",
+      'div',
       {
         class: ENHANCED_CODE_BLOCK_CLASSES.CONTENT,
       },
@@ -177,10 +169,10 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
     ];
 
     return [
-      "div",
+      'div',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         class: ENHANCED_CODE_BLOCK_CLASSES.WRAPPER,
-        [ENHANCED_CODE_BLOCK_ATTRIBUTES.CONTAINER]: "true",
+        [ENHANCED_CODE_BLOCK_ATTRIBUTES.CONTAINER]: 'true',
         [ENHANCED_CODE_BLOCK_ATTRIBUTES.LANGUAGE]: language,
       }),
       headerElement,
@@ -203,7 +195,7 @@ export const EnhancedCodeBlock = CodeBlockLowlight.extend({
       toggleEnhancedCodeBlock:
         (attributes?: EnhancedCodeBlockAttributes): Command =>
         ({ commands }) => {
-          return commands.toggleNode(this.name, "paragraph", attributes);
+          return commands.toggleNode(this.name, 'paragraph', attributes);
         },
     };
   },

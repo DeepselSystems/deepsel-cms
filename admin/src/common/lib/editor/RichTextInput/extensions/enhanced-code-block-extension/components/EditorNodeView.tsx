@@ -1,19 +1,19 @@
-import React, { useEffect, useRef } from "react";
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
-import type { NodeViewProps } from "@tiptap/react";
-import { Select, Tooltip } from "@mantine/core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useTranslation } from "react-i18next";
-import clsx from "clsx";
-import { common, createLowlight } from "lowlight";
+import React, { useEffect, useRef } from 'react';
+import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
+import { Select, Tooltip } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
+import { common, createLowlight } from 'lowlight';
 import {
   ENHANCED_CODE_BLOCK_ATTRIBUTES,
   ENHANCED_CODE_BLOCK_CLASSES,
   getLanguageLabel,
   PROGRAMMING_LANGUAGES,
-} from "../utils";
+} from '../utils';
 
 /**
  * Create lowlight instance
@@ -24,11 +24,7 @@ const lowlight = createLowlight(common);
  * EditorNodeView component for enhanced code block
  * Provides language selection dropdown and delete button
  */
-const EditorNodeView = ({
-  node,
-  updateAttributes,
-  deleteNode,
-}: NodeViewProps) => {
+const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
   const { language } = node.attrs as { language: string };
   const contentRef = useRef<HTMLDivElement>(null);
@@ -48,43 +44,38 @@ const EditorNodeView = ({
   useEffect(() => {
     if (!contentRef.current) return;
 
-    const preElement = contentRef.current.querySelector("pre");
-    const codeElement = preElement?.querySelector("code");
+    const preElement = contentRef.current.querySelector('pre');
+    const codeElement = preElement?.querySelector('code');
 
     if (!codeElement) return;
 
-    codeElement.className = "";
+    codeElement.className = '';
 
     codeElement.classList.add(`language-${language}`);
 
-    const code = codeElement.textContent || "";
+    const code = codeElement.textContent || '';
 
     try {
-      if (
-        language &&
-        language !== "plaintext" &&
-        lowlight.registered(language)
-      ) {
+      if (language && language !== 'plaintext' && lowlight.registered(language)) {
         const result = lowlight.highlight(language, code);
 
-        codeElement.innerHTML = "";
+        codeElement.innerHTML = '';
 
         result.children.forEach((child) => {
-          const span = document.createElement("span");
-          if (child.type === "element") {
-            span.className =
-              (child.properties.className as string[])?.join(" ") || "";
+          const span = document.createElement('span');
+          if (child.type === 'element') {
+            span.className = (child.properties.className as string[])?.join(' ') || '';
             span.textContent = child.children
-              .map((c) => (c.type === "text" ? c.value : ""))
-              .join("");
-          } else if (child.type === "text") {
+              .map((c) => (c.type === 'text' ? c.value : ''))
+              .join('');
+          } else if (child.type === 'text') {
             span.textContent = child.value;
           }
           codeElement.appendChild(span);
         });
       }
     } catch (error) {
-      console.warn("Syntax highlighting failed:", error);
+      console.warn('Syntax highlighting failed:', error);
     }
   }, [language, node.content]);
 
@@ -92,7 +83,7 @@ const EditorNodeView = ({
     <NodeViewWrapper
       className={clsx(ENHANCED_CODE_BLOCK_CLASSES.WRAPPER)}
       {...{
-        [ENHANCED_CODE_BLOCK_ATTRIBUTES.CONTAINER]: "true",
+        [ENHANCED_CODE_BLOCK_ATTRIBUTES.CONTAINER]: 'true',
         [ENHANCED_CODE_BLOCK_ATTRIBUTES.LANGUAGE]: language,
       }}
     >
@@ -100,7 +91,7 @@ const EditorNodeView = ({
       <div
         className={clsx(
           ENHANCED_CODE_BLOCK_CLASSES.HEADER,
-          "flex items-center justify-between gap-2 px-4 py-2 bg-gray-100 border border-gray-300 border-b-0 rounded-t",
+          'flex items-center justify-between gap-2 px-4 py-2 bg-gray-100 border border-gray-300 border-b-0 rounded-t',
         )}
       >
         {/* Language selector */}
@@ -121,23 +112,20 @@ const EditorNodeView = ({
         <span
           className={clsx(
             ENHANCED_CODE_BLOCK_CLASSES.LANGUAGE_LABEL,
-            "text-sm text-gray-600 font-mono ml-auto",
+            'text-sm text-gray-600 font-mono ml-auto',
           )}
         >
           {getLanguageLabel(language)}
         </span>
 
         {/* Delete button */}
-        <Tooltip label={t("Delete Code Block")}>
+        <Tooltip label={t('Delete Code Block')}>
           <button
             type="button"
             onClick={deleteNode}
             className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <FontAwesomeIcon
-              icon={faTrash as IconProp}
-              className="text-red-500 text-xs"
-            />
+            <FontAwesomeIcon icon={faTrash as IconProp} className="text-red-500 text-xs" />
           </button>
         </Tooltip>
       </div>
@@ -147,7 +135,7 @@ const EditorNodeView = ({
         ref={contentRef}
         className={clsx(
           ENHANCED_CODE_BLOCK_CLASSES.CONTENT,
-          "border border-gray-300 rounded-b overflow-x-auto",
+          'border border-gray-300 rounded-b overflow-x-auto',
         )}
       >
         <NodeViewContent as="pre" className="m-0 p-4 bg-gray-50" />

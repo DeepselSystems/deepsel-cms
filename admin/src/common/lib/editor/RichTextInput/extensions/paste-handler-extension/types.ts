@@ -1,4 +1,4 @@
-import type { NotifyFn } from "../../../../types";
+import type { NotifyFn } from '../../../../types';
 
 /**
  * Paste handler options interface.

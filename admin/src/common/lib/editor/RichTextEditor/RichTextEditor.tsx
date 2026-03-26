@@ -1,21 +1,21 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { faImage } from "@fortawesome/free-solid-svg-icons";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useDisclosure } from "@mantine/hooks";
-import { Link, RichTextEditor as MantineRichTextEditor } from "@mantine/tiptap";
-import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
-import SubScript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import TextAlign from "@tiptap/extension-text-align";
-import Underline from "@tiptap/extension-underline";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { ChooseAttachmentModal } from "../../ui/ChooseAttachmentModal";
-import { Button } from "../../ui/Button";
-import type { User } from "../../types";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useDisclosure } from '@mantine/hooks';
+import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
+import Highlight from '@tiptap/extension-highlight';
+import Image from '@tiptap/extension-image';
+import SubScript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { ChooseAttachmentModal } from '../../ui/ChooseAttachmentModal';
+import { Button } from '../../ui/Button';
+import type { User } from '../../types';
 
 export interface RichTextEditorProps {
   /** Initial HTML content. */
@@ -56,7 +56,7 @@ export interface RichTextEditorProps {
  * (sourced from BackendHostURLState / UserState in the consuming app).
  */
 export function RichTextEditor({
-  content = "",
+  content = '',
   onSubmit = () => {},
   autoSubmit = false,
   backendHost,
@@ -79,7 +79,7 @@ export function RichTextEditor({
       SubScript,
       Highlight,
       TextAlign.configure({
-        types: ["heading", "paragraph"],
+        types: ['heading', 'paragraph'],
       }),
       Image,
     ],
@@ -104,11 +104,7 @@ export function RichTextEditor({
   return (
     <>
       <form className="flex flex-col" onSubmit={handleSubmit}>
-        <MantineRichTextEditor
-          editor={editor}
-          className={`w-full ${className ?? ""}`}
-          {...others}
-        >
+        <MantineRichTextEditor editor={editor} className={`w-full ${className ?? ''}`} {...others}>
           <MantineRichTextEditor.Toolbar sticky stickyOffset={60}>
             <MantineRichTextEditor.ControlsGroup>
               <MantineRichTextEditor.Bold />
@@ -160,10 +156,7 @@ export function RichTextEditor({
                 className="w-[26px] h-[26px] flex justify-center items-center
                            rounded-[4px] border-[#9093a4] border p-1"
               >
-                <FontAwesomeIcon
-                  icon={faImage as IconProp}
-                  className="text-[#808496]"
-                />
+                <FontAwesomeIcon icon={faImage as IconProp} className="text-[#808496]" />
               </button>
             </MantineRichTextEditor.ControlsGroup>
           </MantineRichTextEditor.Toolbar>
@@ -173,7 +166,7 @@ export function RichTextEditor({
 
         {!autoSubmit && (
           <Button type="submit" className="grow mt-2">
-            {t("Submit")}
+            {t('Submit')}
           </Button>
         )}
       </form>

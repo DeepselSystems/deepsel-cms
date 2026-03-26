@@ -1,20 +1,16 @@
-import { mergeAttributes, Node } from "@tiptap/core";
-import type { Command } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import EditorNodeView from "./components/EditorNodeView";
-import {
-  EMBED_FILES_ATTRIBUTES,
-  EMBED_FILES_CLASSES,
-  MAX_FILES_COUNT,
-} from "./utils";
-import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
-import type { EmbedFileItem } from "./types";
+import { mergeAttributes, Node } from '@tiptap/core';
+import type { Command } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import EditorNodeView from './components/EditorNodeView';
+import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES, MAX_FILES_COUNT } from './utils';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import type { EmbedFileItem } from './types';
 
 interface EmbedFilesOptions {
   files: EmbedFileItem[];
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     embedFiles: {
       setEmbedFiles: (options: EmbedFilesOptions) => ReturnType;
@@ -47,9 +43,9 @@ declare module "@tiptap/core" {
  * ```
  */
 export const EmbedFiles = Node.create({
-  name: "embedFiles",
+  name: 'embedFiles',
 
-  group: "block",
+  group: 'block',
 
   atom: true,
 
@@ -58,7 +54,7 @@ export const EmbedFiles = Node.create({
       HTMLAttributes: {
         class: EMBED_FILES_CLASSES.WRAPPER,
       },
-      backendHost: "",
+      backendHost: '',
       user: null,
       setUser: () => {},
     };
@@ -107,18 +103,18 @@ export const EmbedFiles = Node.create({
     const { files } = node.attrs;
 
     if (!files || files.length === 0) {
-      return ["div", {}];
+      return ['div', {}];
     }
 
     const fileItems = files.map((file: EmbedFileItem) => {
       const relativeUrl = getAttachmentRelativeUrl(file.name);
       return [
-        "div",
+        'div',
         {
           class: EMBED_FILES_CLASSES.FILE_ITEM,
         },
         [
-          "a",
+          'a',
           {
             href: relativeUrl,
             download: file.name,
@@ -126,14 +122,14 @@ export const EmbedFiles = Node.create({
             title: file.name,
           },
           [
-            "span",
+            'span',
             {
               class: EMBED_FILES_CLASSES.FILE_ICON,
             },
-            "📄",
+            '📄',
           ],
           [
-            "span",
+            'span',
             {
               class: EMBED_FILES_CLASSES.FILE_LINK,
             },
@@ -144,14 +140,14 @@ export const EmbedFiles = Node.create({
     });
 
     return [
-      "div",
+      'div',
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        [EMBED_FILES_ATTRIBUTES.CONTAINER]: "true",
+        [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true',
         [EMBED_FILES_ATTRIBUTES.FILES]: JSON.stringify(files),
       }),
       [
-        "div",
+        'div',
         {
           class: EMBED_FILES_CLASSES.FILES_CONTAINER,
         },

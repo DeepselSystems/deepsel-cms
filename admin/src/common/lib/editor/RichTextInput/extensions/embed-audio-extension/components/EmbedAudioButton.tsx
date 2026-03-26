@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import type { Editor } from "@tiptap/core";
-import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { Box, Tooltip } from "@mantine/core";
-import { useTranslation } from "react-i18next";
-import { faVolumeUp } from "@fortawesome/free-solid-svg-icons";
-import { ChooseAttachmentModal } from "../../../../../ui/ChooseAttachmentModal";
-import type { AttachmentFile } from "../../../../../ui/ChooseAttachmentModal";
-import type { User } from "../../../../../types";
+import React, { useState } from 'react';
+import type { Editor } from '@tiptap/core';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { Box, Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { faVolumeUp } from '@fortawesome/free-solid-svg-icons';
+import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
+import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
+import type { User } from '../../../../../types';
 
 interface EmbedAudioButtonProps {
   editor: Editor | null;
@@ -36,17 +36,14 @@ const EmbedAudioButton = ({
   return (
     <>
       <Box>
-        <Tooltip label={t("Insert audio")}>
+        <Tooltip label={t('Insert audio')}>
           <button
             type="button"
             onClick={() => setAttachmentModalOpened(true)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon
-                icon={faVolumeUp as IconProp}
-                className="text-[#808496]"
-              />
+              <FontAwesomeIcon icon={faVolumeUp as IconProp} className="text-[#808496]" />
             )}
           </button>
         </Tooltip>
@@ -57,14 +54,14 @@ const EmbedAudioButton = ({
           setUser={setUser}
           filters={[
             {
-              field: "content_type",
-              operator: "like",
-              value: "audio%",
+              field: 'content_type',
+              operator: 'like',
+              value: 'audio%',
             },
           ]}
           filterFunc={(attachments: Array<AttachmentFile>) =>
             attachments.filter((attachment) =>
-              attachment.content_type?.toLowerCase().startsWith("audio"),
+              attachment.content_type?.toLowerCase().startsWith('audio'),
             )
           }
           isOpen={isAttachmentModalOpened}

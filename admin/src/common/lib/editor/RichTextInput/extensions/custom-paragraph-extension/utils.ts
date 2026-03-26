@@ -1,12 +1,12 @@
-import type { Node } from "@tiptap/pm/model";
+import type { Node } from '@tiptap/pm/model';
 
 /**
  * Constants for custom paragraph attributes
  * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
  */
 export const CUSTOM_PARAGRAPH_ATTRIBUTES = {
-  PLACEHOLDER: "data-placeholder",
-  EMPTY_CLASS: "is-empty",
+  PLACEHOLDER: 'data-placeholder',
+  EMPTY_CLASS: 'is-empty',
 } as const;
 
 /**
@@ -24,13 +24,8 @@ export const isParagraphEmpty = (node: Node | null | undefined): boolean => {
  * @param {HTMLElement} container - Container element to check
  * @returns {boolean} True if empty paragraphs are found
  */
-export const containsEmptyParagraphs = (
-  container: HTMLElement | null,
-): boolean => {
+export const containsEmptyParagraphs = (container: HTMLElement | null): boolean => {
   if (!container) return false;
 
-  return (
-    container.querySelector(`p.${CUSTOM_PARAGRAPH_ATTRIBUTES.EMPTY_CLASS}`) !==
-    null
-  );
+  return container.querySelector(`p.${CUSTOM_PARAGRAPH_ATTRIBUTES.EMPTY_CLASS}`) !== null;
 };

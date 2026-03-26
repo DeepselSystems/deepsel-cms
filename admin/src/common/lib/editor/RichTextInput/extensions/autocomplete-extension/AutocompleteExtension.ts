@@ -1,17 +1,11 @@
-import { Extension } from "@tiptap/core";
-import { EditorState, Plugin, PluginKey, Transaction } from "@tiptap/pm/state";
-import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
-import { AUTOCOMPLETE_CONSTANTS } from "./constants";
-import {
-  createGhostTextCSS,
-  isIncompleteSentence,
-  isRelevantKey,
-} from "./utils";
+import { Extension } from '@tiptap/core';
+import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state';
+import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
+import { AUTOCOMPLETE_CONSTANTS } from './constants';
+import { createGhostTextCSS, isIncompleteSentence, isRelevantKey } from './utils';
 
 interface AutocompleteOptions {
-  fetchAutocompletion:
-    | ((text: string, position: number) => Promise<string>)
-    | null;
+  fetchAutocompletion: ((text: string, position: number) => Promise<string>) | null;
   backendHost: string;
   token: string;
   enabled: boolean;
@@ -26,7 +20,7 @@ interface AutocompletePluginState {
   view: EditorView | null;
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     autocomplete: {
       setSuggestion: (suggestion: string) => ReturnType;
@@ -44,13 +38,13 @@ declare module "@tiptap/core" {
  * - Shows "Tab" badge at end of ghost text
  */
 export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
-  name: "autocomplete",
+  name: 'autocomplete',
 
   addOptions() {
     return {
       fetchAutocompletion: null,
-      backendHost: "",
-      token: "",
+      backendHost: '',
+      token: '',
       enabled: true,
     };
   },
@@ -64,17 +58,17 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
       return [];
     }
 
-    if (typeof document !== "undefined") {
-      const styleId = "autocomplete-extension-styles";
+    if (typeof document !== 'undefined') {
+      const styleId = 'autocomplete-extension-styles';
       if (!document.getElementById(styleId)) {
-        const style = document.createElement("style");
+        const style = document.createElement('style');
         style.id = styleId;
         style.textContent = createGhostTextCSS();
         document.head.appendChild(style);
       }
     }
 
-    const pluginKey = new PluginKey<AutocompletePluginState>("autocomplete");
+    const pluginKey = new PluginKey<AutocompletePluginState>('autocomplete');
 
     return [
       new Plugin<AutocompletePluginState>({
@@ -83,7 +77,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
         state: {
           init(): AutocompletePluginState {
             return {
-              suggestion: "",
+              suggestion: '',
               isLoading: false,
               abortController: null,
               debounceTimer: null,
@@ -101,12 +95,10 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
             _newEditorState: EditorState,
           ): AutocompletePluginState {
             const newState = { ...oldState };
-            const suggestionUpdate = transaction.getMeta(
-              "autocomplete-suggestion-update",
-            );
+            const suggestionUpdate = transaction.getMeta('autocomplete-suggestion-update');
 
             if (transaction.docChanged) {
-              newState.suggestion = "";
+              newState.suggestion = '';
               newState.abortController?.abort();
               newState.abortController = null;
               newState.isLoading = false;
@@ -124,13 +116,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
                   }
 
                   // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                  checkForSuggestion(
-                    view,
-                    pluginKey,
-                    fetchAutocompletion,
-                    backendHost,
-                    token,
-                  );
+                  checkForSuggestion(view, pluginKey, fetchAutocompletion, backendHost, token);
                 }, AUTOCOMPLETE_CONSTANTS.DEBOUNCE_DELAY);
 
                 if (newState.debounceTimer) {
@@ -142,9 +128,9 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
             if (
               transaction.selectionSet &&
               !transaction.docChanged &&
-              !transaction.getMeta("autocomplete-suggestion-update")
+              !transaction.getMeta('autocomplete-suggestion-update')
             ) {
-              newState.suggestion = "";
+              newState.suggestion = '';
               newState.abortController?.abort();
               newState.abortController = null;
               newState.isLoading = false;
@@ -173,10 +159,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
               return false;
             }
 
-            if (
-              event.key === AUTOCOMPLETE_CONSTANTS.KEYS.TAB &&
-              pluginState.suggestion
-            ) {
+            if (event.key === AUTOCOMPLETE_CONSTANTS.KEYS.TAB && pluginState.suggestion) {
               event.preventDefault();
 
               const { state, dispatch } = view;
@@ -184,19 +167,16 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
 
               const tr = state.tr
                 .insertText(pluginState.suggestion, from, from)
-                .setMeta("autocomplete-suggestion-update", {
+                .setMeta('autocomplete-suggestion-update', {
                   ...pluginState,
-                  suggestion: "",
+                  suggestion: '',
                 });
 
               dispatch(tr);
               return true;
             }
 
-            if (
-              event.key === AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE &&
-              pluginState.suggestion
-            ) {
+            if (event.key === AUTOCOMPLETE_CONSTANTS.KEYS.ESCAPE && pluginState.suggestion) {
               event.preventDefault();
 
               const { state, dispatch } = view;
@@ -209,11 +189,8 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
                 pluginState.debounceTimer = null;
               }
 
-              const newPluginState = { ...pluginState, suggestion: "" };
-              const tr = state.tr.setMeta(
-                "autocomplete-suggestion-update",
-                newPluginState,
-              );
+              const newPluginState = { ...pluginState, suggestion: '' };
+              const tr = state.tr.setMeta('autocomplete-suggestion-update', newPluginState);
               tr.setMeta(AUTOCOMPLETE_CONSTANTS.EVENTS.DISMISS, true);
               dispatch(tr);
 
@@ -226,7 +203,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
           decorations(state: EditorState): DecorationSet | null {
             const pluginState = pluginKey.getState(state);
 
-            if (!pluginState?.suggestion || typeof document === "undefined") {
+            if (!pluginState?.suggestion || typeof document === 'undefined') {
               return null;
             }
 
@@ -236,26 +213,23 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
 
             const { from } = state.selection;
 
-            const container = document.createElement("span");
+            const container = document.createElement('span');
             container.className = AUTOCOMPLETE_CONSTANTS.CSS_CLASSES.CONTAINER;
-            container.style.pointerEvents = "none";
-            container.style.userSelect = "none";
+            container.style.pointerEvents = 'none';
+            container.style.userSelect = 'none';
 
-            const suggestionSpan = document.createElement("span");
-            suggestionSpan.className =
-              AUTOCOMPLETE_CONSTANTS.CSS_CLASSES.GHOST_TEXT;
+            const suggestionSpan = document.createElement('span');
+            suggestionSpan.className = AUTOCOMPLETE_CONSTANTS.CSS_CLASSES.GHOST_TEXT;
             suggestionSpan.textContent = pluginState.suggestion;
 
-            const badge = document.createElement("span");
+            const badge = document.createElement('span');
             badge.className = AUTOCOMPLETE_CONSTANTS.CSS_CLASSES.TAB_BADGE;
             badge.textContent = AUTOCOMPLETE_CONSTANTS.TAB_BADGE_TEXT;
 
             container.appendChild(suggestionSpan);
             container.appendChild(badge);
 
-            return DecorationSet.create(state.doc, [
-              Decoration.widget(from, container),
-            ]);
+            return DecorationSet.create(state.doc, [Decoration.widget(from, container)]);
           },
         },
 
@@ -263,7 +237,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
           const pluginState = pluginKey.getState(editorView.state);
           if (pluginState && !pluginState.view) {
             editorView.dispatch(
-              editorView.state.tr.setMeta("autocomplete-suggestion-update", {
+              editorView.state.tr.setMeta('autocomplete-suggestion-update', {
                 view: editorView,
               }),
             );
@@ -286,10 +260,10 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
                 }
 
                 const { state, dispatch } = editorView;
-                const tr = state.tr.setMeta("autocomplete-suggestion-update", {
+                const tr = state.tr.setMeta('autocomplete-suggestion-update', {
                   ...currentPluginState,
                   hasFocus: false,
-                  suggestion: "",
+                  suggestion: '',
                   isLoading: false,
                   abortController: null,
                 });
@@ -299,14 +273,11 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
           };
 
           const handleFocusIn = (event: FocusEvent) => {
-            if (
-              event.target instanceof Node &&
-              editorView.dom.contains(event.target)
-            ) {
+            if (event.target instanceof Node && editorView.dom.contains(event.target)) {
               const currentPluginState = pluginKey.getState(editorView.state);
               if (currentPluginState) {
                 const { state, dispatch } = editorView;
-                const tr = state.tr.setMeta("autocomplete-suggestion-update", {
+                const tr = state.tr.setMeta('autocomplete-suggestion-update', {
                   ...currentPluginState,
                   hasFocus: true,
                 });
@@ -315,26 +286,24 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
             }
           };
 
-          editorView.dom.addEventListener("focusout", handleFocusOut);
-          editorView.dom.addEventListener("focusin", handleFocusIn);
+          editorView.dom.addEventListener('focusout', handleFocusOut);
+          editorView.dom.addEventListener('focusin', handleFocusIn);
 
           return {
             update: (view: EditorView, prevState: EditorState) => {
               const prevPluginState = pluginKey.getState(prevState);
               const currentPluginState = pluginKey.getState(view.state);
 
-              if (
-                prevPluginState?.suggestion !== currentPluginState?.suggestion
-              ) {
-                if (typeof view.updateState === "function") {
+              if (prevPluginState?.suggestion !== currentPluginState?.suggestion) {
+                if (typeof view.updateState === 'function') {
                   view.updateState(view.state);
                 }
               }
             },
 
             destroy: () => {
-              editorView.dom.removeEventListener("focusout", handleFocusOut);
-              editorView.dom.removeEventListener("focusin", handleFocusIn);
+              editorView.dom.removeEventListener('focusout', handleFocusOut);
+              editorView.dom.removeEventListener('focusin', handleFocusIn);
 
               const pluginState = pluginKey.getState(editorView.state);
               if (pluginState?.abortController) {
@@ -359,9 +328,7 @@ export const AutocompleteExtension = Extension.create<AutocompleteOptions>({
 async function checkForSuggestion(
   view: EditorView,
   pluginKey: PluginKey<AutocompletePluginState>,
-  fetchAutocompletion:
-    | ((text: string, position: number) => Promise<string>)
-    | null,
+  fetchAutocompletion: ((text: string, position: number) => Promise<string>) | null,
   backendHost: string,
   token: string,
 ): Promise<void> {
@@ -382,20 +349,20 @@ async function checkForSuggestion(
   pluginState.abortController = abortController;
 
   view.dispatch(
-    state.tr.setMeta("autocomplete-suggestion-update", {
+    state.tr.setMeta('autocomplete-suggestion-update', {
       isLoading: true,
       abortController,
     }),
   );
 
   try {
-    const text = state.doc.textBetween(0, state.doc.content.size, "\n");
+    const text = state.doc.textBetween(0, state.doc.content.size, '\n');
     const position = state.selection.from;
 
     if (text.trim().length < AUTOCOMPLETE_CONSTANTS.MIN_TEXT_LENGTH) {
       view.dispatch(
-        state.tr.setMeta("autocomplete-suggestion-update", {
-          suggestion: "",
+        state.tr.setMeta('autocomplete-suggestion-update', {
+          suggestion: '',
           isLoading: false,
           abortController: null,
         }),
@@ -405,8 +372,8 @@ async function checkForSuggestion(
 
     if (!isIncompleteSentence(text, position)) {
       view.dispatch(
-        state.tr.setMeta("autocomplete-suggestion-update", {
-          suggestion: "",
+        state.tr.setMeta('autocomplete-suggestion-update', {
+          suggestion: '',
           isLoading: false,
           abortController: null,
         }),
@@ -414,47 +381,44 @@ async function checkForSuggestion(
       return;
     }
 
-    let suggestion = "";
+    let suggestion = '';
 
     if (fetchAutocompletion) {
       suggestion = await fetchAutocompletion(text, position);
     } else {
-      const response = await fetch(
-        `${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            text,
-            cursor_position: position,
-          }),
-          signal: abortController.signal,
+      const response = await fetch(`${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          text,
+          cursor_position: position,
+        }),
+        signal: abortController.signal,
+      });
 
       if (response.ok) {
         const data = await response.json();
-        suggestion = data.completion || data.suggestions?.[0] || "";
+        suggestion = data.completion || data.suggestions?.[0] || '';
       }
     }
 
     view.dispatch(
-      state.tr.setMeta("autocomplete-suggestion-update", {
-        suggestion: suggestion || "",
+      state.tr.setMeta('autocomplete-suggestion-update', {
+        suggestion: suggestion || '',
         isLoading: false,
         abortController: null,
       }),
     );
   } catch (error) {
-    if ((error as Error).name !== "AbortError") {
-      console.error("Error fetching autocomplete suggestion:", error);
+    if ((error as Error).name !== 'AbortError') {
+      console.error('Error fetching autocomplete suggestion:', error);
     }
     view.dispatch(
-      state.tr.setMeta("autocomplete-suggestion-update", {
-        suggestion: "",
+      state.tr.setMeta('autocomplete-suggestion-update', {
+        suggestion: '',
         isLoading: false,
         abortController: null,
       }),

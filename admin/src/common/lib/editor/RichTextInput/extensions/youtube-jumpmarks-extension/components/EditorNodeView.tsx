@@ -1,15 +1,15 @@
-import React, { useCallback, useState } from "react";
-import { NodeViewWrapper } from "@tiptap/react";
-import type { NodeViewProps } from "@tiptap/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { modals } from "@mantine/modals";
-import JumpMarksModal from "./JumpMarksModal";
-import { useTranslation } from "react-i18next";
-import { getVideoId } from "../utils";
-import clsx from "clsx";
-import type { JumpMark, JumpMarkData } from "../types";
+import React, { useCallback, useState } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
+import JumpMarksModal from './JumpMarksModal';
+import { useTranslation } from 'react-i18next';
+import { getVideoId } from '../utils';
+import clsx from 'clsx';
+import type { JumpMark, JumpMarkData } from '../types';
 
 interface YoutubeJumpMarksAttributes {
   src: string;
@@ -24,11 +24,7 @@ interface YoutubeJumpMarksAttributes {
  * NodeView component for YouTube Jump Marks in editor mode
  * Displays YouTube video with jump marks and edit/delete buttons on hover
  */
-const EditorNodeView = ({
-  node,
-  updateAttributes,
-  deleteNode,
-}: NodeViewProps) => {
+const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { src, width, height, title, jumpMarks, showJumpMarks } =
@@ -71,13 +67,9 @@ const EditorNodeView = ({
       if (deleteNode) {
         modals.openConfirmModal({
           centered: true,
-          title: (
-            <div className="text-lg font-semibold ">
-              {t("Delete YouTube Video")}
-            </div>
-          ),
-          children: t("Are you sure you want to delete this YouTube frame?"),
-          labels: { confirm: t("Delete"), cancel: t("Cancel") },
+          title: <div className="text-lg font-semibold ">{t('Delete YouTube Video')}</div>,
+          children: t('Are you sure you want to delete this YouTube frame?'),
+          labels: { confirm: t('Delete'), cancel: t('Cancel') },
           onConfirm: deleteNode,
         });
       }
@@ -99,12 +91,12 @@ const EditorNodeView = ({
    * Format time in seconds to MM:SS format
    */
   const formatTime = (seconds: number): string => {
-    if (typeof seconds !== "number" || isNaN(seconds) || seconds < 0) {
-      return "00:00";
+    if (typeof seconds !== 'number' || isNaN(seconds) || seconds < 0) {
+      return '00:00';
     }
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   /**
@@ -113,11 +105,11 @@ const EditorNodeView = ({
   const isValidJumpMark = (jumpMark: JumpMark): boolean => {
     return (
       jumpMark &&
-      typeof jumpMark === "object" &&
-      typeof jumpMark.time === "number" &&
+      typeof jumpMark === 'object' &&
+      typeof jumpMark.time === 'number' &&
       !isNaN(jumpMark.time) &&
       jumpMark.time >= 0 &&
-      typeof jumpMark.label === "string" &&
+      typeof jumpMark.label === 'string' &&
       jumpMark.label.trim().length > 0
     );
   };
@@ -153,26 +145,26 @@ const EditorNodeView = ({
       {/* Edit Button - Only visible on hover */}
       <div
         className={clsx(
-          "absolute w-full h-full top-0 left-0",
-          "bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 group-hover:scale-x-[103%]",
+          'absolute w-full h-full top-0 left-0',
+          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50 group-hover:scale-x-[103%]',
         )}
       ></div>
       <div
         className={clsx(
-          "transition opacity-0 group-hover:opacity-100",
-          "absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2",
-          "flex gap-3 items-center justify-center",
+          'transition opacity-0 group-hover:opacity-100',
+          'absolute top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2',
+          'flex gap-3 items-center justify-center',
         )}
       >
         {/* Edit Button */}
         <button
           onClick={handleEditClick}
           className={clsx(
-            "group-hover:opacity-100",
-            "p-3 rounded bg-gray-ebony text-white bg-opacity-90",
-            "flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110",
+            'group-hover:opacity-100',
+            'p-3 rounded bg-gray-ebony text-white bg-opacity-90',
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
-          title={t("Edit YouTube Jump Marks")}
+          title={t('Edit YouTube Jump Marks')}
         >
           <FontAwesomeIcon icon={faPen as IconProp} className="w-6 h-6" />
         </button>
@@ -181,11 +173,11 @@ const EditorNodeView = ({
         <button
           onClick={handleDeleteClick}
           className={clsx(
-            "group-hover:opacity-100",
-            "p-3 rounded bg-red-500 text-white bg-opacity-90",
-            "flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110",
+            'group-hover:opacity-100',
+            'p-3 rounded bg-red-500 text-white bg-opacity-90',
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
-          title={t("Delete YouTube Jump Marks")}
+          title={t('Delete YouTube Jump Marks')}
         >
           <FontAwesomeIcon icon={faTrash as IconProp} className="w-6 h-6" />
         </button>
@@ -220,11 +212,9 @@ const EditorNodeView = ({
               <div className="jump-mark-content">
                 <div className="jump-mark-label">{jumpMark.label}</div>
                 {jumpMark.description &&
-                  typeof jumpMark.description === "string" &&
+                  typeof jumpMark.description === 'string' &&
                   jumpMark.description.trim().length > 0 && (
-                    <div className="jump-mark-description">
-                      {jumpMark.description}
-                    </div>
+                    <div className="jump-mark-description">{jumpMark.description}</div>
                   )}
               </div>
             </div>

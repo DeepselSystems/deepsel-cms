@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { NodeViewWrapper } from "@tiptap/react";
-import type { NodeViewProps } from "@tiptap/react";
-import { useTranslation } from "react-i18next";
-import clsx from "clsx";
-import { Skeleton } from "@mantine/core";
-import { formatFileSize } from "@deepsel/cms-utils/common/utils";
-import { insertAttachmentsToEditor } from "../utils";
-import { useEffectOnce } from "../../../../../hooks/useEffectOnce";
-import { useUpload } from "../../../../../hooks/useUpload";
+import React, { useState } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
+import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
+import { Skeleton } from '@mantine/core';
+import { formatFileSize } from '@deepsel/cms-utils/common/utils';
+import { insertAttachmentsToEditor } from '../utils';
+import { useEffectOnce } from '../../../../../hooks/useEffectOnce';
+import { useUpload } from '../../../../../hooks/useUpload';
 
 interface AttachmentFile {
   name: string;
@@ -26,7 +26,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
   const [hasUploaded, setHasUploaded] = useState(false);
 
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
-    (ext) => ext.name === "pasteHandler",
+    (ext) => ext.name === 'pasteHandler',
   );
 
   /**
@@ -34,7 +34,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
    * which are set in RichTextInput and provided by the consuming app.
    */
   const { backendHost, token, notify } = pasteHandlerExtension?.options || {
-    backendHost: "",
+    backendHost: '',
     token: undefined,
     notify: undefined,
   };
@@ -46,18 +46,13 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
    */
   useEffectOnce(() => {
     notify({
-      message: t("Uploading..."),
-      type: "info",
+      message: t('Uploading...'),
+      type: 'info',
       duration: 100000,
     });
-    uploadFileModel("attachment", files)
+    uploadFileModel('attachment', files)
       .then((attachments) => {
-        if (
-          attachments &&
-          (attachments as AttachmentFile[]).length > 0 &&
-          editor &&
-          getPos
-        ) {
+        if (attachments && (attachments as AttachmentFile[]).length > 0 && editor && getPos) {
           const pos = getPos();
           editor
             .chain()
@@ -66,23 +61,20 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
             .run();
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          insertAttachmentsToEditor(
-            attachments as AttachmentFile[],
-            editor,
-          ).then();
+          insertAttachmentsToEditor(attachments as AttachmentFile[], editor).then();
 
           notify({
-            message: t("Uploaded successfully"),
-            type: "success",
+            message: t('Uploaded successfully'),
+            type: 'success',
             duration: 3000,
           });
         }
       })
       .catch((error: Error) => {
-        console.error("Upload failed:", error);
+        console.error('Upload failed:', error);
         notify({
-          message: t(error.message || "Upload failed"),
-          type: "error",
+          message: t(error.message || 'Upload failed'),
+          type: 'error',
           duration: 3000,
         });
       })
@@ -97,14 +89,14 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
 
   return (
     <>
-      <NodeViewWrapper className={clsx("paste-handler-wrapper")}>
+      <NodeViewWrapper className={clsx('paste-handler-wrapper')}>
         <div className="space-y-2">
           {!hasUploaded &&
             files.map((file, index) => (
               <div
                 key={index}
                 className={clsx(
-                  "inline-flex gap-3 items-center border border-opacity-50 rounded px-2 py-1",
+                  'inline-flex gap-3 items-center border border-opacity-50 rounded px-2 py-1',
                 )}
               >
                 <div className="p-1 flex items-center">
@@ -112,10 +104,8 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
                 </div>
                 <div>
                   <div className="max-w-36 truncate font-bold">{file.name}</div>
-                  <div className="text-sm text-gray">
-                    {formatFileSize(file.size)}
-                  </div>
-                  <div className="text-sm">{t("Uploading...")}</div>
+                  <div className="text-sm text-gray">{formatFileSize(file.size)}</div>
+                  <div className="text-sm">{t('Uploading...')}</div>
                 </div>
               </div>
             ))}

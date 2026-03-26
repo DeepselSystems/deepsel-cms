@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Modal, ColorInput, NumberInput } from "@mantine/core";
-import { useTranslation } from "react-i18next";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "../../../ui/Button";
-import { TextInput } from "../../../ui/TextInput";
-import type { User } from "../../../types";
-import { RichTextInput } from "../RichTextInput";
+import React, { useEffect, useRef, useState } from 'react';
+import { Modal, ColorInput, NumberInput } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { v4 as uuidv4 } from 'uuid';
+import { Button } from '../../../ui/Button';
+import { TextInput } from '../../../ui/TextInput';
+import type { User } from '../../../types';
+import { RichTextInput } from '../RichTextInput';
 
 /**
  * Rich text component appearance configuration
@@ -93,10 +93,10 @@ interface RichTextInputRef {
  */
 const DEFAULT_RICHTEXT_CONFIG: RichTextConfig = {
   maxWidth: null,
-  backgroundColor: "#f5f5f5",
+  backgroundColor: '#f5f5f5',
   padding: 16,
   borderRadius: 8,
-  border: "1px solid #e0e0e0",
+  border: '1px solid #e0e0e0',
 };
 
 /**
@@ -121,13 +121,13 @@ export function RichTextModal({
 }: RichTextModalProps) {
   const { t } = useTranslation();
 
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const [config, setConfig] = useState<RichTextConfig>(DEFAULT_RICHTEXT_CONFIG);
   const richTextRef = useRef<RichTextInputRef | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setContent(initialContent || "");
+      setContent(initialContent || '');
       setConfig(initialConfig || DEFAULT_RICHTEXT_CONFIG);
     }
   }, [initialContent, initialConfig, isOpen]);
@@ -136,9 +136,7 @@ export function RichTextModal({
    * Save richtext content and close modal
    */
   const handleSave = () => {
-    const htmlContent = richTextRef.current
-      ? richTextRef.current.getHTML()
-      : content;
+    const htmlContent = richTextRef.current ? richTextRef.current.getHTML() : content;
     const id = richtextId || `richtext-${uuidv4()}`;
 
     onSave({
@@ -155,13 +153,13 @@ export function RichTextModal({
     <Modal
       opened={isOpen}
       onClose={close}
-      title={t("Edit Rich Text Content")}
+      title={t('Edit Rich Text Content')}
       size="xl"
       padding="md"
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("Content")}</h3>
+          <h3 className="text-sm font-medium">{t('Content')}</h3>
           <div className="border border-gray-200 rounded-md">
             <RichTextInput
               ref={richTextRef}
@@ -178,16 +176,16 @@ export function RichTextModal({
         </div>
 
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">{t("Appearance")}</h3>
+          <h3 className="text-sm font-medium">{t('Appearance')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <NumberInput
-              label={t("Max Width (px)")}
-              placeholder={t("Auto")}
-              value={config.maxWidth ?? ""}
+              label={t('Max Width (px)')}
+              placeholder={t('Auto')}
+              value={config.maxWidth ?? ''}
               onChange={(value) =>
                 setConfig({
                   ...config,
-                  maxWidth: typeof value === "number" ? value : null,
+                  maxWidth: typeof value === 'number' ? value : null,
                 })
               }
               min={0}
@@ -196,28 +194,19 @@ export function RichTextModal({
               allowDecimal={false}
             />
             <ColorInput
-              label={t("Background Color")}
+              label={t('Background Color')}
               value={config.backgroundColor}
-              onChange={(value) =>
-                setConfig({ ...config, backgroundColor: value })
-              }
+              onChange={(value) => setConfig({ ...config, backgroundColor: value })}
               format="hex"
-              swatches={[
-                "#f5f5f5",
-                "#ffffff",
-                "#f0f8ff",
-                "#fff8e1",
-                "#f1f8e9",
-                "#fce4ec",
-              ]}
+              swatches={['#f5f5f5', '#ffffff', '#f0f8ff', '#fff8e1', '#f1f8e9', '#fce4ec']}
             />
             <NumberInput
-              label={t("Padding (px)")}
+              label={t('Padding (px)')}
               value={config.padding}
               onChange={(value) =>
                 setConfig({
                   ...config,
-                  padding: typeof value === "number" ? value : 16,
+                  padding: typeof value === 'number' ? value : 16,
                 })
               }
               min={0}
@@ -227,12 +216,12 @@ export function RichTextModal({
               allowDecimal={false}
             />
             <NumberInput
-              label={t("Border Radius (px)")}
+              label={t('Border Radius (px)')}
               value={config.borderRadius}
               onChange={(value) =>
                 setConfig({
                   ...config,
-                  borderRadius: typeof value === "number" ? value : 8,
+                  borderRadius: typeof value === 'number' ? value : 8,
                 })
               }
               min={0}
@@ -242,7 +231,7 @@ export function RichTextModal({
               allowDecimal={false}
             />
             <TextInput
-              label={t("Border")}
+              label={t('Border')}
               value={config.border}
               onChange={(e) => setConfig({ ...config, border: e.target.value })}
               placeholder="1px solid #e0e0e0"
@@ -253,10 +242,10 @@ export function RichTextModal({
 
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="default" onClick={close}>
-            {t("Cancel")}
+            {t('Cancel')}
           </Button>
           <Button onClick={handleSave} color="blue">
-            {t("Save")}
+            {t('Save')}
           </Button>
         </div>
       </div>

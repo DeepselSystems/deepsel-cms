@@ -1,5 +1,5 @@
-import { mergeAttributes, Node } from "@tiptap/core";
-import type { Command } from "@tiptap/core";
+import { mergeAttributes, Node } from '@tiptap/core';
+import type { Command } from '@tiptap/core';
 
 interface YoutubeEmbedOptions {
   src: string;
@@ -7,7 +7,7 @@ interface YoutubeEmbedOptions {
   height?: number;
 }
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     youtubeEmbed: {
       setYoutubeVideo: (options: YoutubeEmbedOptions) => ReturnType;
@@ -20,8 +20,7 @@ function getEmbedUrl(url: string): string | null {
     return null;
   }
 
-  const youtubeRegExp =
-    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const youtubeRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(youtubeRegExp);
 
   const videoId = match && match[2].length === 11 ? match[2] : url;
@@ -30,16 +29,16 @@ function getEmbedUrl(url: string): string | null {
 }
 
 export const YoutubeEmbed = Node.create({
-  name: "youtubeEmbed",
+  name: 'youtubeEmbed',
 
-  group: "block",
+  group: 'block',
 
   atom: true,
 
   addOptions() {
     return {
       HTMLAttributes: {
-        class: "w-full aspect-video my-4",
+        class: 'w-full aspect-video my-4',
       },
     };
   },
@@ -71,10 +70,10 @@ export const YoutubeEmbed = Node.create({
     const embedUrl = getEmbedUrl(HTMLAttributes.src);
 
     return [
-      "div",
-      { class: "youtube-embed-wrapper" },
+      'div',
+      { class: 'youtube-embed-wrapper' },
       [
-        "iframe",
+        'iframe',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         mergeAttributes(this.options.HTMLAttributes, {
           width: HTMLAttributes.width,
@@ -82,7 +81,7 @@ export const YoutubeEmbed = Node.create({
           src: embedUrl,
           frameborder: 0,
           allow:
-            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+            'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
           allowfullscreen: true,
         }),
       ],

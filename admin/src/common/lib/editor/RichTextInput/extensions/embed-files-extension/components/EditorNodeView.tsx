@@ -1,36 +1,31 @@
-import React, { useCallback, useState } from "react";
-import { NodeViewWrapper } from "@tiptap/react";
-import type { NodeViewProps } from "@tiptap/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { modals } from "@mantine/modals";
-import { useTranslation } from "react-i18next";
-import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from "../utils";
-import clsx from "clsx";
-import FilesSelectorModal from "./FilesSelectorModal";
-import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
-import type { EmbedFileItem } from "../types";
+import React, { useCallback, useState } from 'react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { modals } from '@mantine/modals';
+import { useTranslation } from 'react-i18next';
+import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from '../utils';
+import clsx from 'clsx';
+import FilesSelectorModal from './FilesSelectorModal';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import type { EmbedFileItem } from '../types';
 
 /**
  * EditorNodeView component for embed files
  * Displays list of files with download links and delete button on hover
  */
-const EditorNodeView = ({
-  node,
-  editor,
-  deleteNode,
-  updateAttributes,
-}: NodeViewProps) => {
+const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeViewProps) => {
   /**
    * backendHost, user, and setUser are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.
    */
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
-    (ext) => ext.name === "pasteHandler",
+    (ext) => ext.name === 'pasteHandler',
   );
   const { backendHost, user, setUser } = pasteHandlerExtension?.options || {
-    backendHost: "",
+    backendHost: '',
     user: null,
     setUser: () => {},
   };
@@ -64,11 +59,9 @@ const EditorNodeView = ({
       if (deleteNode) {
         modals.openConfirmModal({
           centered: true,
-          title: (
-            <div className="text-lg font-semibold">{t("Delete Files")}</div>
-          ),
-          children: t("Are you sure you want to delete these files?"),
-          labels: { confirm: t("Delete"), cancel: t("Cancel") },
+          title: <div className="text-lg font-semibold">{t('Delete Files')}</div>,
+          children: t('Are you sure you want to delete these files?'),
+          labels: { confirm: t('Delete'), cancel: t('Cancel') },
           onConfirm: deleteNode,
         });
       }
@@ -82,45 +75,45 @@ const EditorNodeView = ({
 
   return (
     <NodeViewWrapper
-      className={clsx(EMBED_FILES_CLASSES.WRAPPER, "relative group my-4")}
+      className={clsx(EMBED_FILES_CLASSES.WRAPPER, 'relative group my-4')}
       {...{
-        [EMBED_FILES_ATTRIBUTES.CONTAINER]: "true",
+        [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true',
         [EMBED_FILES_ATTRIBUTES.FILES]: JSON.stringify(files),
       }}
     >
       {/* Hover Overlay */}
       <div
         className={clsx(
-          "absolute w-full h-full top-0 left-0",
-          "bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50",
+          'absolute w-full h-full top-0 left-0',
+          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50',
         )}
       />
 
       {/* Action Buttons */}
       <div
         className={clsx(
-          "transition opacity-0 group-hover:opacity-100",
-          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-          "flex gap-2",
+          'transition opacity-0 group-hover:opacity-100',
+          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+          'flex gap-2',
         )}
       >
         <button
           onClick={handleEditClick}
           className={clsx(
-            "group-hover:opacity-100 p-3 rounded bg-gray-ebony text-white bg-opacity-90 flex items-center justify-center",
-            "shadow-lg transition-all duration-200 transform hover:scale-110",
+            'group-hover:opacity-100 p-3 rounded bg-gray-ebony text-white bg-opacity-90 flex items-center justify-center',
+            'shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
-          title={t("Edit Files")}
+          title={t('Edit Files')}
         >
           <FontAwesomeIcon icon={faPen as IconProp} className="w-6 h-6" />
         </button>
         <button
           onClick={handleDeleteClick}
           className={clsx(
-            "p-3 rounded bg-red-500 text-white bg-opacity-90",
-            "flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110",
+            'p-3 rounded bg-red-500 text-white bg-opacity-90',
+            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
-          title={t("Delete Files")}
+          title={t('Delete Files')}
         >
           <FontAwesomeIcon icon={faTrash as IconProp} className="w-6 h-6" />
         </button>
@@ -139,9 +132,7 @@ const EditorNodeView = ({
                 title={file.name}
               >
                 <span className={EMBED_FILES_CLASSES.FILE_ICON}>📄</span>
-                <span className={EMBED_FILES_CLASSES.FILE_LINK}>
-                  {file.name}
-                </span>
+                <span className={EMBED_FILES_CLASSES.FILE_LINK}>{file.name}</span>
               </a>
             </div>
           );

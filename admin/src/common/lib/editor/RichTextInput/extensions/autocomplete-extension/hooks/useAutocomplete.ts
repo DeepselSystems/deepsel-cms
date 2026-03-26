@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useDebounce } from "./useDebounce";
-import { AUTOCOMPLETE_CONSTANTS } from "../constants";
-import { isIncompleteSentence } from "../utils";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useDebounce } from './useDebounce';
+import { AUTOCOMPLETE_CONSTANTS } from '../constants';
+import { isIncompleteSentence } from '../utils';
 
 interface UseAutocompleteConfig {
   backendHost: string;
@@ -31,16 +31,13 @@ export function useAutocomplete({
   token,
   onSuggestionUpdate,
 }: UseAutocompleteConfig): UseAutocompleteReturn {
-  const [suggestion, setSuggestion] = useState("");
+  const [suggestion, setSuggestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const { debouncedCallback, cancel } = useDebounce(
-    async (text: string, position: number) => {
-      await fetchSuggestion(text, position);
-    },
-    AUTOCOMPLETE_CONSTANTS.DEBOUNCE_DELAY,
-  );
+  const { debouncedCallback, cancel } = useDebounce(async (text: string, position: number) => {
+    await fetchSuggestion(text, position);
+  }, AUTOCOMPLETE_CONSTANTS.DEBOUNCE_DELAY);
 
   /**
    * Fetch AI suggestion from API
@@ -54,8 +51,8 @@ export function useAutocomplete({
       }
 
       if (!isIncompleteSentence(text, position)) {
-        setSuggestion("");
-        onSuggestionUpdate?.("");
+        setSuggestion('');
+        onSuggestionUpdate?.('');
         return;
       }
 
@@ -64,28 +61,25 @@ export function useAutocomplete({
       try {
         setIsLoading(true);
 
-        const response = await fetch(
-          `${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              text,
-              cursor_position: position,
-            }),
-            signal: abortControllerRef.current.signal,
+        const response = await fetch(`${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
-        );
+          body: JSON.stringify({
+            text,
+            cursor_position: position,
+          }),
+          signal: abortControllerRef.current.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        const newSuggestion = data.completion || data.suggestions?.[0] || "";
+        const newSuggestion = data.completion || data.suggestions?.[0] || '';
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setSuggestion(newSuggestion);
@@ -93,12 +87,12 @@ export function useAutocomplete({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         onSuggestionUpdate?.(newSuggestion);
       } catch (error) {
-        if ((error as Error).name !== "AbortError") {
-          console.error("Error fetching autocomplete suggestions:", error);
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error fetching autocomplete suggestions:', error);
         }
 
-        setSuggestion("");
-        onSuggestionUpdate?.("");
+        setSuggestion('');
+        onSuggestionUpdate?.('');
       } finally {
         setIsLoading(false);
         abortControllerRef.current = null;
@@ -125,8 +119,8 @@ export function useAutocomplete({
    */
   const acceptSuggestion = useCallback(() => {
     const currentSuggestion = suggestion;
-    setSuggestion("");
-    onSuggestionUpdate?.("");
+    setSuggestion('');
+    onSuggestionUpdate?.('');
     return currentSuggestion;
   }, [suggestion, onSuggestionUpdate]);
 
@@ -134,8 +128,8 @@ export function useAutocomplete({
    * Dismiss the current suggestion
    */
   const dismissSuggestion = useCallback(() => {
-    setSuggestion("");
-    onSuggestionUpdate?.("");
+    setSuggestion('');
+    onSuggestionUpdate?.('');
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();

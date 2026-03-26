@@ -1,7 +1,7 @@
-import React from "react";
-import type { Editor } from "@tiptap/core";
-import { Tooltip } from "@mantine/core";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import type { Editor } from '@tiptap/core';
+import { Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 interface EnhancedCodeBlockButtonProps {
   editor: Editor | null;
@@ -13,10 +13,7 @@ interface EnhancedCodeBlockButtonProps {
  *
  * @constructor
  */
-const EnhancedCodeBlockButton = ({
-  editor,
-  children,
-}: EnhancedCodeBlockButtonProps) => {
+const EnhancedCodeBlockButton = ({ editor, children }: EnhancedCodeBlockButtonProps) => {
   const { t } = useTranslation();
 
   /**
@@ -24,20 +21,14 @@ const EnhancedCodeBlockButton = ({
    */
   const handleClick = () => {
     if (editor) {
-      editor
-        .chain()
-        .focus()
-        .toggleEnhancedCodeBlock({ language: "javascript" })
-        .run();
+      editor.chain().focus().toggleEnhancedCodeBlock({ language: 'javascript' }).run();
     }
   };
 
   return (
-    <Tooltip label={t("Insert Code Block")}>
+    <Tooltip label={t('Insert Code Block')}>
       <button type="button" onClick={handleClick}>
-        {children || (
-          <div className="text-gray-500 text-xs px-0.5">&#123;...&#125;</div>
-        )}
+        {children || <div className="text-gray-500 text-xs px-0.5">&#123;...&#125;</div>}
       </button>
     </Tooltip>
   );
