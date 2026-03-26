@@ -14,7 +14,6 @@ on:
     tags:
       - 'cms-utils-v*'
       - 'cms-react-v*'
-      - 'cms-editor-v*'
       - 'admin-v*'
 
 jobs:
@@ -24,7 +23,6 @@ jobs:
     outputs:
       cms-utils: ${{ steps.filter.outputs.cms-utils }}
       cms-react: ${{ steps.filter.outputs.cms-react }}
-      cms-editor: ${{ steps.filter.outputs.cms-editor }}
       admin: ${{ steps.filter.outputs.admin }}
       # For tag events, detect which package the tag is for
       tagged-package: ${{ steps.tag-check.outputs.package }}
@@ -44,9 +42,6 @@ jobs:
           elif [[ "$TAG" == cms-react-v* ]]; then
             echo "package=cms-react" >> $GITHUB_OUTPUT
             echo "version=${TAG#cms-react-v}" >> $GITHUB_OUTPUT
-          elif [[ "$TAG" == cms-editor-v* ]]; then
-            echo "package=cms-editor" >> $GITHUB_OUTPUT
-            echo "version=${TAG#cms-editor-v}" >> $GITHUB_OUTPUT
           elif [[ "$TAG" == admin-v* ]]; then
             echo "package=admin" >> $GITHUB_OUTPUT
             echo "version=${TAG#admin-v}" >> $GITHUB_OUTPUT
@@ -62,8 +57,6 @@ jobs:
               - 'packages/cms-utils/**'
             cms-react:
               - 'packages/cms-react/**'
-            cms-editor:
-              - 'packages/cms-editor/**'
             admin:
               - 'admin/**'
 
@@ -154,53 +147,6 @@ jobs:
         if: needs.detect-changes.outputs.tagged-package == 'cms-react'
         run: npm publish --provenance --workspace=packages/cms-react
 
-  # cms-editor CI
-  cms-editor:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.cms-editor == 'true' || needs.detect-changes.outputs.tagged-package == 'cms-editor'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          registry-url: https://registry.npmjs.org
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build dependencies
-        run: |
-          npm run build --workspace=packages/cms-utils
-          npm run build --workspace=packages/cms-react
-
-      - name: Run tests
-        run: npm test --workspace=packages/cms-editor
-
-      - name: Lint
-        run: npm run lint --workspace=packages/cms-editor
-
-      - name: Check formatting
-        run: npm run format:check --workspace=packages/cms-editor
-
-      - name: Build
-        run: npm run build --workspace=packages/cms-editor
-
-      - name: Update npm
-        if: needs.detect-changes.outputs.tagged-package == 'cms-editor'
-        run: npm install -g npm@latest
-
-      - name: Publish package
-        if: needs.detect-changes.outputs.tagged-package == 'cms-editor'
-        run: npm publish --provenance --workspace=packages/cms-editor
-
   # admin CI
   admin:
     needs: detect-changes
@@ -227,7 +173,6 @@ jobs:
         run: |
           npm run build --workspace=packages/cms-utils
           npm run build --workspace=packages/cms-react
-          npm run build --workspace=packages/cms-editor
 
       - name: Build library
         run: npm run build:lib --workspace=admin
