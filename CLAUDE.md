@@ -72,11 +72,14 @@ make install-dev
 npm install                                          # for JSX compilation via esbuild
 uvicorn main:app --reload
 
+# Frontend (from repo root)
+npm install                                          # install all workspaces
+
 # Admin
-cd admin && npm install && npm run dev
+cd admin && npm run dev
 
 # Client
-cd client && npm install && npm run dev
+cd client && npm run dev
 ```
 
 The client proxies `/api/v1` to `http://localhost:8000`. Default login: `admin` / `1234`.
@@ -115,6 +118,18 @@ Scope-based (`none`, `own`, `org`, `own_org`, `all`) × action-based (`read`, `w
 ### Auto-Generated GraphQL
 
 Strawberry GraphQL schema is generated at startup from the models pool — no manual type definitions. For each model it creates query resolvers (`get_{model}`, `search_{model}`) and mutation resolvers (`create_{model}`, `update_{model}`, `delete_{model}`, `bulk_delete_{model}`). Endpoint: `/graphql`.
+
+### Package Hoisting (npm Workspaces)
+
+The root `package.json` defines npm workspaces: `client`, `admin`, `themes/*`, and `packages/*`. Running `npm install` from the repo root hoists shared dependencies into the root `node_modules/`, making them available to all workspaces without duplicating installs.
+
+Themes declare shared dependencies like `react` and `react-dom` as `peerDependencies` — they resolve these from the root `node_modules/` where the client workspace installs them. Theme-specific dependencies go in `dependencies` in the theme's own `package.json`. The `overrides` field in the root `package.json` enforces a single React version across workspaces (e.g., `@mui/*` packages use the root React).
+
+When adding dependencies:
+- **Shared across workspaces** (react, react-dom): install in the consuming workspace (client) and declare as `peerDependencies` in themes
+- **Theme-specific**: add to the theme's `dependencies`
+- **Dev tooling** (prettier, happy-dom): add to root `devDependencies`
+- Always run `npm install` from the repo root to ensure proper hoisting
 
 ### Theme System
 

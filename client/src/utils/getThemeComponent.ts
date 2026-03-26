@@ -1,9 +1,17 @@
 import { themeMap, themeSystemKeys, type ThemeName } from '../themes';
-import type { PageData, BlogListData, BlogPostData, SearchResultsData, SiteSettings } from '@deepsel/cms-utils';
+import type {
+  PageData,
+  BlogListData,
+  BlogPostData,
+  SearchResultsData,
+  SiteSettings,
+} from '@deepsel/cms-utils';
 
 const systemKeys = new Set(Object.values(themeSystemKeys));
 
-function getSelectedThemeSettings(data: PageData | BlogListData | BlogPostData | SearchResultsData) {
+function getSelectedThemeSettings(
+  data: PageData | BlogListData | BlogPostData | SearchResultsData,
+) {
   const publicSettings = data.public_settings;
   const selectedTheme: ThemeName = publicSettings?.selected_theme as ThemeName;
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;

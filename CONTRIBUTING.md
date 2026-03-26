@@ -33,13 +33,18 @@ Thank you for your interest in contributing to Deepsel CMS! This document provid
    uvicorn main:app --reload
    ```
 
-4. **Install frontend dependencies**
+4. **Install frontend dependencies** (from repo root)
    ```bash
-   cd admin && npm install && npm run dev   # port 5173
-   cd client && npm install && npm run dev  # port 4322
+   npm install   # installs all workspaces via hoisting
    ```
 
-5. **Create a feature branch**
+5. **Run frontend dev servers**
+   ```bash
+   cd admin && npm run dev   # port 5173
+   cd client && npm run dev  # port 4322
+   ```
+
+6. **Create a feature branch**
    ```bash
    git checkout -b feature/your-feature-name
    ```

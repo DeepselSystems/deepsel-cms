@@ -37,11 +37,16 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`.
 
+### Frontend (from repo root)
+
+```bash
+npm install   # installs all workspaces via hoisting
+```
+
 ### Admin Dashboard
 
 ```bash
 cd admin
-npm install
 npm run dev   # http://localhost:5173
 ```
 
@@ -49,7 +54,6 @@ npm run dev   # http://localhost:5173
 
 ```bash
 cd client
-npm install
 npm run dev   # http://localhost:4322
 ```
 

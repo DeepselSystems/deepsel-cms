@@ -25,7 +25,7 @@ export const themeSystemKeys = {
 
 // THEME_MAP_START (auto-managed)
 export const themeMap = {
-  'starter_react': {
+  starter_react: {
     [themeSystemKeys.Page]: StarterReactIndex,
     [themeSystemKeys.BlogList]: StarterReactBlog,
     [themeSystemKeys.BlogPost]: StarterReactSingleBlog,
@@ -37,11 +37,11 @@ export const themeMap = {
     [themeSystemKeys.BlogList]: ThemeAlricosBlog,
     [themeSystemKeys.BlogPost]: ThemeAlricosSingleBlog,
     [themeSystemKeys.NotFound]: ThemeAlricos404,
-    'finance': ThemeAlricosFinance,
-    'unternehmensberatung': ThemeAlricosUnternehmensberatung,
-    'steuerberatung': ThemeAlricosSteuerberatung,
-    'personaladministration': ThemeAlricosPersonaladministration,
-    'kontakt': ThemeAlricosKontakt,
+    finance: ThemeAlricosFinance,
+    unternehmensberatung: ThemeAlricosUnternehmensberatung,
+    steuerberatung: ThemeAlricosSteuerberatung,
+    personaladministration: ThemeAlricosPersonaladministration,
+    kontakt: ThemeAlricosKontakt,
   },
 };
 // THEME_MAP_END
