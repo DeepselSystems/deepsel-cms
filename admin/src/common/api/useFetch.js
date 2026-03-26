@@ -1,4 +1,4 @@
-import { useFetch as useFetchBase } from '@deepsel/cms-react';
+import { useFetch as useFetchBase } from '../lib/hooks';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 

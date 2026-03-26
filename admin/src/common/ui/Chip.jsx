@@ -1,1 +1,1 @@
-export { Chip as default } from '@deepsel/cms-react';
+export { Chip as default } from '../lib/ui/Chip';

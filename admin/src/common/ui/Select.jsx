@@ -1,1 +1,1 @@
-export { Select as default } from '@deepsel/cms-react';
+export { Select as default } from '../lib/ui/Select';

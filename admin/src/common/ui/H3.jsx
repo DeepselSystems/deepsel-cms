@@ -1,1 +1,1 @@
-export { H3 as default } from '@deepsel/cms-react';
+export { H3 as default } from '../lib/ui/H3';

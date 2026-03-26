@@ -1,1 +1,1 @@
-export { ChartViewSkeleton as default } from '@deepsel/cms-react';
+export { ChartViewSkeleton as default } from '../lib/ui/ChartViewSkeleton';

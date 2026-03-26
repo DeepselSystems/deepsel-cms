@@ -1,4 +1,4 @@
-import { ViewFormActionBar as BaseViewFormActionBar } from '@deepsel/cms-react';
+import { ViewFormActionBar as BaseViewFormActionBar } from '../lib/ui/ViewFormActionBar/ViewFormActionBar';
 import UserState from '../stores/UserState.js';
 import NotificationState from '../stores/NotificationState.js';
 

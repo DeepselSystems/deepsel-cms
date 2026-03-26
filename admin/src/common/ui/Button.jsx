@@ -1,1 +1,1 @@
-export { Button as default } from '@deepsel/cms-react';
+export { Button as default } from '../lib/ui/Button';

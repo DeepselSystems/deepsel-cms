@@ -1,1 +1,1 @@
-export { TextInput as default } from '@deepsel/cms-react';
+export { TextInput as default } from '../lib/ui/TextInput';

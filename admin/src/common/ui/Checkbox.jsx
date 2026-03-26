@@ -1,1 +1,1 @@
-export { Checkbox as default } from '@deepsel/cms-react';
+export { Checkbox as default } from '../lib/ui/Checkbox';

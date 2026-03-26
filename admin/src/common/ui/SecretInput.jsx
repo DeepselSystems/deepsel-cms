@@ -1,1 +1,1 @@
-export { SecretInput as default } from '@deepsel/cms-react';
+export { SecretInput as default } from '../lib/ui/SecretInput';

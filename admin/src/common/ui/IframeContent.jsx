@@ -1,1 +1,1 @@
-export { IframeContent as default } from '@deepsel/cms-react';
+export { IframeContent as default } from '../lib/ui/IframeContent';

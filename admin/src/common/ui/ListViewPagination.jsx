@@ -1,1 +1,1 @@
-export { ListViewPagination as default } from '@deepsel/cms-react';
+export { ListViewPagination as default } from '../lib/ui/ListViewPagination';

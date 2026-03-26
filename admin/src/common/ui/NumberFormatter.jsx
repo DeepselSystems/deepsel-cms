@@ -1,1 +1,1 @@
-export { NumberFormatter as default } from '@deepsel/cms-react';
+export { NumberFormatter as default } from '../lib/ui/NumberFormatter';

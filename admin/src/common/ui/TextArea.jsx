@@ -1,1 +1,1 @@
-export { TextArea as default } from '@deepsel/cms-react';
+export { TextArea as default } from '../lib/ui/TextArea';

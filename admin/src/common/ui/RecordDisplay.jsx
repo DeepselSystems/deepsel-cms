@@ -1,1 +1,1 @@
-export { RecordDisplay as default } from '@deepsel/cms-react';
+export { RecordDisplay as default } from '../lib/ui/RecordDisplay';

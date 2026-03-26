@@ -1,1 +1,1 @@
-export { EditFormActionBar as default } from '@deepsel/cms-react';
+export { EditFormActionBar as default } from '../lib/ui/EditFormActionBar/EditFormActionBar';

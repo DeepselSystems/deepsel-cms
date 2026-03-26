@@ -1,1 +1,1 @@
-export { CreateFormWrapper as default } from '@deepsel/cms-react';
+export { CreateFormWrapper as default } from '../lib/ui/CreateFormWrapper/CreateFormWrapper';

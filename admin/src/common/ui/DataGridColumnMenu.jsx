@@ -1,4 +1,4 @@
-import { DataGridColumnMenu as BaseDataGridColumnMenu } from '@deepsel/cms-react';
+import { DataGridColumnMenu as BaseDataGridColumnMenu } from '../lib/ui/DataGridColumnMenu/DataGridColumnMenu';
 import APISchemaState from '../stores/APISchemaState.js';
 import NotificationState from '../stores/NotificationState.js';
 

@@ -1,1 +1,1 @@
-export { DebounceInput as default } from '@deepsel/cms-react';
+export { DebounceInput as default } from '../lib/ui/DebounceInput';

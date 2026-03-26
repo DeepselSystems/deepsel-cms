@@ -1,1 +1,1 @@
-export { LinkedCell as default } from '@deepsel/cms-react';
+export { LinkedCell as default } from '../lib/ui/LinkedCell';

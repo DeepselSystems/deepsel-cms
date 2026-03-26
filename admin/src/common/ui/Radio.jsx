@@ -1,1 +1,1 @@
-export { Radio as default } from '@deepsel/cms-react';
+export { Radio as default } from '../lib/ui/Radio';

@@ -1,1 +1,1 @@
-export { RecordChipDisplay as default } from '@deepsel/cms-react';
+export { RecordChipDisplay as default } from '../lib/ui/RecordChipDisplay';

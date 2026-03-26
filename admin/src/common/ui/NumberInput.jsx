@@ -1,1 +1,1 @@
-export { NumberInput as default } from '@deepsel/cms-react';
+export { NumberInput as default } from '../lib/ui/NumberInput';

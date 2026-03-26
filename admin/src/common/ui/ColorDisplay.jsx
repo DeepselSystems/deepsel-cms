@@ -1,1 +1,1 @@
-export { ColorDisplay as default } from '@deepsel/cms-react';
+export { ColorDisplay as default } from '../lib/ui/ColorDisplay';

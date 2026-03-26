@@ -1,4 +1,4 @@
-import { RecordSelectMulti as BaseRecordSelectMulti } from '@deepsel/cms-react';
+import { RecordSelectMulti as BaseRecordSelectMulti } from '../lib/ui/RecordSelectMulti/RecordSelectMulti';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 

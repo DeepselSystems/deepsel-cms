@@ -1,1 +1,1 @@
-export { CreateFormActionBar as default } from '@deepsel/cms-react';
+export { CreateFormActionBar as default } from '../lib/ui/CreateFormActionBar/CreateFormActionBar';

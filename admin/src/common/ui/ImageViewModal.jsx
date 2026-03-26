@@ -1,1 +1,1 @@
-export { ImageViewModal as default } from '@deepsel/cms-react';
+export { ImageViewModal as default } from '../lib/ui/ImageViewModal';

@@ -1,1 +1,1 @@
-export { Card as default } from '@deepsel/cms-react';
+export { Card as default } from '../lib/ui/Card';

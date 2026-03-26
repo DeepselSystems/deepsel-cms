@@ -1,1 +1,1 @@
-export { ChipColor as default } from '@deepsel/cms-react';
+export { ChipColor as default } from '../lib/ui/ChipColor';

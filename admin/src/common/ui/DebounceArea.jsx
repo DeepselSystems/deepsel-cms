@@ -1,1 +1,1 @@
-export { DebounceArea as default } from '@deepsel/cms-react';
+export { DebounceArea as default } from '../lib/ui/DebounceArea';

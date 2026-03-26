@@ -23,6 +23,7 @@ export default defineConfig({
     rollupOptions: {
       external: (id) => {
         // Externalize all peer dependencies and their subpath imports
+        // so we don't bundle their entire source code in the library
         const externalPrefixes = [
           'react',
           'react-dom',

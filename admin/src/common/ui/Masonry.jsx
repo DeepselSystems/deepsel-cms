@@ -1,1 +1,1 @@
-export { Masonry as default } from '@deepsel/cms-react';
+export { Masonry as default } from '../lib/ui/Masonry';

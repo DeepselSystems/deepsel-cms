@@ -1,3 +1,3 @@
-import { usePagingTableParams } from '@deepsel/cms-react';
+import { usePagingTableParams } from '../lib/hooks';
 
 export default usePagingTableParams;

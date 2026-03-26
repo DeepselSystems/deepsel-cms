@@ -1,4 +1,4 @@
-import { ChooseAttachmentModal as BaseChooseAttachmentModal } from '@deepsel/cms-react';
+import { ChooseAttachmentModal as BaseChooseAttachmentModal } from '../lib/ui/ChooseAttachmentModal';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 import NotificationState from '../stores/NotificationState.js';

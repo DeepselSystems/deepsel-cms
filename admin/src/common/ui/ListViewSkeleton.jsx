@@ -1,1 +1,1 @@
-export { ListViewSkeleton as default } from '@deepsel/cms-react';
+export { ListViewSkeleton as default } from '../lib/ui/ListViewSkeleton';

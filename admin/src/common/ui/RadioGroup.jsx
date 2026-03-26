@@ -1,1 +1,1 @@
-export { RadioGroup as default } from '@deepsel/cms-react';
+export { RadioGroup as default } from '../lib/ui/RadioGroup';

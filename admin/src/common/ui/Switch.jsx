@@ -1,1 +1,1 @@
-export { Switch as default } from '@deepsel/cms-react';
+export { Switch as default } from '../lib/ui/Switch';

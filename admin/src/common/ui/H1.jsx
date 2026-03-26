@@ -1,1 +1,1 @@
-export { H1 as default } from '@deepsel/cms-react';
+export { H1 as default } from '../lib/ui/H1';

@@ -1,1 +1,1 @@
-export { Divider as default } from '@deepsel/cms-react';
+export { Divider as default } from '../lib/ui/Divider';

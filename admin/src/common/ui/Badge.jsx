@@ -1,1 +1,1 @@
-export { Badge as default } from '@deepsel/cms-react';
+export { Badge as default } from '../lib/ui/Badge';

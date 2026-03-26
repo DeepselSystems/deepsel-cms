@@ -1,1 +1,1 @@
-export { DateTimePickerInput as default } from '@deepsel/cms-react';
+export { DateTimePickerInput as default } from '../lib/ui/DateTimePickerInput';

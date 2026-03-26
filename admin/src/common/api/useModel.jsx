@@ -1,4 +1,4 @@
-import { useModel as useModelBase } from '@deepsel/cms-react';
+import { useModel as useModelBase } from '../lib/hooks';
 import { useTranslation } from 'react-i18next';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import OrganizationIdState from '../stores/OrganizationIdState.js';

@@ -1,4 +1,4 @@
-import { useUpload as useUploadBase } from '@deepsel/cms-react';
+import { useUpload as useUploadBase } from '../lib/hooks';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import useAuthentication from './useAuthentication.js';
 

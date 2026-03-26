@@ -1,4 +1,4 @@
-import { HtmlComponentsModal as BaseHtmlComponentsModal } from '@deepsel/cms-react';
+import { HtmlComponentsModal as BaseHtmlComponentsModal } from '../lib/ui/HtmlComponentsModal';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 import OrganizationIdState from '../stores/OrganizationIdState.js';

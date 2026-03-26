@@ -1,1 +1,1 @@
-export { ParallelEditWarning as default } from '@deepsel/cms-react';
+export { ParallelEditWarning as default } from '../lib/ui/ParallelEditWarning';

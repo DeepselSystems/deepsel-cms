@@ -1,1 +1,1 @@
-export { HtmlDisplay as default } from '@deepsel/cms-react';
+export { HtmlDisplay as default } from '../lib/ui/HtmlDisplay';

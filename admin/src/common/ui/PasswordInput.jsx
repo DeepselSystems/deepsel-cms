@@ -1,1 +1,1 @@
-export { PasswordInput as default } from '@deepsel/cms-react';
+export { PasswordInput as default } from '../lib/ui/PasswordInput';

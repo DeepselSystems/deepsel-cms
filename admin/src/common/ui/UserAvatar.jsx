@@ -1,4 +1,4 @@
-import { UserAvatar as BaseUserAvatar } from '@deepsel/cms-react';
+import { UserAvatar as BaseUserAvatar } from '../lib/ui/UserAvatar/UserAvatar';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 
 export default function UserAvatar(props) {

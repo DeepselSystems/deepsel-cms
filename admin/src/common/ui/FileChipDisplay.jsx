@@ -1,4 +1,4 @@
-import { FileChipDisplay as BaseFileChipDisplay } from '@deepsel/cms-react';
+import { FileChipDisplay as BaseFileChipDisplay } from '../lib/ui/FileChipDisplay/FileChipDisplay';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 
 export default function FileChipDisplay(props) {

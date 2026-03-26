@@ -1,4 +1,4 @@
-import { useAuthentication as useAuthenticationBase } from '@deepsel/cms-react';
+import { useAuthentication as useAuthenticationBase } from '../lib/hooks';
 import { setCookie, removeCookie } from '@deepsel/cms-utils';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';

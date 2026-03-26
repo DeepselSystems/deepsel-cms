@@ -1,1 +1,1 @@
-export { RichTextRenderer as default } from '@deepsel/cms-editor';
+export { RichTextRenderer as default } from '../lib/editor/RichTextRenderer/RichTextRenderer';

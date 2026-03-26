@@ -1,4 +1,4 @@
-import { FileInput as BaseFileInput } from '@deepsel/cms-react';
+import { FileInput as BaseFileInput } from '../lib/ui/FileInput/FileInput';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 

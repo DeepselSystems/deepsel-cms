@@ -1,1 +1,1 @@
-export { SplitButton as default } from '@deepsel/cms-react';
+export { SplitButton as default } from '../lib/ui/SplitButton';
