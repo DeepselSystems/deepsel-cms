@@ -11,7 +11,6 @@ class PageRead(BaseModel):
 
     id: int
     published: Optional[bool] = False
-    is_frontend_page: Optional[bool] = False
     is_homepage: Optional[bool] = False
     require_login: Optional[bool] = False
     page_custom_code: Optional[str] = None
@@ -27,7 +26,6 @@ class PageRead(BaseModel):
 
 class PageCreate(BaseModel):
     published: Optional[bool] = False
-    is_frontend_page: Optional[bool] = False
     is_homepage: Optional[bool] = False
     require_login: Optional[bool] = False
     page_custom_code: Optional[str] = None
@@ -37,7 +35,6 @@ class PageCreate(BaseModel):
 
 class PageUpdate(BaseModel):
     published: Optional[bool] = None
-    is_frontend_page: Optional[bool] = None
     is_homepage: Optional[bool] = None
     require_login: Optional[bool] = None
     page_custom_code: Optional[str] = None

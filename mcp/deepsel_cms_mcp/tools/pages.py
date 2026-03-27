@@ -22,7 +22,6 @@ def register(mcp: FastMCP, client: CMSClient) -> None:
     async def create_page(
         published: bool = False,
         is_homepage: bool = False,
-        is_frontend_page: bool = True,
         require_login: bool = False,
         page_custom_code: str = "",
     ) -> dict:
@@ -30,7 +29,6 @@ def register(mcp: FastMCP, client: CMSClient) -> None:
         return await client.post("/page", json={
             "published": published,
             "is_homepage": is_homepage,
-            "is_frontend_page": is_frontend_page,
             "require_login": require_login,
             "page_custom_code": page_custom_code,
         })
@@ -40,7 +38,6 @@ def register(mcp: FastMCP, client: CMSClient) -> None:
         id: int,
         published: bool | None = None,
         is_homepage: bool | None = None,
-        is_frontend_page: bool | None = None,
         require_login: bool | None = None,
         page_custom_code: str | None = None,
     ) -> dict:
@@ -48,7 +45,6 @@ def register(mcp: FastMCP, client: CMSClient) -> None:
         payload = {k: v for k, v in {
             "published": published,
             "is_homepage": is_homepage,
-            "is_frontend_page": is_frontend_page,
             "require_login": require_login,
             "page_custom_code": page_custom_code,
         }.items() if v is not None}

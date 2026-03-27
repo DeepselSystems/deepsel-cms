@@ -32,11 +32,6 @@ class PageModel(Base, ActivityMixin, BaseModel):
     id = Column(Integer, primary_key=True)
     published = Column(Boolean, default=False)
 
-    # if True, this page has a fixed path in the frontend router
-    # the content slugs in the page_content table are ignored
-    # frontend will load the page_content JSON data for use in i18n
-    is_frontend_page = Column(Boolean, default=False)
-
     is_homepage = Column(Boolean, default=False)
 
     # Require login to view page content

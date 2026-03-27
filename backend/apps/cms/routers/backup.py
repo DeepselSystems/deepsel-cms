@@ -100,7 +100,6 @@ def export_backup(
 
         page_fields = [
             "string_id",
-            "is_frontend_page",
             "is_homepage",
             "require_login",
             "page_custom_code",

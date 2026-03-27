@@ -4,7 +4,6 @@
  * @property {id} name
  * @property {string} contents
  * @property {boolean} published
- * @property {string} is_frontend_page
  * @property {string} is_homepage
  */
 

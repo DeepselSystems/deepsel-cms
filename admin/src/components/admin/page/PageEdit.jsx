@@ -469,7 +469,6 @@ export default function PageEdit({ onSuccess }) {
       },
       public_settings: siteSettings,
       is_preview: true,
-      is_frontend_page: record?.is_frontend_page || false,
       string_id: record?.string_id,
       notFound: false,
     };
@@ -1082,18 +1081,11 @@ export default function PageEdit({ onSuccess }) {
                     </Button>
                   </div>
                 </Tooltip>
-                {!record?.is_frontend_page && (
-                  <Tooltip label={t('Settings')}>
-                    <Button
-                      variant="subtle"
-                      size="sm"
-                      onClick={openSettingsDrawer}
-                      className="px-2"
-                    >
-                      <FontAwesomeIcon icon={faGear} />
-                    </Button>
-                  </Tooltip>
-                )}
+                <Tooltip label={t('Settings')}>
+                  <Button variant="subtle" size="sm" onClick={openSettingsDrawer} className="px-2">
+                    <FontAwesomeIcon icon={faGear} />
+                  </Button>
+                </Tooltip>
                 <HomepageSwitch page={record} setPage={setRecord} />
                 <Switch
                   checked={record.published}
