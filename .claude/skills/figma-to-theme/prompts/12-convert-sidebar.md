@@ -40,9 +40,10 @@ export default function Sidebar() {
 }
 
 function SidebarItem({ item, depth }: { item: MenuItem; depth: number }) {
-  const [isExpanded, setIsExpanded] = useState(isActiveMenu(item.url));
+  const { websiteData } = useWebsiteData();
+  const [isExpanded, setIsExpanded] = useState(isActiveMenu(item, websiteData));
   const hasChildren = item.children && item.children.length > 0;
-  const active = isActiveMenu(item.url);
+  const active = isActiveMenu(item, websiteData);
 
   return (
     <div>

@@ -50,7 +50,7 @@ Read design-tokens.md for these specific values:
       key={item.id}
       href={item.url}
       className={`text-sm font-medium transition-colors ${
-        isActiveMenu(item.url)
+        isActiveMenu(item, websiteData)
           ? 'text-[#1A1A2E] border-b-2 border-[#1A1A2E] pb-1'  // EXACT active style from tokens
           : 'text-[#4A4A68] hover:text-[#1A1A2E]'              // EXACT default + hover from tokens
       }`}

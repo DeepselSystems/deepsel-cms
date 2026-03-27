@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useWebsiteData } from "@deepsel/cms-react";
-import { type MenuItem } from "@deepsel/cms-utils";
+import { isActiveMenu, type MenuItem } from "@deepsel/cms-utils";
 import LangSwitcher from "./LangSwitcher";
 import logoSrc from "../assets/images/homepage-image-001.png";
 
@@ -20,12 +20,6 @@ export default function Header() {
   const menus = websiteData?.settings?.menus?.length
     ? websiteData.settings.menus
     : designMenuItems;
-  const currentSlug = (websiteData?.data as any)?.slug || "/";
-
-  const isActive = (menu: MenuItem) => {
-    if (menu.url === "/") return currentSlug === "/";
-    return currentSlug === menu.url || currentSlug?.startsWith(menu.url + "/");
-  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
@@ -38,7 +32,7 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-[24px]">
           {menus.map((menu) => {
-            const active = isActive(menu);
+            const active = isActiveMenu(menu, websiteData);
             return (
               <a
                 key={menu.id}
@@ -96,7 +90,7 @@ export default function Header() {
         <div className="lg:hidden fixed inset-0 top-[60px] z-40 bg-white">
           <nav className="flex flex-col px-6 py-8 gap-2">
             {menus.map((menu) => {
-              const active = isActive(menu);
+              const active = isActiveMenu(menu, websiteData);
               return (
                 <a
                   key={menu.id}
