@@ -16,6 +16,10 @@ wait_for_postgres
 echo "Starting cron daemon..."
 crond -f -l 2 &
 
-# Start the FastAPI server
+# Start nginx (daemonizes itself)
+echo "Starting nginx..."
+nginx
+
+# Start the FastAPI server (also starts Astro client as subprocess)
 echo "Starting server..."
 uvicorn main:app --host 0.0.0.0 --port 8000 --log-config log_config.yml
