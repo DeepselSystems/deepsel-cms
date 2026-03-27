@@ -18,9 +18,7 @@ export function resolveThemeName(themeName: string | undefined | null): ThemeNam
     return themeName as ThemeName;
   }
   const fallback = Object.keys(themeMap)[0] as ThemeName;
-  console.warn(
-    `[CMS] Theme "${themeName}" not found in themeMap. Falling back to "${fallback}".`,
-  );
+  console.warn(`[CMS] Theme "${themeName}" not found in themeMap. Falling back to "${fallback}".`);
   return fallback;
 }
 

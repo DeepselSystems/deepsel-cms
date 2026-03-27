@@ -395,3 +395,39 @@ This example demonstrates:
 - File attachments (`attachment:featured_image_id`)
 - Proper import ordering (categories → posts → content)
 - Multilingual content support
+
+## Theme Data Directories
+
+Themes can include their own seed data in `themes/{theme_name}/data/`, using the same CSV format as app data. Theme data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py` during server startup.
+
+### Structure
+
+```
+themes/{theme_name}/data/
+├── __init__.py      # import_order list + optional post_install hook
+├── menu.csv         # CSV seed files
+└── ...
+```
+
+### `post_install(db)` Hook
+
+In addition to CSV files, `__init__.py` can define a `post_install(db)` function for setup logic that can't be expressed as CSV records:
+
+```python
+import_order = [
+    "menu.csv",
+]
+
+def post_install(db):
+    """Called after CSV import with a SQLAlchemy session."""
+    from apps.core.models.locale import LocaleModel
+    from apps.cms.models.organization import CMSSettingsModel
+
+    locale = db.query(LocaleModel).filter(LocaleModel.string_id == "de_DE").first()
+    if locale:
+        for org in db.query(CMSSettingsModel).all():
+            org.default_language_id = locale.id
+        db.commit()
+```
+
+The hook runs on every server startup, so it must be idempotent.

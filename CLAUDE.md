@@ -165,8 +165,10 @@ themes/{name}/
 ├── 404.astro            # Not found (required)
 ├── components/          # React components (Page.tsx, Menu.tsx, etc.)
 ├── assets/              # CSS, images, fonts
-└── data/                # Seed data CSVs
+└── data/                # Seed data CSVs + post_install hook
 ```
+
+**Theme seed data**: Themes can include a `data/` directory with CSV seed files and an `__init__.py` that defines `import_order` (list of CSVs to load) and optionally a `post_install(db)` function for custom setup logic beyond CSV imports (e.g., configuring site language defaults). Loaded at startup by `load_theme_seed_data()` in `setup_themes.py` for all themes.
 
 **Build pipeline**: The backend's `setup_themes()` manages theme compilation — it syncs theme files to a data directory, runs `npm install` and `npm build`, and uses hash-based change detection to skip unnecessary rebuilds. Theme file edits are persisted to the DB (source of truth for edits) and also written to the filesystem for dev hot-reload.
 

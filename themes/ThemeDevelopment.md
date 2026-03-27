@@ -225,6 +225,52 @@ When a user visits `/{lang}/...`, the CMS tries the language-specific variant fi
 
 Language variants are typically managed through the admin's theme file editor, which stores content in the database and writes the files to disk during theme setup.
 
+## Theme Seed Data & Lifecycle Hooks
+
+Themes can include a `data/` directory with CSV seed files that are loaded at server startup:
+
+```
+themes/{theme_name}/
+└── data/
+    ├── __init__.py      # import_order list + optional post_install hook
+    └── menu.csv         # CSV seed files (same format as backend app data)
+```
+
+### `__init__.py`
+
+Defines `import_order` (list of CSV filenames to load in order) and optionally a `post_install(db)` function:
+
+```python
+import_order = [
+    "menu.csv",
+]
+
+def post_install(db):
+    """Runs after CSV import. Receives a SQLAlchemy session."""
+    # Custom setup logic, e.g. configure site language defaults
+    pass
+```
+
+### CSV Format
+
+Theme CSV files follow the same format as backend app seed data — see `backend/docs/DataInsertion.md` for the full specification. Key features: foreign key references via `table/field` columns, JSON content via `json:field` prefix, and file attachments via `attachment:field` prefix.
+
+### `post_install(db)` Hook
+
+Called after all CSV files are imported for the theme. Receives a SQLAlchemy database session. Use this for setup logic that can't be expressed as CSV records, such as:
+
+- Adding languages to the site's available languages list
+- Setting the default site language
+- Configuring theme-specific CMS settings
+
+The hook runs on every server startup, so it must be **idempotent** (safe to run multiple times).
+
+### Loading Behavior
+
+- Seed data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py`
+- Runs for **all** themes on every startup (not just the selected theme)
+- CSV records with `string_id` are checked for existence — existing system records are updated, user-modified records are preserved
+
 ## Available Data Types
 
 ### PageData

@@ -164,3 +164,32 @@ The `page_content/page_content_id` key inside the JSON will be resolved to the a
 - **Missing reference** — the referenced `string_id` doesn't exist. Check import order and that the parent CSV is listed first.
 - **File not found** — file path in `file:` or `attachment:` column doesn't exist. Paths are relative to `backend/` root.
 - **Invalid JSON** — malformed JSON in `json:` column. Validate the JSON string (watch for escaping: `\"` inside CSV).
+
+## Theme Seed Data
+
+Themes can include seed data in `themes/{theme_name}/data/` using the same CSV format as app data.
+
+### Structure
+
+```
+themes/{theme_name}/data/
+├── __init__.py      # import_order + optional post_install(db)
+└── menu.csv
+```
+
+### `post_install(db)` Hook
+
+`__init__.py` can define a `post_install(db)` function for non-CSV operations (e.g., configuring site language defaults, updating CMS settings). It receives a SQLAlchemy session and runs after all CSVs are imported.
+
+```python
+import_order = ["menu.csv"]
+
+def post_install(db):
+    """Custom setup logic after CSV import."""
+    # e.g., set default language, configure available languages
+    pass
+```
+
+### Loading
+
+Theme seed data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py` at server startup for all themes. The hook must be idempotent.

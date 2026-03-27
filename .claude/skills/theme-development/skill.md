@@ -362,6 +362,41 @@ The backend's `setup_themes()` process:
 
 This runs automatically when the backend starts.
 
+## Theme Seed Data
+
+Themes can include a `data/` directory with CSV seed files and a `post_install` hook:
+
+```
+themes/{theme_name}/data/
+├── __init__.py      # import_order list + optional post_install(db)
+└── menu.csv         # CSV files (same format as backend app data)
+```
+
+`__init__.py` defines `import_order` and optionally `post_install(db)`:
+
+```python
+import_order = ["menu.csv"]
+
+def post_install(db):
+    """Runs after CSV import. Receives a SQLAlchemy session."""
+    from apps.core.models.locale import LocaleModel
+    from apps.cms.models.organization import CMSSettingsModel
+
+    locale = db.query(LocaleModel).filter(LocaleModel.string_id == "de_DE").first()
+    if locale:
+        for org in db.query(CMSSettingsModel).all():
+            available = org.available_languages or []
+            if not any(l.get("iso_code") == "de" for l in available):
+                available.append({"id": locale.id, "name": locale.name, "iso_code": locale.iso_code})
+                org.available_languages = available
+            org.default_language_id = locale.id
+        db.commit()
+```
+
+Use `post_install` for setup logic that can't be expressed as CSV records (e.g., language defaults, CMS settings). The hook runs on every server startup, so it must be idempotent.
+
+CSV format follows the same rules as backend app data — see `backend/docs/DataInsertion.md`.
+
 ## Reserved Filenames
 
 These are reserved for special templates:
