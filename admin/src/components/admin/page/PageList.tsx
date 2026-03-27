@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
 import useModel from '../../../common/api/useModel.jsx';
@@ -16,8 +16,9 @@ import {
   faTriangleExclamation,
   faPlus,
   faExternalLinkAlt,
+  faPalette,
 } from '@fortawesome/free-solid-svg-icons';
-import { Alert } from '@mantine/core';
+import { Alert, Badge } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
@@ -48,6 +49,28 @@ type PageRow = {
   organization_id?: number | string;
   contents?: PageContent[];
   published?: boolean;
+};
+
+type ThemePageRow = {
+  id: string;
+  _isThemeRow: true;
+  _themeSlug: string;
+  _themeTitle: string;
+  _themeEditorLink: string;
+};
+
+type CombinedRow = PageRow | ThemePageRow;
+
+const isThemeRow = (row: CombinedRow): row is ThemePageRow =>
+  '_isThemeRow' in row && (row as ThemePageRow)._isThemeRow === true;
+
+const slugToTitle = (slug: string): string => {
+  if (slug === '/') return 'Home';
+  return slug
+    .replace(/^\//, '')
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function PageList() {
@@ -123,6 +146,34 @@ export default function PageList() {
 
   const items = (rawItems ?? []) as PageRow[];
   const [selectedRows, setSelectedRows] = useState<PageRow[]>([]);
+  const { searchTerm } = query as any;
+
+  // Build merged rows: theme virtual rows replace DB pages with same slug
+  const mergedRows: CombinedRow[] = useMemo(() => {
+    if (page !== 1 || searchTerm) return items;
+    if (!themeSlugs.length || !siteSettings?.selected_theme) return items;
+
+    const themeSlugsSet = new Set(themeSlugs);
+
+    // Remove DB pages whose slug matches a theme page
+    const filteredItems = items.filter((item) => {
+      const slugs = (item.contents ?? []).map((c) => c.slug).filter(Boolean);
+      return !slugs.some((slug) => themeSlugsSet.has(slug!));
+    });
+
+    const themeRows: ThemePageRow[] = themeSlugs.map((slug) => {
+      const filename = slug === '/' ? 'Index.astro' : `${slug.replace(/^\//, '')}.astro`;
+      return {
+        id: `theme:${slug}`,
+        _isThemeRow: true as const,
+        _themeSlug: slug,
+        _themeTitle: slugToTitle(slug),
+        _themeEditorLink: `/themes/edit/${siteSettings.selected_theme}?file=${encodeURIComponent(filename)}`,
+      };
+    });
+
+    return [...themeRows, ...filteredItems];
+  }, [items, themeSlugs, page, searchTerm, siteSettings?.selected_theme]);
 
   useEffect(() => {
     setFilters(
@@ -172,17 +223,39 @@ export default function PageList() {
       field: 'id',
       headerName: '#',
       width: 80,
-      renderCell: (params: any) => <strong>#{params.value}</strong>,
+      renderCell: (params: any) => {
+        if (isThemeRow(params.row)) {
+          return (
+            <LinkedCell params={params} to={params.row._themeEditorLink}>
+              <FontAwesomeIcon icon={faPalette} className="h-4 w-4 text-violet-500" />
+            </LinkedCell>
+          );
+        }
+        return <strong>#{params.value}</strong>;
+      },
     },
     {
       field: 'contents',
       headerName: t('Title'),
       width: 350,
       valueGetter: (params: any) => {
+        if (isThemeRow(params.row)) return params.row._themeTitle;
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
       renderCell: (params: any) => {
+        if (isThemeRow(params.row)) {
+          return (
+            <LinkedCell params={params} to={params.row._themeEditorLink}>
+              <span className="flex items-center gap-2">
+                {params.value}
+                <Badge size="sm" variant="light" color="violet">
+                  {t('Theme')}
+                </Badge>
+              </span>
+            </LinkedCell>
+          );
+        }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
@@ -197,6 +270,7 @@ export default function PageList() {
       headerName: t('Slug'),
       width: 250,
       valueGetter: (params: any) => {
+        if (isThemeRow(params.row)) return params.row._themeSlug;
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         if (!selectedContent?.slug) return '-';
         if (!selectedContent?.locale?.iso_code) return '-';
@@ -207,6 +281,13 @@ export default function PageList() {
         );
       },
       renderCell: (params: any) => {
+        if (isThemeRow(params.row)) {
+          return (
+            <LinkedCell params={params} to={params.row._themeEditorLink}>
+              {params.value}
+            </LinkedCell>
+          );
+        }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
@@ -223,6 +304,7 @@ export default function PageList() {
       sortable: false,
       filterable: false,
       renderCell: (params: any) => {
+        if (isThemeRow(params.row)) return <span>-</span>;
         const contents = params.row.contents || [];
         if (contents.length === 0) return <span>-</span>;
 
@@ -252,6 +334,13 @@ export default function PageList() {
       headerName: t('Published'),
       width: 90,
       renderCell: (params: any) => {
+        if (isThemeRow(params.row)) {
+          return (
+            <LinkedCell params={params} to={params.row._themeEditorLink}>
+              <Checkbox checked readOnly />
+            </LinkedCell>
+          );
+        }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
@@ -269,6 +358,23 @@ export default function PageList() {
       filterable: false,
       disableColumnMenu: true,
       renderCell: (params: any) => {
+        if (isThemeRow(params.row)) {
+          return (
+            <div className="flex justify-center">
+              <ButtonAny
+                component="a"
+                href={params.row._themeSlug}
+                target="_blank"
+                variant="subtle"
+                size="sm"
+                className="p-1 min-w-0 text-gray-600 hover:text-primary-main"
+                title={t('Go to page')}
+              >
+                <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4" />
+              </ButtonAny>
+            </div>
+          );
+        }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         if (!selectedContent?.slug) return null;
         if (!selectedContent?.locale?.iso_code) return null;
@@ -368,9 +474,12 @@ export default function PageList() {
           sortingMode="server"
           filterMode="server"
           loading={loading}
-          rows={items}
+          rows={mergedRows}
           columns={columns}
           rowCount={total}
+          getRowId={(row: CombinedRow) => row.id}
+          isRowSelectable={(params: any) => !isThemeRow(params.row)}
+          getRowClassName={(params: any) => (isThemeRow(params.row) ? 'theme-page-row' : '')}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
           page={page - 1}
@@ -379,6 +488,11 @@ export default function PageList() {
           disableSelectionOnClick
           checkboxSelection
           className={`!border-0 `}
+          sx={{
+            '& .theme-page-row': {
+              backgroundColor: 'rgba(139, 92, 246, 0.04)',
+            },
+          }}
           sortModel={
             orderBy
               ? [
@@ -400,7 +514,8 @@ export default function PageList() {
             }
           }}
           onSelectionModelChange={(ids: any) => {
-            setSelectedRows(items.filter((item) => (ids || []).includes(item.id)));
+            const numericIds = (ids || []).filter((id: any) => typeof id === 'number');
+            setSelectedRows(items.filter((item) => numericIds.includes(item.id)));
           }}
           components={{
             ColumnMenu: DataGridColumnMenu,
