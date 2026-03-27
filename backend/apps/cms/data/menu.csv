@@ -17,25 +17,7 @@
         ""open_in_new_tab"": false
     }
 }",,"false","1"
-"FormatExamples","1","{
-    ""en"": {
-        ""title"": ""Format Examples"",
-        ""url"": """",
-        ""page_content/page_content_id"": ""FormatExamplePage_en"",
-        ""use_page_title"": false,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    },
-    ""de"": {
-        ""title"": ""Formatbeispiele"",
-        ""url"": """",
-        ""page_content/page_content_id"": ""FormatExamplePage_de"",
-        ""use_page_title"": false,
-        ""use_custom_url"": false,
-        ""open_in_new_tab"": false
-    }
-}",,"false","1"
-"Blog","2","{
+"Blog","1","{
     ""en"": {
         ""title"": ""Blog"",
         ""url"": ""/blog"",
