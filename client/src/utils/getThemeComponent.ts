@@ -160,3 +160,21 @@ export function getSearchThemeComponent(data: SearchResultsData, lang?: string):
     themeMap[selectedTheme][themeSystemKeys.SearchResults]
   );
 }
+
+/**
+ * Fallback: returns the theme's 404 component when the primary component can't be resolved.
+ */
+export function getNotFoundFallbackComponent(
+  data: PageData | BlogListData | BlogPostData | SearchResultsData | null,
+  lang?: string,
+): any {
+  if (!data?.public_settings) return null;
+  const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(data);
+  const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
+  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
+  return (
+    (langPrefix && themeMap[selectedTheme]?.[`${langPrefix}${themeSystemKeys.NotFound}`]) ||
+    themeMap[selectedTheme]?.[themeSystemKeys.NotFound] ||
+    null
+  );
+}

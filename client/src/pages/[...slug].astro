@@ -21,6 +21,7 @@ import {
   getBlogListThemeComponent,
   getBlogPostThemeComponent,
   getSearchThemeComponent,
+  getNotFoundFallbackComponent,
   resolveThemeName,
 } from '../utils/getThemeComponent';
 
@@ -59,18 +60,23 @@ if (pathType === WebsiteDataTypes.Home) {
   pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
   ThemeComponent = getPageThemeComponent(pageData, lang);
 }
+
+// If theme component couldn't be resolved, fall back to theme's 404 page
+if (!ThemeComponent) {
+  const anyData = pageData || blogListData || blogPostData || searchData;
+  ThemeComponent = getNotFoundFallbackComponent(anyData, lang);
+  if (!ThemeComponent) {
+    return new Response('Not Found', { status: 404 });
+  }
+  Astro.response.status = 404;
+  if (!pageData && anyData) {
+    pageData = {
+      slug: `/${path}`,
+      public_settings: anyData.public_settings,
+      notFound: true,
+    } as PageData;
+  }
+}
 ---
 
-{
-  pathType === WebsiteDataTypes.Home ? (
-    <ThemeComponent data={pageData} />
-  ) : pathType === WebsiteDataTypes.Page ? (
-    <ThemeComponent data={pageData} />
-  ) : pathType === WebsiteDataTypes.BlogList ? (
-    <ThemeComponent data={blogListData} />
-  ) : pathType === WebsiteDataTypes.BlogPost ? (
-    <ThemeComponent data={blogPostData} />
-  ) : pathType === WebsiteDataTypes.SearchResults ? (
-    <ThemeComponent data={searchData} />
-  ) : null
-}
+<ThemeComponent data={pageData || blogListData || blogPostData || searchData} />
