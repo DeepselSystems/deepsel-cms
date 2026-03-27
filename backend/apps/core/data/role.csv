@@ -1,4 +1,4 @@
-string_id,name,permissions,system,is_technical,system
+string_id,name,permissions,system
 super_admin_role,Super Admin,"[
     ""user:*:*"",
     ""role:*:*"",
@@ -9,7 +9,7 @@ super_admin_role,Super Admin,"[
     ""activity:*:*"",
     ""email_template:*:*"",
     ""cron:*:*""
-]",false,true,true
+]",true
 admin_role,Admin,"[
     ""user:*:org"",
     ""role:*:org"",
@@ -20,7 +20,7 @@ admin_role,Admin,"[
     ""activity:*:org"",
     ""email_template:*:org"",
     ""cron:*:org""
-]",false,false,true
+]",true
 user_role,User,"[
     ""user:read:own"",
     ""user:write:own"",
@@ -28,11 +28,11 @@ user_role,User,"[
     ""organization:read:org"",
     ""attachment:*:own"",
     ""activity:*:own""
-]",false,false,true
-public_role,Public User,[],false,true,true
+]",true
+public_role,Public User,[],true
 locales_public_role,Locales Public Role,"[
     ""currency:read:org"",
     ""country:read:org"",
     ""locale:read:org"",
     ""form_submission:*:*""
-]",true,true
+]",true

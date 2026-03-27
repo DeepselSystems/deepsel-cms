@@ -1,4 +1,4 @@
-.PHONY: help install install-dev clean test lint format format-check build security prepush reset_db deploy version tree
+.PHONY: help install install-dev clean test lint format format-check build security prepush reset_db version tree bump-major bump-minor bump-patch run db
 
 help:
 	@echo "Deepsel CMS - Makefile Commands"
@@ -17,13 +17,16 @@ help:
 	@echo "  make format           - Format code with black"
 	@echo "  make format-check     - Check code formatting without changes"
 	@echo ""
-	@echo "Deployment:"
-	@echo "  make deploy           - Deploy with docker compose"
-	@echo ""
 	@echo "Utilities:"
 	@echo "  make version          - Show current package version"
+	@echo "  make bump-major       - Bump major version (X.0.0)"
+	@echo "  make bump-minor       - Bump minor version (0.X.0)"
+	@echo "  make bump-patch       - Bump patch version (0.0.X)"
 	@echo "  make tree             - Show project structure"
 	@echo "  make prepush          - Run all pre-push checks"
+	@echo "  make run              - Start dev server (uvicorn)"
+	@echo "  make db               - Start PostgreSQL container"
+	@echo "  make reset_db         - Reset database via docker compose"
 
 install:
 	pip install -e .
@@ -89,6 +92,43 @@ tree:
 version:
 	@grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'
 
+bump-major:
+	@echo "Bumping major version..."
+	@current=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	major=$$(echo $$current | cut -d. -f1); \
+	new_version=$$((major + 1)).0.0; \
+	sed -i '' "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
+	echo "Version bumped from $$current to $$new_version"
+
+bump-minor:
+	@echo "Bumping minor version..."
+	@current=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	major=$$(echo $$current | cut -d. -f1); \
+	minor=$$(echo $$current | cut -d. -f2); \
+	new_version=$$major.$$((minor + 1)).0; \
+	sed -i '' "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
+	echo "Version bumped from $$current to $$new_version"
+
+bump-patch:
+	@echo "Bumping patch version..."
+	@current=$$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'); \
+	major=$$(echo $$current | cut -d. -f1); \
+	minor=$$(echo $$current | cut -d. -f2); \
+	patch=$$(echo $$current | cut -d. -f3); \
+	new_version=$$major.$$minor.$$((patch + 1)); \
+	sed -i '' "s/^version = \".*\"/version = \"$$new_version\"/" pyproject.toml; \
+	echo "Version bumped from $$current to $$new_version"
+
+run:
+	uvicorn main:app --reload
+
+db:
+	docker-compose -f local.docker-compose.yml up -d
+
+reset_db:
+	docker-compose -f local.docker-compose.yml down -v
+	docker-compose -f local.docker-compose.yml up -d
+
 # Quick shortcuts
 t: test
 l: lint
@@ -96,3 +136,4 @@ s: security
 f: format
 c: clean
 p: prepush
+r: run
