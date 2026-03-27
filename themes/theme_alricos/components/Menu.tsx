@@ -17,7 +17,9 @@ export default function Header() {
   const { websiteData } = useWebsiteData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const menus = designMenuItems;
+  const menus = websiteData?.settings?.menus?.length
+    ? websiteData.settings.menus
+    : designMenuItems;
   const currentSlug = (websiteData?.data as any)?.slug || "/";
 
   const isActive = (menu: MenuItem) => {

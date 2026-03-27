@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { type PageData } from "@deepsel/cms-utils";
+import Layout from "./Layout";
 import heroImg from "../assets/images/personaladministration-image-002.png";
 import img003 from "../assets/images/personaladministration-image-003.png";
 import img004 from "../assets/images/personaladministration-image-004.png";
@@ -50,7 +52,7 @@ function AccordionItem({
   );
 }
 
-export default function PagePersonaladministration() {
+function PagePersonaladministrationContent() {
   return (
     <div className="w-full">
       {/* ─── Hero Section ─── */}
@@ -150,5 +152,13 @@ export default function PagePersonaladministration() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function PagePersonaladministration({ pageData }: { pageData: PageData }) {
+  return (
+    <Layout pageData={pageData}>
+      <PagePersonaladministrationContent />
+    </Layout>
   );
 }

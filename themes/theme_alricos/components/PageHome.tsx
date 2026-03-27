@@ -1,3 +1,5 @@
+import { type PageData } from "@deepsel/cms-utils";
+import Layout from "./Layout";
 import heroImg from "../assets/images/homepage-image-002.png";
 import portraitImg from "../assets/images/homepage-image-003.png";
 import ctaBgImg from "../assets/images/homepage-image-004.png";
@@ -42,7 +44,7 @@ const benefits = [
   },
 ];
 
-export default function PageHome() {
+function PageHomeContent() {
   return (
     <div className="w-full">
       {/* ─── Hero Section ─── */}
@@ -178,5 +180,13 @@ export default function PageHome() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function PageHome({ pageData }: { pageData: PageData }) {
+  return (
+    <Layout pageData={pageData}>
+      <PageHomeContent />
+    </Layout>
   );
 }

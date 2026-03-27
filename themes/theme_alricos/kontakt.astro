@@ -1,6 +1,6 @@
 ---
 import type { PageData } from "@deepsel/cms-utils";
-import Page from "./components/Page";
+import PageKontakt from "./components/PageKontakt";
 import "./main.css";
 
 interface Props {
@@ -24,6 +24,6 @@ const { data } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <Page client:load pageData={data} />
+    <PageKontakt client:load pageData={data} />
 </body>
 </html>

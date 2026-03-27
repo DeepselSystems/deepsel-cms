@@ -1,3 +1,5 @@
+import { type PageData } from "@deepsel/cms-utils";
+import Layout from "./Layout";
 import mapImg from "../assets/images/kontakt-image-002.png";
 import iconPersonSvg from "../assets/icons/icon-kontakt-person.svg";
 import iconAdresseSvg from "../assets/icons/icon-kontakt-adresse.svg";
@@ -43,7 +45,7 @@ const contactCards = [
   },
 ];
 
-export default function PageKontakt() {
+function PageKontaktContent() {
   return (
     <div className="w-full">
       {/* ─── Header Section ─── */}
@@ -118,5 +120,13 @@ export default function PageKontakt() {
         />
       </section>
     </div>
+  );
+}
+
+export default function PageKontakt({ pageData }: { pageData: PageData }) {
+  return (
+    <Layout pageData={pageData}>
+      <PageKontaktContent />
+    </Layout>
   );
 }

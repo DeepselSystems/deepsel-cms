@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { type PageData } from "@deepsel/cms-utils";
+import Layout from "./Layout";
 import heroImg from "../assets/images/finance-image-002.png";
 import img3 from "../assets/images/finance-image-003.png";
 import img4 from "../assets/images/finance-image-004.png";
@@ -57,7 +59,7 @@ function AccordionArrow({ open }: { open: boolean }) {
   );
 }
 
-export default function PageFinance() {
+function PageFinanceContent() {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
@@ -174,5 +176,13 @@ export default function PageFinance() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function PageFinance({ pageData }: { pageData: PageData }) {
+  return (
+    <Layout pageData={pageData}>
+      <PageFinanceContent />
+    </Layout>
   );
 }

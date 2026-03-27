@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { type PageData } from "@deepsel/cms-utils";
+import Layout from "./Layout";
 import heroImg from "../assets/images/steuerberatung-image-002.png";
 import img003 from "../assets/images/steuerberatung-image-003.png";
 import img004 from "../assets/images/steuerberatung-image-004.png";
@@ -50,7 +52,7 @@ function AccordionItem({
   );
 }
 
-export default function PageSteuerberatung() {
+function PageSteuerberatungContent() {
   return (
     <div className="w-full">
       {/* ─── Hero Section ─── */}
@@ -145,5 +147,13 @@ export default function PageSteuerberatung() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function PageSteuerberatung({ pageData }: { pageData: PageData }) {
+  return (
+    <Layout pageData={pageData}>
+      <PageSteuerberatungContent />
+    </Layout>
   );
 }
