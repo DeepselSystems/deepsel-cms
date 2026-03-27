@@ -1,13 +1,53 @@
 ---
 import type { PageData } from "@deepsel/cms-utils";
-import PageKontakt from "./components/PageKontakt";
+import MenuIsland from "./components/MenuIsland";
 import "./main.css";
+
+import mapImg from "./assets/images/kontakt-image-002.png";
+import logoImg from "./assets/images/homepage-image-001.png";
+import iconPersonSvg from "./assets/icons/icon-kontakt-person.svg";
+import iconAdresseSvg from "./assets/icons/icon-kontakt-adresse.svg";
+import iconDirectionsSvg from "./assets/icons/icon-kontakt-directions.svg";
+import iconEmailSvg from "./assets/icons/icon-kontakt-email.svg";
 
 interface Props {
     data: PageData;
 }
 
 const { data } = Astro.props;
+
+const contactCards = [
+  {
+    label: "MY INFORMATION",
+    lines: ["Claudio Alder", "Inhaber Eidg. dipl. Betriebswirtschafter HF"],
+    icon: iconPersonSvg.src,
+    alt: "Person",
+  },
+  {
+    label: "NEUE ADRESSE",
+    lines: ["Weststrasse 9 \u2013 3005 Bern"],
+    icon: iconAdresseSvg.src,
+    alt: "Adresse",
+  },
+  {
+    label: "SO FINDEN SIE ALCORIS",
+    lines: [
+      "Bus Nr. 19 Richtung Elfenau",
+      "Tram Nr. 6, 7 und 8",
+      "Haltestelle: Helvetiaplatz",
+      "Parkplätze in der Umgebung",
+    ],
+    icon: iconDirectionsSvg.src,
+    alt: "Directions",
+  },
+  {
+    label: "INTERESSE AN ZUSAMMENARBEIT?",
+    lines: ["claudio.alder@alcoris.ch"],
+    isEmail: true,
+    icon: iconEmailSvg.src,
+    alt: "Email",
+  },
+];
 ---
 
 <!DOCTYPE html>
@@ -24,6 +64,107 @@ const { data } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <PageKontakt client:load pageData={data} />
+    <div class="min-h-screen flex flex-col bg-white">
+        <MenuIsland client:load pageData={data} />
+        <main class="flex-1">
+            <div class="w-full">
+                <!-- Header Section -->
+                <section class="w-full px-6 lg:px-[96px] pt-[80px] lg:pt-[160px] pb-[40px] lg:pb-[80px]">
+                    <div class="max-w-[1248px] mx-auto flex flex-col lg:flex-row lg:items-center gap-[24px] lg:gap-[40px]">
+                        <h1 class="text-[32px] md:text-[40px] lg:text-[50px] font-bold leading-[65px] text-left text-[rgba(9,20,35,1)] lg:w-[635px] flex-shrink-0">
+                            Need more info? Let's connect!
+                        </h1>
+                        <p class="text-[16px] font-normal leading-[24px] text-left text-[rgba(9,20,35,1)] flex-1">
+                            Lorem ipsum dolor sit amet consectetur. Id viverra nibh nec in. Quam
+                            donec ac integer turpis odio integer tincidunt elit. Tortor et nibh
+                            id tristique faucibus mollis sodales habitant turpis. Sagittis
+                            porttitor nulla netus eu.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Contact Info Grid -->
+                <section class="w-full px-6 lg:px-[96px] pb-[40px] lg:pb-[80px]">
+                    <div class="max-w-[1248px] mx-auto flex flex-col sm:flex-row">
+                        {contactCards.map((card, i) => (
+                            <div
+                                class:list={[
+                                    "flex-1 flex flex-col gap-[16px] pt-0 pb-[20px] py-[24px] sm:py-0",
+                                    i < contactCards.length - 1 && "border-b sm:border-b-0 sm:border-r sm:pr-[40px] border-[rgba(181,181,181,1)]",
+                                    i > 0 && "sm:pl-[24px]",
+                                ]}
+                            >
+                                <div class="mb-[20px]">
+                                    <img src={card.icon} alt={card.alt} width={80} height={80} />
+                                </div>
+                                <p class="text-[16px] font-bold tracking-[1.76px] leading-[20.8px] text-left uppercase text-[rgba(65,67,91,1)]">
+                                    {card.label}
+                                </p>
+                                <div class="flex flex-col gap-[8px]">
+                                    {card.lines.map((line) =>
+                                        card.isEmail ? (
+                                            <a
+                                                href={`mailto:${line}`}
+                                                class="text-[20px] font-semibold leading-[30px] text-left text-[rgba(9,20,35,1)] hover:text-[rgba(62,105,220,1)] transition-colors"
+                                            >
+                                                {line}
+                                            </a>
+                                        ) : (
+                                            <span class="text-[20px] font-semibold leading-[30px] text-left text-[rgba(9,20,35,1)]">
+                                                {line}
+                                            </span>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <!-- Map Section -->
+                <section class="w-full pb-[40px] lg:pb-[80px]">
+                    <img
+                        src={mapImg.src}
+                        alt="Standort Alcoris — Weststrasse 9, 3005 Bern"
+                        class="w-full h-[600px] lg:h-[600px] object-cover"
+                    />
+                </section>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer class="w-full bg-white px-6 lg:px-[96px] py-[40px] lg:py-[80px]">
+            <div class="max-w-[1110px] mx-auto flex flex-col lg:flex-row justify-between gap-[40px] lg:gap-[125px]">
+                <div class="flex flex-col gap-[40px] lg:gap-[81px]">
+                    <div class="flex items-center">
+                        <img src={logoImg.src} alt="alcoris" class="h-[32px] w-[90px] object-contain" />
+                    </div>
+                    <div class="flex flex-col gap-[24px]">
+                        <span class="text-[20px] font-bold leading-[28px] text-left text-[rgba(9,20,35,1)]">Stay in touch</span>
+                        <div class="relative w-full lg:w-[430px]">
+                            <input
+                                type="email"
+                                placeholder="Email Address"
+                                class="w-full text-[16px] font-normal leading-[28px] text-[rgba(118,118,118,1)] bg-transparent border-b border-[rgb(209,209,210)] pb-[12px] pr-[40px] outline-none"
+                            />
+                            <button class="absolute right-0 top-[6px]" aria-label="Subscribe">
+                                <svg width="21" height="6" viewBox="0 0 21 6" fill="none">
+                                    <path d="M21 3L17.33 0V3V6L21 3Z" fill="rgb(9, 20, 35)" />
+                                    <path d="M0 2.25H17.33V3.75H0V2.25Z" fill="rgb(9, 20, 35)" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-[24px] lg:mr-auto lg:ml-[80px]">
+                    <p class="text-[12px] font-bold tracking-[2px] leading-[14px] uppercase text-[rgba(9,20,35,1)]">Kontakt</p>
+                    <div class="flex flex-col gap-[24px]">
+                        <p class="opacity-70 text-[14px] font-semibold leading-[16px] text-left text-[rgba(26,26,31,1)]">alcoris Treuhand GmbH</p>
+                        <p class="opacity-70 text-[14px] font-semibold leading-[16px] text-left text-[rgba(26,26,31,1)]">Weststrasse 9, 3005 Bern</p>
+                        <a href="mailto:office@alcoris.ch" class="opacity-70 text-[14px] font-semibold leading-[16px] text-left underline text-[rgba(26,26,31,1)]">office@alcoris.ch</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>
