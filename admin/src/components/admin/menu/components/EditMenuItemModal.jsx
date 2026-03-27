@@ -4,7 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faSave, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Tabs, Menu, Tooltip } from '@mantine/core';
 import RecordSelect from '../../../../common/ui/RecordSelect.jsx';
+import Select from '../../../../common/ui/Select.jsx';
 import SitePublicSettingsState from '../../../../common/stores/SitePublicSettingsState.js';
+import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import Button from '../../../../common/ui/Button.jsx';
 import TextInput from '../../../../common/ui/TextInput.jsx';
 import Checkbox from '../../../../common/ui/Checkbox.jsx';
@@ -21,6 +23,7 @@ const EditMenuItemModal = ({
   const { t } = useTranslation();
   const { settings: siteSettings } = SitePublicSettingsState((state) => state);
   const { organizationId } = OrganizationIdState();
+  const { backendHost } = BackendHostURLState();
 
   const isEditMode = !!editingItem;
 
@@ -30,12 +33,91 @@ const EditMenuItemModal = ({
   const [addingLanguage, setAddingLanguage] = useState(false);
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [themeSlugs, setThemeSlugs] = useState([]);
 
   // Fetch locales
   const { data: locales } = useModel('locale', {
     autoFetch: true,
     pageSize: null,
   });
+
+  // Fetch theme page slugs when modal opens
+  useEffect(() => {
+    if (!opened || !siteSettings?.selected_theme) {
+      setThemeSlugs([]);
+      return;
+    }
+    const fetchThemeSlugs = async () => {
+      try {
+        const { Preferences } = await import('@capacitor/preferences');
+        const tokenResult = await Preferences.get({ key: 'token' });
+        const headers = {};
+        if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
+        const response = await fetch(
+          `${backendHost}/theme/page-slugs/${siteSettings.selected_theme}`,
+          { headers },
+        );
+        if (!response.ok) return;
+        const { slugs } = await response.json();
+        setThemeSlugs(slugs || []);
+      } catch (e) {
+        console.error('Error fetching theme page slugs:', e);
+      }
+    };
+    fetchThemeSlugs();
+  }, [opened, siteSettings?.selected_theme, backendHost]);
+
+  // Fetch page_content records for the active language tab
+  const { data: pageContents } = useModel('page_content', {
+    autoFetch: !!activeTranslationTab,
+    pageSize: null,
+    searchFields: ['title', 'slug'],
+    filters: [
+      { field: 'locale.iso_code', operator: '=', value: activeTranslationTab || '' },
+      ...(organizationId
+        ? [{ field: 'page.organization_id', operator: '=', value: organizationId }]
+        : []),
+    ],
+  });
+
+  // Build combined page options: DB pages + theme pages
+  const buildPageOptions = (isoCode) => {
+    const options = [];
+    // DB pages (filtered by activeTranslationTab via useModel)
+    for (const page of pageContents || []) {
+      options.push({
+        value: `page:${page.id}`,
+        label: `${page.title || t('Untitled')} (${page.slug || '/'})`,
+        group: t('Pages'),
+      });
+    }
+    // Theme pages
+    for (const slug of themeSlugs) {
+      options.push({
+        value: `theme:${slug}`,
+        label: slug === '/' ? `/ (${t('Home')})` : slug,
+        group: t('Theme Pages'),
+      });
+    }
+    return options;
+  };
+
+  // Get the combined Select value from a translation
+  const getSelectValue = (translation) => {
+    if (!translation) return null;
+    if (!translation.use_custom_url && translation.page_content_id) {
+      return `page:${translation.page_content_id}`;
+    }
+    if (translation.use_custom_url && translation.url && themeSlugs.includes(translation.url)) {
+      return `theme:${translation.url}`;
+    }
+    return null;
+  };
+
+  // Whether this translation links to a theme page
+  const isThemePage = (translation) => {
+    return translation?.use_custom_url && translation?.url && themeSlugs.includes(translation.url);
+  };
 
   // Get default language name from locales
   const defaultLanguageName =
@@ -226,48 +308,64 @@ const EditMenuItemModal = ({
             return (
               <Tabs.Panel key={isoCode} value={isoCode}>
                 <div className="space-y-4">
-                  {/* Page Selection (shown when not using custom URL) */}
-                  {!translation.use_custom_url && (
-                    <RecordSelect
-                      model="page_content"
-                      displayField="title"
-                      pageSize={null}
-                      searchFields={['title', 'slug']}
+                  {/* Page Selection (shown when not using custom URL, or when linked to a theme page) */}
+                  {(!translation.use_custom_url || isThemePage(translation)) && (
+                    <Select
                       label={`${t('Select a page')} (${locale?.name})`}
                       placeholder={t('Search for a page')}
-                      value={translation.page_content_id}
-                      onChange={(pageContentId) => {
-                        setTranslations((prev) => ({
-                          ...prev,
-                          [isoCode]: {
-                            ...prev[isoCode],
-                            page_content_id: pageContentId,
-                          },
-                        }));
+                      value={getSelectValue(translation)}
+                      onChange={(val) => {
+                        if (!val) {
+                          // Cleared
+                          setTranslations((prev) => ({
+                            ...prev,
+                            [isoCode]: {
+                              ...prev[isoCode],
+                              page_content_id: null,
+                              use_custom_url: false,
+                              url: '',
+                            },
+                          }));
+                          return;
+                        }
+                        if (val.startsWith('page:')) {
+                          const pageContentId = parseInt(val.replace('page:', ''), 10);
+                          setTranslations((prev) => ({
+                            ...prev,
+                            [isoCode]: {
+                              ...prev[isoCode],
+                              page_content_id: pageContentId,
+                              use_custom_url: false,
+                              url: '',
+                            },
+                          }));
+                        } else if (val.startsWith('theme:')) {
+                          const slug = val.replace('theme:', '');
+                          setTranslations((prev) => ({
+                            ...prev,
+                            [isoCode]: {
+                              ...prev[isoCode],
+                              page_content_id: null,
+                              use_custom_url: true,
+                              use_page_title: false,
+                              url: slug,
+                            },
+                          }));
+                        }
                       }}
-                      filters={[
-                        {
-                          field: 'locale.iso_code',
-                          operator: '=',
-                          value: isoCode,
-                        },
-                        ...(organizationId
-                          ? [
-                              {
-                                field: 'page.organization_id',
-                                operator: '=',
-                                value: organizationId,
-                              },
-                            ]
-                          : []),
-                      ]}
+                      data={buildPageOptions(isoCode)}
                       description={t('Select a page to link to')}
+                      searchable
+                      clearable
                     />
                   )}
 
-                  {/* Manual Title Input (shown when not using page title or using custom URL) */}
-                  {(translation.use_custom_url ||
-                    (translation.page_content_id && translation.use_page_title === false)) && (
+                  {/* Manual Title Input (shown when not using page title, using custom URL, or theme page) */}
+                  {(isThemePage(translation) ||
+                    (translation.use_custom_url && !isThemePage(translation)) ||
+                    (!translation.use_custom_url &&
+                      translation.page_content_id &&
+                      translation.use_page_title === false)) && (
                     <TextInput
                       label={`${t('Menu Title')} (${locale?.name})`}
                       placeholder={t('Enter custom menu title')}
@@ -285,8 +383,8 @@ const EditMenuItemModal = ({
                     />
                   )}
 
-                  {/* Custom URL Input (shown when using custom URL) */}
-                  {translation.use_custom_url && (
+                  {/* Custom URL Input (shown when using custom URL but NOT a theme page) */}
+                  {translation.use_custom_url && !isThemePage(translation) && (
                     <TextInput
                       label={`${t('Custom URL')} (${locale?.name})`}
                       placeholder={t('Enter custom URL or leave blank for no link')}
@@ -304,8 +402,8 @@ const EditMenuItemModal = ({
                     />
                   )}
 
-                  {/* Use Page Title Checkbox (only shown when page is selected) */}
-                  {!translation.use_custom_url && (
+                  {/* Use Page Title Checkbox (only shown when DB page is selected) */}
+                  {!translation.use_custom_url && translation.page_content_id && (
                     <Checkbox
                       checked={translation.use_page_title !== false}
                       onChange={(e) => {
@@ -323,24 +421,26 @@ const EditMenuItemModal = ({
                     />
                   )}
 
-                  {/* Use Custom URL Checkbox */}
-                  <Checkbox
-                    checked={translation.use_custom_url || false}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setTranslations((prev) => ({
-                        ...prev,
-                        [isoCode]: {
-                          ...prev[isoCode],
-                          use_custom_url: checked,
-                          page_content_id: checked ? null : prev[isoCode]?.page_content_id,
-                          url: checked ? prev[isoCode]?.url || '' : '',
-                        },
-                      }));
-                    }}
-                    label={t('Use custom URL')}
-                    description={t('Enable to enter a custom URL instead of selecting a page')}
-                  />
+                  {/* Use Custom URL Checkbox (hidden when theme page is selected) */}
+                  {!isThemePage(translation) && (
+                    <Checkbox
+                      checked={(translation.use_custom_url && !isThemePage(translation)) || false}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setTranslations((prev) => ({
+                          ...prev,
+                          [isoCode]: {
+                            ...prev[isoCode],
+                            use_custom_url: checked,
+                            page_content_id: checked ? null : prev[isoCode]?.page_content_id,
+                            url: checked ? prev[isoCode]?.url || '' : '',
+                          },
+                        }));
+                      }}
+                      label={t('Use custom URL')}
+                      description={t('Enable to enter a custom URL instead of selecting a page')}
+                    />
+                  )}
 
                   {/* Open in New Tab Checkbox (per translation) */}
                   <Checkbox
