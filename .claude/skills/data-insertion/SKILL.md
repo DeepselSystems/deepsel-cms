@@ -192,4 +192,4 @@ def post_install(db):
 
 ### Loading
 
-Theme seed data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py` at server startup for all themes. The hook must be idempotent.
+Theme seed data is loaded by `load_seed_data_for_theme()` in `backend/apps/cms/utils/setup_themes.py` when a theme is selected — either via the `/theme/select` API or when the default theme is set on a fresh DB. It does **not** run on every server restart.

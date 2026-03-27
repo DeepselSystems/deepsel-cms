@@ -152,8 +152,8 @@ async def set_default_domains(db):
             db.commit()
 
 
-async def set_default_theme_if_empty(db):
-    """Set default theme to starter_react if not already set"""
+def set_default_theme_if_empty(db):
+    """Set default theme to starter_react if not already set, and load its seed data."""
     logger.info("Checking and setting default theme if needed")
     try:
         orgs_without_theme = (
@@ -168,6 +168,10 @@ async def set_default_theme_if_empty(db):
                 org.selected_theme = "starter_react"
 
             db.commit()
+
+            from .utils.setup_themes import load_seed_data_for_theme
+
+            load_seed_data_for_theme("starter_react", db)
             logger.info("Default theme set successfully")
     except Exception as e:
         logger.error(f"Error setting default theme: {e}")
@@ -224,10 +228,13 @@ def upgrade(db, from_version, to_version):
     _migrate_add_search_vectors(db, __name__, from_version, to_version)
 
     # Setup themes (now uses SQLAlchemy models instead of raw SQL)
-    from .utils.setup_themes import setup_themes, load_theme_seed_data
+    from .utils.setup_themes import setup_themes
 
     setup_themes()
-    load_theme_seed_data()
+
+    # Set default theme synchronously before starting client,
+    # so seed data + post_install run on fresh DB
+    set_default_theme_if_empty(db)
 
     # Start the Astro client after themes are built
     from .utils.client_process import get_client_manager
@@ -245,5 +252,3 @@ def upgrade(db, from_version, to_version):
     asyncio.create_task(run_cron_fetch_openrouter_model(db))
 
     asyncio.create_task(set_default_domains(db))
-
-    asyncio.create_task(set_default_theme_if_empty(db))

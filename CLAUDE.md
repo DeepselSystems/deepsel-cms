@@ -168,7 +168,7 @@ themes/{name}/
 └── data/                # Seed data CSVs + post_install hook
 ```
 
-**Theme seed data**: Themes can include a `data/` directory with CSV seed files and an `__init__.py` that defines `import_order` (list of CSVs to load) and optionally a `post_install(db)` function for custom setup logic beyond CSV imports (e.g., configuring site language defaults). Loaded at startup by `load_theme_seed_data()` in `setup_themes.py` for all themes.
+**Theme seed data**: Themes can include a `data/` directory with CSV seed files and an `__init__.py` that defines `import_order` (list of CSVs to load) and optionally a `post_install(db)` function for custom setup logic beyond CSV imports (e.g., configuring site language defaults). Loaded once when a theme is selected — either explicitly via the `/theme/select` API or automatically when `set_default_theme_if_empty()` sets the initial theme on a fresh DB. Implemented by `load_seed_data_for_theme()` in `setup_themes.py`.
 
 **Build pipeline**: The backend's `setup_themes()` manages theme compilation — it syncs theme files to a data directory, runs `npm install` and `npm build`, and uses hash-based change detection to skip unnecessary rebuilds. Theme file edits are persisted to the DB (source of truth for edits) and also written to the filesystem for dev hot-reload.
 

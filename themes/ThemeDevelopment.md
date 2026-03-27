@@ -227,7 +227,7 @@ Language variants are typically managed through the admin's theme file editor, w
 
 ## Theme Seed Data & Lifecycle Hooks
 
-Themes can include a `data/` directory with CSV seed files that are loaded at server startup:
+Themes can include a `data/` directory with CSV seed files that are loaded when the theme is selected:
 
 ```
 themes/{theme_name}/
@@ -263,13 +263,12 @@ Called after all CSV files are imported for the theme. Receives a SQLAlchemy dat
 - Setting the default site language
 - Configuring theme-specific CMS settings
 
-The hook runs on every server startup, so it must be **idempotent** (safe to run multiple times).
-
 ### Loading Behavior
 
-- Seed data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py`
-- Runs for **all** themes on every startup (not just the selected theme)
-- CSV records with `string_id` are checked for existence — existing system records are updated, user-modified records are preserved
+- Seed data is loaded by `load_seed_data_for_theme()` in `backend/apps/cms/utils/setup_themes.py`
+- Runs **once when a theme is selected** — either via the `/theme/select` API or when `set_default_theme_if_empty()` assigns the initial theme on a fresh DB
+- Does **not** run on every server restart — user edits (e.g., deleting a menu item) are preserved across restarts
+- CSV records with `string_id` are checked for existence — existing records are updated, not duplicated
 
 ## Available Data Types
 

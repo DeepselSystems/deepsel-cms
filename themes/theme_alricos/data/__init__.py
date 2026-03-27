@@ -17,7 +17,11 @@ def post_install(db):
         logger.warning("German locale (de_DE) not found, skipping language setup")
         return
 
-    for org in db.query(CMSSettingsModel).all():
+    for org in (
+        db.query(CMSSettingsModel)
+        .filter(CMSSettingsModel.selected_theme == "theme_alricos")
+        .all()
+    ):
         # Add German to available_languages if not present
         available = org.available_languages or []
         if not any(lang.get("iso_code") == "de" for lang in available):
@@ -34,4 +38,4 @@ def post_install(db):
         org.default_language_id = de_locale.id
 
     db.commit()
-    logger.info("Set German (de) as default language for all organizations")
+    logger.info("Set German (de) as default language for theme_alricos organizations")

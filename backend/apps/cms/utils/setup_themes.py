@@ -396,47 +396,43 @@ def setup_themes(force_build=False, force_sync=False):
         raise
 
 
-def load_theme_seed_data():
-    """Load CSV seed data from theme data/ directories."""
-    themes_dir = "../themes"
-    if not os.path.exists(themes_dir):
+def load_seed_data_for_theme(theme_name, db):
+    """Load CSV seed data and run post_install hook for a single theme.
+
+    Called once when a theme is selected (not on every startup).
+    """
+    data_dir = os.path.join("../themes", theme_name, "data")
+    if not os.path.isdir(data_dir):
         return
 
-    with get_db_context() as db:
-        for theme_name in sorted(os.listdir(themes_dir)):
-            data_dir = os.path.join(themes_dir, theme_name, "data")
-            if not os.path.isdir(data_dir):
-                continue
+    # Determine import order
+    init_path = os.path.join(data_dir, "__init__.py")
+    module = None
+    if os.path.exists(init_path):
+        spec = importlib.util.spec_from_file_location(
+            f"theme_data_{theme_name}", init_path
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        import_order = getattr(module, "import_order", [])
+    else:
+        import_order = sorted(f for f in os.listdir(data_dir) if f.endswith(".csv"))
 
-            # Determine import order
-            init_path = os.path.join(data_dir, "__init__.py")
-            if os.path.exists(init_path):
-                spec = importlib.util.spec_from_file_location(
-                    f"theme_data_{theme_name}", init_path
-                )
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                import_order = getattr(module, "import_order", [])
-            else:
-                import_order = sorted(
-                    f for f in os.listdir(data_dir) if f.endswith(".csv")
-                )
+    for csv_file in import_order:
+        csv_path = os.path.join(data_dir, csv_file)
+        if os.path.exists(csv_path):
+            try:
+                import_csv_data(csv_path, db)
+            except Exception as e:
+                logger.error(f"Failed to load {csv_file} for {theme_name}: {e}")
 
-            for csv_file in import_order:
-                csv_path = os.path.join(data_dir, csv_file)
-                if os.path.exists(csv_path):
-                    try:
-                        import_csv_data(csv_path, db)
-                    except Exception as e:
-                        logger.error(f"Failed to load {csv_file} for {theme_name}: {e}")
+    # Run post_install hook if defined in __init__.py
+    if module:
+        post_install = getattr(module, "post_install", None)
+        if callable(post_install):
+            try:
+                post_install(db)
+            except Exception as e:
+                logger.error(f"post_install failed for {theme_name}: {e}")
 
-            # Run post_install hook if defined in __init__.py
-            if os.path.exists(init_path):
-                post_install = getattr(module, "post_install", None)
-                if callable(post_install):
-                    try:
-                        post_install(db)
-                    except Exception as e:
-                        logger.error(f"post_install failed for {theme_name}: {e}")
-
-            logger.info(f"Loaded seed data for theme {theme_name}")
+    logger.info(f"Loaded seed data for theme {theme_name}")

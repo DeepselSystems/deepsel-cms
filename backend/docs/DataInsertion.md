@@ -398,7 +398,7 @@ This example demonstrates:
 
 ## Theme Data Directories
 
-Themes can include their own seed data in `themes/{theme_name}/data/`, using the same CSV format as app data. Theme data is loaded by `load_theme_seed_data()` in `backend/apps/cms/utils/setup_themes.py` during server startup.
+Themes can include their own seed data in `themes/{theme_name}/data/`, using the same CSV format as app data. Theme data is loaded by `load_seed_data_for_theme()` in `backend/apps/cms/utils/setup_themes.py` when a theme is selected — either via the `/theme/select` API or when the default theme is set on a fresh DB.
 
 ### Structure
 
@@ -430,4 +430,4 @@ def post_install(db):
         db.commit()
 ```
 
-The hook runs on every server startup, so it must be idempotent.
+The hook runs once when the theme is selected, not on every server restart.

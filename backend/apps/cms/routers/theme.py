@@ -430,6 +430,11 @@ def select_theme(
         organization.selected_theme = request.folder_name
         db.commit()
 
+        # Load seed data and run post_install for the newly selected theme
+        from apps.cms.utils.setup_themes import load_seed_data_for_theme
+
+        load_seed_data_for_theme(request.folder_name, db)
+
         logger.info(
             f"User {current_user.username} selected theme '{request.folder_name}' "
             f"for organization {organization_id}"
@@ -597,11 +602,10 @@ def trigger_setup_themes(force_sync=False):
         force_sync: If True, force sync themes folder to restore original files
     """
     try:
-        from apps.cms.utils.setup_themes import setup_themes, load_theme_seed_data
+        from apps.cms.utils.setup_themes import setup_themes
 
         logger.info("Running theme setup after file save...")
         setup_themes(force_build=True, force_sync=force_sync)
-        load_theme_seed_data()
         logger.info("Theme setup completed successfully")
 
         # Restart client to pick up the new build

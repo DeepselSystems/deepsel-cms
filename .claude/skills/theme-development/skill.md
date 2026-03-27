@@ -393,7 +393,7 @@ def post_install(db):
         db.commit()
 ```
 
-Use `post_install` for setup logic that can't be expressed as CSV records (e.g., language defaults, CMS settings). The hook runs on every server startup, so it must be idempotent.
+Use `post_install` for setup logic that can't be expressed as CSV records (e.g., language defaults, CMS settings). The hook runs once when the theme is selected, not on every server restart.
 
 CSV format follows the same rules as backend app data — see `backend/docs/DataInsertion.md`.
 
