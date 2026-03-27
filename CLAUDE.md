@@ -97,7 +97,14 @@ Key env vars in `backend/.env.sample` (beyond DB/auth config):
 
 ## After Making Edits
 
-Run `make prepush` from `backend/` after any backend changes. This runs lint, security, format-check, and tests and must pass before committing.
+Both prepush scripts must pass before committing. Run them from the repo root:
+
+```bash
+source .venv/bin/activate && npm run prepush && cd backend && make prepush
+```
+
+- **`npm run prepush`** (repo root) — runs `prepush` in `packages/cms-utils` (vitest + tsc + eslint + prettier) and `packages/cms-react` (vitest + tsc + eslint + prettier), then builds the admin lib. Run after changes to `packages/` or `admin/`.
+- **`make prepush`** (from `backend/`) — runs flake8 lint, bandit security scan, black format-check, and pytest with coverage. Run after any backend changes.
 
 ## Architecture
 
