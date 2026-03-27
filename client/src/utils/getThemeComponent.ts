@@ -36,10 +36,22 @@ export function isAnyThemeClientPage(slug: string): boolean {
  * Check if a slug has a client-only theme component (not a system key like index/blog/404).
  * Returns the component if found, null otherwise.
  */
-export function getClientPageTheme(slug: string, selectedTheme: ThemeName): any {
+export function getClientPageTheme(
+  slug: string,
+  selectedTheme: ThemeName,
+  lang?: string,
+  defaultLangIsoCode?: string,
+): any {
   const normalizedSlug = slug.replace(/^\//, '').toLowerCase() || '';
   if (!normalizedSlug || systemKeys.has(normalizedSlug)) return null;
-  const component = themeMap[selectedTheme]?.[normalizedSlug];
+
+  const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
+  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
+
+  const component =
+    (langPrefix && themeMap[selectedTheme]?.[`${langPrefix}${normalizedSlug}`]) ||
+    themeMap[selectedTheme]?.[normalizedSlug];
+
   if (component && component !== themeMap[selectedTheme][themeSystemKeys.Page]) return component;
   return null;
 }
