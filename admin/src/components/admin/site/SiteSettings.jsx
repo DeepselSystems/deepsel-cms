@@ -457,36 +457,6 @@ export default function SiteSettings() {
 
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <Switch
-                  label={t('Auto-translate Pages')}
-                  description={t('Automatically translate page content when adding new languages')}
-                  checked={record.auto_translate_pages || false}
-                  onChange={(event) =>
-                    setRecord({
-                      ...record,
-                      auto_translate_pages: event.currentTarget.checked,
-                    })
-                  }
-                  className="mb-4"
-                />
-
-                <Switch
-                  label={t('Auto-translate Blog Posts')}
-                  description={t(
-                    'Automatically translate blog post content when adding new languages',
-                  )}
-                  checked={record.auto_translate_posts || false}
-                  onChange={(event) =>
-                    setRecord({
-                      ...record,
-                      auto_translate_posts: event.currentTarget.checked,
-                    })
-                  }
-                  className="mb-4"
-                />
-              </div>
-
-              <div>
                 <div className="flex items-center gap-2 mb-2">
                   <FontAwesomeIcon icon={faKey} className="text-gray-500" size="sm" />
                   <Text size="sm" weight={500}>
@@ -557,20 +527,36 @@ export default function SiteSettings() {
                     })
                   }
                 />
+              </div>
 
-                {/* <PasswordInput
-                  label={t('OpenAI API Key')}
-                  description={t('Fallback for translations (GPT-4o-mini)')}
-                  placeholder={t('Enter OpenAI API key')}
-                  value={record.openai_api_key || ''}
-                  onChange={(e) =>
+              <div>
+                <Switch
+                  label={t('Auto-translate Pages')}
+                  description={t('Automatically translate page content when adding new languages')}
+                  checked={record.auto_translate_pages || false}
+                  onChange={(event) =>
                     setRecord({
                       ...record,
-                      openai_api_key: e.target.value,
+                      auto_translate_pages: event.currentTarget.checked,
                     })
                   }
                   className="mb-4"
-                /> */}
+                />
+
+                <Switch
+                  label={t('Auto-translate Blog Posts')}
+                  description={t(
+                    'Automatically translate blog post content when adding new languages',
+                  )}
+                  checked={record.auto_translate_posts || false}
+                  onChange={(event) =>
+                    setRecord({
+                      ...record,
+                      auto_translate_posts: event.currentTarget.checked,
+                    })
+                  }
+                  className="mb-4"
+                />
               </div>
             </div>
           </div>

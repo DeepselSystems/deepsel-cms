@@ -22,7 +22,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
   return (
     <>
       <div>
-        <H3 className="mb-3">{t('SEO Metadata')}</H3>
+        <H3 className="mb-3">{t('SEO Settings')}</H3>
 
         <div className="space-y-3">
           <TextInput

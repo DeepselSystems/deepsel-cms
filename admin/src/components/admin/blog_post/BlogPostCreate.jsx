@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import { faPlus, faTrash, faGear, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faGear, faImage, faPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import ChooseAttachmentModal from '../../../common/ui/ChooseAttachmentModal.jsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,7 +15,6 @@ import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import UserState from '../../../common/stores/UserState.js';
 import CreateFormWrapper from '../../../common/ui/CreateFormWrapper.jsx';
-import FileInput from '../../../common/ui/FileInput.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
@@ -36,6 +37,10 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { user } = UserState();
 
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
+  const [
+    featuredImageModalOpened,
+    { open: openFeaturedImageModal, close: closeFeaturedImageModal },
+  ] = useDisclosure(false);
 
   const isAiFeatureAvailable =
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
@@ -167,37 +172,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
         loading={loading}
         cardMode={false}
       >
-        <div className={`flex justify-end mt-4`}>
-          <div className="flex items-center gap-2">
-            <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
-              <div className="inline-flex items-center">
-                <Switch
-                  label={t('AI Autocomplete')}
-                  checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                  onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                  disabled={!isAiFeatureAvailable}
-                  size="md"
-                />
-              </div>
-            </Tooltip>
-            <Switch
-              checked={record.published}
-              onLabel={t('Published')}
-              offLabel={t('Unpublished')}
-              size="xl"
-              classNames={{
-                track: 'px-2',
-              }}
-              onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-            />
-            <Tooltip label={t('Settings')}>
-              <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
-                <FontAwesomeIcon icon={faGear} />
-              </Button>
-            </Tooltip>
-          </div>
-        </div>
-
         <div className="mt-4">
           <LoadingOverlay
             visible={false}
@@ -213,78 +187,117 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
             radius="lg"
             className="p-2"
           >
-            <Tabs.List className="mb-2 flex-wrap">
-              {record.contents.map((content) => (
-                <div key={content.id} className="relative group">
-                  <Menu
-                    shadow="md"
-                    width={150}
-                    position="bottom-end"
-                    withArrow
-                    radius="md"
-                    trigger="hover"
-                    openDelay={100}
-                    closeDelay={400}
-                  >
-                    <Menu.Target>
-                      <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
-                        <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
-                        {getLanguageName(content.locale_id)}
-                      </Tabs.Tab>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        color="red"
-                        leftSection={<FontAwesomeIcon icon={faTrash} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteContent(content.id);
-                        }}
-                      >
-                        {t('Remove')}
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </div>
-              ))}
+            <div className="flex justify-between items-center mb-2">
+              <Tabs.List className="flex-wrap">
+                {record.contents.map((content) => (
+                  <div key={content.id} className="relative group">
+                    <Menu
+                      shadow="md"
+                      width={150}
+                      position="bottom-end"
+                      withArrow
+                      radius="md"
+                      trigger="hover"
+                      openDelay={100}
+                      closeDelay={400}
+                    >
+                      <Menu.Target>
+                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
+                          {getLanguageName(content.locale_id)}
+                        </Tabs.Tab>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          color="red"
+                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteContent(content.id);
+                          }}
+                        >
+                          {t('Remove')}
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </div>
+                ))}
 
-              <Tooltip label={t('Add Language')}>
-                <Tabs.Tab
-                  value="add_new"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleAddContent();
+                <Tooltip label={t('Add Language')}>
+                  <Tabs.Tab
+                    value="add_new"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddContent();
+                    }}
+                    className="bg-gray-100 hover:bg-gray-200"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </Tabs.Tab>
+                </Tooltip>
+              </Tabs.List>
+              <div className="flex items-center gap-2">
+                <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
+                  <div className="inline-flex items-center">
+                    <Switch
+                      label={t('AI Autocomplete')}
+                      checked={aiAutocompleteEnabled && isAiFeatureAvailable}
+                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                      disabled={!isAiFeatureAvailable}
+                      size="md"
+                    />
+                  </div>
+                </Tooltip>
+                <Switch
+                  checked={record.published}
+                  onLabel={t('Published')}
+                  offLabel={t('Unpublished')}
+                  size="xl"
+                  classNames={{
+                    track: 'px-2',
                   }}
-                  className="bg-gray-100 hover:bg-gray-200"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                </Tabs.Tab>
-              </Tooltip>
-            </Tabs.List>
+                  onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
+                />
+                <Tooltip label={t('Settings')}>
+                  <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+                    <FontAwesomeIcon icon={faGear} />
+                  </Button>
+                </Tooltip>
+              </div>
+            </div>
 
             {record.contents.map((content) => (
               <Tabs.Panel key={content.id} value={String(content.id)}>
                 {content.featured_image ? (
-                  <div
-                    className="w-full my-4 relative group cursor-pointer"
-                    onClick={openSettingsDrawer}
-                  >
+                  <div className="w-full my-4 relative group cursor-pointer">
                     <img
                       src={getAttachmentUrl(backendHost, content.featured_image.name)}
                       alt={content.title || 'Featured image'}
                       className="w-full h-auto object-cover rounded-md max-h-[400px]"
                     />
-                    <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-md">
-                      <div className="text-white font-medium">
-                        <FontAwesomeIcon icon={faGear} className="mr-2" />
-                        {t('Edit Settings')}
-                      </div>
+                    <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 rounded-md">
+                      <Button variant="filled" size="sm" onClick={openFeaturedImageModal}>
+                        <FontAwesomeIcon icon={faPen} className="mr-2" />
+                        {t('Change')}
+                      </Button>
+                      <Button
+                        variant="filled"
+                        color="red"
+                        size="sm"
+                        onClick={() => {
+                          updateContentField(content.id, 'featured_image', null);
+                          updateContentField(content.id, 'featured_image_id', null);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                        {t('Remove')}
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   <div
                     className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
-                    onClick={openSettingsDrawer}
+                    onClick={openFeaturedImageModal}
                   >
                     <FontAwesomeIcon icon={faImage} className="text-xl" />
                     <span className="font-medium">{t('Add Featured Image')}</span>
@@ -294,7 +307,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                   <div className="flex flex-col grow gap-2">
                     <TextInput
                       className="w-full"
-                      placeholder={t('Title')}
+                      placeholder={t('Enter a title for your post')}
                       size="xl"
                       required
                       value={content.title || ''}
@@ -399,28 +412,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
             value={record.slug || ''}
             onChange={(e) => setRecord({ ...record, slug: e.target.value })}
           />
-
-          {activeContentTab && activeContentTab !== 'add_new' && (
-            <>
-              <div className="pt-4">
-                <h3 className="font-medium mb-2">{t('Content Settings')}</h3>
-                <p className="text-sm text-gray-500 mb-3">
-                  {t('These settings apply to the currently selected language content.')}
-                </p>
-
-                <FileInput
-                  className="w-full"
-                  label={t('Featured Image')}
-                  value={activeContent.featured_image?.name}
-                  onChange={(file) => {
-                    updateContentField(activeContent.id, 'featured_image', file);
-                    updateContentField(activeContent.id, 'featured_image_id', file?.id);
-                  }}
-                  type="image"
-                />
-              </div>
-            </>
-          )}
         </div>
 
         <div className="space-y-10">
@@ -433,6 +424,19 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
           )}
         </div>
       </Drawer>
+
+      <ChooseAttachmentModal
+        isOpen={featuredImageModalOpened}
+        close={closeFeaturedImageModal}
+        type="image"
+        onChange={(file) => {
+          if (activeContent) {
+            updateContentField(activeContent.id, 'featured_image', file);
+            updateContentField(activeContent.id, 'featured_image_id', file?.id);
+          }
+          closeFeaturedImageModal();
+        }}
+      />
     </>
   );
 }
