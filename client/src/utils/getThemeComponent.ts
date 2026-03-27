@@ -9,11 +9,26 @@ import type {
 
 const systemKeys = new Set(Object.values(themeSystemKeys));
 
+/**
+ * Validates that a theme name exists in themeMap.
+ * Falls back to the first available theme if not found.
+ */
+export function resolveThemeName(themeName: string | undefined | null): ThemeName {
+  if (themeName && themeName in themeMap) {
+    return themeName as ThemeName;
+  }
+  const fallback = Object.keys(themeMap)[0] as ThemeName;
+  console.warn(
+    `[CMS] Theme "${themeName}" not found in themeMap. Falling back to "${fallback}".`,
+  );
+  return fallback;
+}
+
 function getSelectedThemeSettings(
   data: PageData | BlogListData | BlogPostData | SearchResultsData,
 ) {
   const publicSettings = data.public_settings;
-  const selectedTheme: ThemeName = publicSettings?.selected_theme as ThemeName;
+  const selectedTheme = resolveThemeName(publicSettings?.selected_theme);
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   return { selectedTheme, defaultLangIsoCode };
 }
@@ -38,10 +53,11 @@ export function isAnyThemeClientPage(slug: string): boolean {
  */
 export function getClientPageTheme(
   slug: string,
-  selectedTheme: ThemeName,
+  selectedTheme: string,
   lang?: string,
   defaultLangIsoCode?: string,
 ): any {
+  const resolvedTheme = resolveThemeName(selectedTheme);
   const normalizedSlug = slug.replace(/^\//, '').toLowerCase() || '';
   if (!normalizedSlug || systemKeys.has(normalizedSlug)) return null;
 
@@ -49,10 +65,10 @@ export function getClientPageTheme(
   const langPrefix = isNonDefaultLang ? `${lang}:` : '';
 
   const component =
-    (langPrefix && themeMap[selectedTheme]?.[`${langPrefix}${normalizedSlug}`]) ||
-    themeMap[selectedTheme]?.[normalizedSlug];
+    (langPrefix && themeMap[resolvedTheme]?.[`${langPrefix}${normalizedSlug}`]) ||
+    themeMap[resolvedTheme]?.[normalizedSlug];
 
-  if (component && component !== themeMap[selectedTheme][themeSystemKeys.Page]) return component;
+  if (component && component !== themeMap[resolvedTheme][themeSystemKeys.Page]) return component;
   return null;
 }
 

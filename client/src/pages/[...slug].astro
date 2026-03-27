@@ -21,6 +21,7 @@ import {
   getBlogListThemeComponent,
   getBlogPostThemeComponent,
   getSearchThemeComponent,
+  resolveThemeName,
 } from '../utils/getThemeComponent';
 
 const { slug = '/' } = Astro.params;
@@ -38,7 +39,7 @@ if (pathType === WebsiteDataTypes.Home) {
 } else if (pathType === WebsiteDataTypes.Page && isAnyThemeClientPage(path)) {
   // Client-only page — skip backend page fetch, only fetch public settings for theme resolution
   const publicSettings = await fetchPublicSettings(null, Astro.request, lang, 'http://localhost:8000/api/v1');
-  const selectedTheme = publicSettings?.selected_theme as any;
+  const selectedTheme = resolveThemeName(publicSettings?.selected_theme);
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   const clientComponent = getClientPageTheme(path, selectedTheme, lang, defaultLangIsoCode);
   pageData = buildClientPageData(path, publicSettings);
