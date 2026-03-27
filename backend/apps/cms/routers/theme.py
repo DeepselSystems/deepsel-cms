@@ -174,20 +174,44 @@ def list_themes(current_user: UserModel = Depends(check_website_admin_role)):
         )
 
 
+class ThemePageSlugsResponse(BaseModel):
+    """Schema for theme page slugs"""
+
+    theme_name: str
+    slugs: List[str]
+
+
+@router.get("/page-slugs/{theme_name}", response_model=ThemePageSlugsResponse)
+def get_theme_page_slugs_endpoint(
+    theme_name: str,
+    current_user: UserModel = Depends(check_website_admin_role),
+):
+    """
+    Return slugs claimed by the theme's custom pages + homepage.
+    Used by the admin to detect slug conflicts between pages and theme files.
+    """
+    from apps.cms.utils.theme_pages import get_theme_page_slugs
+
+    slugs = get_theme_page_slugs(theme_name)
+    return ThemePageSlugsResponse(theme_name=theme_name, slugs=slugs)
+
+
 @router.get("/preview-image/{theme_name}/{image_path:path}")
 def get_theme_preview_image(
     theme_name: str,
     image_path: str,
-    current_user: UserModel = Depends(check_website_admin_role),
 ):
     """Serve a theme preview image file."""
-    themes_dir = get_themes_dir()
-    full_path = os.path.join(themes_dir, theme_name, image_path)
+    theme_dir = _resolve_theme_path(theme_name)
+    if not theme_dir:
+        raise HTTPException(status_code=404, detail="Theme not found")
+
+    full_path = os.path.join(theme_dir, image_path)
 
     # Security: ensure the resolved path is within the theme directory
     real_path = os.path.realpath(full_path)
-    real_themes = os.path.realpath(themes_dir)
-    if not real_path.startswith(real_themes):
+    real_theme = os.path.realpath(theme_dir)
+    if not real_path.startswith(real_theme):
         raise HTTPException(status_code=403, detail="Access denied")
 
     if not os.path.exists(full_path) or not os.path.isfile(full_path):
