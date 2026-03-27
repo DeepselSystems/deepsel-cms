@@ -14,7 +14,7 @@ describe('parseSlug', () => {
 
   it('defaults to root path when only language is present', () => {
     const result = parseSlug('es');
-    expect(result).toEqual({ lang: 'es', path: '/', pathType: 'Page', pagination: undefined });
+    expect(result).toEqual({ lang: 'es', path: '/', pathType: 'Home', pagination: undefined });
   });
 
   it('treats slug without language as a raw path', () => {
@@ -31,13 +31,13 @@ describe('parseSlug', () => {
     expect(parseSlug('')).toEqual({
       lang: undefined,
       path: '/',
-      pathType: 'Page',
+      pathType: 'Home',
       pagination: undefined,
     });
     expect(parseSlug(null)).toEqual({
       lang: undefined,
       path: '/',
-      pathType: 'Page',
+      pathType: 'Home',
       pagination: undefined,
     });
   });
