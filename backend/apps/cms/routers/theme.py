@@ -1,9 +1,11 @@
 import logging
 import os
+import io
 import json
+import zipfile
 from typing import List, Optional
 from fastapi import Depends, HTTPException, status, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from platformdirs import user_data_dir
@@ -192,6 +194,52 @@ def get_theme_preview_image(
         raise HTTPException(status_code=404, detail="Image not found")
 
     return FileResponse(full_path)
+
+
+SKIP_DIRS = {"node_modules", "dist", ".astro", ".git", "__pycache__"}
+
+
+@router.get("/download/{theme_name}")
+def download_theme(
+    theme_name: str,
+    current_user: UserModel = Depends(check_website_admin_role),
+):
+    """Download original theme files as a zip archive (without user edits)."""
+    # Use SOURCE_THEMES_DIR to get original files without DB edits
+    theme_path = os.path.join(os.path.normpath(SOURCE_THEMES_DIR), theme_name)
+
+    if not os.path.isdir(theme_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Theme '{theme_name}' not found",
+        )
+
+    # Security: ensure resolved path is within source themes dir
+    real_path = os.path.realpath(theme_path)
+    real_source = os.path.realpath(SOURCE_THEMES_DIR)
+    if not real_path.startswith(real_source):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(theme_path):
+            # Skip unwanted directories in-place
+            dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not d.startswith(".")]
+            for filename in files:
+                if filename.startswith("."):
+                    continue
+                abs_path = os.path.join(root, filename)
+                arc_name = os.path.join(
+                    theme_name, os.path.relpath(abs_path, theme_path)
+                )
+                zf.write(abs_path, arc_name)
+
+    buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{theme_name}.zip"'},
+    )
 
 
 @router.post("/select")

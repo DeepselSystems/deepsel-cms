@@ -8,6 +8,7 @@ import {
   faPalette,
   faCheck,
   faEdit,
+  faDownload,
 } from '@fortawesome/free-solid-svg-icons';
 import { Alert, Card, Badge, SimpleGrid, Loader } from '@mantine/core';
 import H1 from '../../../common/ui/H1.jsx';
@@ -29,6 +30,7 @@ export default function ThemeList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectingTheme, setSelectingTheme] = useState(null);
+  const [downloadingTheme, setDownloadingTheme] = useState(null);
 
   useEffect(() => {
     fetchThemes();
@@ -58,6 +60,40 @@ export default function ThemeList() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadTheme = async (folderName) => {
+    try {
+      setDownloadingTheme(folderName);
+      const response = await fetch(`${backendHost}/theme/download/${folderName}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download theme: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${folderName}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading theme:', err);
+      notify({
+        message: err.message,
+        type: 'error',
+      });
+    } finally {
+      setDownloadingTheme(null);
     }
   };
 
@@ -213,6 +249,14 @@ export default function ThemeList() {
                           {t('Select Theme')}
                         </Button>
                       )}
+                      <Button
+                        onClick={() => handleDownloadTheme(theme.folder_name)}
+                        disabled={downloadingTheme === theme.folder_name}
+                        loading={downloadingTheme === theme.folder_name}
+                        variant="outline"
+                      >
+                        <FontAwesomeIcon icon={faDownload} />
+                      </Button>
                     </div>
                   </div>
                 </Card>
