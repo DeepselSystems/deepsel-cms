@@ -1,7 +1,6 @@
 import { WebsiteDataProvider, useWebsiteData } from "@deepsel/cms-react";
 import { WebsiteDataTypes } from "@deepsel/cms-utils";
 import type { BlogPostData } from "@deepsel/cms-utils";
-import Footer from "./Footer";
 import Header from "./Menu";
 
 export default function BlogPost({ data }: { data: BlogPostData }) {
@@ -20,7 +19,7 @@ function BlogPostContent() {
     : null;
 
   return (
-    <main className="min-h-screen flex flex-col justify-between bg-white">
+    <>
       <Header />
 
       <div
@@ -60,7 +59,6 @@ function BlogPostContent() {
         />
       </div>
 
-      <Footer />
-    </main>
+    </>
   );
 }

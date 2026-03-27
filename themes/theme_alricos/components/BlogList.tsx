@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { WebsiteDataProvider, useWebsiteData } from "@deepsel/cms-react";
 import { WebsiteDataTypes } from "@deepsel/cms-utils";
 import type { BlogListData, BlogPostListItem } from "@deepsel/cms-utils";
-import Footer from "./Footer";
 import Header from "./Menu";
 
 function ClientPagination({ totalPages }: { totalPages: number }) {
@@ -44,7 +43,7 @@ function BlogListContent() {
   const blogData = websiteData.data as BlogListData;
 
   return (
-    <main className="min-h-screen flex flex-col justify-between bg-white">
+    <>
       <Header />
 
       {/* Hero */}
@@ -112,7 +111,6 @@ function BlogListContent() {
         </div>
       )}
 
-      <Footer />
-    </main>
+    </>
   );
 }

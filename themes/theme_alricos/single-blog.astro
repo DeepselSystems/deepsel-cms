@@ -1,6 +1,7 @@
 ---
 import type { BlogPostData } from "@deepsel/cms-utils";
 import BlogPost from "./components/BlogPost";
+import Footer from "./components/Footer.astro";
 import "./main.css";
 
 interface Props {
@@ -22,6 +23,9 @@ const { data } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <BlogPost client:load data={data} />
+    <div class="min-h-screen flex flex-col bg-white">
+        <BlogPost client:load data={data} />
+        <Footer />
+    </div>
 </body>
 </html>

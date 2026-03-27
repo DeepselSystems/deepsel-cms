@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+astro-island {
+  display: contents;
+}
+
 @layer base {
   :root {
     --color-primary-50: #ecf1ff;

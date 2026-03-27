@@ -1,6 +1,7 @@
 ---
 import type { PageData } from "@deepsel/cms-utils";
 import PageUnternehmensberatung from "./components/PageUnternehmensberatung";
+import Footer from "./components/Footer.astro";
 import "./main.css";
 
 interface Props {
@@ -24,6 +25,9 @@ const { data } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <PageUnternehmensberatung client:load pageData={data} />
+    <div class="min-h-screen flex flex-col bg-white">
+        <PageUnternehmensberatung client:load pageData={data} />
+        <Footer />
+    </div>
 </body>
 </html>
