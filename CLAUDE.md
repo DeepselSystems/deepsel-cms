@@ -150,7 +150,8 @@ Themes live in `themes/{name}/` and follow a standard structure:
 themes/{name}/
 ├── theme.json           # Metadata (name, description, preview)
 ├── package.json         # Theme-specific dependencies
-├── Index.astro          # Page template (required)
+├── Index.astro          # Home page template (required)
+├── page.astro           # Generic page template (required)
 ├── Blog.astro           # Blog list (required)
 ├── single-blog.astro    # Blog post (required)
 ├── search.astro         # Search results (required)

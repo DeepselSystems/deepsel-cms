@@ -1,4 +1,5 @@
 export const WebsiteDataTypes = {
+  Home: 'Home',
   Page: 'Page',
   BlogList: 'BlogList',
   BlogPost: 'BlogPost',

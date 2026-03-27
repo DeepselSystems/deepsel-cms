@@ -50,9 +50,11 @@ def generate_theme_imports(data_dir_path: str):
 
         # System keys mapping (matches themeSystemKeys in themes.ts)
         system_key_mapping = {
-            "index": "Page",
+            "index": "Home",
+            "page": "Page",
             "blog": "BlogList",
             "single-blog": "BlogPost",
+            "search": "SearchResults",
             "404": "NotFound",
         }
 
@@ -138,7 +140,14 @@ def generate_theme_imports(data_dir_path: str):
             theme_map_lines.append(f"  '{theme}': {{")
             for variant, component_name in variants.items():
                 # Use themeSystemKeys reference for system keys
-                if variant in ["Page", "BlogList", "BlogPost", "NotFound"]:
+                if variant in [
+                    "Home",
+                    "Page",
+                    "BlogList",
+                    "BlogPost",
+                    "SearchResults",
+                    "NotFound",
+                ]:
                     theme_map_lines.append(
                         f"    [themeSystemKeys.{variant}]: {component_name},"
                     )
@@ -155,9 +164,11 @@ def generate_theme_imports(data_dir_path: str):
 
 
 export const themeSystemKeys = {{
-  Page: 'index',
+  Home: 'index',
+  Page: 'page',
   BlogList: 'blog',
   BlogPost: 'single-blog',
+  SearchResults: 'search',
   NotFound: '404',
 }};
 

@@ -2,6 +2,7 @@
 import StarterReact404 from '../../themes/starter_react/404.astro';
 import StarterReactBlog from '../../themes/starter_react/Blog.astro';
 import StarterReactIndex from '../../themes/starter_react/Index.astro';
+import StarterReactPage from '../../themes/starter_react/page.astro';
 import StarterReactSearch from '../../themes/starter_react/search.astro';
 import StarterReactSingleBlog from '../../themes/starter_react/single-blog.astro';
 import ThemeAlricos404 from '../../themes/theme_alricos/404.astro';
@@ -16,7 +17,8 @@ import ThemeAlricosKontakt from '../../themes/theme_alricos/kontakt.astro';
 // THEME_IMPORTS_END
 
 export const themeSystemKeys = {
-  Page: 'index',
+  Home: 'index',
+  Page: 'page',
   BlogList: 'blog',
   BlogPost: 'single-blog',
   SearchResults: 'search',
@@ -26,7 +28,8 @@ export const themeSystemKeys = {
 // THEME_MAP_START (auto-managed)
 export const themeMap = {
   starter_react: {
-    [themeSystemKeys.Page]: StarterReactIndex,
+    [themeSystemKeys.Home]: StarterReactIndex,
+    [themeSystemKeys.Page]: StarterReactPage,
     [themeSystemKeys.BlogList]: StarterReactBlog,
     [themeSystemKeys.BlogPost]: StarterReactSingleBlog,
     [themeSystemKeys.SearchResults]: StarterReactSearch,

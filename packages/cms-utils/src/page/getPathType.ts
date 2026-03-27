@@ -14,6 +14,10 @@ export function getPathType(path: string): { pathType: WebsiteDataType; paginati
     path = path.slice(1);
   }
 
+  if (path === '' || path === '/') {
+    return { pathType: WebsiteDataTypes.Home };
+  }
+
   if (path === 'search' || path.startsWith('search?') || path.startsWith('search/')) {
     return { pathType: WebsiteDataTypes.SearchResults };
   }

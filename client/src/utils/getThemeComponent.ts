@@ -27,7 +27,7 @@ export function isAnyThemeClientPage(slug: string): boolean {
   if (!normalizedSlug || systemKeys.has(normalizedSlug)) return false;
   for (const themeName of Object.keys(themeMap) as ThemeName[]) {
     const component = themeMap[themeName]?.[normalizedSlug];
-    if (component && component !== themeMap[themeName]['index']) return true;
+    if (component && component !== themeMap[themeName][themeSystemKeys.Page]) return true;
   }
   return false;
 }
@@ -40,7 +40,7 @@ export function getClientPageTheme(slug: string, selectedTheme: ThemeName): any 
   const normalizedSlug = slug.replace(/^\//, '').toLowerCase() || '';
   if (!normalizedSlug || systemKeys.has(normalizedSlug)) return null;
   const component = themeMap[selectedTheme]?.[normalizedSlug];
-  if (component && component !== themeMap[selectedTheme]['index']) return component;
+  if (component && component !== themeMap[selectedTheme][themeSystemKeys.Page]) return component;
   return null;
 }
 
@@ -63,11 +63,23 @@ export function buildClientPageData(slug: string, publicSettings: SiteSettings):
   } as PageData;
 }
 
+export function getHomeThemeComponent(data: PageData, lang?: string): any {
+  const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(data);
+  const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
+  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
+
+  return (
+    themeMap[selectedTheme][`${langPrefix}${themeSystemKeys.Home}`] ||
+    themeMap[selectedTheme][themeSystemKeys.Home] ||
+    themeMap[selectedTheme][themeSystemKeys.Page]
+  );
+}
+
 export function getPageThemeComponent(data: PageData, lang?: string): any {
   let ThemeComponent: any;
 
   const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(data);
-  const pageSlug = data.slug?.replace(/^\//, '').toLowerCase() || 'index';
+  const pageSlug = data.slug?.replace(/^\//, '').toLowerCase() || '';
   const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
   const langPrefix = isNonDefaultLang ? `${lang}:` : '';
 
@@ -77,11 +89,11 @@ export function getPageThemeComponent(data: PageData, lang?: string): any {
       themeMap[selectedTheme][`${langPrefix}${themeSystemKeys.NotFound}`] ||
       themeMap[selectedTheme][themeSystemKeys.NotFound];
   } else {
-    // For other pages, try match the page slug
+    // For other pages, try match the page slug, fall back to page template
     ThemeComponent =
       themeMap[selectedTheme][`${langPrefix}${pageSlug}`] ||
       themeMap[selectedTheme][pageSlug] ||
-      themeMap[selectedTheme]['index'];
+      themeMap[selectedTheme][themeSystemKeys.Page];
   }
 
   return ThemeComponent;
