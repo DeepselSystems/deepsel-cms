@@ -1,4 +1,15 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean, DateTime
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Text,
+    ForeignKey,
+    Boolean,
+    DateTime,
+    Index,
+    text as sa_text,
+)
+from apps.cms.models.page_content import TSVector
 from datetime import datetime, timezone
 from db import Base
 from apps.core.mixins.base_model import BaseModel
@@ -60,6 +71,8 @@ class BlogPostContentModel(Base, BaseModel):
     updated_by_id = Column(Integer, ForeignKey("user.id"), nullable=True)
     updated_by = relationship("UserModel", foreign_keys=[updated_by_id])
 
+    search_vector = Column(TSVector)
+
     revisions = relationship(
         "BlogPostContentRevisionModel",
         back_populates="blog_post_content",
@@ -67,11 +80,36 @@ class BlogPostContentModel(Base, BaseModel):
         order_by="BlogPostContentRevisionModel.created_at.desc()",
     )
 
+    __table_args__ = (
+        Index(
+            "idx_blog_post_content_search_vector",
+            "search_vector",
+            postgresql_using="gin",
+        ),
+    )
+
+    @staticmethod
+    def _update_search_vector(db: Session, record: "BlogPostContentModel"):
+        """Populate the tsvector column from title + plain-text content."""
+        from apps.cms.utils.search import strip_html_tags
+
+        body = strip_html_tags(record.content)
+        db.execute(
+            sa_text(
+                "UPDATE blog_post_content SET search_vector = "
+                "setweight(to_tsvector('simple', coalesce(:title, '')), 'A') || "
+                "setweight(to_tsvector('simple', coalesce(:body, '')), 'B') "
+                "WHERE id = :id"
+            ),
+            {"title": record.title or "", "body": body, "id": record.id},
+        )
+
     @classmethod
     def create(
         cls, db: Session, user: UserModel, values: dict, *args, **kwargs
     ) -> "BlogPostContentModel":
         res = super().create(db, user, values, *args, **kwargs)
+        cls._update_search_vector(db, res)
         BlogPostContentRevisionModel = models_pool["blog_post_content_revision"]
         # Get next revision number (starting at 1 for initial revision)
         revision_count = (
@@ -116,6 +154,7 @@ class BlogPostContentModel(Base, BaseModel):
         values["updated_by_id"] = user.id if user else None
 
         res = super().update(db, user, values, commit, *args, **kwargs)
+        self._update_search_vector(db, res)
         if old_content != new_content:
             BlogPostContentRevisionModel = models_pool["blog_post_content_revision"]
             # Get next revision number

@@ -8,6 +8,7 @@ import StarterReactSingleBlog from '../../themes/starter_react/single-blog.astro
 import ThemeAlricos404 from '../../themes/theme_alricos/404.astro';
 import ThemeAlricosBlog from '../../themes/theme_alricos/Blog.astro';
 import ThemeAlricosIndex from '../../themes/theme_alricos/Index.astro';
+import ThemeAlricosPage from '../../themes/theme_alricos/page.astro';
 import ThemeAlricosSingleBlog from '../../themes/theme_alricos/single-blog.astro';
 import ThemeAlricosFinance from '../../themes/theme_alricos/finance.astro';
 import ThemeAlricosUnternehmensberatung from '../../themes/theme_alricos/unternehmensberatung.astro';
@@ -36,7 +37,8 @@ export const themeMap = {
     [themeSystemKeys.NotFound]: StarterReact404,
   },
   theme_alricos: {
-    [themeSystemKeys.Page]: ThemeAlricosIndex,
+    [themeSystemKeys.Home]: ThemeAlricosIndex,
+    [themeSystemKeys.Page]: ThemeAlricosPage,
     [themeSystemKeys.BlogList]: ThemeAlricosBlog,
     [themeSystemKeys.BlogPost]: ThemeAlricosSingleBlog,
     [themeSystemKeys.NotFound]: ThemeAlricos404,

@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from sqlalchemy import text as sa_text
 from apps.core.utils.models_pool import models_pool
 from deepsel.utils import migration_task
 from settings import APP_SECRET
@@ -173,12 +174,54 @@ async def set_default_theme_if_empty(db):
         db.rollback()
 
 
+@migration_task("Add full-text search vectors to content tables", "1.0.6")
+def _migrate_add_search_vectors(db, *args, **kwargs):
+    """Enable pg_trgm and backfill search_vector columns for FTS."""
+    _logger = logging.getLogger(f"{__name__}:{_migrate_add_search_vectors.__name__}")
+
+    try:
+        db.execute(sa_text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+
+        # Backfill page_content search vectors
+        db.execute(sa_text("""
+                UPDATE page_content
+                SET search_vector =
+                    setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
+                    setweight(to_tsvector('simple', coalesce(
+                        regexp_replace(
+                            coalesce(content::json->'main'->>'ds-value', ''),
+                            '<[^>]+>', ' ', 'g'
+                        ),
+                    '')), 'B')
+            """))
+
+        # Backfill blog_post_content search vectors
+        db.execute(sa_text("""
+                UPDATE blog_post_content
+                SET search_vector =
+                    setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
+                    setweight(to_tsvector('simple', coalesce(
+                        regexp_replace(coalesce(content, ''), '<[^>]+>', ' ', 'g'),
+                    '')), 'B')
+            """))
+
+        db.commit()
+        _logger.info("Search vectors backfilled successfully.")
+    except Exception as e:
+        _logger.error(f"Failed to backfill search vectors: {e}")
+        db.rollback()
+        raise
+
+
 def upgrade(db, from_version, to_version):
     """Upgrade app from current version in db to version in file settings.py"""
     logger.info(f"Start upgrade from version {from_version} to {to_version}")
 
     # Encrypts cms api keys
     _migrate_cms_api_keys_to_encrypted_value(db, __name__, from_version, to_version)
+
+    # Full-text search vectors
+    _migrate_add_search_vectors(db, __name__, from_version, to_version)
 
     # Setup themes (now uses SQLAlchemy models instead of raw SQL)
     from .utils.setup_themes import setup_themes, load_theme_seed_data
