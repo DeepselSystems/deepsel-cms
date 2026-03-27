@@ -6,8 +6,7 @@
 Python >= 3.12 is required.
 You may choose to set up a python virtual environment before installing dependencies.
 ```bash
-pip install -r requirements.txt
-
+pip install -e .
 ```
 
 ### Run a Postgres database
@@ -75,10 +74,7 @@ The application supports environment variables to control database migration beh
   - Starts the web server normally
 
 ### Auto-format code
-Auto code formatting is done by the `black` package. Install it with:
-```bash
-pip install black
-````
+Auto code formatting is done by the `black` package, included in dev dependencies.
 
 Auto-format the code with:
 ```bash
@@ -93,9 +89,9 @@ The code checking is done by the following tools:
 - `bandit` for security checks
 - `pytest` for unit tests
 
-To setup the tools, run:
+To setup the tools, install with dev dependencies:
 ```bash
-pip install black flake8 bandit pytest
+pip install -e ".[dev]"
 ```
 
 Before committing the code, you should check the code with the following commands:
