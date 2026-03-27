@@ -4,6 +4,8 @@ import_order = [
     "component.csv",
     "cron.csv",
     "email_template.csv",
+    "openrouter_model.csv",
+    "organization.csv",
     "template.csv",
     "template_content.csv",
     "page.csv",

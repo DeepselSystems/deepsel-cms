@@ -1,0 +1,2 @@
+string_id,openrouter_model/ai_translation_model_id,openrouter_model/ai_default_writing_model_id,openrouter_model/ai_autocomplete_model_id,system
+1,google/gemini-2.0-flash-lite,google/gemini-2.5-pro,google/gemini-2.0-flash-lite,true
