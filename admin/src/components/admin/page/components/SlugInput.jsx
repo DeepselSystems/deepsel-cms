@@ -15,11 +15,15 @@ import { HOMEPAGE_DEFAULT_SLUG } from '../../../../constants/slug.js';
  *   readonly localeId: number,
  *   readonly title: string,
  *   readonly value: string,
- *   readonly onChange: (value: string) => void
+ *   readonly onChange: (value: string) => void,
+ *   readonly themeName?: string
  * }> & React.RefAttributes<unknown>>}
  */
 const SlugInput = React.forwardRef(
-  ({ contentId, localeId, title, value, onChange = () => {}, isHomepage = false }, ref) => {
+  (
+    { contentId, localeId, title, value, onChange = () => {}, isHomepage = false, themeName },
+    ref,
+  ) => {
     // Translation
     const { t } = useTranslation();
 
@@ -52,6 +56,7 @@ const SlugInput = React.forwardRef(
           locale_id: localeId,
           slug: value,
           page_content_id: contentId,
+          theme_name: themeName || undefined,
         });
         if (value === data.slug) {
           setValidationSlug(data);
@@ -134,9 +139,13 @@ const SlugInput = React.forwardRef(
           error={
             !!validationSlug &&
             !validationSlug.is_valid &&
-            t('This slug is already in use on "{{title}}"!', {
-              title: validationSlug.conflicting_page_content?.title,
-            })
+            (validationSlug.theme_conflict
+              ? t('This slug is used by the theme file "{{file}}". Edit it in the theme editor.', {
+                  file: validationSlug.theme_conflict,
+                })
+              : t('This slug is already in use on "{{title}}"!', {
+                  title: validationSlug.conflicting_page_content?.title,
+                }))
           }
         />
       </>

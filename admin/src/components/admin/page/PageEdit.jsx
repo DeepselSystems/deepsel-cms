@@ -42,6 +42,7 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import { mergeContentsWithServerData } from '../../../common/utils/index.js';
 import useEditSession from '../../../common/hooks/useEditSession.js';
 import useFetch from '../../../common/api/useFetch.js';
+import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 
@@ -341,6 +342,56 @@ export default function PageEdit({ onSuccess }) {
       callback();
     }
   };
+
+  // Redirect to theme editor if page slug conflicts with a theme-defined page
+  const { backendHost } = BackendHostURLState();
+  useEffect(() => {
+    if (isCreateMode || !record?.contents?.length || !siteSettings?.selected_theme) return;
+
+    const checkThemeConflict = async () => {
+      try {
+        const tokenResult = await (
+          await import('@capacitor/preferences')
+        ).Preferences.get({
+          key: 'token',
+        });
+        const headers = {};
+        if (tokenResult?.value) {
+          headers.Authorization = `Bearer ${tokenResult.value}`;
+        }
+
+        const response = await fetch(
+          `${backendHost}/theme/page-slugs/${siteSettings.selected_theme}`,
+          { headers },
+        );
+        if (!response.ok) return;
+
+        const { slugs } = await response.json();
+        const conflictingContent = record.contents.find((c) => slugs.includes(c.slug));
+        if (conflictingContent) {
+          const filename =
+            conflictingContent.slug === '/'
+              ? 'Index.astro'
+              : `${conflictingContent.slug.replace(/^\//, '')}.astro`;
+          notify({
+            message: t(
+              'This page\'s slug conflicts with the theme file "{{file}}". Redirecting to theme editor.',
+              { file: filename },
+            ),
+            type: 'info',
+          });
+          navigate(
+            `/themes/edit/${siteSettings.selected_theme}?file=${encodeURIComponent(filename)}`,
+            { replace: true },
+          );
+        }
+      } catch (e) {
+        console.error('Error checking theme conflict:', e);
+      }
+    };
+    checkThemeConflict();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record?.id, siteSettings?.selected_theme]);
 
   // Capture initial sidebar state and auto-collapse on mount
   useEffect(() => {
@@ -957,6 +1008,7 @@ export default function PageEdit({ onSuccess }) {
                           localeId={content?.locale_id}
                           title={content?.title || ''}
                           value={content?.slug || ''}
+                          themeName={siteSettings?.selected_theme}
                           onChange={(newSlug) => {
                             updateContentField(content.id, 'slug', newSlug);
                           }}

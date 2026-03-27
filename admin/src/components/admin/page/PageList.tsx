@@ -26,6 +26,8 @@ import Checkbox from '../../../common/ui/Checkbox.jsx';
 import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
+import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
+import { Preferences } from '@capacitor/preferences';
 
 type PageLocale = {
   iso_code?: string;
@@ -54,7 +56,40 @@ export default function PageList() {
   const { organizationId } = OrganizationIdState();
   const { settings: siteSettings } = SitePublicSettingsState((state: any) => state);
   const { organizations } = OrganizationState();
+  const { backendHost } = BackendHostURLState() as any;
   const ButtonAny = Button as any;
+
+  // Fetch theme page slugs for conflict detection
+  const [themeSlugs, setThemeSlugs] = useState<string[]>([]);
+  useEffect(() => {
+    const selectedTheme = siteSettings?.selected_theme;
+    if (!selectedTheme || !backendHost) return;
+
+    const fetchThemeSlugs = async () => {
+      try {
+        const tokenResult = await Preferences.get({ key: 'token' });
+        const headers: Record<string, string> = {};
+        if (tokenResult?.value) {
+          headers.Authorization = `Bearer ${tokenResult.value}`;
+        }
+        const response = await fetch(`${backendHost}/theme/page-slugs/${selectedTheme}`, {
+          headers,
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        setThemeSlugs(data.slugs || []);
+      } catch (e) {
+        console.error('Error fetching theme page slugs:', e);
+      }
+    };
+    fetchThemeSlugs();
+  }, [siteSettings?.selected_theme, backendHost]);
+
+  const getThemeEditorLink = (slug: string): string | null => {
+    if (!siteSettings?.selected_theme || !themeSlugs.includes(slug)) return null;
+    const filename = slug === '/' ? 'Index.astro' : `${slug.replace(/^\//, '')}.astro`;
+    return `/themes/edit/${siteSettings.selected_theme}?file=${encodeURIComponent(filename)}`;
+  };
 
   const query = useModel('page', {
     autoFetch: true,
@@ -147,7 +182,15 @@ export default function PageList() {
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
-      renderCell: (params: any) => <LinkedCell params={params}>{params.value}</LinkedCell>,
+      renderCell: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
+        return (
+          <LinkedCell params={params} to={themeLink || undefined}>
+            {params.value}
+          </LinkedCell>
+        );
+      },
     },
     {
       field: 'slug',
@@ -163,7 +206,15 @@ export default function PageList() {
           siteSettings?.default_language,
         );
       },
-      renderCell: (params: any) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
+      renderCell: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
+        return (
+          <LinkedCell params={params} to={themeLink || undefined}>
+            {params.value || '-'}
+          </LinkedCell>
+        );
+      },
     },
     {
       field: 'languages',
@@ -200,11 +251,15 @@ export default function PageList() {
       field: 'published',
       headerName: t('Published'),
       width: 90,
-      renderCell: (params: any) => (
-        <LinkedCell params={params}>
-          <Checkbox checked={Boolean(params.value)} readOnly />
-        </LinkedCell>
-      ),
+      renderCell: (params: any) => {
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
+        return (
+          <LinkedCell params={params} to={themeLink || undefined}>
+            <Checkbox checked={Boolean(params.value)} readOnly />
+          </LinkedCell>
+        );
+      },
     },
     {
       field: 'actions',

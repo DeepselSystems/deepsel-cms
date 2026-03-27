@@ -11,7 +11,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tabs, Tooltip, Menu, Modal, Loader } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
@@ -82,6 +82,7 @@ function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
 export default function ThemeFileEdit() {
   const { t } = useTranslation();
   const { themeName } = useParams();
+  const [searchParams] = useSearchParams();
   const { notify } = NotificationState();
   const { backendHost } = BackendHostURLState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
@@ -204,6 +205,15 @@ export default function ThemeFileEdit() {
     setSelectedFilePath(filePath);
     fetchFileContent(filePath);
   };
+
+  // Auto-select file from ?file= query param after tree loads
+  useEffect(() => {
+    const fileParam = searchParams.get('file');
+    if (fileParam && fileTree.length > 0 && !selectedFilePath) {
+      handleSelectFile(fileParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileTree, searchParams]);
 
   const activeContent = useMemo(() => {
     if (!fileData?.contents) return null;

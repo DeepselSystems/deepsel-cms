@@ -50,6 +50,7 @@ class _ValidateSlugRequest(BaseModel):
     page_content_id: Optional[int] = None
     locale_id: int
     slug: str
+    theme_name: Optional[str] = None
 
 
 class _ConflictingPageContent(BaseModel):
@@ -67,6 +68,7 @@ class _ValidateSlugResponse(BaseModel):
     page_content_id: Optional[int] = None
     conflicting_page_content: Optional[_ConflictingPageContent] = None
     suggested_slug: Optional[str] = None
+    theme_conflict: Optional[str] = None
 
 
 @router.post("/generate-slug", response_model=_GenerateSlugResponse)
@@ -116,6 +118,19 @@ def validate_slug(
         current_page_content_id=request.page_content_id,
     )
 
+    # Check theme slug conflict
+    theme_conflict = None
+    if is_valid and request.theme_name:
+        from apps.cms.utils.theme_pages import (
+            get_theme_page_slugs,
+            slug_to_theme_filename,
+        )
+
+        theme_slugs = get_theme_page_slugs(request.theme_name)
+        if request.slug in theme_slugs:
+            is_valid = False
+            theme_conflict = slug_to_theme_filename(request.slug)
+
     # Initialize response data
     response_data = {
         "is_valid": is_valid,
@@ -124,6 +139,7 @@ def validate_slug(
         "page_content_id": request.page_content_id,
         "conflicting_page_content": None,
         "suggested_slug": None,
+        "theme_conflict": theme_conflict,
     }
 
     # If slug is not valid (conflict exists), provide conflicting content and suggestion
