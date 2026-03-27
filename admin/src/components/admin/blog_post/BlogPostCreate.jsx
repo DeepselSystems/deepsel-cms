@@ -307,8 +307,9 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                   <div className="flex flex-col grow gap-2">
                     <TextInput
                       className="w-full"
+                      classNames={{ input: 'font-bold' }}
                       placeholder={t('Enter a title for your post')}
-                      size="xl"
+                      size="lg"
                       required
                       value={content.title || ''}
                       onChange={(e) => updateContentField(content.id, 'title', e.target.value)}

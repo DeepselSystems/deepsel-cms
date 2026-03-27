@@ -1,11 +1,9 @@
 import React from 'react';
 import TextInput from '../TextInput.jsx';
 import { useTranslation } from 'react-i18next';
-import H3 from '../H3.jsx';
 import TextArea from '../TextArea.jsx';
 import Switch from '../Switch.jsx';
 import FileInput from '../FileInput.jsx';
-
 /**
  * SEO metadata form
  * This form is using for both Blog-Post-Content and Page-Content
@@ -22,12 +20,13 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
   return (
     <>
       <div>
-        <H3 className="mb-3">{t('SEO Settings')}</H3>
+        <div className="text-sm font-medium mb-3">{t('SEO Settings')}</div>
 
         <div className="space-y-3">
           <TextInput
             label={t('Title')}
             description={t('Defaults to associated content title')}
+            size="sm"
             type="text"
             value={pageContent.seo_metadata_title || ''}
             onChange={({ target: { value } }) =>
@@ -38,6 +37,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
           <TextArea
             label={t('Description')}
             description={t('Meta description for search results')}
+            size="sm"
             type="text"
             value={pageContent.seo_metadata_description || ''}
             onChange={({ target: { value } }) =>
@@ -48,7 +48,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
           <Switch
             classNames={{
               body: 'flex-col-reverse gap-2',
-              label: 'px-0',
+              label: 'px-0 text-sm font-medium',
               description: 'px-0 mt-0',
             }}
             label={t('Allow indexing')}
@@ -60,8 +60,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
           />
 
           <FileInput
-            label={t('Featured image')}
-            description={t('Featured image for social sharing and search results')}
+            label={t('Social sharing image')}
             type="image"
             value={pageContent.seo_metadata_featured_image?.name}
             onChange={(file) => {
