@@ -430,4 +430,13 @@ def load_theme_seed_data():
                     except Exception as e:
                         logger.error(f"Failed to load {csv_file} for {theme_name}: {e}")
 
+            # Run post_install hook if defined in __init__.py
+            if os.path.exists(init_path):
+                post_install = getattr(module, "post_install", None)
+                if callable(post_install):
+                    try:
+                        post_install(db)
+                    except Exception as e:
+                        logger.error(f"post_install failed for {theme_name}: {e}")
+
             logger.info(f"Loaded seed data for theme {theme_name}")

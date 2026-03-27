@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { faPlus, faTrash, faGear } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faGear, faImage } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
@@ -167,8 +167,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
         loading={loading}
         cardMode={false}
       >
-        <div className={`flex justify-between mt-4`}>
-          <div className="text-gray-500 text-sm font-bold uppercase">{t('Create Blog Post')}</div>
+        <div className={`flex justify-end mt-4`}>
           <div className="flex items-center gap-2">
             <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
               <div className="inline-flex items-center">
@@ -181,11 +180,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                 />
               </div>
             </Tooltip>
-            <Tooltip label={t('Settings')}>
-              <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
-                <FontAwesomeIcon icon={faGear} />
-              </Button>
-            </Tooltip>
             <Switch
               checked={record.published}
               onLabel={t('Published')}
@@ -196,6 +190,11 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
               }}
               onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
             />
+            <Tooltip label={t('Settings')}>
+              <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+                <FontAwesomeIcon icon={faGear} />
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
@@ -265,21 +264,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
 
             {record.contents.map((content) => (
               <Tabs.Panel key={content.id} value={String(content.id)}>
-                <div className="flex gap-4 my-2">
-                  <div className="flex flex-col grow gap-2">
-                    <TextInput
-                      className="w-full"
-                      placeholder={t('Title')}
-                      classNames={{ input: 'text-[36px]! font-bold! px-0!' }}
-                      size="xl"
-                      variant="subtle"
-                      required
-                      value={content.title || ''}
-                      onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
-                    />
-                  </div>
-                </div>
-                {content.featured_image && (
+                {content.featured_image ? (
                   <div
                     className="w-full my-4 relative group cursor-pointer"
                     onClick={openSettingsDrawer}
@@ -296,7 +281,27 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                       </div>
                     </div>
                   </div>
+                ) : (
+                  <div
+                    className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
+                    onClick={openSettingsDrawer}
+                  >
+                    <FontAwesomeIcon icon={faImage} className="text-xl" />
+                    <span className="font-medium">{t('Add Featured Image')}</span>
+                  </div>
                 )}
+                <div className="flex gap-4 my-2">
+                  <div className="flex flex-col grow gap-2">
+                    <TextInput
+                      className="w-full"
+                      placeholder={t('Title')}
+                      size="xl"
+                      required
+                      value={content.title || ''}
+                      onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="my-4">
                   <RichTextInput
                     content={content.content || ''}
