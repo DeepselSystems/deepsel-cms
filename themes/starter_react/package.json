@@ -16,8 +16,8 @@
     "tailwindcss": "^3.4.18"
   },
   "dependencies": {
-    "@deepsel/cms-react": "^2.0.3",
-    "@deepsel/cms-utils": "^1.4.7",
+    "@deepsel/cms-react": "^2.1.0",
+    "@deepsel/cms-utils": "^1.5.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
