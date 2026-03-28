@@ -74,7 +74,9 @@ async def generate_page_content(
                 if raw.startswith("```"):
                     lines = raw.split("\n")
                     # Remove first line (```json) and last line (```)
-                    lines = [l for l in lines if not l.strip().startswith("```")]
+                    lines = [
+                        line for line in lines if not line.strip().startswith("```")
+                    ]
                     raw = "\n".join(lines).strip()
                 try:
                     parsed = json.loads(raw)
