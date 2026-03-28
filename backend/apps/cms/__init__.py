@@ -145,6 +145,50 @@ def _migrate_cms_api_keys_to_encrypted_value(db, *args, **kwargs):
         raise
 
 
+async def set_default_ai_models(db):
+    """Set default AI models on organizations if not already set."""
+    logger.info("Checking and setting default AI models if needed")
+    try:
+        OpenRouterModelModel = models_pool["openrouter_model"]
+
+        defaults = {
+            "ai_translation_model_id": "google/gemini-2.0-flash-lite",
+            "ai_default_writing_model_id": "google/gemini-2.5-pro",
+            "ai_autocomplete_model_id": "google/gemini-2.0-flash-lite",
+            "chatbox_model_id": "anthropic/claude-sonnet-4.6",
+        }
+
+        # Resolve string_ids to actual model IDs
+        resolved = {}
+        for field, string_id in defaults.items():
+            model = (
+                db.query(OpenRouterModelModel)
+                .filter(OpenRouterModelModel.string_id == string_id)
+                .first()
+            )
+            if model:
+                resolved[field] = model.id
+            else:
+                logger.warning(f"OpenRouter model '{string_id}' not found, skipping {field}")
+
+        if not resolved:
+            return
+
+        for org in db.query(CMSSettingsModel).all():
+            updated = False
+            for field, model_id in resolved.items():
+                if not getattr(org, field, None):
+                    setattr(org, field, model_id)
+                    updated = True
+            if updated:
+                logger.info(f"Set default AI models for organization {org.id}")
+
+        db.commit()
+    except Exception as e:
+        logger.error(f"Error setting default AI models: {e}")
+        db.rollback()
+
+
 async def set_default_domains(db):
     for org in db.query(CMSSettingsModel).all():
         if not org.domains:
@@ -249,3 +293,5 @@ def upgrade(db, from_version, to_version):
     asyncio.create_task(run_cron_fetch_openrouter_model(db))
 
     asyncio.create_task(set_default_domains(db))
+
+    asyncio.create_task(set_default_ai_models(db))
