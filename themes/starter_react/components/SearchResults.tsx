@@ -23,7 +23,7 @@ function SearchResultsContent() {
       <header className="shadow px-3 backdrop-blur bg-white/90">
         <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
           <a href="/" className="flex items-center gap-2 text-2xl font-bold">
-            React Starter Theme
+            My Website
           </a>
           <div className="flex items-center gap-6">
             <Menu />

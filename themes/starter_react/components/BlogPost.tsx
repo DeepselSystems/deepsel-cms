@@ -35,7 +35,7 @@ function BlogPostContent() {
         <header className="absolute top-10 shadow px-3 max-w-7xl mx-auto rounded-lg  z-50 backdrop-blur bg-white/90">
           <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
             <div className="flex items-center gap-2 text-2xl font-bold">
-              React Starter Theme
+              My Website
             </div>
             <div className="flex items-center gap-6">
               <Menu />
