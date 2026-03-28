@@ -1,43 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Modal, Tabs } from '@mantine/core';
+import React, { useCallback, useState } from 'react';
+import { Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import fromPairs from 'lodash/fromPairs';
 
-import { useModel } from '../../hooks';
-import { useEffectOnce } from '../../hooks';
+import { useEffectOnce, useModel } from '../../hooks';
 import type { User } from '../../types';
 import type { NotifyFn } from '../../types';
 import type { AttachmentFile } from '../ChooseAttachmentModal';
 import { InternalImages } from './components/InternalImages';
-import { SearchStockImages } from './components/SearchStockImages';
-
-/**
- * Available view modes for the image selector
- */
-const Modes = {
-  SelectOrUpload: 'SelectOrUpload',
-  SearchStockImages: 'SearchStockImages',
-} as const;
-
-type ModeKey = (typeof Modes)[keyof typeof Modes];
-
-interface ModelLabelProps {
-  mode: ModeKey;
-}
-
-/**
- * Renders the translated tab label for a given mode
- */
-function ModelLabel({ mode }: ModelLabelProps) {
-  const { t } = useTranslation();
-
-  return (
-    <>
-      {mode === Modes.SelectOrUpload && t('Select or upload')}
-      {mode === Modes.SearchStockImages && t('Free stock images')}
-    </>
-  );
-}
 
 export interface EnhancedImageSelectorProps {
   onSelect?: (attachment: AttachmentFile) => void;
@@ -73,12 +42,6 @@ export function EnhancedImageSelector({
   const [internalSelectedImages, setInternalSelectedImages] = useState<AttachmentFile[]>([]);
   const selectedImages = selectedImagesProp || internalSelectedImages;
   const setSelectedImages = setSelectedImagesProp || setInternalSelectedImages;
-
-  const selectedImagesMap = useMemo(
-    () =>
-      fromPairs(selectedImages.map((o) => [o.id, o])) as Record<string | number, AttachmentFile>,
-    [selectedImages],
-  );
 
   // Use useModel to fetch attachments filtered to images only
   const { get: getAttachmentImages } = useModel<AttachmentFile>(
@@ -118,21 +81,6 @@ export function EnhancedImageSelector({
   }, [getAttachmentImages]);
 
   /**
-   * Handle a newly uploaded or cloned attachment image
-   */
-  const handleNewAttachmentImage = useCallback(
-    (attachment: AttachmentFile) => {
-      setAttachmentImages((prevState) => [attachment, ...prevState]);
-      if (multiple) {
-        setSelectedImages((prevState) => [...prevState, attachment]);
-      } else {
-        onSelect?.(attachment);
-      }
-    },
-    [multiple, onSelect, setSelectedImages],
-  );
-
-  /**
    * Fetch attachment images once on mount
    */
   useEffectOnce(() => {
@@ -140,60 +88,21 @@ export function EnhancedImageSelector({
   });
 
   return (
-    <>
-      <Tabs
-        defaultValue={Modes.SelectOrUpload}
-        classNames={{
-          list: 'mb-6',
-          panel: '!h-[calc(100vh-20rem)] overflow-y-auto',
-        }}
-        variant="outline"
-      >
-        {/*region tab list*/}
-        <Tabs.List>
-          {(Object.values(Modes) as ModeKey[]).map((mode, index) => (
-            <Tabs.Tab value={mode} key={index}>
-              <ModelLabel mode={mode} />
-            </Tabs.Tab>
-          ))}
-        </Tabs.List>
-        {/*endregion tab list*/}
-
-        {/*region internal image selector*/}
-        <Tabs.Panel value={Modes.SelectOrUpload}>
-          <InternalImages
-            multiple={multiple}
-            onSelect={onSelect}
-            attachmentImages={attachmentImages}
-            setAttachmentImages={setAttachmentImages}
-            isImagesLoading={isImagesLoading}
-            selectedImages={selectedImages}
-            setSelectedImages={setSelectedImages}
-            backendHost={backendHost}
-            user={user}
-            setUser={setUser}
-            notify={notify}
-          />
-        </Tabs.Panel>
-        {/*endregion internal image selector*/}
-
-        {/*region external image selector*/}
-        <Tabs.Panel value={Modes.SearchStockImages}>
-          <SearchStockImages
-            multiple={multiple}
-            onNewAttachment={handleNewAttachmentImage}
-            selectedImages={selectedImages}
-            setSelectedImages={setSelectedImages}
-            selectedImagesMap={selectedImagesMap}
-            backendHost={backendHost}
-            user={user}
-            setUser={setUser}
-            notify={notify}
-          />
-        </Tabs.Panel>
-        {/*endregion external image selector*/}
-      </Tabs>
-    </>
+    <div className="!h-[calc(100vh-20rem)] overflow-y-auto">
+      <InternalImages
+        multiple={multiple}
+        onSelect={onSelect}
+        attachmentImages={attachmentImages}
+        setAttachmentImages={setAttachmentImages}
+        isImagesLoading={isImagesLoading}
+        selectedImages={selectedImages}
+        setSelectedImages={setSelectedImages}
+        backendHost={backendHost}
+        user={user}
+        setUser={setUser}
+        notify={notify}
+      />
+    </div>
   );
 }
 
