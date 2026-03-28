@@ -169,7 +169,9 @@ async def set_default_ai_models(db):
             if model:
                 resolved[field] = model.id
             else:
-                logger.warning(f"OpenRouter model '{string_id}' not found, skipping {field}")
+                logger.warning(
+                    f"OpenRouter model '{string_id}' not found, skipping {field}"
+                )
 
         if not resolved:
             return

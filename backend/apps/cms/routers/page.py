@@ -75,11 +75,17 @@ def get_page_by_lang_and_slug(
     return get_page_content(request, lang, slug, preview, db, current_user)
 
 
+class AIWritingMessage(BaseModel):
+    role: str
+    content: str
+
+
 class AIWritingRequest(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
     model_id: int
     prompt: str
+    messages: Optional[list[AIWritingMessage]] = None
 
 
 @router.post("/ai_writing")
@@ -114,14 +120,22 @@ async def ai_writing(
     if not request.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt cannot be empty")
 
+    conversation_history = None
+    if request.messages:
+        conversation_history = [
+            {"role": m.role, "content": m.content} for m in request.messages
+        ]
+
     generated_content = await generate_page_content(
         prompt=request.prompt,
         model_string_id=openrouter_model.string_id,
         openrouter_api_key=openrouter_api_key,
+        messages=conversation_history,
     )
 
     return {
-        "content": generated_content,
+        "title": generated_content.get("title", ""),
+        "content": generated_content.get("content", ""),
         "model": openrouter_model,
         "prompt": request.prompt,
     }

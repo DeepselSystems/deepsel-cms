@@ -33,7 +33,7 @@ import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx'
 import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
 import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
-import AIWriterModal from '../../../common/ui/AIWriterModal.jsx';
+import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 
 export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { t } = useTranslation();
@@ -45,7 +45,8 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { user } = UserState();
 
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
-  const [aiWriterModalOpened, setAiWriterModalOpened] = useState(false);
+  const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
   const [
     featuredImageModalOpened,
     { open: openFeaturedImageModal, close: closeFeaturedImageModal },
@@ -177,191 +178,208 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
 
   return (
     <>
-      <CreateFormWrapper
-        onSubmit={handleSubmit}
-        modalMode={modalMode}
-        loading={loading}
-        cardMode={false}
-      >
-        <div className="mt-4">
-          <LoadingOverlay
-            visible={false}
-            zIndex={1000}
-            overlayProps={{ radius: 'sm', blur: 2 }}
-            loaderProps={{ type: 'bars' }}
-          />
+      <div className="w-full flex overflow-hidden" style={{ height: 'calc(100dvh - 70px)' }}>
+        <CreateFormWrapper
+          onSubmit={handleSubmit}
+          modalMode={modalMode}
+          loading={loading}
+          cardMode={false}
+          className="flex-1 overflow-y-auto"
+        >
+          <div className="mt-4">
+            <LoadingOverlay
+              visible={false}
+              zIndex={1000}
+              overlayProps={{ radius: 'sm', blur: 2 }}
+              loaderProps={{ type: 'bars' }}
+            />
 
-          <Tabs
-            value={activeContentTab}
-            onChange={setActiveContentTab}
-            variant="pills"
-            radius="lg"
-            className="p-2"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <Tabs.List className="flex-wrap">
-                {record.contents.map((content) => (
-                  <div key={content.id} className="relative group">
-                    <Menu
-                      shadow="md"
-                      width={150}
-                      position="bottom-end"
-                      withArrow
-                      radius="md"
-                      trigger="hover"
-                      openDelay={100}
-                      closeDelay={400}
+            <Tabs
+              value={activeContentTab}
+              onChange={setActiveContentTab}
+              variant="pills"
+              radius="lg"
+              className="p-2"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <Tabs.List className="flex-wrap">
+                  {record.contents.map((content) => (
+                    <div key={content.id} className="relative group">
+                      <Menu
+                        shadow="md"
+                        width={150}
+                        position="bottom-end"
+                        withArrow
+                        radius="md"
+                        trigger="hover"
+                        openDelay={100}
+                        closeDelay={400}
+                      >
+                        <Menu.Target>
+                          <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                            <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
+                            {getLanguageName(content.locale_id)}
+                          </Tabs.Tab>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            color="red"
+                            leftSection={<FontAwesomeIcon icon={faTrash} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteContent(content.id);
+                            }}
+                          >
+                            {t('Remove')}
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </div>
+                  ))}
+
+                  <Tooltip label={t('Add Language')}>
+                    <Tabs.Tab
+                      value="add_new"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddContent();
+                      }}
+                      className="bg-gray-100 hover:bg-gray-200"
                     >
-                      <Menu.Target>
-                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
-                          <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
-                          {getLanguageName(content.locale_id)}
-                        </Tabs.Tab>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item
-                          color="red"
-                          leftSection={<FontAwesomeIcon icon={faTrash} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteContent(content.id);
-                          }}
-                        >
-                          {t('Remove')}
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </div>
-                ))}
-
-                <Tooltip label={t('Add Language')}>
-                  <Tabs.Tab
-                    value="add_new"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddContent();
-                    }}
-                    className="bg-gray-100 hover:bg-gray-200"
+                      <FontAwesomeIcon icon={faPlus} />
+                    </Tabs.Tab>
+                  </Tooltip>
+                </Tabs.List>
+                <div className="flex items-center gap-2">
+                  <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
+                    <div className="inline-flex items-center">
+                      <Switch
+                        label={t('AI Autocomplete')}
+                        checked={aiAutocompleteEnabled && isAiFeatureAvailable}
+                        onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                        disabled={!isAiFeatureAvailable}
+                        size="md"
+                      />
+                    </div>
+                  </Tooltip>
+                  <Tooltip
+                    label={
+                      aiWritingAvailable
+                        ? t('AI Writer')
+                        : t(
+                            'Please specify an API key and writing model in Site Settings to use this feature.',
+                          )
+                    }
                   >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </Tabs.Tab>
-                </Tooltip>
-              </Tabs.List>
-              <div className="flex items-center gap-2">
-                <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
-                  <div className="inline-flex items-center">
-                    <Switch
-                      label={t('AI Autocomplete')}
-                      checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                      disabled={!isAiFeatureAvailable}
-                      size="md"
-                    />
-                  </div>
-                </Tooltip>
-                <Tooltip
-                  label={
-                    aiWritingAvailable
-                      ? t('AI Writer')
-                      : t(
-                          'Please specify an API key and writing model in Site Settings to use this feature.',
-                        )
-                  }
-                >
-                  <div>
-                    <Button
-                      variant="filled"
-                      size="sm"
-                      onClick={() => setAiWriterModalOpened(true)}
-                      className="px-2"
-                      disabled={!aiWritingAvailable}
-                    >
-                      <FontAwesomeIcon icon={faPenNib} className="mr-2" />
-                      {t('AI Writer')}
-                    </Button>
-                  </div>
-                </Tooltip>
-                <Switch
-                  checked={record.published}
-                  onLabel={t('Published')}
-                  offLabel={t('Unpublished')}
-                  size="xl"
-                  classNames={{
-                    track: 'px-2',
-                  }}
-                  onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-                />
-                <Tooltip label={t('Settings')}>
-                  <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
-                    <FontAwesomeIcon icon={faGear} />
-                  </Button>
-                </Tooltip>
-              </div>
-            </div>
-
-            {record.contents.map((content) => (
-              <Tabs.Panel key={content.id} value={String(content.id)}>
-                {content.featured_image ? (
-                  <div className="w-full my-4 relative group cursor-pointer">
-                    <img
-                      src={getAttachmentUrl(backendHost, content.featured_image.name)}
-                      alt={content.title || 'Featured image'}
-                      className="w-full h-auto object-cover rounded-md max-h-[400px]"
-                    />
-                    <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 rounded-md">
-                      <Button variant="filled" size="sm" onClick={openFeaturedImageModal}>
-                        <FontAwesomeIcon icon={faPen} className="mr-2" />
-                        {t('Change')}
-                      </Button>
+                    <div>
                       <Button
                         variant="filled"
-                        color="red"
                         size="sm"
-                        onClick={() => {
-                          updateContentField(content.id, 'featured_image', null);
-                          updateContentField(content.id, 'featured_image_id', null);
-                        }}
+                        onClick={() => setAiWriterSidebarOpened(true)}
+                        className="px-2"
+                        disabled={!aiWritingAvailable}
                       >
-                        <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                        {t('Remove')}
+                        <FontAwesomeIcon icon={faPenNib} className="mr-2" />
+                        {t('AI Writer')}
                       </Button>
                     </div>
+                  </Tooltip>
+                  <Switch
+                    checked={record.published}
+                    onLabel={t('Published')}
+                    offLabel={t('Unpublished')}
+                    size="xl"
+                    classNames={{
+                      track: 'px-2',
+                    }}
+                    onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
+                  />
+                  <Tooltip label={t('Settings')}>
+                    <Button
+                      variant="subtle"
+                      size="md"
+                      onClick={openSettingsDrawer}
+                      className="px-2"
+                    >
+                      <FontAwesomeIcon icon={faGear} />
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
+
+              {record.contents.map((content) => (
+                <Tabs.Panel key={content.id} value={String(content.id)}>
+                  {content.featured_image ? (
+                    <div className="w-full my-4 relative group cursor-pointer">
+                      <img
+                        src={getAttachmentUrl(backendHost, content.featured_image.name)}
+                        alt={content.title || 'Featured image'}
+                        className="w-full h-auto object-cover rounded-md max-h-[400px]"
+                      />
+                      <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 rounded-md">
+                        <Button variant="filled" size="sm" onClick={openFeaturedImageModal}>
+                          <FontAwesomeIcon icon={faPen} className="mr-2" />
+                          {t('Change')}
+                        </Button>
+                        <Button
+                          variant="filled"
+                          color="red"
+                          size="sm"
+                          onClick={() => {
+                            updateContentField(content.id, 'featured_image', null);
+                            updateContentField(content.id, 'featured_image_id', null);
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                          {t('Remove')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
+                      onClick={openFeaturedImageModal}
+                    >
+                      <FontAwesomeIcon icon={faImage} className="text-xl" />
+                      <span className="font-medium">{t('Add Featured Image')}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-4 my-2">
+                    <div className="flex flex-col grow gap-2">
+                      <TextInput
+                        className="w-full"
+                        classNames={{ input: 'font-bold' }}
+                        placeholder={t('Enter a title for your post')}
+                        size="lg"
+                        required
+                        value={content.title || ''}
+                        onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
+                      />
+                    </div>
                   </div>
-                ) : (
-                  <div
-                    className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
-                    onClick={openFeaturedImageModal}
-                  >
-                    <FontAwesomeIcon icon={faImage} className="text-xl" />
-                    <span className="font-medium">{t('Add Featured Image')}</span>
-                  </div>
-                )}
-                <div className="flex gap-4 my-2">
-                  <div className="flex flex-col grow gap-2">
-                    <TextInput
-                      className="w-full"
-                      classNames={{ input: 'font-bold' }}
-                      placeholder={t('Enter a title for your post')}
-                      size="lg"
-                      required
-                      value={content.title || ''}
-                      onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
+                  <div className="my-4">
+                    <RichTextInput
+                      key={`editor-${content.id}-${editorKey}`}
+                      content={content.content || ''}
+                      onChange={(value) => updateContentField(content.id, 'content', value)}
+                      classNames={{ content: 'min-h-[1000px]' }}
+                      autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
                     />
                   </div>
-                </div>
-                <div className="my-4">
-                  <RichTextInput
-                    content={content.content || ''}
-                    onChange={(value) => updateContentField(content.id, 'content', value)}
-                    classNames={{ content: 'min-h-[1000px]' }}
-                    autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
-                  />
-                </div>
-              </Tabs.Panel>
-            ))}
-          </Tabs>
-        </div>
-      </CreateFormWrapper>
+                </Tabs.Panel>
+              ))}
+            </Tabs>
+          </div>
+        </CreateFormWrapper>
+        <AIWriterSidebar
+          opened={aiWriterSidebarOpened}
+          onClose={() => setAiWriterSidebarOpened(false)}
+          activeContent={activeContent}
+          updateContentField={updateContentField}
+          onContentInserted={() => setEditorKey((k) => k + 1)}
+          contentType="blog_post"
+        />
+      </div>
 
       {/* Add Language Modal */}
       <Modal
@@ -470,15 +488,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
           }
           closeFeaturedImageModal();
         }}
-      />
-
-      {/* AI Writer Modal */}
-      <AIWriterModal
-        opened={aiWriterModalOpened}
-        onClose={() => setAiWriterModalOpened(false)}
-        activeContent={activeContent}
-        updateContentField={updateContentField}
-        contentType="blog_post"
       />
     </>
   );

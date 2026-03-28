@@ -1,3 +1,4 @@
+import json
 import logging
 
 import httpx
@@ -7,38 +8,45 @@ logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a professional content writer. Generate high-quality page content based on the user's request.
 
-IMPORTANT: Format your output as clean HTML using ONLY these allowed tags:
-- <h1>, <h2>, <h3>, <h4> for headings
+You MUST return a valid JSON object with exactly two fields:
+- "title": A concise, compelling title for the content
+- "content": The HTML body content
+
+Format the "content" field as clean HTML using ONLY these allowed tags:
+- <h2>, <h3>, <h4> for section headings (do NOT use <h1>, the title is separate)
 - <ul> and <li> for unordered lists
-- <ol> and <li> for ordered lists  
+- <ol> and <li> for ordered lists
 - <strong> for bold text
 - <p> for paragraphs
 
 Rules:
 1. Write engaging, well-structured content
-2. Use appropriate HTML headings (h1-h4) and formatting
+2. Use appropriate HTML headings (h2-h4) and formatting
 3. Make the content informative and valuable to readers
 4. Keep a professional but friendly tone
-5. Return ONLY the HTML content, no additional explanations or meta-text
+5. Return ONLY the JSON object, no additional explanations or meta-text
 6. Do not use any HTML tags other than the ones listed above
 7. Ensure all HTML tags are properly closed
 
-Example format:
-<p>Introduction paragraph with <strong>important points</strong>.</p>
-<h2>Section Title</h2>
-<ul>
-<li>First point</li>
-<li>Second point</li>
-</ul>"""
+Example response:
+{"title": "Getting Started with Project Management", "content": "<p>Introduction paragraph with <strong>important points</strong>.</p><h2>Section Title</h2><ul><li>First point</li><li>Second point</li></ul>"}"""
 
 
 async def generate_page_content(
     prompt: str,
     model_string_id: str,
     openrouter_api_key: str,
-) -> str:
-    """Call OpenRouter to generate page content HTML."""
-    user_prompt = f"Create page content: {prompt}"
+    messages: list[dict] | None = None,
+) -> dict:
+    """Call OpenRouter to generate page content HTML with title."""
+    if messages:
+        api_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+    else:
+        user_prompt = f"Create page content: {prompt}"
+        api_messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ]
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -52,10 +60,7 @@ async def generate_page_content(
                 },
                 json={
                     "model": model_string_id,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
+                    "messages": api_messages,
                     "temperature": 0.7,
                     "max_tokens": 5000,
                 },
@@ -64,7 +69,22 @@ async def generate_page_content(
 
             result = response.json()
             if "choices" in result and len(result["choices"]) > 0:
-                return result["choices"][0]["message"]["content"].strip()
+                raw = result["choices"][0]["message"]["content"].strip()
+                # Strip markdown code fences if present
+                if raw.startswith("```"):
+                    lines = raw.split("\n")
+                    # Remove first line (```json) and last line (```)
+                    lines = [l for l in lines if not l.strip().startswith("```")]
+                    raw = "\n".join(lines).strip()
+                try:
+                    parsed = json.loads(raw)
+                    return {
+                        "title": parsed.get("title", ""),
+                        "content": parsed.get("content", ""),
+                    }
+                except json.JSONDecodeError:
+                    # Fallback: treat entire response as content
+                    return {"title": "", "content": raw}
 
             logger.error("Unexpected AI API response format: %s", result)
             raise HTTPException(

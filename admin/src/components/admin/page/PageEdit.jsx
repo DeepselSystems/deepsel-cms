@@ -34,7 +34,7 @@ import SlugInput from './components/SlugInput.jsx';
 import HomepageSwitch from './components/HomepageSwitch.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
-import AIWriterModal from '../../../common/ui/AIWriterModal.jsx';
+import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 import { buildFullUrl } from '../../../utils/domainUtils.js';
 import useBackWithRedirect from '../../../common/hooks/useBackWithRedirect.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
@@ -151,7 +151,8 @@ export default function PageEdit({ onSuccess }) {
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
 
   // AI Writer state
-  const [aiWriterModalOpened, setAiWriterModalOpened] = useState(false);
+  const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
 
   // Edit session management for parallel edit detection
   // Note: Using null for contentId to track page level editing (not individual content items)
@@ -636,17 +637,17 @@ export default function PageEdit({ onSuccess }) {
   }, [record]);
 
   // AI Writer functions
-  const openAiWriterModal = () => {
-    setAiWriterModalOpened(true);
+  const openAiWriterSidebar = () => {
+    setAiWriterSidebarOpened(true);
   };
 
-  const closeAiWriterModal = () => {
-    setAiWriterModalOpened(false);
+  const closeAiWriterSidebar = () => {
+    setAiWriterSidebarOpened(false);
   };
 
   const handleContentInserted = () => {
-    // Trigger preview update
     setPreviewTrigger((prev) => prev + 1);
+    setEditorKey((k) => k + 1);
   };
 
   // Callback to trigger preview update when content changes in editor
@@ -845,7 +846,7 @@ export default function PageEdit({ onSuccess }) {
 
   return (!loading && record) || isCreateMode ? (
     <>
-      <div className="h-screen w-full flex overflow-hidden">
+      <div className="w-full flex overflow-hidden" style={{ height: 'calc(100dvh - 70px)' }}>
         {/* Form Section - Left Side */}
         <form
           className="overflow-y-auto px-2 pb-2"
@@ -985,6 +986,7 @@ export default function PageEdit({ onSuccess }) {
                     {/* Content Editor */}
                     <div className="my-4">
                       <RichTextInput
+                        key={`editor-${content.id}-${editorKey}`}
                         variant="subtle"
                         content={content.content || ''}
                         currentLocaleId={content.locale_id}
@@ -1080,7 +1082,7 @@ export default function PageEdit({ onSuccess }) {
                     <Button
                       variant="filled"
                       size="sm"
-                      onClick={openAiWriterModal}
+                      onClick={openAiWriterSidebar}
                       className="px-2"
                       disabled={!aiWritingAvailable}
                     >
@@ -1165,6 +1167,13 @@ export default function PageEdit({ onSuccess }) {
             </div>
           </div>
         </form>
+        <AIWriterSidebar
+          opened={aiWriterSidebarOpened}
+          onClose={closeAiWriterSidebar}
+          activeContent={activeContent}
+          updateContentField={updateContentField}
+          onContentInserted={handleContentInserted}
+        />
       </div>
 
       {/* Add Language Modal */}
@@ -1224,15 +1233,6 @@ export default function PageEdit({ onSuccess }) {
           </div>
         </div>
       </Modal>
-
-      {/* AI Writer Modal */}
-      <AIWriterModal
-        opened={aiWriterModalOpened}
-        onClose={closeAiWriterModal}
-        activeContent={activeContent}
-        updateContentField={updateContentField}
-        onContentInserted={handleContentInserted}
-      />
 
       {/* Settings Drawer */}
       {!!activeContent && (
