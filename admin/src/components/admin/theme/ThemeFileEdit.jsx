@@ -92,6 +92,7 @@ export default function ThemeFileEdit() {
   const [fileData, setFileData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [buildError, setBuildError] = useState(null);
   const [activeContentTab, setActiveContentTab] = useState(null);
   const [addContentModalOpened, setAddContentModalOpened] = useState(false);
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
@@ -297,6 +298,10 @@ export default function ThemeFileEdit() {
     if (!fileData) return;
 
     setSaving(true);
+    setBuildError(null);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 660000);
+
     try {
       const tokenResult = await Preferences.get({ key: 'token' });
       const headers = { 'Content-Type': 'application/json' };
@@ -319,17 +324,23 @@ export default function ThemeFileEdit() {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to save file');
+        const detail = errorData.detail || 'Failed to save file';
+        if (response.status === 422) {
+          setBuildError(detail);
+          return;
+        }
+        throw new Error(detail);
       }
 
       notify({
-        message: t(
-          'File saved successfully! Site re-build started in background, please wait a few minutes for changes to take effect.',
-        ),
+        message: t('File saved and built successfully!'),
         type: 'success',
       });
 
@@ -337,8 +348,17 @@ export default function ThemeFileEdit() {
       const preferredContent = activeContent || null;
       await fetchFileContent(fileData.file_path, { preferredContent });
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Error saving file:', error);
-      notify({ message: error.message, type: 'error' });
+      if (error.name === 'AbortError') {
+        notify({
+          message: t('Build timed out. Please check the server logs.'),
+          type: 'error',
+          duration: 10000,
+        });
+      } else {
+        notify({ message: error.message, type: 'error', duration: 10000 });
+      }
     } finally {
       setSaving(false);
     }
@@ -383,14 +403,13 @@ export default function ThemeFileEdit() {
                 <h3 className="font-medium text-gray-900">{selectedFilePath}</h3>
               </div>
               <div className="flex items-center gap-3">
-                {(loading || saving) && <Loader size="sm" />}
                 <Button
                   onClick={handleSave}
                   disabled={saving || loading || !fileData}
                   loading={saving || loading}
                 >
                   <FontAwesomeIcon icon={faSave} className="mr-2" />
-                  {t('Save')}
+                  {saving ? t('Building...') : t('Save')}
                 </Button>
               </div>
             </div>
@@ -538,6 +557,24 @@ export default function ThemeFileEdit() {
             {t('Cancel')}
           </Button>
           <Button onClick={handleAddContentSubmit}>{t('Add')}</Button>
+        </div>
+      </Modal>
+
+      {/* Build Error Modal */}
+      <Modal
+        opened={!!buildError}
+        onClose={() => setBuildError(null)}
+        title={t('Build Failed')}
+        size="xl"
+      >
+        <p className="text-sm text-gray-600 mb-3">
+          {t('The build failed. No changes were saved. Please fix the error and try again.')}
+        </p>
+        <pre className="text-xs bg-red-50 text-red-900 p-4 rounded overflow-auto max-h-96 whitespace-pre-wrap">
+          {buildError}
+        </pre>
+        <div className="flex justify-end mt-4">
+          <Button onClick={() => setBuildError(null)}>{t('Close')}</Button>
         </div>
       </Modal>
     </div>

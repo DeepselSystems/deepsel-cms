@@ -235,7 +235,6 @@ export default function ConflictResolutionModal({
     return '';
   };
 
-
   const renderLanguageConflict = ({ localeId, userContent, serverContent, locale }) => {
     // Get current resolved content for this language
     // Priority: userContent (user's edits) > resolvedRecord > serverContent

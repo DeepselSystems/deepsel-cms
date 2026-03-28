@@ -1,5 +1,12 @@
 import { useMemo, useEffect } from 'react';
-import { faPlus, faTrash, faGear, faImage, faPen, faPenNib } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlus,
+  faTrash,
+  faGear,
+  faImage,
+  faPen,
+  faPenNib,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';

@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import shutil
+import tempfile
 
 import subprocess  # nosec B404
 import time
@@ -28,6 +29,134 @@ STATE_FILENAME = ".theme_state.json"
 LOCAL_PACKAGES = os.getenv("LOCAL_PACKAGES", "").lower() in ("true", "1", "yes")
 
 
+def _get_user_shell():
+    return os.environ.get("SHELL", "/bin/sh")
+
+
+def _run_npm(cmd, cwd, timeout=300):
+    """Run npm command through user's interactive shell to inherit PATH."""
+    user_shell = _get_user_shell()
+    return subprocess.run(  # nosec B603
+        [user_shell, "-i", "-c", cmd],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
+
+
+def build_in_dir(data_dir, run_install=True, run_build=True):
+    """
+    Run npm install and/or npm build in the given directory.
+    Raises RuntimeError on failure.
+    """
+    if run_install:
+        logger.info("Running npm install...")
+        install_result = _run_npm("npm install", cwd=data_dir)
+
+        if install_result.returncode != 0:
+            error_output = install_result.stdout + "\n" + install_result.stderr
+            logger.error(f"npm install failed: {error_output}")
+            raise RuntimeError(
+                f"npm install failed with exit code {install_result.returncode}: {error_output}"
+            )
+        else:
+            logger.info("npm install completed successfully")
+    else:
+        logger.info("Dependencies unchanged; skipping npm install")
+
+    if run_build:
+        logger.info("Running client build...")
+        build_result = _run_npm("npm run build", cwd=data_dir, timeout=600)
+
+        if build_result.returncode != 0:
+            error_output = build_result.stdout + "\n" + build_result.stderr
+            logger.error(f"Client build failed: {error_output}")
+            raise RuntimeError(
+                f"npm build failed with exit code {build_result.returncode}: {error_output}"
+            )
+        else:
+            logger.info("Client build completed successfully")
+    else:
+        logger.info("Build artifacts up to date; skipping client build")
+
+
+def validate_theme_build(theme_name, file_path, contents):
+    """
+    Build theme in an isolated temp directory to validate changes
+    without modifying the live site or database.
+
+    Args:
+        theme_name: Name of the theme being edited
+        file_path: Relative path of the file within the theme
+        contents: List of content objects with content, lang_code attributes
+
+    Returns:
+        Path to temp directory on success (caller must clean up).
+
+    Raises:
+        RuntimeError on build failure.
+    """
+    data_dir = user_data_dir("deepsel-cms", "deepsel")
+    temp_dir = tempfile.mkdtemp(prefix="theme_build_")
+
+    try:
+        themes_src = os.path.join(data_dir, "themes")
+        client_src = os.path.join(data_dir, "client")
+        node_modules_src = os.path.join(data_dir, "node_modules")
+
+        # Copy themes (small text files)
+        if os.path.exists(themes_src):
+            shutil.copytree(themes_src, os.path.join(temp_dir, "themes"))
+
+        # Copy client (exclude dist/ and .astro/ cache)
+        if os.path.exists(client_src):
+            shutil.copytree(
+                client_src,
+                os.path.join(temp_dir, "client"),
+                ignore=shutil.ignore_patterns("dist", ".astro"),
+            )
+
+        # Copy package.json
+        pkg_json = os.path.join(data_dir, "package.json")
+        if os.path.exists(pkg_json):
+            shutil.copy2(pkg_json, os.path.join(temp_dir, "package.json"))
+
+        # Symlink node_modules (read-only, shared — avoids copying hundreds of MB)
+        if os.path.exists(node_modules_src):
+            os.symlink(node_modules_src, os.path.join(temp_dir, "node_modules"))
+
+        # Write new file content into temp themes (simulates DB reconcile)
+        for content_data in contents:
+            if content_data.lang_code:
+                ensure_language_theme_exists(
+                    lang_code=content_data.lang_code,
+                    theme_name=theme_name,
+                    data_dir_path=temp_dir,
+                )
+                dest_path = os.path.join(
+                    temp_dir, "themes", content_data.lang_code, theme_name, file_path
+                )
+            else:
+                dest_path = os.path.join(temp_dir, "themes", theme_name, file_path)
+
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+            with open(dest_path, "w", encoding="utf-8") as f:
+                f.write(content_data.content)
+
+        # Regenerate theme imports for the temp workspace
+        generate_theme_imports(data_dir_path=temp_dir)
+
+        # Build (skip npm install — symlinked node_modules is already up to date)
+        build_in_dir(temp_dir, run_install=False, run_build=True)
+
+        return temp_dir
+
+    except Exception:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        raise
+
+
 def setup_themes(force_build=False, force_sync=False):
     """
     Setup themes - idempotent function that can be called on server start or after file edits:
@@ -48,18 +177,6 @@ def setup_themes(force_build=False, force_sync=False):
         f"Setting up themes with data dir {data_dir} "
         f"(LOCAL_PACKAGES={'on' if LOCAL_PACKAGES else 'off'})"
     )
-
-    user_shell = os.environ.get("SHELL", "/bin/sh")
-
-    def run_npm(cmd, cwd, timeout=300):
-        """Run npm command through user's interactive shell to inherit PATH."""
-        return subprocess.run(  # nosec B603
-            [user_shell, "-i", "-c", cmd],
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
 
     try:
         client_path = "../client"
@@ -179,7 +296,7 @@ def setup_themes(force_build=False, force_sync=False):
 
                 # Install at workspace root so inter-package deps resolve locally
                 logger.info("Running workspace npm install for packages...")
-                install_result = run_npm("npm install", cwd=data_dir)
+                install_result = _run_npm("npm install", cwd=data_dir)
                 if install_result.returncode != 0:
                     error_output = install_result.stdout + "\n" + install_result.stderr
                     logger.error(f"Workspace npm install failed: {error_output}")
@@ -215,7 +332,7 @@ def setup_themes(force_build=False, force_sync=False):
 
                 for subfolder in pkg_subfolders:
                     subfolder_path = os.path.join(packages_dst, subfolder)
-                    build_result = run_npm("npm run build", cwd=subfolder_path)
+                    build_result = _run_npm("npm run build", cwd=subfolder_path)
                     if build_result.returncode != 0:
                         error_output = build_result.stdout + "\n" + build_result.stderr
                         logger.error(
@@ -233,7 +350,7 @@ def setup_themes(force_build=False, force_sync=False):
                 admin_dst = os.path.join(data_dir, "admin")
                 if os.path.exists(admin_dst):
                     logger.info("Building admin library...")
-                    admin_build = run_npm("npm run build:lib", cwd=admin_dst)
+                    admin_build = _run_npm("npm run build:lib", cwd=admin_dst)
                     if admin_build.returncode != 0:
                         error_output = admin_build.stdout + "\n" + admin_build.stderr
                         logger.error(f"Admin build:lib failed: {error_output}")
@@ -340,37 +457,8 @@ def setup_themes(force_build=False, force_sync=False):
         if LOCAL_PACKAGES:
             need_build = need_build or need_admin_sync or need_packages_sync
 
-        # Run npm install (always at workspace root for hoisted node_modules)
-        if need_install:
-            logger.info("Running npm install...")
-            install_result = run_npm("npm install", cwd=data_dir)
-
-            if install_result.returncode != 0:
-                error_output = install_result.stdout + "\n" + install_result.stderr
-                logger.error(f"npm install failed: {error_output}")
-                raise RuntimeError(
-                    f"npm install failed with exit code {install_result.returncode}: {error_output}"
-                )
-            else:
-                logger.info("npm install completed successfully")
-        else:
-            logger.info("Dependencies unchanged; skipping npm install")
-
-        # Run npm build
-        if need_build:
-            logger.info("Running client build...")
-            build_result = run_npm("npm run build", cwd=data_dir, timeout=600)
-
-            if build_result.returncode != 0:
-                error_output = build_result.stdout + "\n" + build_result.stderr
-                logger.error(f"Client build failed: {error_output}")
-                raise RuntimeError(
-                    f"npm build failed with exit code {build_result.returncode}: {error_output}"
-                )
-            else:
-                logger.info("Client build completed successfully")
-        else:
-            logger.info("Build artifacts up to date; skipping client build")
+        # Run npm install + build via shared helper
+        build_in_dir(data_dir, run_install=need_install, run_build=need_build)
 
         state_payload = {
             "themes_hash": themes_hash,

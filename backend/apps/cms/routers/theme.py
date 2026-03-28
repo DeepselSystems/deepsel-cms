@@ -2,11 +2,13 @@ import logging
 import os
 import io
 import json
+import shutil
 import zipfile
 from typing import List, Optional
 from fastapi import Depends, HTTPException, status, BackgroundTasks, UploadFile, File
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from platformdirs import user_data_dir
 from db import get_db
@@ -594,6 +596,22 @@ def get_theme_file(
         )
 
 
+THEME_BUILD_LOCK_ID = 748329  # Arbitrary constant for PG advisory lock
+
+
+def try_acquire_build_lock(db: Session) -> bool:
+    """Try to acquire PG advisory lock. Returns True if acquired."""
+    result = db.execute(
+        text("SELECT pg_try_advisory_lock(:id)"), {"id": THEME_BUILD_LOCK_ID}
+    )
+    return result.scalar()
+
+
+def release_build_lock(db: Session):
+    """Release PG advisory lock."""
+    db.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": THEME_BUILD_LOCK_ID})
+
+
 def trigger_setup_themes(force_sync=False):
     """
     Background task to run full theme setup (idempotent)
@@ -627,10 +645,28 @@ def save_theme_file(
     db: Session = Depends(get_db),
 ):
     """
-    Save theme file content. Saves to filesystem and DB.
-    For language versions, creates lang folder if needed.
+    Save theme file content. Validates by building in an isolated temp directory first.
+    Only commits to DB and filesystem if the build succeeds.
     """
+    # Acquire advisory lock to prevent concurrent builds
+    if not try_acquire_build_lock(db):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A theme build is already in progress. Please try again shortly.",
+        )
+
+    temp_dir = None
     try:
+        # Phase 1: Validate build in isolation (no DB/filesystem changes yet)
+        from apps.cms.utils.setup_themes import validate_theme_build
+
+        temp_dir = validate_theme_build(
+            theme_name=request.theme_name,
+            file_path=request.file_path,
+            contents=request.contents,
+        )
+
+        # Phase 2: Build succeeded — apply changes
         ThemeFileModel = models_pool.get("theme_file")
         ThemeFileContentModel = models_pool.get("theme_file_content")
 
@@ -677,13 +713,11 @@ def save_theme_file(
             ).delete(synchronize_session=False)
             logger.info(f"Deleted {len(ids_to_delete)} removed language versions")
 
-        # Process each content version (DB remains source of truth; filesystem is updated during setup_themes)
+        # Process each content version
         for content_data in request.contents:
             lang_code = content_data.lang_code
 
-            # Save to DB only; setup_themes will reconcile filesystem copies
             if content_data.id:
-                # Update existing
                 db_content = (
                     db.query(ThemeFileContentModel)
                     .filter(ThemeFileContentModel.id == content_data.id)
@@ -694,7 +728,6 @@ def save_theme_file(
                     db_content.lang_code = lang_code
                     db_content.locale_id = content_data.locale_id
             else:
-                # Create new
                 db_content = ThemeFileContentModel(
                     content=content_data.content,
                     lang_code=lang_code,
@@ -706,8 +739,7 @@ def save_theme_file(
 
         db.commit()
 
-        # Write to source themes directory for dev server hot-reload.
-        # The dev server imports themes from ../themes/ (source), not the data dir.
+        # Write to source themes directory for dev server hot-reload
         source_themes_dir = os.path.join(
             os.path.dirname(__file__), "..", "..", "..", "..", "themes"
         )
@@ -727,23 +759,48 @@ def save_theme_file(
             with open(source_file, "w", encoding="utf-8") as f:
                 f.write(content_data.content)
 
-        # Trigger full theme setup in background (idempotent)
-        # If deletions occurred, force sync themes to restore original files
-        # This will: generate imports, reconcile DB, install deps if needed, and build
+        # Copy validated build artifacts from temp to real data dir
+        real_dist = os.path.join(DATA_DIR, "client", "dist")
+        temp_dist = os.path.join(temp_dir, "client", "dist")
+        if os.path.exists(temp_dist):
+            if os.path.exists(real_dist):
+                shutil.rmtree(real_dist)
+            shutil.copytree(temp_dist, real_dist)
+
+        # Run setup_themes in background to update state hashes and sync
+        # (build will be skipped since dist is fresh)
         if has_deletions:
             background_tasks.add_task(trigger_setup_themes, force_sync=True)
         else:
             background_tasks.add_task(trigger_setup_themes)
 
+        # Restart client to pick up the new build
+        from apps.cms.utils.client_process import get_client_manager
+
+        manager = get_client_manager()
+        if manager:
+            logger.info("Restarting Astro client after successful theme build...")
+            manager.restart()
+
         logger.info(f"Saved theme file: {request.theme_name}/{request.file_path}")
 
         return {
             "success": True,
-            "message": "Theme file saved successfully. Build started in background.",
+            "message": "Theme file saved and built successfully.",
         }
 
     except HTTPException:
         raise
+    except RuntimeError as e:
+        # Build validation failed — nothing was committed
+        error_msg = str(e)
+        if len(error_msg) > 5000:
+            error_msg = error_msg[:5000] + "\n... (truncated)"
+        logger.error(f"Theme build validation failed: {error_msg[:500]}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Build failed. No changes were saved.\n\n{error_msg}",
+        )
     except Exception as e:
         logger.error(f"Error saving theme file: {e}")
         db.rollback()
@@ -751,3 +808,7 @@ def save_theme_file(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save theme file: {str(e)}",
         )
+    finally:
+        release_build_lock(db)
+        if temp_dir:
+            shutil.rmtree(temp_dir, ignore_errors=True)
