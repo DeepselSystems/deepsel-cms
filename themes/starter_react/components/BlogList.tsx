@@ -27,7 +27,7 @@ function BlogListContent() {
       <div className="relative flex flex-col justify-center items-center bg-cover bg-center h-[450px] pt-4" style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${hero.src})` }}>
         <header className="absolute top-10 shadow min-w-[200px] md:min-w-[400px] lg:min-w-[600px] xl:min-w-[800px] px-3 max-w-7xl mx-auto rounded-lg  z-50 backdrop-blur bg-white/90">
           <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
-            <a href="/" className="flex items-center gap-2 text-2xl font-bold">
+            <a href="/" className="flex items-center gap-2 text-2xl font-bold no-underline text-black">
               My Website
             </a>
             <div className="flex items-center gap-6">

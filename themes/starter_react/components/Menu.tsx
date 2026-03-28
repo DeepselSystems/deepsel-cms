@@ -80,7 +80,7 @@ function TopLevelMenuItem({ item, isActive }: TopLevelMenuItemProps) {
       <li className="relative py-4">
         <a
           href={item.url || "#"}
-          className="px-2 py-1 hover:text-primary-600 transition-colors duration-200"
+          className="px-2 py-1 no-underline text-inherit hover:text-primary-600 transition-colors duration-200"
           target={openInNewTab ? "_blank" : "_self"}
         >
           {item.title}

@@ -10,22 +10,24 @@ export default function Page({ pageData }: { pageData: PageData }) {
     <WebsiteDataProvider
       websiteData={{ type: WebsiteDataTypes.Page, data: pageData }}
     >
-      <header className="shadow px-3 backdrop-blur bg-white/90">
-          <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
-            <a href="/" className="flex items-center gap-2 text-2xl font-bold">
-              My Website
-            </a>
-            <div className="flex items-center gap-6">
-              <Menu />
-              <SearchForm />
-              <LangSwitcher />
+      <main className="min-h-screen flex flex-col">
+        <header className="shadow px-3 backdrop-blur bg-white/90">
+            <div className="flex justify-between items-center gap-6 max-w-[1200px] mx-auto">
+              <a href="/" className="flex items-center gap-2 text-2xl font-bold no-underline text-black">
+                My Website
+              </a>
+              <div className="flex items-center gap-6">
+                <Menu />
+                <SearchForm />
+                <LangSwitcher />
+              </div>
             </div>
-          </div>
-      </header>
-      <div className="max-w-7xl mx-auto py-6">
-        <ContentRenderer />
-      </div>
-      <Footer />
+        </header>
+        <div className="max-w-[1200px] w-full mx-auto py-6 px-4 grow">
+          <ContentRenderer />
+        </div>
+        <Footer />
+      </main>
     </WebsiteDataProvider>
   );
 }

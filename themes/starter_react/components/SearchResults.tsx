@@ -19,10 +19,10 @@ function SearchResultsContent() {
   const data = websiteData.data as SearchResultsData;
 
   return (
-    <main className="min-h-screen flex flex-col justify-between">
+    <main className="min-h-screen flex flex-col">
       <header className="shadow px-3 backdrop-blur bg-white/90">
-        <div className="flex justify-between items-center gap-6 max-w-7xl mx-auto">
-          <a href="/" className="flex items-center gap-2 text-2xl font-bold">
+        <div className="flex justify-between items-center gap-6 max-w-[1200px] mx-auto">
+          <a href="/" className="flex items-center gap-2 text-2xl font-bold no-underline text-black">
             My Website
           </a>
           <div className="flex items-center gap-6">
@@ -33,7 +33,7 @@ function SearchResultsContent() {
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto w-full px-4 py-8 grow">
+      <div className="max-w-[1200px] mx-auto w-full px-4 py-8 grow">
         <h1 className="text-2xl font-bold mb-2">
           Search results for &ldquo;{data.query}&rdquo;
         </h1>
