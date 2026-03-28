@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { faPlus, faTrash, faGear, faImage, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faGear, faImage, faPen, faPenNib } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -26,6 +26,7 @@ import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx'
 import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
 import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
+import AIWriterModal from '../../../common/ui/AIWriterModal.jsx';
 
 export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { user } = UserState();
 
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
+  const [aiWriterModalOpened, setAiWriterModalOpened] = useState(false);
   const [
     featuredImageModalOpened,
     { open: openFeaturedImageModal, close: closeFeaturedImageModal },
@@ -44,6 +46,8 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
 
   const isAiFeatureAvailable =
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
+  const aiWritingAvailable =
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
   const aiRequirementMessage = t(
     'Please specify an API key and autocomplete model in Site Settings to use this feature.',
   );
@@ -248,6 +252,28 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                     />
                   </div>
                 </Tooltip>
+                <Tooltip
+                  label={
+                    aiWritingAvailable
+                      ? t('AI Writer')
+                      : t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )
+                  }
+                >
+                  <div>
+                    <Button
+                      variant="filled"
+                      size="sm"
+                      onClick={() => setAiWriterModalOpened(true)}
+                      className="px-2"
+                      disabled={!aiWritingAvailable}
+                    >
+                      <FontAwesomeIcon icon={faPenNib} className="mr-2" />
+                      {t('AI Writer')}
+                    </Button>
+                  </div>
+                </Tooltip>
                 <Switch
                   checked={record.published}
                   onLabel={t('Published')}
@@ -437,6 +463,15 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
           }
           closeFeaturedImageModal();
         }}
+      />
+
+      {/* AI Writer Modal */}
+      <AIWriterModal
+        opened={aiWriterModalOpened}
+        onClose={() => setAiWriterModalOpened(false)}
+        activeContent={activeContent}
+        updateContentField={updateContentField}
+        contentType="blog_post"
       />
     </>
   );

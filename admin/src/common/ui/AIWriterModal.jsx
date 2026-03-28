@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Modal, Textarea } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import useAuthentication from '../../../../common/api/useAuthentication.js';
-import useModel from '../../../../common/api/useModel.jsx';
-import NotificationState from '../../../../common/stores/NotificationState.js';
-import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
-import RecordSelect from '../../../../common/ui/RecordSelect.jsx';
-import Button from '../../../../common/ui/Button.jsx';
+import useAuthentication from '../api/useAuthentication.js';
+import useModel from '../api/useModel.jsx';
+import NotificationState from '../stores/NotificationState.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
+import RecordSelect from './RecordSelect.jsx';
+import Button from './Button.jsx';
 
 export default function AIWriterModal({
   opened,
@@ -14,6 +14,7 @@ export default function AIWriterModal({
   activeContent,
   updateContentField,
   onContentInserted,
+  contentType = 'page',
 }) {
   const { t } = useTranslation();
   const { user } = useAuthentication();
@@ -98,6 +99,16 @@ export default function AIWriterModal({
     });
   };
 
+  const promptLabel =
+    contentType === 'blog_post'
+      ? t('Describe your blog post content')
+      : t('Describe your page content');
+
+  const promptPlaceholder =
+    contentType === 'blog_post'
+      ? t('Describe what content you want to generate for this blog post...')
+      : t('Describe what content you want to generate for this page...');
+
   return (
     <Modal
       opened={opened}
@@ -123,8 +134,8 @@ export default function AIWriterModal({
 
         {/* Prompt Input */}
         <Textarea
-          label={t('Describe your page content')}
-          placeholder={t('Describe what content you want to generate for this page...')}
+          label={promptLabel}
+          placeholder={promptPlaceholder}
           value={aiWriterPrompt}
           onChange={(e) => setAiWriterPrompt(e.target.value)}
           required

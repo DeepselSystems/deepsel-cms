@@ -34,7 +34,7 @@ import SlugInput from './components/SlugInput.jsx';
 import HomepageSwitch from './components/HomepageSwitch.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
-import AIWriterModal from './components/AIWriterModal.jsx';
+import AIWriterModal from '../../../common/ui/AIWriterModal.jsx';
 import { buildFullUrl } from '../../../utils/domainUtils.js';
 import useBackWithRedirect from '../../../common/hooks/useBackWithRedirect.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
