@@ -54,21 +54,11 @@ export default function useMultiLangContent({
       if (defaultLocale) {
         const newId = 1;
 
-        // Different content structure based on content type
         const defaultContent = {
           _addNew: true,
           id: newId,
           title: '',
-          content:
-            contentType === 'page'
-              ? {
-                  main: {
-                    'ds-label': 'Content',
-                    'ds-type': 'wysiwyg',
-                    'ds-value': `<p>This is the start of your new page!</p>`,
-                  },
-                }
-              : '', // Keep empty string for blog posts
+          content: contentType === 'page' ? '<p>This is the start of your new page!</p>' : '',
           locale_id: defaultLocale.id,
           locale: defaultLocale,
           slug: null,

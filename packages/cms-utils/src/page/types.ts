@@ -16,16 +16,6 @@ export interface SpecialTemplate {
 
 export type Menus = MenuItem[];
 
-export interface ContentField {
-  'ds-label': string;
-  'ds-type': string;
-  'ds-value': string;
-}
-
-export interface Content {
-  main: ContentField;
-}
-
 export interface SeoMetadata {
   title: string;
   description: string | null;
@@ -42,7 +32,7 @@ export interface LanguageAlternative {
 export interface PageData {
   id?: number;
   title?: string;
-  content?: Content;
+  content?: string;
   slug?: string;
   lang?: string;
   public_settings: SiteSettings;

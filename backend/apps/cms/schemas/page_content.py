@@ -16,7 +16,7 @@ class PageContentRead(BaseModel):
 
     id: int
     title: str
-    content: Optional[dict | list] = None
+    content: Optional[str] = None
     slug: Optional[str] = None
     locale_id: Optional[int] = None
     locale: Optional[LocaleNested] = None
@@ -42,7 +42,7 @@ class PageContentRead(BaseModel):
 
 class PageContentCreate(BaseModel):
     title: str
-    content: Optional[dict | list] = None
+    content: Optional[str] = None
     slug: Optional[str] = None
     locale_id: int
     page_id: Optional[int] = None
@@ -57,7 +57,7 @@ class PageContentCreate(BaseModel):
 class PageContentCreateNested(BaseModel):
     id: Optional[int] = None
     title: str
-    content: Optional[dict | list] = None
+    content: Optional[str] = None
     slug: Optional[str] = None
     locale_id: int
     seo_metadata_title: Optional[str] = None
@@ -70,7 +70,7 @@ class PageContentCreateNested(BaseModel):
 
 class PageContentUpdate(BaseModel):
     title: Optional[str] = None
-    content: Optional[dict | list] = None
+    content: Optional[str] = None
     slug: Optional[str] = None
     locale_id: Optional[int] = None
     seo_metadata_title: Optional[str] = None

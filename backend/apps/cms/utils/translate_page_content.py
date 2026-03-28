@@ -113,17 +113,14 @@ async def translate_page_content(
 
             if (
                 "content" in content
-                and isinstance(content["content"], dict)
-                and "main" in content["content"]
-                and isinstance(content["content"]["main"], dict)
-                and "ds-value" in content["content"]["main"]
-                and isinstance(content["content"]["main"]["ds-value"], str)
-                and content["content"]["main"]["ds-value"].strip()
+                and isinstance(content["content"], str)
+                and content["content"].strip()
             ):
-                html_content = content["content"]["main"]["ds-value"]
-                translated_html = await translate_single_text(html_content, "html")
+                translated_html = await translate_single_text(
+                    content["content"], "html"
+                )
                 if translated_html:
-                    result_dict["content"]["main"]["ds-value"] = translated_html
+                    result_dict["content"] = translated_html
                     translations_made += 1
                 else:
                     logger.warning("HTML content translation failed, keeping original")

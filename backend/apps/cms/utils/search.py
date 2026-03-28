@@ -30,15 +30,11 @@ def strip_html_tags(html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def extract_page_plain_text(content_json) -> str:
-    """Extract plain text from TipTap JSON (``content["main"]["ds-value"]``)."""
-    if not content_json:
+def extract_page_plain_text(content: str) -> str:
+    """Extract plain text from HTML content string."""
+    if not content:
         return ""
-    try:
-        html = content_json.get("main", {}).get("ds-value", "")
-    except AttributeError:
-        return ""
-    return strip_html_tags(html)
+    return strip_html_tags(content)
 
 
 # ---------------------------------------------------------------------------

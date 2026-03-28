@@ -1,4 +1,3 @@
-import copy
 import logging
 from typing import Dict, Any, Optional, Tuple
 from jinja2 import Environment, DictLoader, select_autoescape
@@ -153,17 +152,17 @@ def render_wysiwyg_content(
     db: Session,
     default_lang_id: Optional[int] = None,
     user: Optional[UserModel] = None,
-) -> Any:
+) -> Optional[str]:
     """
-    Recursively process content object and render wysiwyg fields with Jinja2
+    Render page content HTML string with Jinja2 templating.
     """
-    # Extract JSON content from the page content model
-    content_obj = page_content.content
-    if not isinstance(content_obj, dict):
-        return content_obj
+    content = page_content.content
+    if not content or not isinstance(content, str):
+        return content
 
-    # Create a copy to avoid modifying the original
-    processed_content = copy.deepcopy(content_obj)
+    # Skip Jinja2 rendering if no template syntax present
+    if "{{" not in content and "{%" not in content:
+        return content
 
     # Extract language from page_content
     lang = None
@@ -190,42 +189,14 @@ def render_wysiwyg_content(
         if "WebsiteLayout" in jinja2_templates:
             jinja2_templates["WebsiteLayout"] = "{% block content %}{% endblock %}"
 
-    def process_object(obj):
-        if not isinstance(obj, dict):
-            return obj
-
-        processed_obj = {}
-        for key, value in obj.items():
-            if isinstance(value, dict):
-                # Check if this is a wysiwyg field
-                if value.get("ds-type") == "wysiwyg" and "ds-value" in value:
-                    try:
-                        # Create a temporary template for this content
-                        temp_template_name = f"temp_{hash(value['ds-value'])}"
-                        temp_env = Environment(
-                            loader=DictLoader(
-                                {
-                                    **jinja2_templates,
-                                    temp_template_name: value["ds-value"],
-                                }
-                            ),
-                            autoescape=select_autoescape(["html", "xml"]),
-                        )
-                        template = temp_env.get_template(temp_template_name)
-                        rendered_content = template.render(**context)
-
-                        # Update the ds-value with rendered content
-                        processed_obj[key] = {**value, "ds-value": rendered_content}
-                    except Exception as e:
-                        logger.error(f"Error rendering wysiwyg content: {e}")
-                        # Keep original content if rendering fails
-                        processed_obj[key] = value
-                else:
-                    # Recursively process nested objects
-                    processed_obj[key] = process_object(value)
-            else:
-                processed_obj[key] = value
-        return processed_obj
-
-    rendered = process_object(processed_content)
-    return rendered
+    try:
+        temp_template_name = f"temp_{hash(content)}"
+        env = Environment(
+            loader=DictLoader({**jinja2_templates, temp_template_name: content}),
+            autoescape=select_autoescape(["html", "xml"]),
+        )
+        template = env.get_template(temp_template_name)
+        return template.render(**context)
+    except Exception as e:
+        logger.error(f"Error rendering wysiwyg content: {e}")
+        return content

@@ -4,7 +4,6 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Index,
-    JSON,
     Boolean,
     Text,
     DateTime,
@@ -42,7 +41,7 @@ class PageContentModel(Base, BaseModel):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
-    content = Column(JSON)
+    content = Column(Text)
     slug = Column(String(255), nullable=True)
 
     locale_id = Column(Integer, ForeignKey("locale.id"), nullable=False)
@@ -139,9 +138,7 @@ class PageContentModel(Base, BaseModel):
             {
                 "page_content_id": res.id,
                 "old_content": None,
-                "new_content": (
-                    res.content.get("main", {}).get("ds-value") if res.content else None
-                ),
+                "new_content": res.content,
                 "name": name,
                 "revision_number": revision_number,
             },
@@ -157,14 +154,8 @@ class PageContentModel(Base, BaseModel):
         *args,
         **kwargs,
     ) -> "PageContentModel":
-        old_content = (
-            self.content.get("main", {}).get("ds-value") if self.content else None
-        )
-        new_content = (
-            values.get("content", {}).get("main", {}).get("ds-value")
-            if values.get("content")
-            else None
-        )
+        old_content = self.content
+        new_content = values.get("content")
 
         # Always update the last_modified_at timestamp and updated_by
         values["last_modified_at"] = datetime.now(timezone.utc)

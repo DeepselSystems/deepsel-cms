@@ -83,16 +83,6 @@ async def generate_conflict_explanation(
                 user_content_text = user_content.get("content", "")
                 server_content_text = server_content.get("content", "")
 
-                # Extract text content for pages (JSON format)
-                if record_type == "page" and isinstance(user_content_text, dict):
-                    user_content_text = user_content_text.get("main", {}).get(
-                        "ds-value", ""
-                    )
-                if record_type == "page" and isinstance(server_content_text, dict):
-                    server_content_text = server_content_text.get("main", {}).get(
-                        "ds-value", ""
-                    )
-
                 if (
                     user_title != server_title
                     or user_content_text != server_content_text

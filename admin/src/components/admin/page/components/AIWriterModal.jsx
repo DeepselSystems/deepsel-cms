@@ -84,30 +84,8 @@ export default function AIWriterModal({
   const handleInsertContent = () => {
     if (!aiWriterResult || !activeContent) return;
 
-    // Check if this is a blog post (string content) or page (JSON content)
-    // Blog posts have simple string content, pages have JSON structure
-    const isBlogPost =
-      typeof activeContent.content === 'string' ||
-      activeContent.content === null ||
-      activeContent.content === undefined;
-
-    let newContent;
-    if (isBlogPost) {
-      // For blog posts: directly use the AI-generated string content
-      newContent = aiWriterResult;
-    } else {
-      // For pages: create the JSON structure with AI-generated content
-      newContent = {
-        main: {
-          'ds-label': 'Content',
-          'ds-type': 'wysiwyg',
-          'ds-value': aiWriterResult,
-        },
-      };
-    }
-
     // Use the proper updateContentField function from the hook
-    updateContentField(activeContent.id, 'content', newContent);
+    updateContentField(activeContent.id, 'content', aiWriterResult);
 
     // Call the callback to handle additional logic (like forcing re-render)
     onContentInserted?.();

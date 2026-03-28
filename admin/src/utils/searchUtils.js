@@ -56,28 +56,11 @@ export function countPhraseMatches(text, searchPhrase) {
  */
 export function extractPageContentText(pageContent) {
   if (typeof pageContent === 'string') {
-    return pageContent;
+    return pageContent
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
-
-  if (typeof pageContent === 'object' && pageContent) {
-    // Handle page content structure like {"main": {"ds-value": "..."}}
-    let extractedText = '';
-
-    Object.values(pageContent).forEach((section) => {
-      if (section && typeof section === 'object' && section['ds-value']) {
-        // Remove HTML tags and get plain text
-        const htmlContent = section['ds-value'];
-        const textContent = htmlContent
-          .replace(/<[^>]*>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        extractedText += ' ' + textContent;
-      }
-    });
-
-    return extractedText.trim();
-  }
-
   return '';
 }
 

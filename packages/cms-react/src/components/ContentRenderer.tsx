@@ -4,17 +4,11 @@ import { useWebsiteData } from '../contexts/WebsiteDataContext.js';
 export function ContentRenderer() {
   const { websiteData } = useWebsiteData();
 
-  if (
-    !websiteData ||
-    !websiteData.data ||
-    !('content' in websiteData.data) ||
-    typeof websiteData.data.content !== 'object' ||
-    !websiteData.data.content.main
-  ) {
+  if (!websiteData?.data || !('content' in websiteData.data) || !websiteData.data.content) {
     return null;
   }
 
-  const mainContent = websiteData.data.content.main['ds-value'] || '';
+  const mainContent = typeof websiteData.data.content === 'string' ? websiteData.data.content : '';
 
   return (
     <article

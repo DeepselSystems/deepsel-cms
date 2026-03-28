@@ -228,46 +228,13 @@ export default function ConflictResolutionModal({
     });
   };
 
-  // Helper functions to extract and reconstruct content based on type
+  // Helper functions to extract and reconstruct content
   const extractHTMLContent = (content) => {
     if (!content) return '';
-
-    // For blog posts: content is string (HTML)
-    if (typeof content === 'string') {
-      return content;
-    }
-
-    // For pages: content is JSON with ds-value structure
-    if (typeof content === 'object' && content.main && content.main['ds-value']) {
-      return content.main['ds-value'];
-    }
-
+    if (typeof content === 'string') return content;
     return '';
   };
 
-  const reconstructContent = (htmlContent, originalContent) => {
-    if (!originalContent) {
-      return htmlContent;
-    }
-
-    // For blog posts: content is string (HTML)
-    if (typeof originalContent === 'string') {
-      return htmlContent;
-    }
-
-    // For pages: content is JSON, need to reconstruct ds-value structure
-    if (typeof originalContent === 'object' && originalContent.main) {
-      return {
-        ...originalContent,
-        main: {
-          ...originalContent.main,
-          'ds-value': htmlContent,
-        },
-      };
-    }
-
-    return htmlContent;
-  };
 
   const renderLanguageConflict = ({ localeId, userContent, serverContent, locale }) => {
     // Get current resolved content for this language
@@ -455,13 +422,8 @@ export default function ConflictResolutionModal({
                   <RichTextInput
                     content={extractHTMLContent(currentResolved?.content) || ''}
                     onChange={(htmlValue) => {
-                      // Reconstruct content in correct format (string for blog, JSON for page)
-                      const reconstructedContent = reconstructContent(
-                        htmlValue,
-                        currentResolved?.content,
-                      );
                       updateResolvedContent(localeId, {
-                        content: reconstructedContent,
+                        content: htmlValue,
                       });
                     }}
                     placeholder={t('Enter content...')}

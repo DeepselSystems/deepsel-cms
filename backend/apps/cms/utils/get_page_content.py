@@ -16,7 +16,7 @@ class PageContentResponse(BaseModel):
 
     id: int
     title: str
-    content: dict[str, dict[str, str]]
+    content: str | None
     slug: str
     lang: str
     public_settings: PublicSettings

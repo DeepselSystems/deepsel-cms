@@ -36,9 +36,7 @@ interface PageData {
   title?: string;
   slug?: string;
   lang?: string;
-  content?: {
-    main: { 'ds-label': string; 'ds-type': string; 'ds-value': string; }
-  };
+  content?: string;
   seo_metadata?: {
     title: string;
     description: string | null;

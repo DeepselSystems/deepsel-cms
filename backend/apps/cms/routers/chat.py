@@ -60,32 +60,8 @@ def normalize_unicode_text(text: str) -> str:
 
 def extract_text_from_content(content) -> str:
     """Extract content as-is from database without HTML modification"""
-
     if isinstance(content, str):
-        # Return string content as-is, no HTML processing
         return content.strip()
-
-    if isinstance(content, dict):
-        text_parts = []
-
-        for section_key, section_value in content.items():
-            if isinstance(section_value, dict) and section_value.get("ds-value"):
-                # Keep original HTML content without processing
-                original_content = str(section_value["ds-value"])
-                if original_content.strip():
-                    # Add section context if available
-                    if section_key and section_key != "ds-value":
-                        text_parts.append(f"\n--- {section_key.upper()} ---")
-                    text_parts.append(original_content)
-            elif isinstance(section_value, str) and section_value.strip():
-                # Handle direct string values - keep as-is
-                if section_key:
-                    text_parts.append(f"\n--- {section_key.upper()} ---")
-                text_parts.append(section_value)
-
-        result = "\n\n".join(text_parts).strip()
-        return result
-
     return str(content) if content is not None else ""
 
 

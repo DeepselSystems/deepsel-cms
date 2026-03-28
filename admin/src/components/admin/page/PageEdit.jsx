@@ -28,7 +28,7 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import JSONPageDataEditor from './JSONPageDataEditor.jsx';
+import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import SlugInput from './components/SlugInput.jsx';
 import HomepageSwitch from './components/HomepageSwitch.jsx';
@@ -264,9 +264,6 @@ export default function PageEdit({ onSuccess }) {
     setIsResolvingConflict(false);
   };
 
-  // Force re-render key for JSONPageDataEditor
-  const [editorRenderKey, setEditorRenderKey] = useState(0);
-
   // State to trigger preview updates when content changes
   const [previewTrigger, setPreviewTrigger] = useState(0);
 
@@ -279,54 +276,25 @@ export default function PageEdit({ onSuccess }) {
   });
 
   // Function to render wysiwyg content with Jinja2
-  const renderWysiwygContent = async (contentObj, lang = null) => {
-    if (!contentObj || typeof contentObj !== 'object') {
-      return contentObj;
+  const renderWysiwygContent = async (contentStr, lang = null) => {
+    if (!contentStr || typeof contentStr !== 'string') {
+      return contentStr;
     }
-
-    const processObject = async (obj) => {
-      if (!obj || typeof obj !== 'object') {
-        return obj;
-      }
-
-      const processedObj = {};
-
-      for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'object' && value !== null) {
-          // Check if this is a wysiwyg field
-          if (value['ds-type'] === 'wysiwyg' && value['ds-value']) {
-            try {
-              // Call the render API for this wysiwyg content
-              const renderResponse = await renderContentAPI({
-                content: value['ds-value'],
-                name: `preview_${Date.now()}_${Math.random()}`,
-                organization_id: organizationId,
-                lang: lang,
-              });
-
-              // Update the ds-value with rendered content
-              processedObj[key] = {
-                ...value,
-                'ds-value': renderResponse.rendered_content,
-              };
-            } catch (error) {
-              console.error('Error rendering wysiwyg content:', error);
-              // Keep original content if rendering fails
-              processedObj[key] = value;
-            }
-          } else {
-            // Recursively process nested objects
-            processedObj[key] = await processObject(value);
-          }
-        } else {
-          processedObj[key] = value;
-        }
-      }
-
-      return processedObj;
-    };
-
-    return await processObject(contentObj);
+    if (!contentStr.includes('{{') && !contentStr.includes('{%')) {
+      return contentStr;
+    }
+    try {
+      const renderResponse = await renderContentAPI({
+        content: contentStr,
+        name: `preview_${Date.now()}_${Math.random()}`,
+        organization_id: organizationId,
+        lang: lang,
+      });
+      return renderResponse.rendered_content;
+    } catch (error) {
+      console.error('Error rendering content:', error);
+      return contentStr;
+    }
   };
 
   // Function to confirm navigation with unsaved changes
@@ -677,8 +645,6 @@ export default function PageEdit({ onSuccess }) {
   };
 
   const handleContentInserted = () => {
-    // Force re-render of JSONPageDataEditor
-    setEditorRenderKey((prev) => prev + 1);
     // Trigger preview update
     setPreviewTrigger((prev) => prev + 1);
   };
@@ -1016,28 +982,18 @@ export default function PageEdit({ onSuccess }) {
                       </div>
                     )}
 
-                    {/* Dynamic JSON Content Fields */}
+                    {/* Content Editor */}
                     <div className="my-4">
-                      {content.content &&
-                      typeof content.content === 'object' &&
-                      Object.keys(content.content).length > 0 ? (
-                        <JSONPageDataEditor
-                          key={`editor-${content.id}-${editorRenderKey}`}
-                          content={content.content}
-                          contentId={content.id}
-                          setRecord={wrappedSetRecord}
-                          autoCompleteEnabled={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                        />
-                      ) : (
-                        <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-                          <p>{t('No content fields defined yet.')}</p>
-                          <p className="text-sm mt-2">
-                            {t(
-                              'Content fields will appear here when defined in the JSON structure.',
-                            )}
-                          </p>
-                        </div>
-                      )}
+                      <RichTextInput
+                        variant="subtle"
+                        content={content.content || ''}
+                        currentLocaleId={content.locale_id}
+                        onChange={(value) => {
+                          updateContentField(content.id, 'content', value);
+                        }}
+                        classNames={{ content: 'min-h-[1000px]' }}
+                        autoComplete={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                      />
                     </div>
                   </Tabs.Panel>
                 ))

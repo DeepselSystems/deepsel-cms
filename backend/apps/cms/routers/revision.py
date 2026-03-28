@@ -66,24 +66,7 @@ async def restore_content_revision(
         raise HTTPException(status_code=404, detail="Revision not found")
 
     # Restore the content to the old_content of the revision
-    if content_type == "page_content":
-        # For page_content, reconstruct the JSON structure
-        restored_content = (
-            {
-                "main": {
-                    "ds-label": "Content",
-                    "ds-type": "wysiwyg",
-                    "ds-value": revision.old_content,
-                }
-            }
-            if revision.old_content
-            else None
-        )
-    else:
-        # For blog_post_content, content is plain text
-        restored_content = revision.old_content
-
-    content.update(db, user, {"content": restored_content})
+    content.update(db, user, {"content": revision.old_content})
 
     # Update the last revision name to indicate it was a restore
     last_revision = (

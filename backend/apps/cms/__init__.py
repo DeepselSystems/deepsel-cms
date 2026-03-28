@@ -192,10 +192,7 @@ def _migrate_add_search_vectors(db, *args, **kwargs):
                 SET search_vector =
                     setweight(to_tsvector('simple', coalesce(title, '')), 'A') ||
                     setweight(to_tsvector('simple', coalesce(
-                        regexp_replace(
-                            coalesce(content::json->'main'->>'ds-value', ''),
-                            '<[^>]+>', ' ', 'g'
-                        ),
+                        regexp_replace(coalesce(content, ''), '<[^>]+>', ' ', 'g'),
                     '')), 'B')
             """))
 
