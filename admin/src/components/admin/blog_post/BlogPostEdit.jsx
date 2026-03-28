@@ -8,7 +8,8 @@ import {
   faPenNib,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import Button from '../../../common/ui/Button.jsx';
 import { useDisclosure } from '@mantine/hooks';
 import ChooseAttachmentModal from '../../../common/ui/ChooseAttachmentModal.jsx';
 import { useTranslation } from 'react-i18next';

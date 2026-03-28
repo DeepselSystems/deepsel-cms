@@ -9,12 +9,12 @@ import {
   faPenNib,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import ChooseAttachmentModal from '../../../common/ui/ChooseAttachmentModal.jsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-
+import Button from '../../../common/ui/Button.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
