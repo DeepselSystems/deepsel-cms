@@ -10,8 +10,10 @@ import {
   faEdit,
   faDownload,
   faUpload,
+  faRotateLeft,
 } from '@fortawesome/free-solid-svg-icons';
-import { Alert, Card, Badge, SimpleGrid, Loader } from '@mantine/core';
+import { Alert, Card, Badge, SimpleGrid, Loader, Text, Tooltip } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import H1 from '../../../common/ui/H1.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
@@ -33,6 +35,7 @@ export default function ThemeList() {
   const [selectingTheme, setSelectingTheme] = useState(null);
   const [downloadingTheme, setDownloadingTheme] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [resettingTheme, setResettingTheme] = useState(null);
 
   useEffect(() => {
     fetchThemes();
@@ -184,6 +187,51 @@ export default function ThemeList() {
     }
   };
 
+  const handleResetTheme = (folderName) => {
+    modals.openConfirmModal({
+      title: t('Reset Theme to Default'),
+      children: (
+        <Text size="sm">
+          {t(
+            'This will reset all theme file edits to the original defaults. This action cannot be undone.',
+          )}
+        </Text>
+      ),
+      labels: { confirm: t('Reset'), cancel: t('Cancel') },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          setResettingTheme(folderName);
+          const response = await fetch(`${backendHost}/theme/reset`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+            credentials: 'include',
+            body: JSON.stringify({ folder_name: folderName }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to reset theme');
+          }
+
+          const data = await response.json();
+          notify({
+            message: data.message || t('Theme reset successfully'),
+            type: 'success',
+          });
+        } catch (err) {
+          console.error('Error resetting theme:', err);
+          notify({ message: err.message, type: 'error' });
+        } finally {
+          setResettingTheme(null);
+        }
+      },
+    });
+  };
+
   return (
     <>
       <Helmet>
@@ -293,14 +341,27 @@ export default function ThemeList() {
 
                     <div className="mt-auto flex gap-2">
                       {isSelected && (
-                        <Button
-                          onClick={() => navigate(`/themes/edit/${theme.folder_name}`)}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          <FontAwesomeIcon icon={faEdit} className="mr-2" />
-                          {t('Edit')}
-                        </Button>
+                        <>
+                          <Button
+                            onClick={() => navigate(`/themes/edit/${theme.folder_name}`)}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                            {t('Edit')}
+                          </Button>
+                          <Tooltip label={t('Reset to Default')}>
+                            <Button
+                              onClick={() => handleResetTheme(theme.folder_name)}
+                              disabled={resettingTheme === theme.folder_name}
+                              loading={resettingTheme === theme.folder_name}
+                              variant="outline"
+                              color="red"
+                            >
+                              <FontAwesomeIcon icon={faRotateLeft} />
+                            </Button>
+                          </Tooltip>
+                        </>
                       )}
                       {!isSelected && (
                         <Button
@@ -313,14 +374,16 @@ export default function ThemeList() {
                           {t('Select Theme')}
                         </Button>
                       )}
-                      <Button
-                        onClick={() => handleDownloadTheme(theme.folder_name)}
-                        disabled={downloadingTheme === theme.folder_name}
-                        loading={downloadingTheme === theme.folder_name}
-                        variant="outline"
-                      >
-                        <FontAwesomeIcon icon={faDownload} />
-                      </Button>
+                      <Tooltip label={t('Download')}>
+                        <Button
+                          onClick={() => handleDownloadTheme(theme.folder_name)}
+                          disabled={downloadingTheme === theme.folder_name}
+                          loading={downloadingTheme === theme.folder_name}
+                          variant="outline"
+                        >
+                          <FontAwesomeIcon icon={faDownload} />
+                        </Button>
+                      </Tooltip>
                     </div>
                   </div>
                 </Card>

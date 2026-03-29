@@ -82,24 +82,24 @@ const EditMenuItemModal = ({
 
   // Build combined page options: DB pages + theme pages
   const buildPageOptions = (isoCode) => {
-    const options = [];
+    const groups = [];
     // DB pages (filtered by activeTranslationTab via useModel)
-    for (const page of pageContents || []) {
-      options.push({
-        value: `page:${page.id}`,
-        label: `${page.title || t('Untitled')} (${page.slug || '/'})`,
-        group: t('Pages'),
-      });
+    const pageItems = (pageContents || []).map((page) => ({
+      value: `page:${page.id}`,
+      label: `${page.title || t('Untitled')} (${page.slug || '/'})`,
+    }));
+    if (pageItems.length > 0) {
+      groups.push({ group: t('Pages'), items: pageItems });
     }
     // Theme pages
-    for (const slug of themeSlugs) {
-      options.push({
-        value: `theme:${slug}`,
-        label: slug === '/' ? `/ (${t('Home')})` : slug,
-        group: t('Theme Pages'),
-      });
+    const themeItems = themeSlugs.map((slug) => ({
+      value: `theme:${slug}`,
+      label: slug === '/' ? `/ (${t('Home')})` : slug,
+    }));
+    if (themeItems.length > 0) {
+      groups.push({ group: t('Theme Pages'), items: themeItems });
     }
-    return options;
+    return groups;
   };
 
   // Get the combined Select value from a translation

@@ -28,8 +28,6 @@ import { getAttachmentUrl, mergeContentsWithServerData } from '../../../common/u
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
-import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
-import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
@@ -664,12 +662,6 @@ export default function BlogPostEdit() {
 
         <div className="space-y-10">
           <SeoMetadataForm pageContent={activeContent} updateContentField={updateContentField} />
-          {(activeContent?.seo_metadata_title || activeContent?.seo_metadata_description) && (
-            <>
-              <SocialCardPreview pageContent={activeContent} />
-              <SERPPreviewCardPreview pageContent={activeContent} />
-            </>
-          )}
 
           {/* Custom Code Section */}
           {activeContentTab && activeContentTab !== 'add_new' && (

@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Drawer } from '@mantine/core';
 import Switch from '../../../../common/ui/Switch.jsx';
 import SeoMetadataForm from '../../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
-import SocialCardPreview from '../../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
-import SERPPreviewCardPreview from '../../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import H3 from '../../../../common/ui/H3.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
@@ -56,11 +54,10 @@ const PageContentSettingDrawer = React.forwardRef(
               <Switch
                 classNames={{
                   body: 'flex-col-reverse gap-2',
-                  label: 'px-0',
+                  label: 'px-0 text-sm font-medium',
                   description: 'px-0 mt-0',
                 }}
                 checked={page?.require_login || false}
-                size="lg"
                 label={t('Require Login')}
                 description={t('When enabled, users must be logged in to view this page')}
                 onChange={(e) => updatePageField('require_login', e.currentTarget.checked)}
@@ -69,12 +66,6 @@ const PageContentSettingDrawer = React.forwardRef(
 
             <SeoMetadataForm pageContent={pageContent} updateContentField={updateContentField} />
 
-            {(pageContent.seo_metadata_title || pageContent.seo_metadata_description) && (
-              <>
-                <SocialCardPreview pageContent={pageContent} />
-                <SERPPreviewCardPreview pageContent={pageContent} />
-              </>
-            )}
 
             {/* Custom Code Section */}
             <div className="space-y-3">

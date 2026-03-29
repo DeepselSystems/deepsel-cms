@@ -30,8 +30,6 @@ import { getAttachmentUrl } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
-import SocialCardPreview from '../../../common/ui/SeoMetadata/SocialCardPreview.jsx';
-import SERPPreviewCardPreview from '../../../common/ui/SeoMetadata/SERPPreviewCardPreview.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 
@@ -468,12 +466,6 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
 
         <div className="space-y-10">
           <SeoMetadataForm pageContent={activeContent} updateContentField={updateContentField} />
-          {(activeContent?.seo_metadata_title || activeContent?.seo_metadata_description) && (
-            <>
-              <SocialCardPreview pageContent={activeContent} />
-              <SERPPreviewCardPreview pageContent={activeContent} />
-            </>
-          )}
         </div>
       </Drawer>
 
