@@ -83,6 +83,7 @@ export function buildClientPageData(slug: string, publicSettings: SiteSettings):
   return {
     slug: `/${normalizedSlug}`,
     public_settings: publicSettings,
+    clientPage: true,
     seo_metadata: {
       title: title || undefined,
     },

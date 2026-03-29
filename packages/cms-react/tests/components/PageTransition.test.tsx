@@ -298,6 +298,27 @@ describe('PageTransition', () => {
     });
   });
 
+  it('should not intercept link clicks on client pages', () => {
+    const clientPageData = {
+      ...mockPageData,
+      clientPage: true,
+    };
+
+    mockIsCrossingTemplateBoundary.mockReturnValue(false);
+
+    const { container } = render(
+      <WebsiteDataProvider websiteData={{ type: 'Page', data: clientPageData }}>
+        <PageTransition />
+        <a href="/about">About</a>
+      </WebsiteDataProvider>,
+    );
+
+    const link = container.querySelector('a');
+    link?.click();
+
+    expect(mockFetchPageData).not.toHaveBeenCalled();
+  });
+
   it('should render nothing (null)', () => {
     const { container } = render(
       <WebsiteDataProvider websiteData={{ type: 'Page', data: mockPageData }}>

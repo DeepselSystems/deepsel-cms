@@ -6,13 +6,11 @@ import {
   faCloudArrowUp,
   faImage,
   faHardDrive,
-  faCopy,
   faLink,
-  faEllipsisV,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropzone } from '@mantine/dropzone';
-import { Group, Text, Menu } from '@mantine/core';
+import { Group, Text } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
 import useUpload from '../../../common/api/useUpload.js';
 import { getAttachmentUrl, downloadFromAttachUrl } from '../../../common/utils/index.js';
@@ -76,41 +74,21 @@ function FileCard({ file, onDelete }) {
     downloadFromAttachUrl(attachUrl);
   };
 
-  const handleCopyRelativeLink = async (e) => {
-    e.stopPropagation();
-    const relativeUrl = `/attachment/serve/${file.name}`;
-    try {
-      await navigator.clipboard.writeText(relativeUrl);
-      notify({
-        title: t('Success'),
-        message: t('Relative link copied to clipboard'),
-        type: 'success',
-      });
-    } catch (error) {
-      console.error('Failed to copy relative link:', error);
-      notify({
-        title: t('Error'),
-        message: t('Failed to copy relative link'),
-        type: 'error',
-      });
-    }
-  };
-
-  const handleCopyAbsoluteLink = async (e) => {
+  const handleCopyLink = async (e) => {
     e.stopPropagation();
     const attachUrl = getAttachmentUrl(backendHost, file.name);
     try {
       await navigator.clipboard.writeText(attachUrl);
       notify({
         title: t('Success'),
-        message: t('Absolute link copied to clipboard'),
+        message: t('Link copied to clipboard'),
         type: 'success',
       });
     } catch (error) {
-      console.error('Failed to copy absolute link:', error);
+      console.error('Failed to copy link:', error);
       notify({
         title: t('Error'),
-        message: t('Failed to copy absolute link'),
+        message: t('Failed to copy link'),
         type: 'error',
       });
     }
@@ -139,46 +117,24 @@ function FileCard({ file, onDelete }) {
           />
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Button
-                onClick={handleCopyRelativeLink}
-                size="xs"
-                variant="filled"
-                className="px-2 py-1"
-              >
-                <FontAwesomeIcon icon={faCopy} className="mr-1 h-3 w-3" />
-                {t('Copy Relative Link')}
-              </Button>
-              <Button
-                onClick={handleCopyAbsoluteLink}
-                size="xs"
-                variant="filled"
-                className="px-2 py-1"
-              >
+              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
                 <FontAwesomeIcon icon={faLink} className="mr-1 h-3 w-3" />
-                {t('Copy Absolute Link')}
+                {t('Copy Link')}
               </Button>
-              <Menu shadow="md" width={150}>
-                <Menu.Target>
-                  <Button size="xs" variant="filled" className="px-2 py-1">
-                    <FontAwesomeIcon icon={faEllipsisV} className="h-3 w-3" />
-                  </Button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<FontAwesomeIcon icon={faDownload} className="h-3 w-3" />}
-                    onClick={handleDownload}
-                  >
-                    {t('Download')}
-                  </Menu.Item>
-                  <Menu.Item
-                    leftSection={<FontAwesomeIcon icon={faTrash} className="h-3 w-3" />}
-                    onClick={handleDelete}
-                    color="red"
-                  >
-                    {t('Delete')}
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
+                <FontAwesomeIcon icon={faDownload} className="mr-1 h-3 w-3" />
+                {t('Download')}
+              </Button>
+              <Button
+                onClick={handleDelete}
+                size="xs"
+                variant="filled"
+                color="red"
+                className="px-2 py-1"
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
+                {t('Delete')}
+              </Button>
             </div>
           )}
         </div>
@@ -196,46 +152,24 @@ function FileCard({ file, onDelete }) {
           </div>
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
-              <Button
-                onClick={handleCopyRelativeLink}
-                size="xs"
-                variant="filled"
-                className="px-2 py-1"
-              >
-                <FontAwesomeIcon icon={faCopy} className="mr-1 h-3 w-3" />
-                {t('Copy Relative Link')}
-              </Button>
-              <Button
-                onClick={handleCopyAbsoluteLink}
-                size="xs"
-                variant="filled"
-                className="px-2 py-1"
-              >
+              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
                 <FontAwesomeIcon icon={faLink} className="mr-1 h-3 w-3" />
-                {t('Copy Absolute Link')}
+                {t('Copy Link')}
               </Button>
-              <Menu shadow="md" width={150}>
-                <Menu.Target>
-                  <Button size="xs" variant="filled" className="px-2 py-1">
-                    <FontAwesomeIcon icon={faEllipsisV} className="h-3 w-3" />
-                  </Button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<FontAwesomeIcon icon={faDownload} className="h-3 w-3" />}
-                    onClick={handleDownload}
-                  >
-                    {t('Download')}
-                  </Menu.Item>
-                  <Menu.Item
-                    leftSection={<FontAwesomeIcon icon={faTrash} className="h-3 w-3" />}
-                    onClick={handleDelete}
-                    color="red"
-                  >
-                    {t('Delete')}
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
+                <FontAwesomeIcon icon={faDownload} className="mr-1 h-3 w-3" />
+                {t('Download')}
+              </Button>
+              <Button
+                onClick={handleDelete}
+                size="xs"
+                variant="filled"
+                color="red"
+                className="px-2 py-1"
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
+                {t('Delete')}
+              </Button>
             </div>
           )}
         </div>

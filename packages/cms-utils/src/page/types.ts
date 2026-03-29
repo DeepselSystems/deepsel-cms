@@ -43,4 +43,6 @@ export interface PageData {
   require_login?: boolean;
   // added client-side when 404 is received
   notFound?: boolean;
+  // set by buildClientPageData for theme-defined pages (no DB content)
+  clientPage?: boolean;
 }

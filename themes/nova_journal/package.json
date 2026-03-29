@@ -15,7 +15,7 @@
     "@types/react-dom": "^19.2.3"
   },
   "dependencies": {
-    "@deepsel/cms-react": "^2.2.1",
-    "@deepsel/cms-utils": "^1.7.0"
+    "@deepsel/cms-react": "^2.2.2",
+    "@deepsel/cms-utils": "^1.7.1"
   }
 }

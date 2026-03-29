@@ -214,6 +214,11 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
         return;
       }
 
+      // Skip if current page is a theme-defined client page (static content outside React)
+      if ('clientPage' in websiteData.data && websiteData.data.clientPage) {
+        return;
+      }
+
       // Prevent default navigation and stop propagation
       event.preventDefault();
       event.stopPropagation();
