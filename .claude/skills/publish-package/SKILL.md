@@ -36,8 +36,8 @@ Only update dependencies that use a caret range (e.g. `^1.5.0`). Skip `"*"` — 
 
 | Published package | Consumers to update |
 |-------------------|---------------------|
-| `cms-utils` | `packages/cms-react/package.json`, `client/package.json` |
-| `cms-react` | `client/package.json` |
+| `cms-utils` | `packages/cms-react/package.json`, `client/package.json`, `themes/*/package.json` |
+| `cms-react` | `client/package.json`, `themes/*/package.json` |
 | `admin` | *(none)* |
 
 ## Workflow
@@ -136,4 +136,5 @@ git push origin {package}-v{version}
 - **Never push main** — only push the tag.
 - **Never skip prepush checks** — the same checks run in CI, so failing locally means CI will also fail.
 - **Never use `--no-verify`** when committing.
+- **Never amend a commit after its tag has been pushed.** Pushing a tag triggers CI. Deleting and re-pushing the same tag triggers CI again, causing duplicate publish failures. If you forgot something in the commit, make a new commit — do NOT amend + retag.
 - If the tag already exists, ask the user whether to delete and recreate it or pick a different version.

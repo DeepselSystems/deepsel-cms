@@ -6,6 +6,7 @@
 |-------|---------|-------------|
 | **figma-to-theme** | `/figma-to-theme <figma-url> <theme-name>` | Convert Figma design into a CMS theme |
 | **test-theme** | `/test-theme <theme-name>` | Full visual + interactive testing of a theme |
+| **publish-package** | `/publish-package <package-name> [version]` | Format, prepush, fix, tag, and push tag to trigger npm publish |
 
 ---
 
