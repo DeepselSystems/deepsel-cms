@@ -8,6 +8,7 @@ export type WebsiteData = {
   type: WebsiteDataType;
   data: PageData | BlogListData | BlogPostData | SearchResultsData;
   settings?: SiteSettings;
+  pathname?: string;
 };
 
 export interface SiteSettings {

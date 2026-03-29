@@ -17,10 +17,39 @@ type WebsiteDataProviderProps = {
 
 export function WebsiteDataProvider({ websiteData, children }: WebsiteDataProviderProps) {
   const [websiteDataState, setWebsiteDataState] = useState(websiteData);
+  const [pathname, setPathname] = useState('');
+
+  // Set pathname after mount to avoid SSR/hydration mismatch
+  useEffect(() => {
+    setPathname(window.location.pathname);
+
+    const onPopState = () => setPathname(window.location.pathname);
+    window.addEventListener('popstate', onPopState);
+
+    // Observe pushState/replaceState for client-side navigation
+    const origPush = history.pushState.bind(history);
+    const origReplace = history.replaceState.bind(history);
+    history.pushState = (...args) => {
+      origPush(...args);
+      setPathname(window.location.pathname);
+    };
+    history.replaceState = (...args) => {
+      origReplace(...args);
+      setPathname(window.location.pathname);
+    };
+
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      history.pushState = origPush;
+      history.replaceState = origReplace;
+    };
+  }, []);
+
   const value: WebsiteDataContextValue = {
     websiteData: {
       ...websiteDataState,
       settings: websiteDataState.data?.public_settings, // for ease of access
+      pathname,
     },
     setWebsiteData: (newWebsiteData: WebsiteData) => {
       setWebsiteDataState({
