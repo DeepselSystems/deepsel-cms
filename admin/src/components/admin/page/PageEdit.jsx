@@ -504,8 +504,6 @@ export default function PageEdit({ onSuccess }) {
   // Listen for iframe ready signal
   useEffect(() => {
     const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-
       if (event.data && event.data.type === 'IFRAME_READY') {
         setIsIframeReady(true);
 
