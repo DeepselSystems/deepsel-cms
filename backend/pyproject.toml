@@ -24,7 +24,7 @@ classifiers = [
 keywords = ["cms", "fastapi", "sqlalchemy", "deepsel"]
 requires-python = ">=3.12"
 dependencies = [
-    "deepsel>=0.10.3",
+    "deepsel>=0.10.4",
     "pydantic>=2.7.0",
     "SQLAlchemy>=2.0.30",
     "fastapi>=0.115.0",
