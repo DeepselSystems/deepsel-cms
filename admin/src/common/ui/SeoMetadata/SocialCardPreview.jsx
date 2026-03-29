@@ -1,7 +1,6 @@
 import React from 'react';
 import { AspectRatio, Box, Image } from '@mantine/core';
 import BackendHostURLState from '../../stores/BackendHostURLState.js';
-import PlaceholderImg from '../../../assets/images/placeholder.png';
 import { getAttachmentUrl } from '../../utils/index.js';
 import H3 from '../H3.jsx';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +29,7 @@ const SocialCardPreview = React.memo(({ pageContent }) => {
             backendHost,
             encodeURIComponent(pageContent.seo_metadata_featured_image?.name),
           )
-        : PlaceholderImg.src,
+        : null,
     [backendHost, pageContent.seo_metadata_featured_image?.name],
   );
 
@@ -40,11 +39,16 @@ const SocialCardPreview = React.memo(({ pageContent }) => {
         <H3>{t('Social Preview')}</H3>
         <Box className="flex gap-3 rounded-lg overflow-hidden h-32">
           {/*region feature image*/}
-          <div className="h-32 w-32">
-            <AspectRatio ratio={1} w={200} mx="auto">
-              <Image src={featureImageSrc} alt={pageContent.seo_metadata_title || 'Social image'} />
-            </AspectRatio>
-          </div>
+          {featureImageSrc && (
+            <div className="h-32 w-32 flex-shrink-0">
+              <AspectRatio ratio={1} w={128} mx="auto">
+                <Image
+                  src={featureImageSrc}
+                  alt={pageContent.seo_metadata_title || 'Social image'}
+                />
+              </AspectRatio>
+            </div>
+          )}
           {/*endregion feature image*/}
 
           {/*region content*/}

@@ -263,105 +263,107 @@ export function GalleryModal({
               <div className="border border-gray-300 rounded-md p-4 h-full">
                 <h3 className="text-lg font-medium mb-4">{t('Gallery Preview')}</h3>
                 <div
-                  className="mx-auto w-[300px] lg:w-[500px] xl:w-[600px]"
+                  className="flex flex-wrap"
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${config.imagesPerRow}, 1fr)`,
                     gap: `${config.gap}px`,
                   }}
                 >
-                  {selectedAttachments.map((attachment, index) => (
-                    <div key={attachment.id || attachment.name || index}>
-                      {/* Image container with hover effects */}
-                      <div className="relative group">
-                        <img
-                          src={getAttachmentUrl(backendHost, attachment.name)}
-                          alt={attachment.alt_text || ''}
-                          className="group-hover:blur-xs transition-all duration-200"
-                          style={{
-                            width: '100%',
-                            height: 'auto',
-                            objectFit: 'cover',
-                            aspectRatio: '1 / 1',
-                            borderRadius: config.rounded ? '6px' : '0',
-                          }}
-                        />
+                  {selectedAttachments.map((attachment, index) => {
+                    const widthClass =
+                      config.imagesPerRow === 1
+                        ? 'w-full'
+                        : config.imagesPerRow === 2
+                          ? 'w-[calc(50%-4px)]'
+                          : config.imagesPerRow === 3
+                            ? 'w-[calc(33.333%-4px)]'
+                            : 'w-[calc(25%-4px)]';
+                    return (
+                      <div key={attachment.id || attachment.name || index} className={widthClass}>
+                        {/* Image container with hover effects */}
+                        <div className="relative group">
+                          <img
+                            src={getAttachmentUrl(backendHost, attachment.name)}
+                            alt={attachment.alt_text || ''}
+                            className="group-hover:blur-xs transition-all duration-200"
+                            style={{
+                              width: '100%',
+                              height: 'auto',
+                              objectFit: 'cover',
+                              aspectRatio: '1 / 1',
+                              borderRadius: config.rounded ? '6px' : '0',
+                            }}
+                          />
 
-                        {/* Overlay with centered buttons */}
-                        <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20 flex items-center justify-center">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                const attachmentId = attachment.id || attachment.name || index;
-                                setEditingCaption(attachmentId);
-                                setNewCaption(attachment.caption || '');
-                              }}
-                              className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
-                              title="Edit Caption"
-                            >
-                              <FontAwesomeIcon
-                                icon={faEdit as IconProp}
-                                className="text-gray-700"
-                              />
-                            </button>
-                            <button
-                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
-                              onClick={() => moveAttachment(index, 'up')}
-                              disabled={index === 0}
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowUp as IconProp}
-                                className="text-gray-700"
-                              />
-                            </button>
-                            <button
-                              className={`w-8 h-8 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
-                              onClick={() => moveAttachment(index, 'down')}
-                              disabled={index === selectedAttachments.length - 1}
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowDown as IconProp}
-                                className="text-gray-700"
-                              />
-                            </button>
-                            <button
-                              className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white hover:text-red-500"
-                              onClick={() => removeAttachment(index)}
-                            >
-                              <FontAwesomeIcon
-                                icon={faTrash as IconProp}
-                                className="text-gray-700"
-                              />
-                            </button>
+                          {/* Overlay with centered buttons */}
+                          <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20 flex items-center justify-center p-1">
+                            <div className="flex flex-wrap gap-1 justify-center">
+                              <button
+                                onClick={() => {
+                                  const attachmentId = attachment.id || attachment.name || index;
+                                  setEditingCaption(attachmentId);
+                                  setNewCaption(attachment.caption || '');
+                                }}
+                                className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
+                                title="Edit Caption"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faEdit as IconProp}
+                                  className="text-gray-700"
+                                />
+                              </button>
+                              <button
+                                className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
+                                onClick={() => moveAttachment(index, 'up')}
+                                disabled={index === 0}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faArrowUp as IconProp}
+                                  className="text-gray-700"
+                                />
+                              </button>
+                              <button
+                                className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
+                                onClick={() => moveAttachment(index, 'down')}
+                                disabled={index === selectedAttachments.length - 1}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faArrowDown as IconProp}
+                                  className="text-gray-700"
+                                />
+                              </button>
+                              <button
+                                className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white hover:text-red-500"
+                                onClick={() => removeAttachment(index)}
+                              >
+                                <FontAwesomeIcon
+                                  icon={faTrash as IconProp}
+                                  className="text-gray-700"
+                                />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Caption outside the image container */}
-                      {attachment.caption && (
-                        <div
-                          style={{
-                            padding: '8px 4px',
-                            fontSize: '14px',
-                            color: '#666',
-                            textAlign: 'center',
-                            lineHeight: '1.4',
-                            wordWrap: 'break-word',
-                          }}
-                        >
-                          {attachment.caption}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {/* Caption outside the image container */}
+                        {attachment.caption && (
+                          <div
+                            style={{
+                              padding: '8px 4px',
+                              fontSize: '14px',
+                              color: '#666',
+                              textAlign: 'center',
+                              lineHeight: '1.4',
+                              wordWrap: 'break-word',
+                            }}
+                          >
+                            {attachment.caption}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                   {selectedAttachments.length === 0 && (
-                    <div
-                      className="text-center p-4 bg-gray-100 text-gray-500"
-                      style={{
-                        gridColumn: `span ${config.imagesPerRow}`,
-                        borderRadius: '6px',
-                      }}
-                    >
+                    <div className="w-full text-center p-4 bg-gray-100 text-gray-500 rounded-md">
                       {t('No images selected')}
                     </div>
                   )}

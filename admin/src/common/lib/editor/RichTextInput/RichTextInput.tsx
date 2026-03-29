@@ -311,7 +311,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         YoutubeJumpMarks,
         FontSize,
         TextStyle,
-        Gallery,
+        Gallery.configure({ backendHost }),
         RichText,
         Table.configure({
           resizable: true,

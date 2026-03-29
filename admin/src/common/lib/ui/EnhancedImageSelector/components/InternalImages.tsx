@@ -15,7 +15,7 @@ import {
 import fromPairs from 'lodash/fromPairs';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { useModel } from '../../../hooks';
 import { useUpload } from '../../../hooks/useUpload';
 import type { User } from '../../../types';
@@ -358,7 +358,7 @@ export function InternalImages({
                         <Image
                           className="!rounded-lg"
                           alt={attachmentImage.name}
-                          src={getAttachmentRelativeUrl(attachmentImage.name)}
+                          src={getAttachmentUrl(backendHost, attachmentImage.name)}
                         />
                       ) : (
                         <Box className="w-full h-full bg-gray-100 animate-pulse" />

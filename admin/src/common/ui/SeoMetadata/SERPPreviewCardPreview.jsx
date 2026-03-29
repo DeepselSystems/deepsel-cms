@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Image } from '@mantine/core';
+import { Box } from '@mantine/core';
 import H3 from '../H3.jsx';
 import { useTranslation } from 'react-i18next';
 
@@ -25,8 +25,8 @@ const SERPPreviewCardPreview = React.memo(({ pageContent }) => {
           {/*region heading*/}
           <Box className="flex gap-6 items-center">
             <Box className="h-8 w-8 flex-shrink-0">
-              <Box className="w-full h-full p-1 rounded-full border flex items-center justify-center">
-                <Image maw={28} mah={28} src="/favicon.ico" alt="favicon" />
+              <Box className="w-full h-full p-1 rounded-full border flex items-center justify-center bg-gray-100 text-gray-400 text-xs font-bold">
+                {hostEndpoint.charAt(0).toUpperCase()}
               </Box>
             </Box>
 

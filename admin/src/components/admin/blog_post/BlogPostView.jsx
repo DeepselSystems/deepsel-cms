@@ -109,7 +109,6 @@ export default function BlogPostView() {
                   />
                 )}
                 <Button
-                  className={`p-2 rounded`}
                   variant="fill"
                   size="sm"
                   title={t('Go to post')}

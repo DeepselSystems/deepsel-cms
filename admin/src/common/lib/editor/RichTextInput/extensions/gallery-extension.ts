@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils/common/utils';
+import { getAttachmentRelativeUrl, getAttachmentUrl } from '@deepsel/cms-utils/common/utils';
 
 interface GalleryConfig {
   imagesPerRow: number;
@@ -31,8 +31,18 @@ declare module '@tiptap/core' {
   }
 }
 
-export const Gallery = Node.create({
+export interface GalleryOptions {
+  backendHost?: string;
+}
+
+export const Gallery = Node.create<GalleryOptions>({
   name: 'gallery',
+
+  addOptions() {
+    return {
+      backendHost: undefined,
+    };
+  },
 
   addAttributes() {
     return {
@@ -204,6 +214,10 @@ export const Gallery = Node.create({
   },
 
   addNodeView() {
+    const backendHost = this.options.backendHost;
+    const resolveUrl = (name: string) =>
+      backendHost ? getAttachmentUrl(backendHost, name) : getAttachmentRelativeUrl(name);
+
     return ({ node, editor, getPos }) => {
       const dom = document.createElement('div');
       dom.classList.add('gallery-container');
@@ -243,7 +257,7 @@ export const Gallery = Node.create({
         imgContainer.classList.add('gallery-image-container');
 
         const img = document.createElement('img');
-        img.src = getAttachmentRelativeUrl(attachment.name);
+        img.src = resolveUrl(attachment.name);
         img.alt = attachment.alt_text || '';
         img.classList.add('gallery-image');
         img.style.width = '100%';
@@ -382,7 +396,7 @@ export const Gallery = Node.create({
             imgContainer.classList.add('gallery-image-container');
 
             const img = document.createElement('img');
-            img.src = getAttachmentRelativeUrl(attachment.name);
+            img.src = resolveUrl(attachment.name);
             img.alt = attachment.alt_text || '';
             img.classList.add('gallery-image');
             img.style.width = '100%';
