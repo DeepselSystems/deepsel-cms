@@ -20,7 +20,7 @@
     "@astrojs/node": "^9.5.1",
     "@astrojs/react": "^4.4.1",
     "@deepsel/admin": "^1.1.1",
-    "@deepsel/cms-react": "^2.1.0",
+    "@deepsel/cms-react": "^2.2.0",
     "@deepsel/cms-utils": "^1.6.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
