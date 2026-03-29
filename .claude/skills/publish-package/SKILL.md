@@ -25,9 +25,20 @@ If no package name is provided, ask the user which package to publish.
 
 ## Dependency Order
 
-`cms-react` depends on `cms-utils`. `admin` depends on both.
+`cms-react` depends on `cms-utils`. `admin` depends on both. `client` depends on both.
 If publishing `cms-react`, build `cms-utils` first.
 If publishing `admin`, build `cms-utils` and `cms-react` first.
+
+## Consumer Map
+
+When a package is published, update the version in all consumers that depend on it.
+Only update dependencies that use a caret range (e.g. `^1.5.0`). Skip `"*"` — it already matches everything.
+
+| Published package | Consumers to update |
+|-------------------|---------------------|
+| `cms-utils` | `packages/cms-react/package.json`, `client/package.json` |
+| `cms-react` | `client/package.json` |
+| `admin` | *(none)* |
 
 ## Workflow
 
@@ -86,15 +97,23 @@ If any step in prepush fails:
 
 Do NOT skip or ignore failures. Every check must pass.
 
-### Step 5 — Stage and commit fixes (if any)
+### Step 5 — Update consumers
 
-If you made changes in Steps 2-4:
+Update all consumer `package.json` files listed in the **Consumer Map** above:
 
-1. Stage only the files you changed.
+1. For each consumer, update the dependency version to `^{version}` (e.g. `"@deepsel/cms-utils": "^1.5.1"`).
+2. Skip dependencies set to `"*"` — leave them as-is.
+3. Run `npm install` from the repo root to update the lockfile.
+
+### Step 6 — Stage and commit all changes
+
+If any files were changed in Steps 2-5 (fixes, version bump, consumer updates):
+
+1. Stage the changed files: the package's `package.json`, any consumer `package.json` files, `package-lock.json`, and any code fixes.
 2. Commit with message: `fix: prepare {package} v{version} for publish`
 3. Do NOT push the commit to remote. The user will push main when ready.
 
-### Step 6 — Create and push the tag
+### Step 7 — Create and push the tag
 
 ```bash
 # Create annotated tag
@@ -104,7 +123,7 @@ git tag -a {package}-v{version} -m "{package} v{version}"
 git push origin {package}-v{version}
 ```
 
-### Step 7 — Verify
+### Step 8 — Verify
 
 1. Confirm the tag was pushed: `git ls-remote --tags origin | grep {package}-v{version}`
 2. Tell the user:
