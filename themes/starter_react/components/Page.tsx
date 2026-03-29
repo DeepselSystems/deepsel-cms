@@ -23,7 +23,7 @@ export default function Page({ pageData }: { pageData: PageData }) {
               </div>
             </div>
         </header>
-        <div className="max-w-[1200px] w-full mx-auto py-6 px-4 grow">
+        <div className="page-content max-w-[1200px] w-full mx-auto py-6 px-4 grow">
           <ContentRenderer />
         </div>
         <Footer />

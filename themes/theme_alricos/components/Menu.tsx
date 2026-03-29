@@ -37,6 +37,7 @@ export default function Header() {
               <a
                 key={menu.id}
                 href={menu.url || "#"}
+                {...(menu.open_in_new_tab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className={`text-[14px] tracking-[-0.16px] leading-[26px] py-[8px] transition-colors ${
                   active
                     ? "font-semibold text-[rgba(62,105,220,1)] border-b border-[rgba(62,105,220,1)]"
@@ -95,6 +96,7 @@ export default function Header() {
                 <a
                   key={menu.id}
                   href={menu.url || "#"}
+                  {...(menu.open_in_new_tab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   className={`text-[16px] tracking-[-0.16px] leading-[26px] py-[12px] border-b border-gray-100 ${
                     active
                       ? "font-semibold text-[rgba(62,105,220,1)]"
