@@ -117,15 +117,12 @@ export default function TemplateEdit({ onSuccess }) {
     maxWidth: window.innerWidth - 200,
   });
 
-  const iframeRef = useRef(null);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const originalRecordRef = useRef(null);
-  const [isIframeReady, setIsIframeReady] = useState(false);
-  const queuedPreviewDataRef = useRef(null);
   const [renderedContent, setRenderedContent] = useState('');
   const [renderingError, setRenderingError] = useState(null);
 
@@ -149,21 +146,18 @@ export default function TemplateEdit({ onSuccess }) {
   });
 
   // Function to confirm navigation with unsaved changes
-  const confirmNavigation = useCallback(
-    (callback) => {
-      if (hasUnsavedChanges && !isSaving) {
-        modals.openConfirmModal({
-          title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
-          children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
-          labels: { confirm: t('Leave'), cancel: t('Stay') },
-          onConfirm: callback,
-        });
-      } else {
-        callback();
-      }
-    },
-    [hasUnsavedChanges, isSaving, t],
-  );
+  const confirmNavigation = (callback) => {
+    if (hasUnsavedChanges && !isSaving) {
+      modals.openConfirmModal({
+        title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
+        children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
+        labels: { confirm: t('Leave'), cancel: t('Stay') },
+        onConfirm: callback,
+      });
+    } else {
+      callback();
+    }
+  };
 
   // Capture initial sidebar state and auto-collapse on mount
   useEffect(() => {
@@ -203,13 +197,7 @@ export default function TemplateEdit({ onSuccess }) {
     } else {
       clearNavigationConfirmation();
     }
-  }, [
-    hasUnsavedChanges,
-    isSaving,
-    setNavigationConfirmation,
-    clearNavigationConfirmation,
-    confirmNavigation,
-  ]);
+  }, [hasUnsavedChanges, isSaving, setNavigationConfirmation, clearNavigationConfirmation]);
 
   const currentContent = useMemo(() => {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
@@ -221,115 +209,23 @@ export default function TemplateEdit({ onSuccess }) {
   );
   const templateNamePlaceholder = t('Enter Template Name *');
 
-  // Generate preview URL for templates (simple URL without parameters)
-  const previewUrl = useMemo(() => {
-    if (!currentContent?.content) return null;
-    // Use dedicated template preview route directly on frontend
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const port = window.location.port ? `:${window.location.port}` : '';
+  // Build preview HTML document from rendered template content
+  const previewSrcdoc = useMemo(() => {
+    const content = renderedContent || currentContent?.content || '';
+    if (!content) return '';
 
-    // Get language code from current content's locale
-    const langCode = currentContent.locale?.iso_code || 'en';
-
-    return `${protocol}//${hostname}${port}/${langCode}/previewTemplate`;
-  }, [currentContent]);
-
-  // Generate preview data to send via postMessage
-  const previewData = useMemo(() => {
-    if (!currentContent?.content) return null;
-    const trimmedName = record?.name?.trim() || '';
-
-    const previewName = trimmedName || `preview_${record?.id || 'temp'}`;
-    const previewContent = renderedContent || currentContent.content;
-
-    return {
-      id: record?.id || 'new',
-      name: previewName || 'Untitled Template',
-      content: previewContent,
-      rendered_content: renderedContent,
-      contentName: currentContent.name,
-      locale: currentContent.locale,
-      isPreview: true,
-      type: 'template',
-      renderingError: renderingError,
-    };
-  }, [currentContent, record?.id, record?.name, renderedContent, renderingError]);
-
-  // Listen for iframe ready signal
-  useEffect(() => {
-    const handleMessage = (event) => {
-      // console.log('TemplateEdit: received message from iframe:', event.data);
-      // Allow messages from iframe (might be different origin)
-      // if (event.origin !== window.location.origin) return;
-
-      if (event.data && event.data.type === 'IFRAME_READY') {
-        // console.log('TemplateEdit: iframe is ready!');
-        setIsIframeReady(true);
-
-        // Send queued data if available
-        if (queuedPreviewDataRef.current && iframeRef.current) {
-          try {
-            iframeRef.current.contentWindow.postMessage(
-              {
-                type: 'TEMPLATE_PREVIEW_DATA',
-                data: queuedPreviewDataRef.current,
-              },
-              '*',
-            );
-            queuedPreviewDataRef.current = null;
-          } catch (error) {
-            console.error('Error sending queued postMessage to iframe:', error);
-          }
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  // Send preview data to iframe via postMessage
-  useEffect(() => {
-    if (previewData && iframeRef.current && previewUrl) {
-      // console.log('TemplateEdit: Sending preview data:', previewData);
-      const sendMessage = () => {
-        try {
-          // console.log('TemplateEdit: Sending postMessage to iframe');
-          iframeRef.current.contentWindow.postMessage(
-            {
-              type: 'TEMPLATE_PREVIEW_DATA',
-              data: previewData,
-            },
-            '*',
-          );
-        } catch (error) {
-          console.error('Error sending postMessage to iframe:', error);
-        }
-      };
-
-      // Debounce the message sending to avoid excessive updates
-      const debounceTimer = setTimeout(() => {
-        if (isIframeReady) {
-          // Iframe is ready, send immediately
-          sendMessage();
-        } else {
-          // Iframe not ready yet, queue the data
-          queuedPreviewDataRef.current = previewData;
-
-          // Fallback: try sending after short delay
-          setTimeout(() => {
-            if (iframeRef.current && queuedPreviewDataRef.current) {
-              sendMessage();
-              queuedPreviewDataRef.current = null;
-            }
-          }, 500);
-        }
-      }, 300); // 300ms debounce
-
-      return () => clearTimeout(debounceTimer);
+    // If the content already looks like a full HTML document, use as-is
+    if (content.trim().toLowerCase().startsWith('<!doctype') || content.trim().toLowerCase().startsWith('<html')) {
+      return content;
     }
-  }, [previewData, previewUrl, isIframeReady]);
+
+    // Wrap fragment in a minimal HTML shell
+    return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body>${content}</body>
+</html>`;
+  }, [renderedContent, currentContent?.content]);
 
   // Track changes to detect unsaved modifications
   useEffect(() => {
@@ -948,10 +844,9 @@ export default function TemplateEdit({ onSuccess }) {
                   borderRadius: '8px',
                 }}
               >
-                {previewUrl ? (
+                {previewSrcdoc ? (
                   <iframe
-                    ref={iframeRef}
-                    src={previewUrl}
+                    srcDoc={previewSrcdoc}
                     className="w-full h-full !rounded-lg border border-gray-300 !shadow"
                     style={{
                       borderRadius: '8px',
