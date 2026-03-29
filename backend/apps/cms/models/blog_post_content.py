@@ -7,19 +7,16 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Index,
-    text as sa_text,
 )
-from .page_content import TSVector
+from apps.cms.utils.tsvector import TSVector
 from datetime import datetime, timezone
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from sqlalchemy.orm import relationship, Session
-from apps.core.models.user import UserModel
-from apps.core.utils.models_pool import models_pool
-from typing import Optional
+from apps.cms.mixins.blog_post_content import BlogPostContentMixin
+from sqlalchemy.orm import relationship
 
 
-class BlogPostContentModel(Base, BaseModel):
+class BlogPostContentModel(Base, BlogPostContentMixin, BaseModel):
     __tablename__ = "blog_post_content"
 
     id = Column(Integer, primary_key=True)
@@ -87,93 +84,3 @@ class BlogPostContentModel(Base, BaseModel):
             postgresql_using="gin",
         ),
     )
-
-    @staticmethod
-    def _update_search_vector(db: Session, record: "BlogPostContentModel"):
-        """Populate the tsvector column from title + plain-text content."""
-        from ..utils.search import strip_html_tags
-
-        body = strip_html_tags(record.content)
-        db.execute(
-            sa_text(
-                "UPDATE blog_post_content SET search_vector = "
-                "setweight(to_tsvector('simple', coalesce(:title, '')), 'A') || "
-                "setweight(to_tsvector('simple', coalesce(:body, '')), 'B') "
-                "WHERE id = :id"
-            ),
-            {"title": record.title or "", "body": body, "id": record.id},
-        )
-
-    @classmethod
-    def create(
-        cls, db: Session, user: UserModel, values: dict, *args, **kwargs
-    ) -> "BlogPostContentModel":
-        res = super().create(db, user, values, *args, **kwargs)
-        cls._update_search_vector(db, res)
-        BlogPostContentRevisionModel = models_pool["blog_post_content_revision"]
-        # Get next revision number (starting at 1 for initial revision)
-        revision_count = (
-            db.query(BlogPostContentRevisionModel)
-            .filter_by(blog_post_content_id=res.id)
-            .count()
-        )
-        revision_number = revision_count + 1
-
-        if revision_number == 1:
-            name = f"Initial revision by {user.username or user.email or 'system'}"
-        else:
-            name = f"Edited by {user.username or user.email or 'system'}"
-
-        BlogPostContentRevisionModel.create(
-            db,
-            user,
-            {
-                "blog_post_content_id": res.id,
-                "old_content": None,
-                "new_content": res.content,
-                "name": name,
-                "revision_number": revision_number,
-            },
-        )
-        return res
-
-    def update(
-        self,
-        db: Session,
-        user: "UserModel",
-        values: dict,
-        commit: Optional[bool] = True,
-        *args,
-        **kwargs,
-    ) -> "BlogPostContentModel":
-        old_content = self.content
-        new_content = values.get("content")
-
-        # Always update the last_modified_at timestamp and updated_by
-        values["last_modified_at"] = datetime.now(timezone.utc)
-        values["updated_by_id"] = user.id if user else None
-
-        res = super().update(db, user, values, commit, *args, **kwargs)
-        self._update_search_vector(db, res)
-        if old_content != new_content:
-            BlogPostContentRevisionModel = models_pool["blog_post_content_revision"]
-            # Get next revision number
-            revision_count = (
-                db.query(BlogPostContentRevisionModel)
-                .filter_by(blog_post_content_id=self.id)
-                .count()
-            )
-            revision_number = revision_count + 1
-
-            BlogPostContentRevisionModel.create(
-                db,
-                user,
-                {
-                    "blog_post_content_id": self.id,
-                    "old_content": old_content,
-                    "new_content": new_content,
-                    "name": f"Edited by {user.username or user.email or 'system'}",
-                    "revision_number": revision_number,
-                },
-            )
-        return res

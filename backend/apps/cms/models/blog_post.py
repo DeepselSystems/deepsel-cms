@@ -3,19 +3,11 @@ from datetime import datetime
 from db import Base
 from apps.core.mixins.base_model import BaseModel
 from deepsel.orm import ActivityMixin
-from deepsel.orm import (
-    PAGINATION,
-    SearchQuery,
-    OrderByCriteria,
-    SearchCriteria,
-)
-from apps.core.models.user import UserModel
-from sqlalchemy.orm import relationship, Session
-from fastapi import HTTPException, status
-from typing import Optional
+from apps.cms.mixins.blog_post import BlogPostMixin
+from sqlalchemy.orm import relationship
 
 
-class BlogPostModel(Base, ActivityMixin, BaseModel):
+class BlogPostModel(Base, ActivityMixin, BlogPostMixin, BaseModel):
     __tablename__ = "blog_post"
     __tracked_fields__ = ["published"]
 
@@ -41,41 +33,3 @@ class BlogPostModel(Base, ActivityMixin, BaseModel):
     blog_post_custom_code = Column(Text, nullable=True)
 
     contents = relationship("BlogPostContentModel", back_populates="post")
-
-    @classmethod
-    def get_one(
-        cls, db: Session, user: UserModel, item_id: int, *args, **kwargs
-    ) -> "BlogPostModel":
-        res = db.query(cls).get(item_id)
-        # check if user is public user
-        # if yes filter by published=True
-        if user.is_public_user():
-            if not res.published:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Item not found",
-                )
-        return res
-
-    @classmethod
-    def search(
-        cls,
-        db: Session,
-        user: UserModel,
-        pagination: PAGINATION,
-        search: Optional[SearchQuery] = None,
-        order_by: Optional[OrderByCriteria] = None,
-        *args,
-        **kwargs,
-    ):
-        # check if user is public user
-        # if yes filter by published=True
-        if user.is_public_user():
-            search = search or SearchQuery()
-            if search.AND is None:
-                search.AND = []
-            search.AND.append(
-                SearchCriteria(field="published", operator="=", value=True)
-            )
-
-        return super().search(db, user, pagination, search, order_by, *args, **kwargs)

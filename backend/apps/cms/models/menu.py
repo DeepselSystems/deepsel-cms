@@ -1,17 +1,11 @@
 from sqlalchemy import Column, Integer, ForeignKey, Boolean, JSON
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from deepsel.orm import (
-    PAGINATION,
-    SearchQuery,
-    OrderByCriteria,
-)
-from apps.core.models.user import UserModel
-from sqlalchemy.orm import relationship, Session
-from typing import Optional
+from apps.cms.mixins.menu import MenuMixin
+from sqlalchemy.orm import relationship
 
 
-class MenuModel(Base, BaseModel):
+class MenuModel(Base, MenuMixin, BaseModel):
     __tablename__ = "menu"
 
     id = Column(Integer, primary_key=True)
@@ -29,27 +23,3 @@ class MenuModel(Base, BaseModel):
         foreign_keys=[parent_id],
     )
     parent = relationship("MenuModel", back_populates="children", remote_side=[id])
-
-    @classmethod
-    def get_one(
-        cls, db: Session, user: UserModel, item_id: int, *args, **kwargs
-    ) -> "MenuModel":
-        res = db.query(cls).get(item_id)
-        return res
-
-    @classmethod
-    def search(
-        cls,
-        db: Session,
-        user: UserModel,
-        pagination: PAGINATION,
-        search: Optional[SearchQuery] = None,
-        order_by: Optional[OrderByCriteria] = None,
-        *args,
-        **kwargs,
-    ):
-        # Default ordering by position
-        if order_by is None:
-            order_by = OrderByCriteria(field="position", direction="asc")
-
-        return super().search(db, user, pagination, search, order_by, *args, **kwargs)
