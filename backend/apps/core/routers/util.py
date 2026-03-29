@@ -59,7 +59,9 @@ def delete_check(
             status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
         )
 
-    affected_records = get_delete_cascade_records_recursively(db, records, declarative_base=Base)
+    affected_records = get_delete_cascade_records_recursively(
+        db, records, declarative_base=Base
+    )
 
     return {
         "to_delete": {

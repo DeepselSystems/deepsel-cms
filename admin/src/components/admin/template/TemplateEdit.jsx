@@ -28,7 +28,6 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import Switch from '../../../common/ui/Switch.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
@@ -58,8 +57,6 @@ export default function TemplateEdit({ onSuccess }) {
   const [createRecord, setCreateRecord] = useState({
     name: '',
     contents: [],
-    is_404: false,
-    is_login: false,
   });
 
   // Single useModel query for both modes
@@ -215,7 +212,10 @@ export default function TemplateEdit({ onSuccess }) {
     if (!content) return '';
 
     // If the content already looks like a full HTML document, use as-is
-    if (content.trim().toLowerCase().startsWith('<!doctype') || content.trim().toLowerCase().startsWith('<html')) {
+    if (
+      content.trim().toLowerCase().startsWith('<!doctype') ||
+      content.trim().toLowerCase().startsWith('<html')
+    ) {
       return content;
     }
 
@@ -649,43 +649,6 @@ export default function TemplateEdit({ onSuccess }) {
               {record?.contents?.length > 0 ? (
                 record.contents.map((content) => (
                   <Tabs.Panel key={content.id} value={String(content.id)}>
-                    <div className="my-4 space-y-3">
-                      <div className="flex gap-4 flex-wrap">
-                        <Switch
-                          label={t('404 Page')}
-                          description={t('Mark this template as the site 404')}
-                          checked={Boolean(record?.is_404)}
-                          onChange={({ currentTarget }) => {
-                            const isChecked = currentTarget.checked;
-                            setRecord((prev) => {
-                              const next = { ...(prev || {}) };
-                              next.is_404 = isChecked;
-                              if (isChecked) {
-                                next.is_login = false;
-                              }
-                              return next;
-                            });
-                          }}
-                        />
-                        <Switch
-                          label={t('Login Page')}
-                          description={t('Mark this template as the login page')}
-                          checked={Boolean(record?.is_login)}
-                          onChange={({ currentTarget }) => {
-                            const isChecked = currentTarget.checked;
-                            setRecord((prev) => {
-                              const next = { ...(prev || {}) };
-                              next.is_login = isChecked;
-                              if (isChecked) {
-                                next.is_404 = false;
-                              }
-                              return next;
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-medium text-gray-700">

@@ -4,8 +4,8 @@ from db import get_db
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from apps.cms.schemas.blog_post import BlogPostRead
-from apps.cms.schemas.page import PageRead
+from ..schemas.blog_post import BlogPostRead
+from ..schemas.page import PageRead
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -37,7 +37,7 @@ async def generate_conflict_explanation(
     """Generate an AI explanation of the conflicts between user and server contents."""
     try:
         # Get organization settings for AI API key - use CMS settings model
-        from apps.cms.models.organization import CMSSettingsModel
+        from ..models.organization import CMSSettingsModel
 
         # Get organization from current user (same pattern as translate endpoints)
         org_id = current_user.organization_id
@@ -378,7 +378,7 @@ async def get_active_editors(
     current_user: UserModel = Depends(get_current_user),
 ):
     """Get list of users currently editing a specific record."""
-    from apps.cms.utils.edit_session_manager import edit_session_manager
+    from ..utils.edit_session_manager import edit_session_manager
 
     try:
         active_sessions = edit_session_manager.get_active_editors(

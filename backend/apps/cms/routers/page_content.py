@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from apps.cms.schemas.page_content import (
+from ..schemas.page_content import (
     PageContentCreate,
     PageContentRead,
     PageContentSearch,
@@ -15,7 +15,7 @@ from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends
 
 from apps.core.utils.models_pool import models_pool
-from apps.cms.utils.page_content import (
+from ..utils.page_content import (
     generate_slug_from_title,
     check_page_content_slug_with_conflict,
 )
@@ -121,7 +121,7 @@ def validate_slug(
     # Check theme slug conflict
     theme_conflict = None
     if is_valid and request.theme_name:
-        from apps.cms.utils.theme_pages import (
+        from ..utils.theme_pages import (
             get_theme_page_slugs,
             slug_to_theme_filename,
         )

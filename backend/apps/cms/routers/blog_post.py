@@ -4,13 +4,13 @@ from fastapi import Body, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from apps.cms.models.organization import CMSSettingsModel
-from apps.cms.utils.get_blog_list import BlogListResponse, get_blog_list
-from apps.cms.utils.get_blog_post import BlogPostResponse, get_blog_post
-from apps.cms.utils.translate_blog_content import translate_blog_content
+from ..models.organization import CMSSettingsModel
+from ..utils.get_blog_list import BlogListResponse, get_blog_list
+from ..utils.get_blog_post import BlogPostResponse, get_blog_post
+from ..utils.translate_blog_content import translate_blog_content
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from apps.cms.schemas.blog_post import (
+from ..schemas.blog_post import (
     BlogPostCreate,
     BlogPostRead,
     BlogPostSearch,

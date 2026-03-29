@@ -66,7 +66,6 @@ const PageContentSettingDrawer = React.forwardRef(
 
             <SeoMetadataForm pageContent={pageContent} updateContentField={updateContentField} />
 
-
             {/* Custom Code Section */}
             <div className="space-y-3">
               <H3>{t('Custom Code')}</H3>

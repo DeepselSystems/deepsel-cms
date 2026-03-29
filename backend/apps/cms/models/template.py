@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Text, Boolean
+from sqlalchemy import Column, Integer, Text
 from db import Base
 from apps.core.mixins.base_model import BaseModel
 from deepsel.orm import ActivityMixin
@@ -18,6 +18,3 @@ class TemplateModel(Base, ActivityMixin, BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(Text, nullable=False)
     contents = relationship("TemplateContentModel", back_populates="template")
-
-    is_404 = Column(Boolean, default=False)
-    is_login = Column(Boolean, default=False)

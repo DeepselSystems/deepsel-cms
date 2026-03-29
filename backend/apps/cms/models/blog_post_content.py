@@ -9,7 +9,7 @@ from sqlalchemy import (
     Index,
     text as sa_text,
 )
-from apps.cms.models.page_content import TSVector
+from .page_content import TSVector
 from datetime import datetime, timezone
 from db import Base
 from apps.core.mixins.base_model import BaseModel
@@ -91,7 +91,7 @@ class BlogPostContentModel(Base, BaseModel):
     @staticmethod
     def _update_search_vector(db: Session, record: "BlogPostContentModel"):
         """Populate the tsvector column from title + plain-text content."""
-        from apps.cms.utils.search import strip_html_tags
+        from ..utils.search import strip_html_tags
 
         body = strip_html_tags(record.content)
         db.execute(

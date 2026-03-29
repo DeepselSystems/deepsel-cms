@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from apps.cms.schemas.page_content import PageContentCreateNested, PageContentRead
+from .page_content import PageContentCreateNested, PageContentRead
 
 
 class PageRead(BaseModel):

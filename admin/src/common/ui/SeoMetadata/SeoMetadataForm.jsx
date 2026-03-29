@@ -22,55 +22,55 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
     <>
       <div className="space-y-3">
         <H3>{t('SEO Settings')}</H3>
-          <TextInput
-            label={t('Title')}
-            description={t('Defaults to associated content title')}
-            size="sm"
-            type="text"
-            value={pageContent.seo_metadata_title || ''}
-            onChange={({ target: { value } }) =>
-              updateContentField?.(pageContent.id, 'seo_metadata_title', value)
-            }
-          />
+        <TextInput
+          label={t('Title')}
+          description={t('Defaults to associated content title')}
+          size="sm"
+          type="text"
+          value={pageContent.seo_metadata_title || ''}
+          onChange={({ target: { value } }) =>
+            updateContentField?.(pageContent.id, 'seo_metadata_title', value)
+          }
+        />
 
-          <TextArea
-            label={t('Description')}
-            description={t('Meta description for search results')}
-            size="sm"
-            type="text"
-            value={pageContent.seo_metadata_description || ''}
-            onChange={({ target: { value } }) =>
-              updateContentField?.(pageContent.id, 'seo_metadata_description', value)
-            }
-          />
+        <TextArea
+          label={t('Description')}
+          description={t('Meta description for search results')}
+          size="sm"
+          type="text"
+          value={pageContent.seo_metadata_description || ''}
+          onChange={({ target: { value } }) =>
+            updateContentField?.(pageContent.id, 'seo_metadata_description', value)
+          }
+        />
 
-          <Switch
-            classNames={{
-              body: 'flex-col-reverse gap-2',
-              label: 'px-0 text-sm font-medium',
-              description: 'px-0 mt-0',
-            }}
-            label={t('Allow indexing')}
-            description={t('Allow search engine indexing')}
-            checked={!!pageContent.seo_metadata_allow_indexing}
-            onChange={({ target: { checked } }) =>
-              updateContentField?.(pageContent.id, 'seo_metadata_allow_indexing', checked)
-            }
-          />
+        <Switch
+          classNames={{
+            body: 'flex-col-reverse gap-2',
+            label: 'px-0 text-sm font-medium',
+            description: 'px-0 mt-0',
+          }}
+          label={t('Allow indexing')}
+          description={t('Allow search engine indexing')}
+          checked={!!pageContent.seo_metadata_allow_indexing}
+          onChange={({ target: { checked } }) =>
+            updateContentField?.(pageContent.id, 'seo_metadata_allow_indexing', checked)
+          }
+        />
 
-          <FileInput
-            label={t('Social sharing image')}
-            type="image"
-            value={pageContent.seo_metadata_featured_image?.name}
-            onChange={(file) => {
-              updateContentField?.(pageContent.id, 'seo_metadata_featured_image', file);
-              updateContentField?.(
-                pageContent.id,
-                'seo_metadata_featured_image_id',
-                file?.id || null,
-              );
-            }}
-          />
+        <FileInput
+          label={t('Social sharing image')}
+          type="image"
+          value={pageContent.seo_metadata_featured_image?.name}
+          onChange={(file) => {
+            updateContentField?.(pageContent.id, 'seo_metadata_featured_image', file);
+            updateContentField?.(
+              pageContent.id,
+              'seo_metadata_featured_image_id',
+              file?.id || null,
+            );
+          }}
+        />
       </div>
     </>
   );

@@ -9,7 +9,7 @@ import { Helmet } from 'react-helmet';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { Alert, Badge } from '@mantine/core';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
@@ -116,41 +116,6 @@ export default function TemplateList() {
               >
                 {content.locale?.emoji_flag || '🏳️'}
               </span>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      field: 'special_pages',
-      headerName: t('Special pages'),
-      width: 180,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => {
-        const badges = [];
-
-        if (params.row.is_404) {
-          badges.push({ key: '404', label: t('404 Page') });
-        }
-        if (params.row.is_login) {
-          badges.push({ key: 'login', label: t('Login Page') });
-        }
-
-        if (badges.length === 0) return <span>-</span>;
-
-        return (
-          <div className="flex gap-1">
-            {badges.map((badge) => (
-              <Badge
-                key={badge.key}
-                size="sm"
-                variant="light"
-                color="blue"
-                className="whitespace-nowrap"
-              >
-                {badge.label}
-              </Badge>
             ))}
           </div>
         );

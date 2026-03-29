@@ -2,8 +2,8 @@
 
 from typing import Optional
 from pydantic import BaseModel
-from apps.cms.types.shared_datatypes import LocaleData
-from apps.cms.types.menu import MenuItem
+from .shared_datatypes import LocaleData
+from .menu import MenuItem
 
 
 class PublicSettings(BaseModel):

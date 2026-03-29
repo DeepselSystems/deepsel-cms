@@ -1,4 +1,2 @@
-"string_id","name","organization/organization_id","is_404","is_login"
-"SampleJSCounter","SampleJSCounter","1","false","false"
-"NotFound404","NotFound404","1","true","false"
-"LoginPage","LoginPage","1","false","true"
+"string_id","name","organization/organization_id"
+"SampleJSCounter","SampleJSCounter","1"

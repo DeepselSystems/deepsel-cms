@@ -12,7 +12,7 @@ import re
 import logging
 import unicodedata
 from typing import List, Dict, Tuple
-from apps.cms.utils.domain_detection import detect_domain_from_request
+from ..utils.domain_detection import detect_domain_from_request
 from deepsel.utils.api_router import create_api_router
 
 router = create_api_router("chat", tags=["Chatbox APIs"])

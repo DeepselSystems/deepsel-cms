@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from apps.cms.schemas._nested import LocaleNested
+from ._nested import LocaleNested
 
 
 class TemplateContentRead(BaseModel):

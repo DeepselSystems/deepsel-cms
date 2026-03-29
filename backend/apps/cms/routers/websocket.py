@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from db import get_db
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
-from apps.cms.utils.edit_session_manager import edit_session_manager, EditSession
+from ..utils.edit_session_manager import edit_session_manager, EditSession
 from datetime import datetime
 import json
 import logging

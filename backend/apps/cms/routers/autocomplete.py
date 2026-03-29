@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.core.utils.models_pool import models_pool
-from apps.cms.models.organization import CMSSettingsModel
+from ..models.organization import CMSSettingsModel
 import requests
 import logging
 from deepsel.utils.api_router import create_api_router

@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from apps.cms.schemas._nested import (
+from ._nested import (
     AttachmentNested,
     BlogPostContentRevisionNested,
     LocaleNested,

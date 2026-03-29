@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include apps/cms *.py
+recursive-include apps/cms/data *.csv
+recursive-include apps/cms/data/attachments *
+recursive-include apps/cms/templates *.html

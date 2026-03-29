@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Boolean, Text
 
-from apps.cms.utils.page_content import (
+from ..utils.page_content import (
     check_page_content_slug_with_conflict,
     generate_slug_from_title,
 )

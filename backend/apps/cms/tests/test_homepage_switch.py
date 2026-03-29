@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from apps.cms.models.page import PageModel
-from apps.cms.models.page_content import PageContentModel
+from ..models.page import PageModel
+from ..models.page_content import PageContentModel
 from apps.core.models.locale import LocaleModel
 from apps.core.models.organization import OrganizationModel
 

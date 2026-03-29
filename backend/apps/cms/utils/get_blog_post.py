@@ -2,11 +2,11 @@ from typing import Optional, Any
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from apps.cms.types.shared_datatypes import SEOMetadata, LocaleData
-from apps.cms.types.blog import AuthorData, LanguageAlternative
-from apps.cms.types.public_settings import PublicSettings
+from ..types.shared_datatypes import SEOMetadata, LocaleData
+from ..types.blog import AuthorData, LanguageAlternative
+from ..types.public_settings import PublicSettings
 from apps.core.utils.models_pool import models_pool
-from apps.cms.utils.domain_detection import detect_domain_from_request
+from .domain_detection import detect_domain_from_request
 from fastapi import Request
 import logging
 

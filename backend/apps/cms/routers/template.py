@@ -1,6 +1,6 @@
 import logging
 from deepsel.utils.crud_router import CRUDRouter
-from apps.cms.schemas.template import (
+from ..schemas.template import (
     TemplateCreate,
     TemplateRead,
     TemplateSearch,

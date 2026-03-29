@@ -192,7 +192,7 @@ def get_theme_page_slugs_endpoint(
     Return slugs claimed by the theme's custom pages + homepage.
     Used by the admin to detect slug conflicts between pages and theme files.
     """
-    from apps.cms.utils.theme_pages import get_theme_page_slugs
+    from ..utils.theme_pages import get_theme_page_slugs
 
     slugs = get_theme_page_slugs(theme_name)
     return ThemePageSlugsResponse(theme_name=theme_name, slugs=slugs)
@@ -433,7 +433,7 @@ def select_theme(
         db.commit()
 
         # Load seed data and run post_install for the newly selected theme
-        from apps.cms.utils.setup_themes import load_seed_data_for_theme
+        from ..utils.setup_themes import load_seed_data_for_theme
 
         load_seed_data_for_theme(request.folder_name, db)
 
@@ -506,9 +506,7 @@ def reset_theme(
         source_dir = os.path.normpath(SOURCE_THEMES_DIR)
         if os.path.exists(source_dir):
             for entry in os.listdir(source_dir):
-                lang_theme_path = os.path.join(
-                    source_dir, entry, request.folder_name
-                )
+                lang_theme_path = os.path.join(source_dir, entry, request.folder_name)
                 if (
                     entry != request.folder_name
                     and os.path.isdir(os.path.join(source_dir, entry))
@@ -704,14 +702,14 @@ def trigger_setup_themes(force_sync=False):
         force_sync: If True, force sync themes folder to restore original files
     """
     try:
-        from apps.cms.utils.setup_themes import setup_themes
+        from ..utils.setup_themes import setup_themes
 
         logger.info("Running theme setup after file save...")
         setup_themes(force_build=True, force_sync=force_sync)
         logger.info("Theme setup completed successfully")
 
         # Restart client to pick up the new build
-        from apps.cms.utils.client_process import get_client_manager
+        from ..utils.client_process import get_client_manager
 
         manager = get_client_manager()
         if manager:
@@ -742,7 +740,7 @@ def save_theme_file(
     temp_dir = None
     try:
         # Phase 1: Validate build in isolation (no DB/filesystem changes yet)
-        from apps.cms.utils.setup_themes import validate_theme_build
+        from ..utils.setup_themes import validate_theme_build
 
         temp_dir = validate_theme_build(
             theme_name=request.theme_name,
@@ -839,7 +837,7 @@ def save_theme_file(
             background_tasks.add_task(trigger_setup_themes)
 
         # Restart client to pick up the new build
-        from apps.cms.utils.client_process import get_client_manager
+        from ..utils.client_process import get_client_manager
 
         manager = get_client_manager()
         if manager:

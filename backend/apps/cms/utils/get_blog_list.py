@@ -1,10 +1,10 @@
 from typing import Optional, Any
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
-from apps.cms.types.public_settings import PublicSettings
-from apps.cms.types.blog import BlogPostListItem
+from ..types.public_settings import PublicSettings
+from ..types.blog import BlogPostListItem
 from apps.core.utils.models_pool import models_pool
-from apps.cms.utils.domain_detection import detect_domain_from_request
+from .domain_detection import detect_domain_from_request
 from fastapi import Request
 from traceback import print_exc
 import logging

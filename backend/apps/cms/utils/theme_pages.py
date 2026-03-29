@@ -15,7 +15,7 @@ def get_theme_page_slugs(theme_name: str) -> list[str]:
 
     The homepage "/" is always included (maps to index.astro).
     """
-    from apps.cms.routers.theme import _resolve_theme_path
+    from ..routers.theme import _resolve_theme_path
 
     if not theme_name:
         return []

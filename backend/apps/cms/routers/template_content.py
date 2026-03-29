@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from apps.cms.schemas.template_content import (
+from ..schemas.template_content import (
     TemplateContentCreate,
     TemplateContentRead,
     TemplateContentSearch,
@@ -11,7 +11,7 @@ from apps.cms.schemas.template_content import (
 )
 from apps.core.utils.get_current_user import get_current_user
 from fastapi import Depends, Body, HTTPException
-from apps.cms.utils.render_wysiwyg_content import render_template_content
+from ..utils.render_wysiwyg_content import render_template_content
 import logging
 from traceback import print_exc
 

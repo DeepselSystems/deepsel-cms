@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from apps.cms import set_default_theme_if_empty
-from apps.cms.models.organization import CMSSettingsModel
+from ..models.organization import CMSSettingsModel
 
 
 def test_set_default_theme_if_empty(db: Session):

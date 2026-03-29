@@ -1,12 +1,12 @@
-from apps.cms.utils.domain_detection import detect_domain_from_request
-from apps.cms.utils.render_wysiwyg_content import render_wysiwyg_content
+from .domain_detection import detect_domain_from_request
+from .render_wysiwyg_content import render_wysiwyg_content
 import logging
 from fastapi import HTTPException, status, Request
 from sqlalchemy.orm import Session
 from apps.core.utils.models_pool import models_pool
 from pydantic import BaseModel, ConfigDict
-from apps.cms.types.shared_datatypes import SEOMetadata
-from apps.cms.types.public_settings import PublicSettings
+from ..types.shared_datatypes import SEOMetadata
+from ..types.public_settings import PublicSettings
 
 logger = logging.getLogger(__name__)
 

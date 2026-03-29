@@ -1,5 +1,5 @@
 from deepsel.utils.crud_router import CRUDRouter
-from apps.cms.schemas.blog_post_content import (
+from ..schemas.blog_post_content import (
     BlogPostContentCreate,
     BlogPostContentRead,
     BlogPostContentSearch,

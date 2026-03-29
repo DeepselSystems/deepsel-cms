@@ -15,31 +15,14 @@ def register(mcp: FastMCP, client: CMSClient) -> None:
         return await client.get(f"/template/{id}")
 
     @mcp.tool()
-    async def create_template(
-        name: str,
-        is_404: bool = False,
-        is_login: bool = False,
-    ) -> dict:
+    async def create_template(name: str) -> dict:
         """Create a new page template."""
-        return await client.post("/template", json={
-            "name": name,
-            "is_404": is_404,
-            "is_login": is_login,
-        })
+        return await client.post("/template", json={"name": name})
 
     @mcp.tool()
-    async def update_template(
-        id: int,
-        name: str | None = None,
-        is_404: bool | None = None,
-        is_login: bool | None = None,
-    ) -> dict:
+    async def update_template(id: int, name: str | None = None) -> dict:
         """Update a template."""
-        payload = {k: v for k, v in {
-            "name": name,
-            "is_404": is_404,
-            "is_login": is_login,
-        }.items() if v is not None}
+        payload = {k: v for k, v in {"name": name}.items() if v is not None}
         return await client.put(f"/template/{id}", json=payload)
 
     @mcp.tool()

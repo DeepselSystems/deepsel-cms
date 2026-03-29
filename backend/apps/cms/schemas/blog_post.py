@@ -3,8 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from apps.cms.schemas._nested import UserNested
-from apps.cms.schemas.blog_post_content import (
+from ._nested import UserNested
+from .blog_post_content import (
     BlogPostContentCreateNested,
     BlogPostContentRead,
 )

@@ -2,7 +2,7 @@
 
 from typing import Optional
 from pydantic import BaseModel
-from apps.cms.types.shared_datatypes import LocaleData
+from .shared_datatypes import LocaleData
 
 
 class AuthorData(BaseModel):

@@ -1,7 +1,7 @@
 from typing import Iterable, Optional
 from sqlalchemy.orm import Session
 from apps.core.utils.models_pool import models_pool
-from apps.cms.types.menu import MenuItem
+from ..types.menu import MenuItem
 
 LocalizedMenuItem = MenuItem
 

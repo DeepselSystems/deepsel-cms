@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
 from apps.core.utils.models_pool import models_pool
-from apps.cms.models.organization import CMSSettingsModel
-from apps.cms.utils.domain_detection import detect_domain_from_request
+from ..models.organization import CMSSettingsModel
+from ..utils.domain_detection import detect_domain_from_request
 from deepsel.utils.api_router import create_api_router
 
 logger = logging.getLogger(__name__)

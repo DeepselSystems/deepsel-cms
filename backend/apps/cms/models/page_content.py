@@ -103,7 +103,7 @@ class PageContentModel(Base, BaseModel):
     @staticmethod
     def _update_search_vector(db: Session, record: "PageContentModel"):
         """Populate the tsvector column from title + plain-text content."""
-        from apps.cms.utils.search import extract_page_plain_text
+        from ..utils.search import extract_page_plain_text
 
         body = extract_page_plain_text(record.content)
         db.execute(

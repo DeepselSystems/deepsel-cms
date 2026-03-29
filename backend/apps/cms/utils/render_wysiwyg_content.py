@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from apps.cms.models.organization import CMSSettingsModel
+from ..models.organization import CMSSettingsModel
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)

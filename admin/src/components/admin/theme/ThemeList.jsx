@@ -283,14 +283,7 @@ export default function ThemeList() {
             <p className="text-lg">{t('No themes found')}</p>
           </div>
         ) : (
-          <SimpleGrid
-            cols={3}
-            spacing="lg"
-            breakpoints={[
-              { maxWidth: 'md', cols: 2 },
-              { maxWidth: 'sm', cols: 1 },
-            ]}
-          >
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
             {themes.map((theme) => {
               const isSelected = siteSettings?.selected_theme === theme.folder_name;
               const isSelecting = selectingTheme === theme.folder_name;

@@ -75,6 +75,19 @@ build: clean
 	python -m build
 	@echo "Build complete! Packages are in dist/"
 
+check-dist: build
+	@echo "Checking distribution package..."
+	twine check dist/*
+
+publish: check-dist
+	@echo "Publishing to PyPI..."
+	@echo "WARNING: This will upload to production PyPI!"
+	@read -p "Are you sure? [y/N] " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		twine upload dist/*; \
+	fi
+
 prepush:
 	@echo "Running prepush checks..."
 	make lint
