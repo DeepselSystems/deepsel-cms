@@ -1,5 +1,5 @@
-const DEFAULT_DEV_BACKEND = 'https://deepsel-cms-api-dev.deepsel.com';
-const DEFAULT_PROD_BACKEND = 'https://deepsel-cms-api.deepsel.com';
+const DEFAULT_DEV_BACKEND = 'http://localhost:8000';
+const DEFAULT_PROD_BACKEND = 'http://localhost:8000';
 
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
@@ -63,5 +63,5 @@ getPullRequestBackendHost().then((prHost) => {
     backendHost = prHost;
   }
 });
-
+console.log('backendHost', backendHost);
 export default backendHost;

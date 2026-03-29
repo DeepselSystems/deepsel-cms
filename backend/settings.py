@@ -15,8 +15,6 @@ version = "1.0.6"
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "prod")
-
 # Database
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", 5432)
