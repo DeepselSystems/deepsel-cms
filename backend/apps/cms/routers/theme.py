@@ -459,6 +459,90 @@ def select_theme(
         )
 
 
+@router.post("/reset")
+def reset_theme(
+    request: SelectThemeRequest,
+    background_tasks: BackgroundTasks,
+    current_user: UserModel = Depends(check_website_admin_role),
+    db: Session = Depends(get_db),
+):
+    """
+    Reset a theme to its default state by deleting all DB edits
+    and restoring original files from source.
+    """
+    # Verify theme exists
+    theme_path = _resolve_theme_path(request.folder_name)
+    if not theme_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Theme '{request.folder_name}' not found",
+        )
+
+    try:
+        ThemeFileModel = models_pool.get("theme_file")
+        ThemeFileContentModel = models_pool.get("theme_file_content")
+
+        # Get theme file IDs, then delete content first (FK constraint)
+        theme_file_ids = [
+            tf.id
+            for tf in db.query(ThemeFileModel.id)
+            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .all()
+        ]
+
+        if theme_file_ids:
+            db.query(ThemeFileContentModel).filter(
+                ThemeFileContentModel.theme_file_id.in_(theme_file_ids)
+            ).delete(synchronize_session=False)
+
+        deleted = (
+            db.query(ThemeFileModel)
+            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .delete(synchronize_session=False)
+        )
+        db.commit()
+
+        # Clean up language-variant folders in source themes dir
+        source_dir = os.path.normpath(SOURCE_THEMES_DIR)
+        if os.path.exists(source_dir):
+            for entry in os.listdir(source_dir):
+                lang_theme_path = os.path.join(
+                    source_dir, entry, request.folder_name
+                )
+                if (
+                    entry != request.folder_name
+                    and os.path.isdir(os.path.join(source_dir, entry))
+                    and os.path.isdir(lang_theme_path)
+                ):
+                    shutil.rmtree(lang_theme_path, ignore_errors=True)
+                    logger.info(
+                        f"Removed language variant: {entry}/{request.folder_name}"
+                    )
+
+        # Rebuild in background
+        background_tasks.add_task(trigger_setup_themes, force_sync=True)
+
+        logger.info(
+            f"User {current_user.username} reset theme '{request.folder_name}' "
+            f"({deleted} file records deleted)"
+        )
+
+        return {
+            "success": True,
+            "message": f"Theme '{request.folder_name}' has been reset to default.",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resetting theme: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reset theme: {str(e)}",
+        )
+
+
 def build_file_tree(directory_path: str, base_path: str = "") -> List[ThemeFileNode]:
     """Recursively build file tree structure"""
     nodes = []
@@ -738,26 +822,6 @@ def save_theme_file(
                 db.add(db_content)
 
         db.commit()
-
-        # Write to source themes directory for dev server hot-reload
-        source_themes_dir = os.path.join(
-            os.path.dirname(__file__), "..", "..", "..", "..", "themes"
-        )
-        for content_data in request.contents:
-            if content_data.lang_code:
-                source_file = os.path.join(
-                    source_themes_dir,
-                    content_data.lang_code,
-                    request.theme_name,
-                    request.file_path,
-                )
-            else:
-                source_file = os.path.join(
-                    source_themes_dir, request.theme_name, request.file_path
-                )
-            os.makedirs(os.path.dirname(source_file), exist_ok=True)
-            with open(source_file, "w", encoding="utf-8") as f:
-                f.write(content_data.content)
 
         # Copy validated build artifacts from temp to real data dir
         real_dist = os.path.join(DATA_DIR, "client", "dist")

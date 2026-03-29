@@ -2,7 +2,7 @@ from typing import Optional
 import logging
 from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from db import get_db
+from db import get_db, Base
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
 from deepsel.utils.check_delete_cascade import (
@@ -59,7 +59,7 @@ def delete_check(
             status_code=status.HTTP_404_NOT_FOUND, detail="Record not found"
         )
 
-    affected_records = get_delete_cascade_records_recursively(db, records)
+    affected_records = get_delete_cascade_records_recursively(db, records, declarative_base=Base)
 
     return {
         "to_delete": {
