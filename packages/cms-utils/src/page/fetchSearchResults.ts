@@ -61,12 +61,7 @@ export async function fetchSearchResults({
   }
 
   // Always fetch public_settings alongside the search call
-  const settingsPromise = fetchPublicSettings(
-    null,
-    astroRequest ?? null,
-    lang,
-    `http://localhost:8000`,
-  );
+  const settingsPromise = fetchPublicSettings(null, astroRequest ?? null, lang, backendHost);
 
   // If no query, skip the search call and return empty results
   if (!q.trim()) {
