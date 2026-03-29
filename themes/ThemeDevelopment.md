@@ -111,6 +111,7 @@ Every `.astro` template receives a `data` prop with the appropriate type. Here's
 ---
 import type { PageData } from "@deepsel/cms-utils";
 import Page from "./components/Page";
+import "@deepsel/cms-utils/styles.css";
 import "./main.css";
 
 interface Props {
@@ -136,6 +137,19 @@ const { data } = Astro.props;
 ```
 
 Interactive React components must use `client:load` to hydrate on the client side.
+
+## Content Styles
+
+Templates that render CMS editor content (pages, blog posts) should import the shared content styles from `@deepsel/cms-utils`. These styles handle editor-generated elements like collapsible sections, embedded files/video/audio, code blocks, and more:
+
+```astro
+---
+import "@deepsel/cms-utils/styles.css";
+import "./main.css";
+---
+```
+
+Import `@deepsel/cms-utils/styles.css` **before** your theme's own CSS so theme styles can override if needed.
 
 ## Rendering CMS Content
 

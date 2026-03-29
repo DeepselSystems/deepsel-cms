@@ -1,12 +1,11 @@
+/* Embed Files — public content styles */
+
 .embed-files-wrapper {
   margin: 1rem 0;
 }
 
 .embed-files-container {
   padding: 0.5rem;
-}
-
-.embed-file-item {
 }
 
 .embed-file-content {

@@ -1,34 +1,30 @@
 ---
-import type { PageData } from "@deepsel/cms-utils";
-import Page from "./components/Page";
-import Footer from "./components/Footer.astro";
+import type { BlogPostData } from "@deepsel/cms-utils";
+import BlogPost from "./components/BlogPost";
 import "@deepsel/cms-utils/styles.css";
 import "./main.css";
 
 interface Props {
-    data: PageData;
+    data: BlogPostData;
 }
 
 const { data } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang={data.lang || 'de'}>
+<html lang={data.lang || 'en'}>
 <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
-    <title>{data.seo_metadata?.title || 'Alcoris Treuhand'}</title>
+    <title>{(data.title || 'Blog') + ' | Nova Journal'}</title>
     <meta name="description" content={data.seo_metadata?.description || ''} />
     <meta name="robots" content={data.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="min-h-screen flex flex-col bg-white">
-        <Page client:load pageData={data} />
-        <Footer />
-    </div>
+    <BlogPost client:load data={data} />
 </body>
 </html>

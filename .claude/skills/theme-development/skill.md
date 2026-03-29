@@ -101,6 +101,7 @@ Every `.astro` template receives a `data` prop with the appropriate type. Basic 
 ---
 import type { PageData } from "@deepsel/cms-utils";
 import Page from "./components/Page";
+import "@deepsel/cms-utils/styles.css";
 import "./main.css";
 
 interface Props {
@@ -161,6 +162,11 @@ import { WebsiteDataTypes, type PageData, type BlogListData, type BlogPostData }
 import { isActiveMenu, type MenuItem } from "@deepsel/cms-utils";
 import { WebsiteDataProvider, ContentRenderer, useWebsiteData } from "@deepsel/cms-react";
 import { useLanguage } from "@deepsel/cms-react";
+```
+
+```astro
+// In .astro files that render CMS content (page, single-blog, Index):
+import "@deepsel/cms-utils/styles.css";
 ```
 
 ### Step 4: Register the Theme

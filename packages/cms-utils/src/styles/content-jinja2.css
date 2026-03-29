@@ -1,10 +1,6 @@
-/**
- * Jinja2 Extension Styles
- * Styles for Jinja2 template syntax highlighting
- */
+/* Jinja2 Syntax — public content styles */
 
-/* Jinja2 syntax highlighting */
-.ProseMirror .jinja2-syntax {
+code.jinja2-syntax {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   font-size: 0.9em;
   background-color: #f4f4f5;
@@ -13,5 +9,5 @@
   color: #e11d48;
   font-weight: 500;
   border: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
-
