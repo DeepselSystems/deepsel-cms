@@ -17,7 +17,7 @@ export function getAttachmentUrl(backendHost: string, name: string): string {
  * @returns Relative URL to serve the attachment, or empty string if name is falsy
  */
 export function getAttachmentRelativeUrl(name: string): string {
-  return name ? `/attachment/serve/${name}` : '';
+  return name ? `/api/v1/attachment/serve/${name}` : '';
 }
 
 /**
