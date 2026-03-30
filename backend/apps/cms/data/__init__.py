@@ -9,8 +9,6 @@ import_order = [
     "template_content.csv",
     "page.csv",
     "page_content.csv",
-    "blog_post.csv",
-    "blog_post_content.csv",
     "menu.csv",
     "attachment.csv",
 ]
