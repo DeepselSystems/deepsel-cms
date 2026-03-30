@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@deepsel/cms-react": "^2.2.2",
-    "@deepsel/cms-utils": "^1.7.1"
+    "@deepsel/cms-utils": "^1.8.0"
   }
 }

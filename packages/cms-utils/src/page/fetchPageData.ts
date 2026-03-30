@@ -18,7 +18,7 @@ export async function fetchPageData({
   lang,
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000/api/v1',
+  backendHost = 'http://localhost:8000',
 }: FetchPageDataProps): Promise<PageData> {
   try {
     // Format the path properly, make sure it starts with a slash
@@ -30,7 +30,7 @@ export async function fetchPageData({
 
     // Determine the URL based on whether a language is provided
     const langPrefix = lang || 'default';
-    let url = `${backendHost}/page/website/${langPrefix}${formattedPath}`;
+    let url = `${backendHost}/api/v1/page/website/${langPrefix}${formattedPath}`;
 
     // Add preview parameter if enabled
     if (astroRequest) {

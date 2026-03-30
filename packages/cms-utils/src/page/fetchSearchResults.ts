@@ -38,7 +38,7 @@ export async function fetchSearchResults({
   limit = 100,
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000/api/v1',
+  backendHost = 'http://localhost:8000',
 }: FetchSearchResultsProps): Promise<SearchResultsData> {
   // Build hostname for headers
   let hostname: string | null = null;
@@ -85,7 +85,7 @@ export async function fetchSearchResults({
   }
 
   const searchParams = new URLSearchParams({ q, limit: String(limit) });
-  const searchUrl = `${backendHost}/page/website_search/${lang}?${searchParams.toString()}`;
+  const searchUrl = `${backendHost}/api/v1/page/website_search/${lang}?${searchParams.toString()}`;
 
   const [public_settings, searchResponse] = await Promise.allSettled([
     settingsPromise,

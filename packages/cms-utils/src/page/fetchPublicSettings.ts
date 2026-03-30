@@ -14,7 +14,7 @@ export async function fetchPublicSettings(
 
     if (orgId === null) {
       // Use domain-based detection when orgId is null
-      url = `${backendHost}/util/public_settings`;
+      url = `${backendHost}/api/v1/util/public_settings`;
       if (lang) {
         url += `?lang=${encodeURIComponent(lang)}`;
       }
@@ -28,7 +28,7 @@ export async function fetchPublicSettings(
         organizationId = storedOrgId ? parseInt(storedOrgId) : 1;
       }
 
-      url = `${backendHost}/util/public_settings/${organizationId}`;
+      url = `${backendHost}/api/v1/util/public_settings/${organizationId}`;
       if (lang) {
         url += `?lang=${encodeURIComponent(lang)}`;
       }

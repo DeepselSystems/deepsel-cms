@@ -19,7 +19,7 @@ export async function fetchBlogPost({
   lang = 'default',
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000/api/v1',
+  backendHost = 'http://localhost:8000',
 }: FetchBlogPostProps): Promise<BlogPostData> {
   try {
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
@@ -29,7 +29,7 @@ export async function fetchBlogPost({
       postSlug = cleanPath.substring('blog/'.length);
     }
 
-    const url = `${backendHost}/blog_post/single/${lang}/${postSlug}`;
+    const url = `${backendHost}/api/v1/blog_post/single/${lang}/${postSlug}`;
     const fetchOptions = {
       method: 'GET',
       headers: {
