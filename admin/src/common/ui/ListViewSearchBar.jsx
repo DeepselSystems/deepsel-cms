@@ -121,7 +121,7 @@ export default function ListViewSearchBar(props) {
                 leftSection={<IconSearch size={16} />}
                 rightSection={
                   searchTerm && (
-                    <IconX size={16} className="cursor-pointer" />
+                    <IconX size={16} className="cursor-pointer" onClick={() => setSearchTerm('')} />
                   )
                 }
               />

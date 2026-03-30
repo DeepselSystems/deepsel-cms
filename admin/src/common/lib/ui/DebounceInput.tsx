@@ -74,7 +74,15 @@ export const DebounceInput = ({
       {...others}
       rightSection={
         clearable && (
-          <IconX size={24} className="cursor-pointer hover:bg-gray-200 rounded-full p-1" />
+          <IconX
+            size={24}
+            className="cursor-pointer hover:bg-gray-200 rounded-full p-1"
+            onClick={() => {
+              isFirstChange.current = true;
+              setLocalValue('');
+              onChange?.('');
+            }}
+          />
         )
       }
     />
