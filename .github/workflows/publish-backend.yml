@@ -1,0 +1,48 @@
+name: Deepsel CMS - Publish Backend to PyPI
+
+on:
+  push:
+    tags:
+      - 'backend-v*'
+
+jobs:
+  test:
+    uses: ./.github/workflows/test-backend.yml
+
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'DeepselSystems'
+    needs: [test]
+
+    defaults:
+      run:
+        working-directory: backend
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/deepsel-cms
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          make install-dev
+
+      - name: Build and check package
+        run: make check-dist
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: backend/dist/
