@@ -15,6 +15,9 @@ Format, validate, tag, and push a tag for an npm package so GitHub Actions can p
 
 If no package name is provided, ask the user which package to publish.
 
+> **Note:** To publish the **backend Python package** (`deepsel-cms`) to PyPI, use `/publish-backend` instead.
+> To publish the **Docker image** to GHCR, use `/publish-docker` instead.
+
 ## Package Map
 
 | Name | Workspace | Tag format | package.json path |
