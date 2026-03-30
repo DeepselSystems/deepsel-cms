@@ -310,8 +310,12 @@ export default function ThemeList() {
                           v{theme.version}
                         </Badge>
                         {isSelected && (
-                          <Badge color="green" variant="filled" size="sm">
-                            <IconCheck size={16} className="mr-1" />
+                          <Badge
+                            color="green"
+                            variant="filled"
+                            size="sm"
+                            leftSection={<IconCheck size={12} />}
+                          >
                             {t('Selected')}
                           </Badge>
                         )}
