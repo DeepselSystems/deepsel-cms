@@ -183,7 +183,7 @@ export default function AppLayout(props) {
               )}
               {/*endregion site selector*/}
               <a href="/" target="_blank" className="block my-2 w-8 h-8">
-                <IconExternalLink size={16} className="w-full h-full text-xl text-primary-main hover:translate-y-0.5 transition-all" />
+                <IconExternalLink size={16} className="w-full h-full text-xl text-white bg-black rounded p-1 hover:translate-y-0.5 transition-all" />
               </a>
             </div>
             <div className={`flex items-center gap-4`}>

@@ -23,7 +23,8 @@
     "dist"
   ],
   "sideEffects": [
-    "*.css"
+    "*.css",
+    "src/i18n.js"
   ],
   "scripts": {
     "dev": "vite --host",
