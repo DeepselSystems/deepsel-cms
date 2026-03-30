@@ -248,20 +248,14 @@ export default function UserEdit() {
             className="mt-4"
           >
             <Tabs.List>
-              <Tabs.Tab
-                value="contact"
-                leftSection={<IconAddressBook size={16} />}
-              >
+              <Tabs.Tab value="contact" leftSection={<IconAddressBook size={16} />}>
                 {t('Contact Info')}
               </Tabs.Tab>
               <VisibilityControl
                 roleIds={['super_admin_role', 'admin_role', 'website_admin_role']}
                 render={false}
               >
-                <Tabs.Tab
-                  value="access"
-                  leftSection={<IconFingerprint size={16} />}
-                >
+                <Tabs.Tab value="access" leftSection={<IconFingerprint size={16} />}>
                   {t('Access')}
                 </Tabs.Tab>
               </VisibilityControl>

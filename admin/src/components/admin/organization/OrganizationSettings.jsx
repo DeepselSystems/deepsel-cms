@@ -15,7 +15,15 @@ import { useState } from 'react';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { Switch, Collapse } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
-import { IconArrowRight, IconBoxMultiple, IconCube, IconFileImport, IconLock, IconServer, IconSettings } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconBoxMultiple,
+  IconCube,
+  IconFileImport,
+  IconLock,
+  IconServer,
+  IconSettings,
+} from '@tabler/icons-react';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();

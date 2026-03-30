@@ -11,7 +11,14 @@ import { useUpload } from '../../../hooks/useUpload';
 import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
-import { IconChecks, IconCloudUpload, IconEdit, IconPhoto, IconPhotoPlus, IconX } from '@tabler/icons-react';
+import {
+  IconChecks,
+  IconCloudUpload,
+  IconEdit,
+  IconPhoto,
+  IconPhotoPlus,
+  IconX,
+} from '@tabler/icons-react';
 
 /**
  * Pixel margin for the Dropzone group minimum height

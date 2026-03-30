@@ -13,7 +13,13 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
-import { IconArrowDown, IconArrowUp, IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+  IconArrowDown,
+  IconArrowUp,
+  IconInfoCircle,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { YOUTUBE_REG_EXP } from '../utils';
 import type { JumpMark, JumpMarkData } from '../types';
@@ -262,11 +268,7 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
               <Text size="sm">
                 {t('Jump Marks')} ({jumpMarks.length})
               </Text>
-              <Button
-                size="xs"
-                leftSection={<IconPlus size={16} />}
-                onClick={addJumpMark}
-              >
+              <Button size="xs" leftSection={<IconPlus size={16} />} onClick={addJumpMark}>
                 {t('Add Jump Mark')}
               </Button>
             </Group>

@@ -14,7 +14,12 @@ import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
-import { IconDeviceDesktop, IconDeviceMobile, IconDeviceTablet, IconExternalLink } from '@tabler/icons-react';
+import {
+  IconDeviceDesktop,
+  IconDeviceMobile,
+  IconDeviceTablet,
+  IconExternalLink,
+} from '@tabler/icons-react';
 
 export default function PageViewComponent() {
   const { t } = useTranslation();

@@ -12,7 +12,14 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import H1 from '../../../common/ui/H1.jsx';
 import { Helmet } from 'react-helmet';
-import { IconCloudUpload, IconDownload, IconLink, IconPhoto, IconServer, IconTrash } from '@tabler/icons-react';
+import {
+  IconCloudUpload,
+  IconDownload,
+  IconLink,
+  IconPhoto,
+  IconServer,
+  IconTrash,
+} from '@tabler/icons-react';
 
 /**
  * @type {string[]}

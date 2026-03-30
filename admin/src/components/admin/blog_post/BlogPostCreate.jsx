@@ -23,7 +23,14 @@ import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
-import { IconPencil, IconPhoto, IconPlus, IconSettings, IconTrash, IconWriting } from '@tabler/icons-react';
+import {
+  IconPencil,
+  IconPhoto,
+  IconPlus,
+  IconSettings,
+  IconTrash,
+  IconWriting,
+} from '@tabler/icons-react';
 
 export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { t } = useTranslation();

@@ -11,7 +11,15 @@ import type { User } from '../types';
 import type { NotifyFn } from '../types';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
-import { IconChecks, IconCloudUpload, IconEdit, IconFileText, IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
+import {
+  IconChecks,
+  IconCloudUpload,
+  IconEdit,
+  IconFileText,
+  IconPhoto,
+  IconUpload,
+  IconX,
+} from '@tabler/icons-react';
 
 /**
  * Accepted MIME types for image-only upload mode
@@ -95,7 +103,10 @@ function FileImage({
           />
         ) : (
           <div className="flex items-center justify-center h-[150px] p-2" title={file.name}>
-            <IconFileText size={16} className="text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2" />
+            <IconFileText
+              size={16}
+              className="text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2"
+            />
             <div className="mt-2 w-full text-sm bg-white rounded p-1 px-2 break-words">
               {file.name}
             </div>
@@ -516,7 +527,11 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
                   <IconX size={16} className="text-3xl text-red-500" />
                 </Dropzone.Reject>
                 <Dropzone.Idle>
-                  {type === 'image' ? <IconPhoto size={16} className="text-3xl text-gray-500" /> : <IconUpload size={16} className="text-3xl text-gray-500" />}
+                  {type === 'image' ? (
+                    <IconPhoto size={16} className="text-3xl text-gray-500" />
+                  ) : (
+                    <IconUpload size={16} className="text-3xl text-gray-500" />
+                  )}
                 </Dropzone.Idle>
 
                 <div className="text-center">

@@ -3,7 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Card, Tooltip, Button } from '@mantine/core';
 import ChangeParentModal from './ChangeParentModal.jsx';
 import VisibilityControl from '../../../../common/auth/VisibilityControl.jsx';
-import { IconArrowDown, IconArrowUp, IconLink, IconPencil, IconPlus, IconStack2, IconTrash } from '@tabler/icons-react';
+import {
+  IconArrowDown,
+  IconArrowUp,
+  IconLink,
+  IconPencil,
+  IconPlus,
+  IconStack2,
+  IconTrash,
+} from '@tabler/icons-react';
 
 const MenuItem = (props) => {
   const {

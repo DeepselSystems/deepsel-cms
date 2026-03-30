@@ -33,7 +33,16 @@ import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
-import { IconDeviceDesktop, IconDeviceFloppy, IconDeviceMobile, IconDeviceTablet, IconPlus, IconSettings, IconTrash, IconWriting } from '@tabler/icons-react';
+import {
+  IconDeviceDesktop,
+  IconDeviceFloppy,
+  IconDeviceMobile,
+  IconDeviceTablet,
+  IconPlus,
+  IconSettings,
+  IconTrash,
+  IconWriting,
+} from '@tabler/icons-react';
 
 export default function PageEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -952,7 +961,6 @@ export default function PageEdit({ onSuccess }) {
                     <div className="flex gap-4 my-2">
                       <div className="flex flex-col grow gap-2"></div>
                     </div>
-
 
                     {/* Content Editor */}
                     <div className="my-4">

@@ -165,9 +165,7 @@ export function FileInput({
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
             >
-              <IconFileText
-                style={{ width: `${width}px`, height: `${height}px` }}
-              />
+              <IconFileText style={{ width: `${width}px`, height: `${height}px` }} />
               <div className="ml-2 !underline">{getFileNameFromAttachUrl(attachUrl)}</div>
             </a>
           )}

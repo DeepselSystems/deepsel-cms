@@ -52,9 +52,7 @@ const OtherFileDisplay = forwardRef<HTMLAnchorElement, OtherFileDisplayProps>(
         }}
       >
         <Indicator label={getFileExtension(src).toUpperCase()} zIndex="auto" size={15}>
-          <IconFileText
-            style={{ width: `${width}px`, height: `${height}px` }}
-          />
+          <IconFileText style={{ width: `${width}px`, height: `${height}px` }} />
         </Indicator>
         <div className="ml-2 !underline">{getFileNameFromAttachUrl(src)}</div>
       </a>
@@ -94,10 +92,7 @@ function PdfDisplay({
         />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          leftSection={<IconEye size={16} />}
-          onClick={onViewMenuClick}
-        >
+        <Menu.Item leftSection={<IconEye size={16} />} onClick={onViewMenuClick}>
           {t('View')}
         </Menu.Item>
         <Menu.Item
@@ -150,10 +145,7 @@ function ImageDisplay({
         />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          leftSection={<IconEye size={16} />}
-          onClick={onViewMenuClick}
-        >
+        <Menu.Item leftSection={<IconEye size={16} />} onClick={onViewMenuClick}>
           {t('View')}
         </Menu.Item>
         <Menu.Item
@@ -199,10 +191,7 @@ function VideoDisplay({
         />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          leftSection={<IconEye size={16} />}
-          onClick={onViewMenuClick}
-        >
+        <Menu.Item leftSection={<IconEye size={16} />} onClick={onViewMenuClick}>
           {t('View')}
         </Menu.Item>
         <Menu.Item

@@ -34,7 +34,14 @@ import { useState } from 'react';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
-import { IconPencil, IconPhoto, IconPlus, IconSettings, IconTrash, IconWriting } from '@tabler/icons-react';
+import {
+  IconPencil,
+  IconPhoto,
+  IconPlus,
+  IconSettings,
+  IconTrash,
+  IconWriting,
+} from '@tabler/icons-react';
 
 export default function BlogPostEdit() {
   const { t } = useTranslation();

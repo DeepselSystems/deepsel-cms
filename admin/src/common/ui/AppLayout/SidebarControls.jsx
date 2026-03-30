@@ -1,6 +1,11 @@
 import useSidebar from '../../hooks/useSidebar.js';
 import Button from '../Button.jsx';
-import { IconArrowsMaximize, IconArrowsMinimize, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import {
+  IconArrowsMaximize,
+  IconArrowsMinimize,
+  IconChevronLeft,
+  IconChevronRight,
+} from '@tabler/icons-react';
 
 /**
  * Example component showing how to control the sidebar from any component

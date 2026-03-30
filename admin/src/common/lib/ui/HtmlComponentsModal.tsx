@@ -145,11 +145,7 @@ export function HtmlComponentsModal({
         )}
 
         {error && (
-          <Alert
-            icon={<IconAlertTriangle size={16} />}
-            title={t('Error')}
-            color="red"
-          >
+          <Alert icon={<IconAlertTriangle size={16} />} title={t('Error')} color="red">
             {error}
           </Alert>
         )}

@@ -41,9 +41,7 @@ const EmbedVideoButton = ({
             onClick={() => setAttachmentModalOpened(true)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
-            {children || (
-              <IconVideo size={18} className="text-[#808496]" />
-            )}
+            {children || <IconVideo size={18} className="text-[#808496]" />}
           </button>
         </Tooltip>
 

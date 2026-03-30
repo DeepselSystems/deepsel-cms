@@ -25,7 +25,17 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
-import { IconCode, IconDeviceDesktop, IconDeviceFloppy, IconDeviceMobile, IconDeviceTablet, IconPlus, IconQuestionMark, IconSettings, IconTrash } from '@tabler/icons-react';
+import {
+  IconCode,
+  IconDeviceDesktop,
+  IconDeviceFloppy,
+  IconDeviceMobile,
+  IconDeviceTablet,
+  IconPlus,
+  IconQuestionMark,
+  IconSettings,
+  IconTrash,
+} from '@tabler/icons-react';
 
 export default function TemplateEdit({ onSuccess }) {
   const { t } = useTranslation();

@@ -58,16 +58,10 @@ export default function UserView() {
             className="mt-4"
           >
             <Tabs.List>
-              <Tabs.Tab
-                value="contact"
-                leftSection={<IconAddressBook size={16} />}
-              >
+              <Tabs.Tab value="contact" leftSection={<IconAddressBook size={16} />}>
                 {t('Contact Info')}
               </Tabs.Tab>
-              <Tabs.Tab
-                value="access"
-                leftSection={<IconFingerprint size={16} />}
-              >
+              <Tabs.Tab value="access" leftSection={<IconFingerprint size={16} />}>
                 {t('Access')}
               </Tabs.Tab>
             </Tabs.List>

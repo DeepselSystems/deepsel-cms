@@ -25,7 +25,17 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
-import { IconCode, IconDatabase, IconDownload, IconKey, IconLanguage, IconNews, IconRobot, IconUpload, IconWorld } from '@tabler/icons-react';
+import {
+  IconCode,
+  IconDatabase,
+  IconDownload,
+  IconKey,
+  IconLanguage,
+  IconNews,
+  IconRobot,
+  IconUpload,
+  IconWorld,
+} from '@tabler/icons-react';
 
 export default function SiteSettings() {
   const { t } = useTranslation();

@@ -11,7 +11,15 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import { fetchPublicSettings } from '../../../utils/pageUtils.js';
-import { IconAlertTriangle, IconCheck, IconDownload, IconEdit, IconPalette, IconRotate2, IconUpload } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconDownload,
+  IconEdit,
+  IconPalette,
+  IconRotate2,
+  IconUpload,
+} from '@tabler/icons-react';
 
 export default function ThemeList() {
   const { t } = useTranslation();

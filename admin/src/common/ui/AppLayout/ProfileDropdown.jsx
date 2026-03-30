@@ -38,11 +38,7 @@ const ProfileDropdown = () => {
         >
           {t('Edit profile')}
         </Menu.Item>
-        <Menu.Item
-          onClick={logout}
-          color="red"
-          leftSection={<IconArrowLeft size={16} />}
-        >
+        <Menu.Item onClick={logout} color="red" leftSection={<IconArrowLeft size={16} />}>
           {t('Logout')}
         </Menu.Item>
       </Menu.Dropdown>
