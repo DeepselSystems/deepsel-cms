@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepsel-cms"
-version = "1.1.3"
+version = "1.1.4"
 description = "Deepsel CMS Backend - FastAPI application for content management"
 readme = "README.md"
 authors = [
@@ -24,7 +24,7 @@ classifiers = [
 keywords = ["cms", "fastapi", "sqlalchemy", "deepsel"]
 requires-python = ">=3.12"
 dependencies = [
-    "deepsel>=0.10.4",
+    "deepsel>=0.10.10",
     "pydantic>=2.7.0",
     "SQLAlchemy>=2.0.30",
     "fastapi>=0.115.0",

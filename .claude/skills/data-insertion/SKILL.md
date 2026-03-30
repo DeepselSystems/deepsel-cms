@@ -118,18 +118,23 @@ The `page_content/page_content_id` key inside the JSON will be resolved to the a
 ## Import Behavior
 
 ### Regular Data (`data/`)
-- Loaded automatically at startup for all installed apps
+- Loaded automatically at startup for all installed apps via `install_seed_data()` from `deepsel`
 - Checks for existing records by `string_id`
 - Updates only if record has `system=True`
 - Skips if record has `system=False` (preserves user changes)
 - Creates new if record doesn't exist
 
 ### Demo Data (`demo_data/`)
-- Loaded via `POST /load_demo_data/{app_name}` or from admin UI
-- Always creates new records (no existence check)
+
+Demo data can be loaded in two ways:
+
+1. **At startup (once)** — `install_seed_data()` (from `deepsel.utils.install_apps`) loads `demo_data/` folders alongside `data/` for all installed apps. It uses a `_demo_data_installed` tracking table in the database to ensure each app's demo data is only imported once. On subsequent restarts the import is skipped.
+2. **On demand** — `POST /load_demo_data/{app_name}` (admin UI: Organization → Settings → General → Installed Business Apps → select app → Load demo data). Requires admin privileges. This does **not** check the tracking table, so it can re-insert data.
+
+**Behavior**:
+- Always creates new records (no existence check by `string_id`)
 - `string_id` is optional
-- Can cause duplicates if run multiple times
-- Requires admin privileges
+- On-demand loading can cause duplicates if run multiple times (startup loading is protected by the tracking table)
 
 ## Default Value Handling
 

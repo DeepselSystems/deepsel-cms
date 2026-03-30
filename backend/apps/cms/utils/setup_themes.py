@@ -294,8 +294,9 @@ def setup_themes(force_build=False, force_sync=False):
                 )
                 logger.info("Packages folder synced successfully")
 
-                # Install at workspace root so inter-package deps resolve locally
-                logger.info("Running workspace npm install for packages...")
+            # Install at workspace root when admin or packages changed
+            if need_admin_sync or need_packages_sync:
+                logger.info("Running workspace npm install...")
                 install_result = _run_npm("npm install", cwd=data_dir)
                 if install_result.returncode != 0:
                     error_output = install_result.stdout + "\n" + install_result.stderr
@@ -303,6 +304,7 @@ def setup_themes(force_build=False, force_sync=False):
                     raise RuntimeError(f"Workspace npm install failed: {error_output}")
                 logger.info("Workspace npm install completed")
 
+            if need_packages_sync and os.path.exists(packages_src):
                 # Build packages in dependency order
                 packages_dst = os.path.join(data_dir, "packages")
                 pkg_subfolders = [
