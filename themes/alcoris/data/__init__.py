@@ -19,7 +19,7 @@ def post_install(db):
 
     for org in (
         db.query(CMSSettingsModel)
-        .filter(CMSSettingsModel.selected_theme == "theme_alricos")
+        .filter(CMSSettingsModel.selected_theme == "alcoris")
         .all()
     ):
         # Add German to available_languages if not present
@@ -38,4 +38,5 @@ def post_install(db):
         org.default_language_id = de_locale.id
 
     db.commit()
-    logger.info("Set German (de) as default language for theme_alricos organizations")
+    logger.info("Set German (de) as default language for alcoris theme organizations")
+
