@@ -1,6 +1,6 @@
 {
-  "name": "@themes/theme_alricos",
-  "version": "0.0.1",
+  "name": "@themes/alcoris",
+  "version": "1.0.0",
   "type": "module",
   "main": "Page.tsx",
   "exports": {

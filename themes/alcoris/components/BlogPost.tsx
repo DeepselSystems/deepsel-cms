@@ -54,7 +54,7 @@ function BlogPostContent() {
           </time>
         )}
         <article
-          className="prose prose-lg max-w-none"
+          className="page-content"
           dangerouslySetInnerHTML={{ __html: post?.content || "" }}
         />
       </div>

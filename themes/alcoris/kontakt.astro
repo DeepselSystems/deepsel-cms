@@ -8,6 +8,7 @@ import iconPersonSvg from "./assets/icons/icon-kontakt-person.svg";
 import iconAdresseSvg from "./assets/icons/icon-kontakt-adresse.svg";
 import iconDirectionsSvg from "./assets/icons/icon-kontakt-directions.svg";
 import iconEmailSvg from "./assets/icons/icon-kontakt-email.svg";
+import faviconPng from "./assets/icons/favicon.png";
 
 interface Props {
     data: PageData;
@@ -53,7 +54,7 @@ const contactCards = [
 <html lang={data.lang || 'de'}>
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href={faviconPng.src} />
     <meta name="viewport" content="width=device-width" />
     <title>{data.seo_metadata?.title || 'Alcoris Treuhand'}</title>
     <meta name="description" content={data.seo_metadata?.description || ''} />

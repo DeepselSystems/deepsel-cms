@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWebsiteData } from "@deepsel/cms-react";
 import { isActiveMenu, type MenuItem } from "@deepsel/cms-utils";
 import LangSwitcher from "./LangSwitcher";
-import logoSrc from "../assets/images/homepage-image-001.png";
+import logoSrc from "../assets/images/logo.png";
 
 const logo = typeof logoSrc === "string" ? logoSrc : (logoSrc as any).src;
 

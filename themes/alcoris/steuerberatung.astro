@@ -1,11 +1,12 @@
 ---
-import type { BlogListData } from "@deepsel/cms-utils";
-import BlogList from "./components/BlogList";
+import type { PageData } from "@deepsel/cms-utils";
+import PageSteuerberatung from "./components/PageSteuerberatung";
 import Footer from "./components/Footer.astro";
 import "./main.css";
+import faviconPng from "./assets/icons/favicon.png";
 
 interface Props {
-    data: BlogListData;
+    data: PageData;
 }
 
 const { data } = Astro.props;
@@ -15,16 +16,18 @@ const { data } = Astro.props;
 <html lang={data.lang || 'de'}>
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href={faviconPng.src} />
     <meta name="viewport" content="width=device-width" />
-    <title>Blog | Alcoris Treuhand</title>
+    <title>{data.seo_metadata?.title || 'Alcoris Treuhand'}</title>
+    <meta name="description" content={data.seo_metadata?.description || ''} />
+    <meta name="robots" content={data.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="min-h-screen flex flex-col bg-white">
-        <BlogList client:load data={data} />
+        <PageSteuerberatung client:load pageData={data} />
         <Footer />
     </div>
 </body>

@@ -4,6 +4,7 @@ import Page from "./components/Page";
 import Footer from "./components/Footer.astro";
 import "@deepsel/cms-utils/styles.css";
 import "./main.css";
+import faviconPng from "./assets/icons/favicon.png";
 
 interface Props {
     data: PageData;
@@ -16,7 +17,7 @@ const { data } = Astro.props;
 <html lang={data.lang || 'de'}>
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href={faviconPng.src} />
     <meta name="viewport" content="width=device-width" />
     <title>{data.seo_metadata?.title || 'Alcoris Treuhand'}</title>
     <meta name="description" content={data.seo_metadata?.description || ''} />
