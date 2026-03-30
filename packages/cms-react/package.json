@@ -49,7 +49,7 @@
     "theme"
   ],
   "dependencies": {
-    "@deepsel/cms-utils": "^1.8.0"
+    "@deepsel/cms-utils": "^1.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
