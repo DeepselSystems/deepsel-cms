@@ -73,7 +73,7 @@ body {
 }
 
 .typography a {
-  color: #1D4ED8;
+  color: #1d4ed8;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -92,9 +92,9 @@ body {
 }
 
 .typography blockquote {
-  border-left: 3px solid #E5E7EB;
+  border-left: 3px solid #e5e7eb;
   padding-left: 1em;
-  color: #6B7280;
+  color: #6b7280;
   font-style: italic;
 }
 
@@ -120,7 +120,7 @@ body {
 
 .typography hr {
   border: none;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   margin: 1.5em 0;
 }
 
@@ -137,7 +137,7 @@ body {
 
 .typography th,
 .typography td {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 0.5em 0.75em;
   text-align: left;
 }
