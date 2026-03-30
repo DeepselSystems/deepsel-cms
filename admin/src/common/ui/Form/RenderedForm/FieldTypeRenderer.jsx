@@ -13,19 +13,13 @@ import {
 } from '@mantine/core';
 import { DateInput, DateTimePicker, TimePicker } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faExclamationTriangle,
-  faFile,
-  faTrash,
-  faUpload,
-} from '@fortawesome/free-solid-svg-icons';
 import { FormFieldType, TimeFormat } from '../../../../constants/form.js';
 import { useTranslation } from 'react-i18next';
 import useUploadSizeLimit from '../../../api/useUploadSizeLimit.js';
 import useUpload from '../../../api/useUpload.js';
 import useModel from '../../../api/useModel.jsx';
 import { formatFileSize } from '../../../utils/index.js';
+import { IconAlertTriangle, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
 
 /**
  * Renders the appropriate input component based on field type
@@ -353,13 +347,13 @@ const FilesUploadField = ({ field, value = [], error, onChange }) => {
         >
           <Group gap="sm" style={{ pointerEvents: 'none' }}>
             <Dropzone.Accept>
-              <FontAwesomeIcon icon={faUpload} size="lg" />
+              <IconUpload size={16} />
             </Dropzone.Accept>
             <Dropzone.Reject>
-              <FontAwesomeIcon icon={faExclamationTriangle} size="lg" />
+              <IconAlertTriangle size={16} />
             </Dropzone.Reject>
             <Dropzone.Idle>
-              <FontAwesomeIcon icon={faUpload} size="lg" />
+              <IconUpload size={16} />
             </Dropzone.Idle>
 
             <Box>
@@ -383,7 +377,7 @@ const FilesUploadField = ({ field, value = [], error, onChange }) => {
           {currentFiles.map((file, index) => (
             <Group key={file.id || index} justify="space-between" p="sm" className="border rounded">
               <Group gap="sm">
-                <FontAwesomeIcon icon={faFile} />
+                <IconFile size={16} />
                 <Box>
                   <Text size="sm" fw={500}>
                     {getFileName(file)}
@@ -400,7 +394,7 @@ const FilesUploadField = ({ field, value = [], error, onChange }) => {
                 loading={deleteLoading}
                 onClick={() => handleRemoveFile(index)}
               >
-                <FontAwesomeIcon icon={faTrash} />
+                <IconTrash size={16} />
               </Button>
             </Group>
           ))}

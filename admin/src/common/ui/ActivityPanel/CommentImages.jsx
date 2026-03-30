@@ -1,6 +1,4 @@
 import { Box, SimpleGrid, Image, ActionIcon } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 export default function CommentImages({
   images,
@@ -41,7 +39,7 @@ export default function CommentImages({
                   },
                 }}
               >
-                <FontAwesomeIcon icon={faXmark} size="lg" />
+                <IconX size={16} />
               </ActionIcon>
             )}
           </Box>

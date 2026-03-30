@@ -2,9 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
 import { Select, Tooltip } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { common, createLowlight } from 'lowlight';
@@ -125,7 +123,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             onClick={deleteNode}
             className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <FontAwesomeIcon icon={faTrash as IconProp} className="text-red-500 text-xs" />
+            <IconTrash size={12} className="text-red-500" />
           </button>
         </Tooltip>
       </div>

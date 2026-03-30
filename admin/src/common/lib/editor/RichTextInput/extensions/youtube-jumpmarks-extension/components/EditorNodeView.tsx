@@ -1,9 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { IconPencil, IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import JumpMarksModal from './JumpMarksModal';
 import { useTranslation } from 'react-i18next';
@@ -166,7 +164,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           )}
           title={t('Edit YouTube Jump Marks')}
         >
-          <FontAwesomeIcon icon={faPen as IconProp} className="w-6 h-6" />
+          <IconPencil size={24} />
         </button>
 
         {/* Delete Button */}
@@ -179,7 +177,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           )}
           title={t('Delete YouTube Jump Marks')}
         >
-          <FontAwesomeIcon icon={faTrash as IconProp} className="w-6 h-6" />
+          <IconTrash size={24} />
         </button>
       </div>
 

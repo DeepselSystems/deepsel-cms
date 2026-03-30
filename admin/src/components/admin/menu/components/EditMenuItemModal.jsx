@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPencil, faSave, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Tabs, Menu, Tooltip } from '@mantine/core';
 import RecordSelect from '../../../../common/ui/RecordSelect.jsx';
 import Select from '../../../../common/ui/Select.jsx';
@@ -12,6 +10,7 @@ import TextInput from '../../../../common/ui/TextInput.jsx';
 import Checkbox from '../../../../common/ui/Checkbox.jsx';
 import useModel from '../../../../common/api/useModel.jsx';
 import OrganizationIdState from '../../../../common/stores/OrganizationIdState.js';
+import { IconDeviceFloppy, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
 
 const EditMenuItemModal = ({
   opened,
@@ -273,7 +272,7 @@ const EditMenuItemModal = ({
                       <Menu.Dropdown>
                         <Menu.Item
                           color="red"
-                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          leftSection={<IconTrash size={16} />}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteTranslation(isoCode);
@@ -297,7 +296,7 @@ const EditMenuItemModal = ({
                 }}
                 className="bg-gray-100 hover:bg-gray-200"
               >
-                <FontAwesomeIcon icon={faPlus} />
+                <IconPlus size={16} />
               </Tabs.Tab>
             </Tooltip>
           </Tabs.List>
@@ -534,7 +533,7 @@ const EditMenuItemModal = ({
                     }
                   }}
                   disabled={!selectedLocaleId}
-                  leftSection={<FontAwesomeIcon icon={faPlus} />}
+                  leftSection={<IconPlus size={16} />}
                 >
                   {t('Add Translation')}
                 </Button>
@@ -550,7 +549,7 @@ const EditMenuItemModal = ({
           </Button>
           <Button
             onClick={handleSave}
-            leftSection={<FontAwesomeIcon icon={editingItem ? faPencil : faSave} />}
+            leftSection={editingItem ? <IconPencil size={16} /> : <IconDeviceFloppy size={16} />}
             disabled={isSaving}
             loading={isSaving}
           >

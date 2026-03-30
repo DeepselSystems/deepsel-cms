@@ -2,16 +2,6 @@ import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import clsx from 'clsx';
 import { Box, Image, Text, Checkbox, AspectRatio, Group, UnstyledButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCheckDouble,
-  faCloudArrowUp,
-  faImage,
-  faImages,
-  faPenToSquare,
-  faX,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
 import fromPairs from 'lodash/fromPairs';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
@@ -21,6 +11,7 @@ import { useUpload } from '../../../hooks/useUpload';
 import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
+import { IconChecks, IconCloudUpload, IconEdit, IconPhoto, IconPhotoPlus, IconX } from '@tabler/icons-react';
 
 /**
  * Pixel margin for the Dropzone group minimum height
@@ -262,13 +253,13 @@ export function InternalImages({
               style={{ minHeight: DROPZONE_MIN_HEIGHT, pointerEvents: 'none' }}
             >
               <Dropzone.Accept>
-                <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
+                <IconCloudUpload size={16} className="text-3xl text-green-500" />
               </Dropzone.Accept>
               <Dropzone.Reject>
-                <FontAwesomeIcon icon={faXmark} className="text-3xl text-danger-main" />
+                <IconX size={16} className="text-3xl text-danger-main" />
               </Dropzone.Reject>
               <Dropzone.Idle>
-                <FontAwesomeIcon icon={faImage} className="text-3xl text-gray-500" />
+                <IconPhoto size={16} className="text-3xl text-gray-500" />
               </Dropzone.Idle>
               <div className="text-center">
                 <Text size="xl" inline className="font-medium">
@@ -290,7 +281,7 @@ export function InternalImages({
               className="!text-primary-main font-bold space-x-2"
               onClick={handleDelete}
             >
-              <FontAwesomeIcon icon={faX} />
+              <IconX size={16} />
               <span>{t('Delete')}</span>
             </UnstyledButton>
           )}
@@ -299,7 +290,7 @@ export function InternalImages({
               className="!text-primary-main font-bold space-x-2"
               onClick={handleSelectAll}
             >
-              <FontAwesomeIcon icon={faCheckDouble} />
+              <IconChecks size={16} />
               {isSelectedAllEditing ? (
                 <span>{t('Deselect all')}</span>
               ) : (
@@ -311,7 +302,7 @@ export function InternalImages({
             className="!text-primary-main font-bold space-x-2"
             onClick={() => setIsEditMode((prevState) => !prevState)}
           >
-            <FontAwesomeIcon icon={faPenToSquare} />
+            <IconEdit size={16} />
             <span>{t('Toggle edit')}</span>
           </UnstyledButton>
         </Box>
@@ -375,7 +366,7 @@ export function InternalImages({
         {/*region empty state alert*/}
         {!isImagesLoading && !attachmentImages.length && (
           <Box className="text-center space-y-3 px-6 py-16">
-            <FontAwesomeIcon size="3x" icon={faImages} className="text-gray-pale-sky" />
+            <IconPhotoPlus size={16} className="text-gray-pale-sky" />
             <Text c="dimmed" size="sm">
               {t('No images found.')}
             </Text>

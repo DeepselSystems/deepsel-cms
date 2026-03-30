@@ -1,15 +1,4 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import {
-  faPlus,
-  faTrash,
-  faGear,
-  faDesktop,
-  faTabletAlt,
-  faMobileAlt,
-  faSave,
-  faPenNib,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +34,7 @@ import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
+import { IconDeviceDesktop, IconDeviceFloppy, IconDeviceMobile, IconDeviceTablet, IconPlus, IconSettings, IconTrash, IconWriting } from '@tabler/icons-react';
 
 export default function PageEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -930,7 +920,7 @@ export default function PageEdit({ onSuccess }) {
                       <Menu.Dropdown>
                         <Menu.Item
                           color="red"
-                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          leftSection={<IconTrash size={16} />}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteContent(content.id);
@@ -952,7 +942,7 @@ export default function PageEdit({ onSuccess }) {
                     }}
                     className="bg-gray-100 hover:bg-gray-200"
                   >
-                    <FontAwesomeIcon icon={faPlus} />
+                    <IconPlus size={16} />
                   </Tabs.Tab>
                 </Tooltip>
               </Tabs.List>
@@ -1029,7 +1019,7 @@ export default function PageEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('desktop')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faDesktop} />
+                  <IconDeviceDesktop size={16} />
                 </Button>
                 <Button
                   variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
@@ -1037,7 +1027,7 @@ export default function PageEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('tablet')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faTabletAlt} />
+                  <IconDeviceTablet size={16} />
                 </Button>
                 <Button
                   variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
@@ -1045,7 +1035,7 @@ export default function PageEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('mobile')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faMobileAlt} />
+                  <IconDeviceMobile size={16} />
                 </Button>
               </div>
 
@@ -1084,14 +1074,14 @@ export default function PageEdit({ onSuccess }) {
                       className="px-2"
                       disabled={!aiWritingAvailable}
                     >
-                      <FontAwesomeIcon icon={faPenNib} className="mr-2" />
+                      <IconWriting size={16} className="mr-2" />
                       {t('AI Writer')}
                     </Button>
                   </div>
                 </Tooltip>
                 <Tooltip label={t('Settings')}>
                   <Button variant="subtle" size="sm" onClick={openSettingsDrawer} className="px-2">
-                    <FontAwesomeIcon icon={faGear} />
+                    <IconSettings size={16} />
                   </Button>
                 </Tooltip>
                 <HomepageSwitch page={record} setPage={setRecord} />
@@ -1111,7 +1101,7 @@ export default function PageEdit({ onSuccess }) {
                   size="sm"
                   loading={loading || isCheckingConflicts}
                 >
-                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  <IconDeviceFloppy size={16} className="mr-2" />
                   {t('Save')}
                 </Button>
               </div>

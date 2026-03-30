@@ -1,5 +1,3 @@
-import { faCopy, faRotate } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import useModel from '../../../common/api/useModel.jsx';
@@ -13,6 +11,7 @@ import Switch from '../../../common/ui/Switch.jsx';
 import TextArea from '../../../common/ui/TextArea.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H2 from '../../../common/ui/H2.jsx';
+import { IconCopy, IconRotate } from '@tabler/icons-react';
 
 export default function SamlSetting() {
   const { t } = useTranslation();
@@ -167,14 +166,14 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                   rightSection={
                     <div className="flex items-center gap-2 mr-6">
                       <button type="button" onClick={handleResetSP} title={t('Reset to default')}>
-                        <FontAwesomeIcon icon={faRotate} size="sm" />
+                        <IconRotate size={16} />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleCopy(record.saml_sp_entity_id)}
                         title={t('Copy to clipboard')}
                       >
-                        <FontAwesomeIcon icon={faCopy} size="sm" />
+                        <IconCopy size={16} />
                       </button>
                     </div>
                   }
@@ -196,7 +195,7 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                         onClick={() => handleCopy(record.saml_sp_acs_url)}
                         title={t('Copy to clipboard')}
                       >
-                        <FontAwesomeIcon icon={faCopy} size="sm" />
+                        <IconCopy size={16} />
                       </button>
                     </div>
                   }
@@ -218,7 +217,7 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                         onClick={() => handleCopy(record.saml_sp_sls_url)}
                         title={t('Copy to clipboard')}
                       >
-                        <FontAwesomeIcon icon={faCopy} size="sm" />
+                        <IconCopy size={16} />
                       </button>
                     </div>
                   }

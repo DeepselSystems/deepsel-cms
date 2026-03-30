@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button, Modal } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse } from '@fortawesome/free-solid-svg-icons';
+import { IconHome } from '@tabler/icons-react';
 
 const ChangeParentModal = ({
   opened,
@@ -56,7 +55,7 @@ const ChangeParentModal = ({
               });
             }}
           >
-            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            <IconHome size={16} className="mr-2" />
             {t('Move to Root Level')}
           </Button>
           <div className="flex flex-wrap justify-start gap-2">

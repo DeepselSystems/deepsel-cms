@@ -1,15 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  faUpload,
-  faXmark,
-  faPenToSquare,
-  faCheckDouble,
-  faFileLines,
-  faCloudArrowUp,
-  faImage,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Group, Text, Modal, Indicator } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
@@ -21,6 +11,7 @@ import type { User } from '../types';
 import type { NotifyFn } from '../types';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
+import { IconChecks, IconCloudUpload, IconEdit, IconFileText, IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 
 /**
  * Accepted MIME types for image-only upload mode
@@ -104,10 +95,7 @@ function FileImage({
           />
         ) : (
           <div className="flex items-center justify-center h-[150px] p-2" title={file.name}>
-            <FontAwesomeIcon
-              icon={faFileLines}
-              className={`text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2`}
-            />
+            <IconFileText size={16} className="text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2" />
             <div className="mt-2 w-full text-sm bg-white rounded p-1 px-2 break-words">
               {file.name}
             </div>
@@ -522,16 +510,13 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
             >
               <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
                 <Dropzone.Accept>
-                  <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
+                  <IconCloudUpload size={16} className="text-3xl text-green-500" />
                 </Dropzone.Accept>
                 <Dropzone.Reject>
-                  <FontAwesomeIcon icon={faXmark} className="text-3xl text-red-500" />
+                  <IconX size={16} className="text-3xl text-red-500" />
                 </Dropzone.Reject>
                 <Dropzone.Idle>
-                  <FontAwesomeIcon
-                    icon={type === 'image' ? faImage : faUpload}
-                    className="text-3xl text-gray-500"
-                  />
+                  {type === 'image' ? <IconPhoto size={16} className="text-3xl text-gray-500" /> : <IconUpload size={16} className="text-3xl text-gray-500" />}
                 </Dropzone.Idle>
 
                 <div className="text-center">
@@ -572,7 +557,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
                     variant="subtle"
                     className="px-2 py-1"
                   >
-                    <FontAwesomeIcon icon={faXmark} className="mr-1 h-3 w-3" />
+                    <IconX size={14} className="mr-1" />
                     {t('Delete')}
                   </Button>
                 )}
@@ -583,12 +568,12 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
                     variant="subtle"
                     className="px-2 py-1"
                   >
-                    <FontAwesomeIcon icon={faCheckDouble} className="mr-1 h-3 w-3" />
+                    <IconChecks size={14} className="mr-1" />
                     {isSelectAll() ? t('Deselect all') : t('Select all')}
                   </Button>
                 )}
                 <Button onClick={handleToggleEdit} size="xs" variant="subtle" className="px-2 py-1">
-                  <FontAwesomeIcon icon={faPenToSquare} className="mr-1 h-3 w-3" />
+                  <IconEdit size={14} className="mr-1" />
                   {t('Toggle edit')}
                 </Button>
               </div>

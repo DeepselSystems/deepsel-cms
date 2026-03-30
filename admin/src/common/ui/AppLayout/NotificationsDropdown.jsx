@@ -1,8 +1,7 @@
 import { Menu } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import NotificationList from '../../notification/NotificationList.jsx';
+import { IconBell } from '@tabler/icons-react';
 
 const NotificationsDropdown = () => {
   const { t } = useTranslation();
@@ -12,7 +11,7 @@ const NotificationsDropdown = () => {
       <Menu.Target>
         {/*<Indicator label="5" color="red" size={13}>*/}
         <div>
-          <FontAwesomeIcon icon={faBell} className="cursor-pointer h-3.5 w-3.5" />
+          <IconBell size={14} className="cursor-pointer" />
         </div>
         {/*</Indicator>*/}
       </Menu.Target>

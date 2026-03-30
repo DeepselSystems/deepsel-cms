@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Card, Text, Badge, Switch } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCheck,
-  faTimes,
-  faExclamationTriangle,
-  faGlobe,
-} from '@fortawesome/free-solid-svg-icons';
 import RichTextInput from './RichTextInput.jsx';
+import { IconAlertTriangle, IconCheck, IconWorld, IconX } from '@tabler/icons-react';
 
 /**
  * Modal for resolving conflicts across multiple language versions
@@ -313,7 +307,7 @@ export default function ConflictResolutionModal({
         {/* Language Header */}
         <div className="flex items-center justify-between mb-4 pb-2 border-b">
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faGlobe} className="text-blue-500" />
+            <IconWorld size={16} className="text-blue-500" />
             <Text size="lg" fw={600}>
               {getLanguageFlag(locale)} {getLanguageName(locale)}
             </Text>
@@ -448,7 +442,7 @@ export default function ConflictResolutionModal({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <FontAwesomeIcon icon={faExclamationTriangle} style={{ color: 'orange' }} size="sm" />
+          <IconAlertTriangle size={16} style={{ color: 'orange' }} />
           <span className="text-lg font-bold">{t('Content Conflict Resolution')}</span>
         </div>
       }
@@ -485,7 +479,7 @@ export default function ConflictResolutionModal({
 
           <div className="my-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-2">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="text-blue-600 mt-0.5" />
+              <IconAlertTriangle size={16} className="text-blue-600 mt-0.5" />
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-blue-800 mb-1">{t('AI Analysis')}</h4>
                 <div className="text-sm text-blue-700">
@@ -514,11 +508,11 @@ export default function ConflictResolutionModal({
         {/* Action Buttons - Fixed Footer */}
         <div className="flex-shrink-0 flex justify-end gap-2 pt-4 border-t mt-4">
           <Button variant="outline" color="gray" onClick={onClose} disabled={isLoading}>
-            <FontAwesomeIcon icon={faTimes} size="sm" className="mr-1" />
+            <IconX size={16} className="mr-1" />
             {t('Cancel')}
           </Button>
           <Button color="green" onClick={handleSaveResolution} loading={isLoading}>
-            <FontAwesomeIcon icon={faCheck} size="sm" className="mr-1" />
+            <IconCheck size={16} className="mr-1" />
             {t('Resolve & Save')}
           </Button>
         </div>

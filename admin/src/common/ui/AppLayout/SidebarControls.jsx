@@ -1,12 +1,6 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faChevronLeft,
-  faChevronRight,
-  faExpand,
-  faCompress,
-} from '@fortawesome/free-solid-svg-icons';
 import useSidebar from '../../hooks/useSidebar.js';
 import Button from '../Button.jsx';
+import { IconArrowsMaximize, IconArrowsMinimize, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 
 /**
  * Example component showing how to control the sidebar from any component
@@ -20,7 +14,7 @@ export default function SidebarControls({ variant = 'buttons' }) {
         onClick={toggle}
         variant="outline"
         size="sm"
-        leftSection={<FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronLeft} />}
+        leftSection={isCollapsed ? <IconChevronRight size={16} /> : <IconChevronLeft size={16} />}
       >
         {isCollapsed ? 'Expand' : 'Collapse'} Sidebar
       </Button>
@@ -34,7 +28,7 @@ export default function SidebarControls({ variant = 'buttons' }) {
         className="p-2 rounded hover:bg-gray-100 transition-colors"
         title={`${isCollapsed ? 'Expand' : 'Collapse'} sidebar`}
       >
-        <FontAwesomeIcon icon={isCollapsed ? faExpand : faCompress} className="h-4 w-4" />
+        {isCollapsed ? <IconArrowsMaximize size={16} /> : <IconArrowsMinimize size={16} />}
       </button>
     );
   }
@@ -47,7 +41,7 @@ export default function SidebarControls({ variant = 'buttons' }) {
         variant="outline"
         size="sm"
         disabled={isCollapsed}
-        leftSection={<FontAwesomeIcon icon={faCompress} />}
+        leftSection={<IconArrowsMinimize size={16} />}
       >
         Collapse
       </Button>
@@ -56,7 +50,7 @@ export default function SidebarControls({ variant = 'buttons' }) {
         variant="outline"
         size="sm"
         disabled={!isCollapsed}
-        leftSection={<FontAwesomeIcon icon={faExpand} />}
+        leftSection={<IconArrowsMaximize size={16} />}
       >
         Expand
       </Button>

@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAddressBook, faFingerprint } from '@fortawesome/free-solid-svg-icons';
 import Card from '../../../common/ui/Card.jsx';
 import Divider from '../../../common/ui/Divider.jsx';
 import H1 from '../../../common/ui/H1.jsx';
@@ -15,6 +13,7 @@ import FileDisplay from '../../../common/ui/FileDisplay.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
 import useHash from '../../../common/api/useHash.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
+import { IconAddressBook, IconFingerprint } from '@tabler/icons-react';
 
 export default function UserView() {
   const { user: currentUser } = useAuthentication();
@@ -61,13 +60,13 @@ export default function UserView() {
             <Tabs.List>
               <Tabs.Tab
                 value="contact"
-                leftSection={<FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />}
+                leftSection={<IconAddressBook size={16} />}
               >
                 {t('Contact Info')}
               </Tabs.Tab>
               <Tabs.Tab
                 value="access"
-                leftSection={<FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />}
+                leftSection={<IconFingerprint size={16} />}
               >
                 {t('Access')}
               </Tabs.Tab>

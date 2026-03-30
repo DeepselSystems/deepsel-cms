@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import { LoadingOverlay } from '@mantine/core';
@@ -19,6 +17,7 @@ import EditMenuItemModal from './components/EditMenuItemModal.jsx';
 import { buildMenuTree, isValidUrl } from './utils/menuUtils.js';
 
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
+import { IconPlus } from '@tabler/icons-react';
 
 // Main Menu Tree Component
 export default function MenuTree() {
@@ -524,7 +523,7 @@ export default function MenuTree() {
                 open();
               }}
             >
-              <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
+              <IconPlus size={16} className="sm:mr-1" />
               <span className={`hidden sm:inline`}>{t('Add Menu Item')}</span>
             </Button>
           </VisibilityControl>

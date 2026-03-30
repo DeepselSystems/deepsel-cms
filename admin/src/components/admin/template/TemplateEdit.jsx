@@ -1,16 +1,4 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import {
-  faPlus,
-  faTrash,
-  faDesktop,
-  faTabletAlt,
-  faMobileAlt,
-  faSave,
-  faCode,
-  faCog,
-  faQuestion,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +25,7 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
+import { IconCode, IconDeviceDesktop, IconDeviceFloppy, IconDeviceMobile, IconDeviceTablet, IconPlus, IconQuestionMark, IconSettings, IconTrash } from '@tabler/icons-react';
 
 export default function TemplateEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -619,7 +608,7 @@ export default function TemplateEdit({ onSuccess }) {
                       <Menu.Dropdown>
                         <Menu.Item
                           color="red"
-                          leftSection={<FontAwesomeIcon icon={faTrash} />}
+                          leftSection={<IconTrash size={16} />}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteContent(content.id);
@@ -641,7 +630,7 @@ export default function TemplateEdit({ onSuccess }) {
                     }}
                     className="bg-gray-100 hover:bg-gray-200"
                   >
-                    <FontAwesomeIcon icon={faPlus} />
+                    <IconPlus size={16} />
                   </Tabs.Tab>
                 </Tooltip>
               </Tabs.List>
@@ -661,7 +650,7 @@ export default function TemplateEdit({ onSuccess }) {
                             onClick={openTemplatesModal}
                             className="text-xs"
                           >
-                            <FontAwesomeIcon icon={faCode} className="mr-1" />
+                            <IconCode size={16} className="mr-1" />
                             {t('Use Templates')}
                           </Button>
                           <Button
@@ -670,7 +659,7 @@ export default function TemplateEdit({ onSuccess }) {
                             onClick={openVariablesModal}
                             className="text-xs"
                           >
-                            <FontAwesomeIcon icon={faCog} className="mr-1" />
+                            <IconSettings size={16} className="mr-1" />
                             {t('Use Variables')}
                           </Button>
                           <Tooltip label={t('Learn more about Jinja templating syntax')}>
@@ -683,7 +672,7 @@ export default function TemplateEdit({ onSuccess }) {
                               rel="noopener noreferrer"
                               className="text-xs"
                             >
-                              <FontAwesomeIcon icon={faQuestion} />
+                              <IconQuestionMark size={16} />
                             </Button>
                           </Tooltip>
                         </div>
@@ -750,7 +739,7 @@ export default function TemplateEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('desktop')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faDesktop} />
+                  <IconDeviceDesktop size={16} />
                 </Button>
                 <Button
                   variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
@@ -758,7 +747,7 @@ export default function TemplateEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('tablet')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faTabletAlt} />
+                  <IconDeviceTablet size={16} />
                 </Button>
                 <Button
                   variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
@@ -766,14 +755,14 @@ export default function TemplateEdit({ onSuccess }) {
                   onClick={() => setPreviewDevice('mobile')}
                   className="px-2"
                 >
-                  <FontAwesomeIcon icon={faMobileAlt} />
+                  <IconDeviceMobile size={16} />
                 </Button>
               </div>
 
               {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
               <div className="flex items-center gap-3">
                 <Button type="submit" variant="filled" size="sm" loading={loading}>
-                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  <IconDeviceFloppy size={16} className="mr-2" />
                   {t('Save')}
                 </Button>
               </div>

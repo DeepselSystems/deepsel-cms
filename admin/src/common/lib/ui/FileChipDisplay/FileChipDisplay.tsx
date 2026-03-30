@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faDownload } from '@fortawesome/free-solid-svg-icons';
+
 import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { Chip } from '../Chip';
+import { IconDownload } from '@tabler/icons-react';
 
 export interface FileChipDisplayProps {
   /** Attachment object containing the file name */
@@ -38,7 +37,7 @@ export function FileChipDisplay({ attachment, backendHost }: FileChipDisplayProp
       style={{ fontSize: 'var(--mantine-font-size-sm)' }}
     >
       <Chip
-        icon={<FontAwesomeIcon icon={faDownload as IconProp} className="mr-1 text-primary-main" />}
+        icon={<IconDownload size={14} className="mr-1 text-primary-main" />}
         size="xs"
         variant="outline"
         checked={true}

@@ -8,8 +8,6 @@ import RecordSelectMulti from '../../../common/ui/RecordSelectMulti.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import FileInput from '../../../common/ui/FileInput.jsx';
 import CreateFormWrapper from '../../../common/ui/CreateFormWrapper.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAddressBook, faFingerprint } from '@fortawesome/free-solid-svg-icons';
 import { Tabs } from '@mantine/core';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import Select from '../../../common/ui/Select.jsx';
@@ -21,6 +19,7 @@ import { Combobox, Group, CheckIcon } from '@mantine/core';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
+import { IconAddressBook, IconFingerprint } from '@tabler/icons-react';
 
 export default function UserCreate(props) {
   const { modalMode } = props;
@@ -156,7 +155,7 @@ export default function UserCreate(props) {
         <Tabs.List>
           <Tabs.Tab
             value="contact"
-            leftSection={<FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />}
+            leftSection={<IconAddressBook size={16} />}
           >
             {t('Contact Info')}
           </Tabs.Tab>
@@ -166,7 +165,7 @@ export default function UserCreate(props) {
           >
             <Tabs.Tab
               value="access"
-              leftSection={<FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />}
+              leftSection={<IconFingerprint size={16} />}
             >
               {t('Access')}
             </Tabs.Tab>

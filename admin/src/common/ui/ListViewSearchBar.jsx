@@ -1,13 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Button as MantineButton } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faXmark, faSearch } from '@fortawesome/free-solid-svg-icons';
 import TextInput from './TextInput.jsx';
 import Button from './Button.jsx';
 import NotificationState from '../stores/NotificationState.js';
 import Chip from '@mui/material/Chip';
 import { operatorLabels } from '../../constants/ormOperators.js';
 import Select from './Select.jsx';
+import { IconRefresh, IconSearch, IconX } from '@tabler/icons-react';
 
 export default function ListViewSearchBar(props) {
   const { t } = useTranslation();
@@ -119,14 +118,10 @@ export default function ListViewSearchBar(props) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={t(`Search...`)}
-                leftSection={<FontAwesomeIcon icon={faSearch} />}
+                leftSection={<IconSearch size={16} />}
                 rightSection={
                   searchTerm && (
-                    <FontAwesomeIcon
-                      className={`cursor-pointer`}
-                      icon={faXmark}
-                      onClick={() => setSearchTerm('')}
-                    />
+                    <IconX size={16} className="cursor-pointer" />
                   )
                 }
               />
@@ -169,7 +164,7 @@ export default function ListViewSearchBar(props) {
               </span>
 
               <Button size={`xs`} onClick={handleDelete} color={`red`}>
-                <FontAwesomeIcon icon={faXmark} className="mr-1 h-3 w-3" />
+                <IconX size={14} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>
@@ -189,7 +184,7 @@ export default function ListViewSearchBar(props) {
           {/*        className={`shadow`}*/}
           {/*        radius={`md`}*/}
           {/*      >*/}
-          {/*        <FontAwesomeIcon icon={faArrowUpFromBracket} />*/}
+          {/*        <IconUpload size={16} />*/}
           {/*      </MantineButton>*/}
           {/*    )}*/}
           {/*  </FileButton>*/}
@@ -205,7 +200,7 @@ export default function ListViewSearchBar(props) {
           {/*        className={`shadow`}*/}
           {/*        radius={`md`}*/}
           {/*      >*/}
-          {/*        <FontAwesomeIcon icon={faFileArrowDown} />*/}
+          {/*        <IconFileDownload size={16} />*/}
           {/*      </MantineButton>*/}
           {/*    </Tooltip>*/}
           {/*  </Menu.Target>*/}
@@ -230,7 +225,7 @@ export default function ListViewSearchBar(props) {
             className={`shadow`}
             radius={`md`}
           >
-            <FontAwesomeIcon icon={faArrowsRotate} />
+            <IconRefresh size={16} />
           </MantineButton>
 
           {/*Page Size*/}

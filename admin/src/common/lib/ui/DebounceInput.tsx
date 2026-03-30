@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, type TextInputProps } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { IconX } from '@tabler/icons-react';
 
 interface DebounceInputProps extends Omit<TextInputProps, 'value' | 'onChange'> {
   value?: string;
@@ -75,11 +74,7 @@ export const DebounceInput = ({
       {...others}
       rightSection={
         clearable && (
-          <FontAwesomeIcon
-            icon={faXmark}
-            className="cursor-pointer h-6 w-6 hover:bg-gray-200 rounded-full p-1"
-            onClick={() => setLocalValue('')}
-          />
+          <IconX size={24} className="cursor-pointer hover:bg-gray-200 rounded-full p-1" />
         )
       }
     />

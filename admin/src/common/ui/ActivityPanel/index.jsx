@@ -14,9 +14,8 @@ import CommentedActivity from './CommentedActivity';
 import useModel from '../../api/useModel';
 import useAuthentication from '../../api/useAuthentication';
 import BackendHostURLState from '../../stores/BackendHostURLState';
-import { faList } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import CommentImages from './CommentImages';
+import { IconList } from '@tabler/icons-react';
 
 export default function ActivityPanel(props) {
   const { t } = useTranslation();
@@ -199,7 +198,7 @@ export default function ActivityPanel(props) {
           onClick={() => get()}
           size="lg"
         >
-          <FontAwesomeIcon icon={faList} className="mr-2 h-4 w-4" />
+          <IconList size={16} className="mr-2" />
           {t('Activities')}
         </Button>
       </div>

@@ -11,8 +11,6 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faImages, faInfoCircle, faSave, faSearch } from '@fortawesome/free-solid-svg-icons';
 import clsx from 'clsx';
 
 import { downloadFromAttachUrl } from '@deepsel/cms-utils';
@@ -26,6 +24,7 @@ import { TextInput } from '../../TextInput';
 import { useStockImages } from '../hooks/useStockImages';
 import type { StockImage } from '../hooks/useStockImages';
 import { StockImageItem } from './StockImageItem';
+import { IconDeviceFloppy, IconInfoCircle, IconPhotoPlus, IconSearch } from '@tabler/icons-react';
 
 /**
  * Delay before hiding skeleton after image load (milliseconds)
@@ -202,7 +201,7 @@ export function SearchStockImages({
         }}
         rightSection={
           <UnstyledButton disabled={!searchQuery} onClick={handleSearch}>
-            <FontAwesomeIcon icon={faSearch} />
+            <IconSearch size={16} />
           </UnstyledButton>
         }
       />
@@ -281,7 +280,7 @@ export function SearchStockImages({
       {/*region no images*/}
       {!loading && !error && !images.length && (
         <Box className="text-center space-y-3 px-6 py-16">
-          <FontAwesomeIcon size="3x" icon={faImages} className="text-gray-pale-sky" />
+          <IconPhotoPlus size={16} className="text-gray-pale-sky" />
           <Text c="dimmed" size="sm">
             {t('No images found. Enter new keywords.')}
           </Text>
@@ -303,11 +302,7 @@ export function SearchStockImages({
             <>
               {selectedImage?.description && (
                 <Tooltip withArrow label={selectedImage.description}>
-                  <FontAwesomeIcon
-                    className="text-gray-pale-sky transition opacity-50 hover:opacity-100"
-                    size="sm"
-                    icon={faInfoCircle}
-                  />
+                  <IconInfoCircle size={16} className="text-gray-pale-sky transition opacity-50 hover:opacity-100" />
                 </Tooltip>
               )}
             </>
@@ -319,7 +314,7 @@ export function SearchStockImages({
             variant="light"
             color="blue"
             mb="md"
-            icon={<FontAwesomeIcon icon={faSave} />}
+            icon={<IconDeviceFloppy size={16} />}
             title={t('This image has already been cloned to the system')}
           ></Alert>
         )}

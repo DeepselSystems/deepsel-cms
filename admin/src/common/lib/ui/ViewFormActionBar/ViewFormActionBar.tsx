@@ -1,13 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faArrowLeft, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../Button';
 import { useBack } from '../../hooks';
 import type { User } from '../../types';
 import type { NotifyFn } from '../../types';
+import { IconArrowLeft, IconPencil, IconTrash } from '@tabler/icons-react';
 
 /** Subset of useModel return values used by this component */
 interface ViewFormQuery {
@@ -142,11 +141,7 @@ export function ViewFormActionBar({
           variant="outline"
           onClick={() => back()}
         >
-          <FontAwesomeIcon
-            icon={faArrowLeft as IconProp}
-            className="mr-1 h-4 w-4 sm:h-3 sm:w-3"
-            size="sm"
-          />
+          <IconArrowLeft size={14} className="mr-1" />
           <span className="hidden sm:block">{t('Back')}</span>
         </Button>
       </div>
@@ -163,13 +158,13 @@ export function ViewFormActionBar({
               loading={loading}
               variant="filled"
             >
-              <FontAwesomeIcon icon={faPen as IconProp} className="mr-2 h-3 w-3" size="sm" />
+              <IconPencil size={14} className="mr-2" />
               {t('Edit')}
             </Button>
           )}
           {canDelete && (
             <Button variant="outline" onClick={handleDelete}>
-              <FontAwesomeIcon icon={faTrash as IconProp} className="mr-2 h-3 w-3" size="sm" />
+              <IconTrash size={14} className="mr-2" />
               {t('Delete')}
             </Button>
           )}

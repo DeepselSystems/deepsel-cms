@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Menu, Group, ActionIcon, useMantineTheme, type ButtonProps } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { IconChevronDown } from '@tabler/icons-react';
 
 interface SplitButtonProps extends ButtonProps {
   title?: React.ReactNode;
@@ -27,7 +26,7 @@ export const SplitButton = ({ title, children, ...props }: SplitButtonProps) => 
             size={36}
             className="!rounded-tl-none !rounded-bl-none !border-l !border-l-gray-200"
           >
-            <FontAwesomeIcon icon={faChevronDown} className="h-4 w-4" />
+            <IconChevronDown size={16} />
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>{children}</Menu.Dropdown>

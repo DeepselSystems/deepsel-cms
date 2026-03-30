@@ -8,16 +8,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import H2 from '../../../common/ui/H2.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCube,
-  faCog,
-  faFileImport,
-  faArrowRight,
-  faLock,
-  faServer,
-  faBoxes,
-} from '@fortawesome/free-solid-svg-icons';
 import { Menu, LoadingOverlay } from '@mantine/core';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 // import backendHost from "../../constants/backendHost.js";
@@ -25,6 +15,7 @@ import { useState } from 'react';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { Switch, Collapse } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
+import { IconArrowRight, IconBoxMultiple, IconCube, IconFileImport, IconLock, IconServer, IconSettings } from '@tabler/icons-react';
 
 export default function OrganizationSettings() {
   const { t } = useTranslation();
@@ -133,7 +124,7 @@ export default function OrganizationSettings() {
 
           <div className={`mt-6 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faLock} className="text-gray-600" />
+              <IconLock size={16} className="text-gray-600" />
               <H2 className={``}>{t('Authentication')}</H2>
             </div>
             <Switch
@@ -195,12 +186,12 @@ export default function OrganizationSettings() {
               >
                 Configure Google Sign-In
               </div>
-              <FontAwesomeIcon icon={faArrowRight} className="ml-1" />
+              <IconArrowRight size={16} className="ml-1" />
             </Link>
           </div>
 
           <div className={`mt-4 flex gap-2 items-center`}>
-            <FontAwesomeIcon icon={faServer} className="text-gray-600" />
+            <IconServer size={16} className="text-gray-600" />
             <H2 className={``}>{t('Technical Settings')}</H2>
             <div>
               <Switch
@@ -227,7 +218,7 @@ export default function OrganizationSettings() {
             </div>
 
             <div className="flex items-center gap-2 mt-4">
-              <FontAwesomeIcon icon={faBoxes} className="text-gray-600" />
+              <IconBoxMultiple size={16} className="text-gray-600" />
               <H2>{t('Installed Business Apps')}</H2>
             </div>
             <div className={`relative flex gap-4 my-2 flex-wrap text-primary-main`}>
@@ -249,17 +240,17 @@ export default function OrganizationSettings() {
                 >
                   <div className={`flex justify-between items-center`}>
                     <div>
-                      <FontAwesomeIcon icon={faCube} className={`mr-1`} />
+                      <IconCube size={16} className="mr-1" />
                       {app.name}
                     </div>
                     <Menu shadow="md" width={180}>
                       <Menu.Target>
-                        <FontAwesomeIcon icon={faCog} className={`cursor-pointer`} />
+                        <IconSettings size={16} className="cursor-pointer" />
                       </Menu.Target>
 
                       <Menu.Dropdown>
                         <Menu.Item onClick={() => loadDemoData(app)}>
-                          <FontAwesomeIcon icon={faFileImport} className={`mr-1.5`} />
+                          <IconFileImport size={16} className="mr-1.5" />
                           {t('Load demo data')}
                         </Menu.Item>
                       </Menu.Dropdown>

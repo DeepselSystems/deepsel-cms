@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 
-import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Tabs, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -18,6 +16,7 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 import { buildBlogPostUrlWithDomain } from '../../../utils/domainUtils.js';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
+import { IconExternalLink } from '@tabler/icons-react';
 
 export default function BlogPostView() {
   const { t } = useTranslation();
@@ -117,7 +116,7 @@ export default function BlogPostView() {
                   target="_blank"
                   disabled={!record.published}
                 >
-                  <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4 mr-2" />
+                  <IconExternalLink size={16} className="mr-2" />
                   {t('Go to post')}
                 </Button>
               </div>
@@ -174,7 +173,7 @@ export default function BlogPostView() {
                           )}
 
                           <div
-                            className="typography page-content"
+                            className="typography"
                             dangerouslySetInnerHTML={{
                               __html: content.content || '',
                             }}

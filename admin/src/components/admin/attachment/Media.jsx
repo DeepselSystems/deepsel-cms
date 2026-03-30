@@ -1,14 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  faDownload,
-  faTrash,
-  faCloudArrowUp,
-  faImage,
-  faHardDrive,
-  faLink,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropzone } from '@mantine/dropzone';
 import { Group, Text } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
@@ -21,6 +12,7 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import H1 from '../../../common/ui/H1.jsx';
 import { Helmet } from 'react-helmet';
+import { IconCloudUpload, IconDownload, IconLink, IconPhoto, IconServer, IconTrash } from '@tabler/icons-react';
 
 /**
  * @type {string[]}
@@ -118,11 +110,11 @@ function FileCard({ file, onDelete }) {
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
               <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <FontAwesomeIcon icon={faLink} className="mr-1 h-3 w-3" />
+                <IconLink size={14} className="mr-1" />
                 {t('Copy Link')}
               </Button>
               <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <FontAwesomeIcon icon={faDownload} className="mr-1 h-3 w-3" />
+                <IconDownload size={14} className="mr-1" />
                 {t('Download')}
               </Button>
               <Button
@@ -132,7 +124,7 @@ function FileCard({ file, onDelete }) {
                 color="red"
                 className="px-2 py-1"
               >
-                <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
+                <IconTrash size={14} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>
@@ -153,11 +145,11 @@ function FileCard({ file, onDelete }) {
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
               <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <FontAwesomeIcon icon={faLink} className="mr-1 h-3 w-3" />
+                <IconLink size={14} className="mr-1" />
                 {t('Copy Link')}
               </Button>
               <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <FontAwesomeIcon icon={faDownload} className="mr-1 h-3 w-3" />
+                <IconDownload size={14} className="mr-1" />
                 {t('Download')}
               </Button>
               <Button
@@ -167,7 +159,7 @@ function FileCard({ file, onDelete }) {
                 color="red"
                 className="px-2 py-1"
               >
-                <FontAwesomeIcon icon={faTrash} className="mr-1 h-3 w-3" />
+                <IconTrash size={14} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>
@@ -344,7 +336,7 @@ export default function Media() {
         <div className="flex justify-between items-center mb-4">
           <H1>{t('Media Library')}</H1>
           <div className="flex items-center text-sm bg-gray-100 px-3 py-2 rounded-md">
-            <FontAwesomeIcon icon={faHardDrive} className="mr-2 text-primary-main" />
+            <IconServer size={16} className="mr-2 text-primary-main" />
             {isLoading ? t('Loading storage info...') : formatStorageInfo()}
           </div>
         </div>
@@ -357,10 +349,10 @@ export default function Media() {
           >
             <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
               <Dropzone.Accept>
-                <FontAwesomeIcon icon={faCloudArrowUp} className="text-3xl text-green-500" />
+                <IconCloudUpload size={16} className="text-3xl text-green-500" />
               </Dropzone.Accept>
               <Dropzone.Idle>
-                <FontAwesomeIcon icon={faImage} className="text-3xl text-gray-500" />
+                <IconPhoto size={16} className="text-3xl text-gray-500" />
               </Dropzone.Idle>
 
               <div className="text-center">

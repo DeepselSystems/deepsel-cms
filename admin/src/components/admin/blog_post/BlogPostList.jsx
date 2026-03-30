@@ -6,8 +6,6 @@ import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -19,6 +17,7 @@ import Button from '../../../common/ui/Button.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
+import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 
 const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
@@ -212,7 +211,7 @@ export default function BlogPostList() {
                 className={`shadow bg-primary-main text-primary-contrastText`}
                 color={`primary`}
               >
-                <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
+                <IconPlus size={16} className="sm:mr-1" />
                 {t('')}
                 <span className={`hidden sm:inline`}>{t('Create Blog Post')}</span>
               </Button>
@@ -244,7 +243,7 @@ export default function BlogPostList() {
             variant="light"
             title="Error"
             className="mb-4"
-            icon={<FontAwesomeIcon icon={faTriangleExclamation} />}
+            icon={<IconAlertTriangle size={16} />}
           >
             {error}
           </Alert>

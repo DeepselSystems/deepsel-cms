@@ -1,8 +1,7 @@
 import React from 'react';
 import { Modal, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { IconAlertTriangle, IconX } from '@tabler/icons-react';
 
 interface Editor {
   display_name?: string;
@@ -59,7 +58,7 @@ export const ParallelEditWarning = ({
       onClose={isFirstUser ? onDismiss! : onGoBack!}
       title={
         <div className="flex items-center gap-2">
-          <FontAwesomeIcon icon={faExclamationTriangle} style={{ color: '#fd7e14' }} size="lg" />
+          <IconAlertTriangle size={16} style={{ color: '#fd7e14' }} />
           <span className="text-lg font-bold">{t('WARNING: Parallel Editing Detected')}</span>
         </div>
       }
@@ -123,7 +122,7 @@ export const ParallelEditWarning = ({
               variant="outline"
               color="gray"
               onClick={onDismiss}
-              leftSection={<FontAwesomeIcon icon={faTimes} size="sm" />}
+              leftSection={<IconX size={16} />}
               className="w-full"
             >
               {t('Acknowledge')}

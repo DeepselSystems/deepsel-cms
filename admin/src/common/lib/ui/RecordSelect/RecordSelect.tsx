@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InputBase, Combobox, useCombobox, CloseButton, Modal, ScrollArea } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+
 import { useModel } from '../../hooks';
 import type { FilterCondition } from '../../hooks';
 import type { User } from '../../types';
+import { IconPlus } from '@tabler/icons-react';
 
 /** Generic API record — all fields are unknown at the type level */
 type RecordItem = Record<string, unknown>;
@@ -293,7 +292,7 @@ export function RecordSelect({
                   className="w-full border-t border-gray-border text-primary-main text-left p-2 hover:bg-primary-main hover:text-primary-contrastText rounded-b text-xs font-semibold"
                   onClick={() => setShowModal(true)}
                 >
-                  <FontAwesomeIcon icon={faPlus as IconProp} className="mr-1" />
+                  <IconPlus size={14} className="mr-1" />
                   {t('Create')}
                 </button>
               )}

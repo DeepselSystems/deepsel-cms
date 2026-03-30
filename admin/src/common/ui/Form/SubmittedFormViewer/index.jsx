@@ -1,12 +1,11 @@
 import React from 'react';
 import { Box, Text, Group, Badge, Stack, Alert } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
 import { FormFieldType } from '../../../../constants/form.js';
 import FileDisplay from '../../FileDisplay.jsx';
 import { formatFileSize } from '../../../utils/index.js';
+import { IconInfoCircle } from '@tabler/icons-react';
 
 /**
  * Component to display a submitted form with read-only data
@@ -94,7 +93,7 @@ const SubmittedFormViewer = ({ formContent, submissionData, showTitle = true }) 
                     color="orange"
                     variant="light"
                     size="xs"
-                    icon={<FontAwesomeIcon icon={faInfoCircle} />}
+                    icon={<IconInfoCircle size={16} />}
                   >
                     {t('This field has been removed from the current form')}
                   </Alert>

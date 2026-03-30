@@ -6,10 +6,9 @@ import Button from '../../Button.jsx';
 import { useTranslation } from 'react-i18next';
 import useFormFieldsData from './useFormFieldsData.js';
 import fromPairs from 'lodash/fromPairs.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { FormFieldType } from '../../../../constants/form.js';
 import clsx from 'clsx';
+import { IconCircleCheck } from '@tabler/icons-react';
 
 /**
  * Render submission limit hint
@@ -263,7 +262,7 @@ const RenderedForm = ({
                 )}
               </Box>
             }
-            icon={<FontAwesomeIcon icon={faCheckCircle} size="lg" />}
+            icon={<IconCircleCheck size={16} />}
           />
         )}
 

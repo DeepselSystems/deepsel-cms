@@ -14,8 +14,7 @@ import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { IconPlayerPlay } from '@tabler/icons-react';
 
 export default function CronView() {
   const { t } = useTranslation();
@@ -56,7 +55,7 @@ export default function CronView() {
             <div className={`flex justify-between items-center`}>
               <H1>{t('Scheduled Action')}</H1>
               <Button onClick={execute} loading={loading}>
-                <FontAwesomeIcon icon={faPlay} className="mr-1 h-3 w-3" size={`sm`} />
+                <IconPlayerPlay size={14} className="mr-1" />
                 Execute Manually
               </Button>
             </div>

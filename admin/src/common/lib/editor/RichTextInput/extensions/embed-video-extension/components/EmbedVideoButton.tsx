@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Editor } from '@tiptap/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faVideoCamera } from '@fortawesome/free-solid-svg-icons';
+import { IconVideo } from '@tabler/icons-react';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
@@ -44,7 +42,7 @@ const EmbedVideoButton = ({
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon icon={faVideoCamera as IconProp} className="text-[#808496]" />
+              <IconVideo size={18} className="text-[#808496]" />
             )}
           </button>
         </Tooltip>

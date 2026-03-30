@@ -2,16 +2,6 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTriangleExclamation,
-  faPalette,
-  faCheck,
-  faEdit,
-  faDownload,
-  faUpload,
-  faRotateLeft,
-} from '@fortawesome/free-solid-svg-icons';
 import { Alert, Card, Badge, SimpleGrid, Loader, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import H1 from '../../../common/ui/H1.jsx';
@@ -21,6 +11,7 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import { fetchPublicSettings } from '../../../utils/pageUtils.js';
+import { IconAlertTriangle, IconCheck, IconDownload, IconEdit, IconPalette, IconRotate2, IconUpload } from '@tabler/icons-react';
 
 export default function ThemeList() {
   const { t } = useTranslation();
@@ -255,7 +246,7 @@ export default function ThemeList() {
               className="bg-primary-main text-primary-contrastText"
               color="primary"
             >
-              <FontAwesomeIcon icon={faUpload} className="mr-2" />
+              <IconUpload size={16} className="mr-2" />
               {t('Upload Theme')}
             </Button>
           </div>
@@ -267,7 +258,7 @@ export default function ThemeList() {
             variant="light"
             title="Error"
             className="mb-4"
-            icon={<FontAwesomeIcon icon={faTriangleExclamation} />}
+            icon={<IconAlertTriangle size={16} />}
           >
             {error}
           </Alert>
@@ -279,7 +270,7 @@ export default function ThemeList() {
           </div>
         ) : themes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-            <FontAwesomeIcon icon={faPalette} className="h-16 w-16 mb-4 opacity-50" />
+            <IconPalette size={64} className="mb-4 opacity-50" />
             <p className="text-lg">{t('No themes found')}</p>
           </div>
         ) : (
@@ -320,7 +311,7 @@ export default function ThemeList() {
                         </Badge>
                         {isSelected && (
                           <Badge color="green" variant="filled" size="sm">
-                            <FontAwesomeIcon icon={faCheck} className="mr-1" />
+                            <IconCheck size={16} className="mr-1" />
                             {t('Selected')}
                           </Badge>
                         )}
@@ -340,7 +331,7 @@ export default function ThemeList() {
                             variant="outline"
                             className="flex-1"
                           >
-                            <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                            <IconEdit size={16} className="mr-2" />
                             {t('Edit')}
                           </Button>
                           <Tooltip label={t('Reset to Default')}>
@@ -351,7 +342,7 @@ export default function ThemeList() {
                               variant="outline"
                               color="red"
                             >
-                              <FontAwesomeIcon icon={faRotateLeft} />
+                              <IconRotate2 size={16} />
                             </Button>
                           </Tooltip>
                         </>
@@ -374,7 +365,7 @@ export default function ThemeList() {
                           loading={downloadingTheme === theme.folder_name}
                           variant="outline"
                         >
-                          <FontAwesomeIcon icon={faDownload} />
+                          <IconDownload size={16} />
                         </Button>
                       </Tooltip>
                     </div>

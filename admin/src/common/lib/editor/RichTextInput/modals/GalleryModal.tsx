@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Group, Modal, Text, TextInput } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import {
-  faArrowDown,
-  faArrowUp,
-  faEdit,
-  faImage,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
+import { IconArrowDown, IconArrowUp, IconEdit, IconPhoto, IconTrash } from '@tabler/icons-react';
 import { Button } from '../../../ui/Button';
 import { Checkbox } from '../../../ui/Checkbox';
 import { getAttachmentUrl } from '@deepsel/cms-utils';
@@ -183,7 +175,7 @@ export function GalleryModal({
         onClose={close}
         title={
           <div className="flex items-center">
-            <FontAwesomeIcon icon={faImage as IconProp} className="mr-2" />
+            <IconPhoto size={18} className="mr-2" />
             <Text size="lg" fw={500}>
               {galleryId ? t('Edit Gallery') : t('Create Gallery')}
             </Text>
@@ -306,39 +298,27 @@ export function GalleryModal({
                                 className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
                                 title="Edit Caption"
                               >
-                                <FontAwesomeIcon
-                                  icon={faEdit as IconProp}
-                                  className="text-gray-700"
-                                />
+                                <IconEdit size={14} className="text-gray-700" />
                               </button>
                               <button
                                 className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                                 onClick={() => moveAttachment(index, 'up')}
                                 disabled={index === 0}
                               >
-                                <FontAwesomeIcon
-                                  icon={faArrowUp as IconProp}
-                                  className="text-gray-700"
-                                />
+                                <IconArrowUp size={14} className="text-gray-700" />
                               </button>
                               <button
                                 className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                                 onClick={() => moveAttachment(index, 'down')}
                                 disabled={index === selectedAttachments.length - 1}
                               >
-                                <FontAwesomeIcon
-                                  icon={faArrowDown as IconProp}
-                                  className="text-gray-700"
-                                />
+                                <IconArrowDown size={14} className="text-gray-700" />
                               </button>
                               <button
                                 className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white hover:text-red-500"
                                 onClick={() => removeAttachment(index)}
                               >
-                                <FontAwesomeIcon
-                                  icon={faTrash as IconProp}
-                                  className="text-gray-700"
-                                />
+                                <IconTrash size={14} className="text-gray-700" />
                               </button>
                             </div>
                           </div>

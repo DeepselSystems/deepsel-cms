@@ -1,19 +1,17 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
-  faAlignCenter,
-  faAlignLeft,
-  faAlignRight,
-  faCircle,
-  faEdit,
-  faIndent,
-  faMinus,
-  faPlus,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
+  IconAlignCenter,
+  IconAlignLeft,
+  IconAlignRight,
+  IconCircle,
+  IconEdit,
+  IconTextWrap,
+  IconMinus,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import DescriptionModal from './DescriptionModal';
@@ -217,7 +215,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               },
             )}
           >
-            <FontAwesomeIcon icon={faAlignLeft as IconProp} className="text-gray-600 text-xs" />
+            <IconAlignLeft size={12} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -234,7 +232,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
                 },
               )}
             >
-              <FontAwesomeIcon icon={faAlignCenter as IconProp} className="text-gray-600 text-xs" />
+              <IconAlignCenter size={12} className="text-gray-600" />
             </button>
           </Tooltip>
         )}
@@ -251,7 +249,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               },
             )}
           >
-            <FontAwesomeIcon icon={faAlignRight as IconProp} className="text-gray-600 text-xs" />
+            <IconAlignRight size={12} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -262,7 +260,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             onClick={() => handleSizeChange(true)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
           >
-            <FontAwesomeIcon icon={faPlus as IconProp} className="text-gray-600 text-xs" />
+            <IconPlus size={12} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -273,7 +271,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             onClick={() => handleSizeChange(false)}
             className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
           >
-            <FontAwesomeIcon icon={faMinus as IconProp} className="text-gray-600 text-xs" />
+            <IconMinus size={12} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -309,9 +307,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               },
             )}
           >
-            <FontAwesomeIcon
-              icon={faCircle as IconProp}
-              className={clsx('text-xs', {
+            <IconCircle
+              size={12}
+              className={clsx({
                 'text-gray-600': !circle,
                 'text-blue-600': circle,
               })}
@@ -331,9 +329,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               },
             )}
           >
-            <FontAwesomeIcon
-              icon={faIndent as IconProp}
-              className={clsx('text-xs', {
+            <IconTextWrap
+              size={12}
+              className={clsx({
                 'text-gray-600': !inline,
                 'text-blue-600': inline,
               })}
@@ -353,7 +351,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               },
             )}
           >
-            <FontAwesomeIcon icon={faEdit as IconProp} className="text-gray-600 text-xs" />
+            <IconEdit size={12} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -364,7 +362,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             onClick={deleteNode}
             className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100"
           >
-            <FontAwesomeIcon icon={faTrash as IconProp} className="text-red-500 text-xs" />
+            <IconTrash size={12} className="text-red-500" />
           </button>
         </Tooltip>
       </div>

@@ -1,10 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faArrowLeft, faCheck } from '@fortawesome/free-solid-svg-icons';
+
 import { Button } from '../Button';
 import { useBack } from '../../hooks';
+import { IconArrowLeft, IconCheck } from '@tabler/icons-react';
 
 export interface CreateFormActionBarProps {
   /** Whether the form is currently submitting — disables and shows loader on the Save button */
@@ -37,7 +36,7 @@ export function CreateFormActionBar({
       {!modalMode && (
         <div>
           <Button className="shadow text-[14px] font-[600]" variant="outline" onClick={back}>
-            <FontAwesomeIcon icon={faArrowLeft as IconProp} className="mr-1 h-3 w-3" size="sm" />
+            <IconArrowLeft size={14} className="mr-1" />
             {t('Back')}
           </Button>
         </div>
@@ -55,7 +54,7 @@ export function CreateFormActionBar({
           variant="filled"
           type="submit"
         >
-          <FontAwesomeIcon icon={faCheck as IconProp} className="mr-1 h-4 w-4" size="sm" />
+          <IconCheck size={16} className="mr-1" />
           {t('Save')}
         </Button>
       )}

@@ -17,22 +17,20 @@ import './extensions/styles/jinja2.css';
 import './extensions/styles/prose-mirror-collapse.css';
 import './extensions/styles/youtube-jump-marks.css';
 import {
-  faPlus,
-  faMinus,
-  faImages,
-  faTable,
-  faArrowLeft,
-  faArrowRight,
-  faArrowUp,
-  faArrowDown,
-  faTrash,
-  faTimes,
-  faAngleDown,
-  faCube,
-} from '@fortawesome/free-solid-svg-icons';
-import { faYoutube } from '@fortawesome/free-brands-svg-icons';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+  IconPlus,
+  IconMinus,
+  IconLibraryPhoto,
+  IconTable,
+  IconArrowLeft,
+  IconArrowRight,
+  IconArrowUp,
+  IconArrowDown,
+  IconTrash,
+  IconX,
+  IconChevronDown,
+  IconCube,
+  IconBrandYoutube,
+} from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
 import Highlight from '@tiptap/extension-highlight';
@@ -546,11 +544,8 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon
-                      icon={faArrowLeft as IconProp}
-                      className="text-[#808496] text-xs"
-                    />
-                    <FontAwesomeIcon icon={faPlus as IconProp} className="text-[#808496] text-xs" />
+                    <IconArrowLeft size={12} className="text-[#808496]" />
+                    <IconPlus size={12} className="text-[#808496]" />
                     <span className="text-[#808496] text-xs">Col</span>
                   </button>
                 </Tooltip>
@@ -562,12 +557,9 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faPlus as IconProp} className="text-[#808496] text-xs" />
+                    <IconPlus size={12} className="text-[#808496]" />
                     <span className="text-[#808496] text-xs">Col</span>
-                    <FontAwesomeIcon
-                      icon={faArrowRight as IconProp}
-                      className="text-[#808496] text-xs"
-                    />
+                    <IconArrowRight size={12} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -578,7 +570,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faTrash as IconProp} className="text-red-500 text-xs" />
+                    <IconTrash size={12} className="text-red-500" />
                     <span className="text-red-500 text-xs">Col</span>
                   </button>
                 </Tooltip>
@@ -590,12 +582,9 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faPlus as IconProp} className="text-[#808496] text-xs" />
+                    <IconPlus size={12} className="text-[#808496]" />
                     <span className="text-[#808496] text-xs">Row</span>
-                    <FontAwesomeIcon
-                      icon={faArrowUp as IconProp}
-                      className="text-[#808496] text-xs"
-                    />
+                    <IconArrowUp size={12} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -606,12 +595,9 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faPlus as IconProp} className="text-[#808496] text-xs" />
+                    <IconPlus size={12} className="text-[#808496]" />
                     <span className="text-[#808496] text-xs">Row</span>
-                    <FontAwesomeIcon
-                      icon={faArrowDown as IconProp}
-                      className="text-[#808496] text-xs"
-                    />
+                    <IconArrowDown size={12} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -622,7 +608,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faTrash as IconProp} className="text-red-500 text-xs" />
+                    <IconTrash size={12} className="text-red-500" />
                     <span className="text-red-500 text-xs">Row</span>
                   </button>
                 </Tooltip>
@@ -634,7 +620,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="h-[26px] px-2 flex justify-center items-center gap-1
                               rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faTimes as IconProp} className="text-red-500 text-xs" />
+                    <IconX size={12} className="text-red-500" />
                     <span className="text-red-500 text-xs">Table</span>
                   </button>
                 </Tooltip>
@@ -655,7 +641,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                   className="w-[26px] h-[26px] flex justify-center items-center
                             rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                 >
-                  <FontAwesomeIcon icon={faMinus as IconProp} className="text-[#808496]" />
+                  <IconMinus size={18} className="text-[#808496]" />
                 </button>
               </Tooltip>
 
@@ -703,7 +689,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                   className="w-[26px] h-[26px] flex justify-center items-center
                             rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                 >
-                  <FontAwesomeIcon icon={faPlus as IconProp} className="text-[#808496]" />
+                  <IconPlus size={18} className="text-[#808496]" />
                 </button>
               </Tooltip>
             </MantineRichTextEditor.ControlsGroup>
@@ -732,7 +718,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                         className="w-[26px] h-[26px] flex justify-center items-center
                                   rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <FontAwesomeIcon icon={faImages as IconProp} className="text-[#808496]" />
+                        <IconLibraryPhoto size={18} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                   </Menu.Target>
@@ -775,7 +761,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                         className="w-[26px] h-[26px] flex justify-center items-center
                                   rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <FontAwesomeIcon icon={faTable as IconProp} className="text-[#808496]" />
+                        <IconTable size={18} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                   </Menu.Target>
@@ -789,7 +775,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                     className="w-[26px] h-[26px] flex justify-center items-center
                               rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                   >
-                    <FontAwesomeIcon icon={faCube as IconProp} className="text-[#808496]" />
+                    <IconCube size={18} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -803,7 +789,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                       openJumpMarksModal();
                     }}
                   >
-                    <FontAwesomeIcon icon={faYoutube as IconProp} className="text-[#808496]" />
+                    <IconBrandYoutube size={18} className="text-[#808496]" />
                   </button>
                 </Tooltip>
 
@@ -824,7 +810,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                           .run();
                       }}
                     >
-                      <FontAwesomeIcon icon={faAngleDown as IconProp} className="text-[#808496]" />
+                      <IconChevronDown size={18} className="text-[#808496]" />
                     </button>
                   </Tooltip>
                 )}

@@ -1,11 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  faExternalLinkAlt,
-  faDesktop,
-  faTabletAlt,
-  faMobileAlt,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Tabs, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -21,6 +14,7 @@ import ViewFormActionBar from '../../../common/ui/ViewFormActionBar.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
+import { IconDeviceDesktop, IconDeviceMobile, IconDeviceTablet, IconExternalLink } from '@tabler/icons-react';
 
 export default function PageViewComponent() {
   const { t } = useTranslation();
@@ -175,7 +169,7 @@ export default function PageViewComponent() {
                     href={currentPageUrl}
                     target="_blank"
                   >
-                    <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4 mr-2" />
+                    <IconExternalLink size={16} className="mr-2" />
                     {t('Go to page')}
                   </Button>
                 )}
@@ -227,7 +221,7 @@ export default function PageViewComponent() {
                                 onClick={() => setPreviewDevice('desktop')}
                                 className="px-2"
                               >
-                                <FontAwesomeIcon icon={faDesktop} />
+                                <IconDeviceDesktop size={16} />
                               </Button>
                               <Button
                                 variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
@@ -235,7 +229,7 @@ export default function PageViewComponent() {
                                 onClick={() => setPreviewDevice('tablet')}
                                 className="px-2"
                               >
-                                <FontAwesomeIcon icon={faTabletAlt} />
+                                <IconDeviceTablet size={16} />
                               </Button>
                               <Button
                                 variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
@@ -243,7 +237,7 @@ export default function PageViewComponent() {
                                 onClick={() => setPreviewDevice('mobile')}
                                 className="px-2"
                               >
-                                <FontAwesomeIcon icon={faMobileAlt} />
+                                <IconDeviceMobile size={16} />
                               </Button>
                             </div>
                           </div>

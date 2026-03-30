@@ -1,8 +1,6 @@
 import React, { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faDownload, faEye, faFileLines } from '@fortawesome/free-solid-svg-icons';
+
 import { Indicator, Menu, Modal } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import clsx from 'clsx';
@@ -13,6 +11,7 @@ import {
   getFileNameFromAttachUrl,
 } from '@deepsel/cms-utils';
 import { H2 } from '../H2';
+import { IconDownload, IconEye, IconFileText } from '@tabler/icons-react';
 
 // ---------------------------------------------------------------------------
 // Internal sub-components
@@ -53,8 +52,7 @@ const OtherFileDisplay = forwardRef<HTMLAnchorElement, OtherFileDisplayProps>(
         }}
       >
         <Indicator label={getFileExtension(src).toUpperCase()} zIndex="auto" size={15}>
-          <FontAwesomeIcon
-            icon={faFileLines as IconProp}
+          <IconFileText
             style={{ width: `${width}px`, height: `${height}px` }}
           />
         </Indicator>
@@ -97,13 +95,13 @@ function PdfDisplay({
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faEye as IconProp} className="w-6" />}
+          leftSection={<IconEye size={16} />}
           onClick={onViewMenuClick}
         >
           {t('View')}
         </Menu.Item>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faDownload as IconProp} className="w-5" />}
+          leftSection={<IconDownload size={16} />}
           component="a"
           onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}
@@ -153,13 +151,13 @@ function ImageDisplay({
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faEye as IconProp} className="w-6" />}
+          leftSection={<IconEye size={16} />}
           onClick={onViewMenuClick}
         >
           {t('View')}
         </Menu.Item>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faDownload as IconProp} className="w-5" />}
+          leftSection={<IconDownload size={16} />}
           component="a"
           onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}
@@ -202,13 +200,13 @@ function VideoDisplay({
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faEye as IconProp} className="w-6" />}
+          leftSection={<IconEye size={16} />}
           onClick={onViewMenuClick}
         >
           {t('View')}
         </Menu.Item>
         <Menu.Item
-          leftSection={<FontAwesomeIcon icon={faDownload as IconProp} className="w-5" />}
+          leftSection={<IconDownload size={16} />}
           component="a"
           onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
           download={getFileNameFromAttachUrl(src)}

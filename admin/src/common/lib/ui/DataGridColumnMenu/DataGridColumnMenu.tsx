@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+
 import {
   GridColumnMenuContainer,
   GridColumnsMenuItem,
@@ -23,6 +21,7 @@ import { useAPISchema } from '../../hooks';
 import type { OpenAPISchema } from '../../types';
 import type { NotifyFn } from '../../types';
 import type { FilterCondition } from '../../hooks';
+import { IconPlus } from '@tabler/icons-react';
 
 /** A single available filter definition for a column */
 interface AvailableFilter {
@@ -362,7 +361,7 @@ export function DataGridColumnMenu({
               )}
 
               <Button size="sm" type="submit" radius="md" className="min-w-[40px] !px-0.5">
-                <FontAwesomeIcon icon={faPlus as IconProp} />
+                <IconPlus size={16} />
               </Button>
             </form>
           </Popover.Dropdown>

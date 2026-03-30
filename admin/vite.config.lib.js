@@ -35,6 +35,7 @@ export default defineConfig({
           'tiptap-extension-font-size',
           '@hello-pangea/',
           '@fortawesome/',
+          '@tabler/',
           '@capacitor/',
           '@deepsel/',
           'i18next',

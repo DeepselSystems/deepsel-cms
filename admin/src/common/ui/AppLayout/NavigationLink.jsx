@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { NavLink } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -26,7 +25,8 @@ export default function NavigationLink(props) {
     return null;
   }
 
-  const leftSection = link.icon && <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />;
+  const IconComponent = link.icon;
+  const leftSection = IconComponent && <IconComponent size={16} />;
 
   const commonProps = {
     label: t(link.label),

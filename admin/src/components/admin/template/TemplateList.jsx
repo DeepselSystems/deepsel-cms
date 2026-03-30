@@ -7,8 +7,6 @@ import H1 from '../../../common/ui/H1.jsx';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -17,6 +15,7 @@ import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
+import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 
 export default function TemplateList() {
   const { t } = useTranslation();
@@ -140,7 +139,7 @@ export default function TemplateList() {
                 className={`shadow bg-primary-main text-primary-contrastText`}
                 color={`primary`}
               >
-                <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
+                <IconPlus size={16} className="sm:mr-1" />
                 {t('')}
                 <span className={`hidden sm:inline`}>{t('Create Template')}</span>
               </Button>
@@ -166,7 +165,7 @@ export default function TemplateList() {
             variant="light"
             title="Error"
             className="mb-4"
-            icon={<FontAwesomeIcon icon={faTriangleExclamation} />}
+            icon={<IconAlertTriangle size={16} />}
           >
             {error}
           </Alert>

@@ -1,12 +1,11 @@
 import React from 'react';
 import { Modal, Table, Text, Loader, Alert } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useModel } from '../hooks';
 import type { User } from '../types';
 import { Button } from './Button';
 import { TextInput } from './TextInput';
+import { IconAlertTriangle, IconSearch } from '@tabler/icons-react';
 
 interface TemplateContent {
   id?: string | number;
@@ -136,7 +135,7 @@ export function HtmlComponentsModal({
           placeholder={t('Search templates...')}
           value={query.searchTerm || ''}
           onChange={(e) => query.setSearchTerm(e.target.value)}
-          leftSection={<FontAwesomeIcon icon={faSearch} className="text-gray-400" />}
+          leftSection={<IconSearch size={16} className="text-gray-400" />}
         />
 
         {loading && (
@@ -147,7 +146,7 @@ export function HtmlComponentsModal({
 
         {error && (
           <Alert
-            icon={<FontAwesomeIcon icon={faExclamationTriangle} />}
+            icon={<IconAlertTriangle size={16} />}
             title={t('Error')}
             color="red"
           >

@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPaperPlane, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import useAuthentication from '../api/useAuthentication.js';
 import useModel from '../api/useModel.jsx';
 import NotificationState from '../stores/NotificationState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import RecordSelect from './RecordSelect.jsx';
 import Button from './Button.jsx';
+import { IconLoader2, IconSend, IconX } from '@tabler/icons-react';
 
 export default function AIWriterSidebar({
   opened,
@@ -172,7 +171,7 @@ export default function AIWriterSidebar({
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-lg">{t('AI Writer')}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
-            <FontAwesomeIcon icon={faTimes} />
+            <IconX size={16} />
           </button>
         </div>
         <RecordSelect
@@ -213,7 +212,7 @@ export default function AIWriterSidebar({
         {loading && (
           <div className="flex justify-start">
             <div className="bg-gray-100 text-gray-500 rounded-lg px-3 py-2 text-sm">
-              <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+              <IconLoader2 size={16} className="mr-2" />
               {t('Writing...')}
             </div>
           </div>
@@ -244,7 +243,7 @@ export default function AIWriterSidebar({
             size="sm"
             className="px-3 flex-shrink-0"
           >
-            <FontAwesomeIcon icon={faPaperPlane} />
+            <IconSend size={16} />
           </Button>
         </div>
       </div>

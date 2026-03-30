@@ -5,8 +5,6 @@ import H1 from '../../../common/ui/H1.jsx';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -17,6 +15,7 @@ import Button from '../../../common/ui/Button.jsx';
 import FileDisplay from '../../../common/ui/FileDisplay.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
+import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 
 const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
 
@@ -139,7 +138,7 @@ export default function UserList() {
               className={`shadow bg-primary-main text-primary-contrastText`}
               color={`primary`}
             >
-              <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
+              <IconPlus size={16} className="sm:mr-1" />
               {t('')}
               <span className={`hidden sm:inline`}>{t('Create User')}</span>
             </Button>
@@ -159,7 +158,7 @@ export default function UserList() {
             variant="light"
             title="Error"
             className="mb-4"
-            icon={<FontAwesomeIcon icon={faTriangleExclamation} />}
+            icon={<IconAlertTriangle size={16} />}
           >
             {error}
           </Alert>

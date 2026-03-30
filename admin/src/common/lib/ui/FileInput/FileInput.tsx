@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faFile, faFileLines, faImage, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons';
+
 import { Indicator } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { getAttachmentUrl, getFileNameFromAttachUrl } from '@deepsel/cms-utils';
 import { ChooseAttachmentModal } from '../ChooseAttachmentModal';
 import type { AttachmentFile } from '../ChooseAttachmentModal';
 import type { User } from '../../types';
+import { IconFile, IconFileText, IconPhoto, IconPlus, IconX } from '@tabler/icons-react';
 
 /** File object passed to the onChange callback */
 export type FileInputValue = AttachmentFile & { attachUrl: string };
@@ -92,9 +91,9 @@ export function FileInput({
   const defaultPlaceholder = useMemo(
     () =>
       type === 'image' ? (
-        <FontAwesomeIcon className="text-gray-300" size="3x" icon={faImage} />
+        <IconPhoto size={16} className="text-gray-300" />
       ) : (
-        <FontAwesomeIcon className="text-gray-300" size="3x" icon={faFile} />
+        <IconFile size={16} className="text-gray-300" />
       ),
     [],
   );
@@ -144,7 +143,7 @@ export function FileInput({
           size={20}
           zIndex="auto"
           className="cursor-pointer"
-          label={<FontAwesomeIcon icon={faXmark as IconProp} className="h-2.5 w-2.5" />}
+          label={<IconX size={10} />}
         >
           {type === 'image' ? (
             <img
@@ -166,8 +165,7 @@ export function FileInput({
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
             >
-              <FontAwesomeIcon
-                icon={faFileLines as IconProp}
+              <IconFileText
                 style={{ width: `${width}px`, height: `${height}px` }}
               />
               <div className="ml-2 !underline">{getFileNameFromAttachUrl(attachUrl)}</div>
@@ -181,7 +179,7 @@ export function FileInput({
           size={20}
           zIndex="auto"
           className="cursor-pointer"
-          label={<FontAwesomeIcon icon={faPlus as IconProp} className="h-2.5 w-2.5" />}
+          label={<IconPlus size={10} />}
         >
           {type === 'image' ? (
             placeholder ? (
@@ -196,8 +194,7 @@ export function FileInput({
               defaultPlaceholder
             )
           ) : (
-            <FontAwesomeIcon
-              icon={faFileLines as IconProp}
+            <IconFileText
               className="text-primary-main"
               style={{ width: `${width}px`, height: `${height}px` }}
             />

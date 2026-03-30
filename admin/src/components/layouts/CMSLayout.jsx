@@ -1,58 +1,58 @@
-import {
-  faEarthAmericas,
-  faNewspaper,
-  faBars,
-  faCog,
-  faCode,
-  faImage,
-  faUser,
-  faPalette,
-} from '@fortawesome/free-solid-svg-icons';
 import AppLayout from '../../common/layouts/AppLayout.jsx';
+import {
+  IconCode,
+  IconMenu2,
+  IconNews,
+  IconPalette,
+  IconPhoto,
+  IconSettings,
+  IconUser,
+  IconWorld,
+} from '@tabler/icons-react';
 
 const navbarLinks = [
   {
     label: 'Pages',
     to: '/pages',
-    icon: faEarthAmericas,
+    icon: IconWorld,
   },
   {
     label: 'Blog Posts',
     to: '/blog_posts',
-    icon: faNewspaper,
+    icon: IconNews,
   },
   {
     label: 'Templates',
     to: '/templates',
-    icon: faCode,
+    icon: IconCode,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
   },
   {
     label: 'Themes',
     to: '/themes',
-    icon: faPalette,
+    icon: IconPalette,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
   },
   {
     label: 'Media',
     to: '/media',
-    icon: faImage,
+    icon: IconPhoto,
   },
   {
     label: 'Menus',
     to: '/menus',
-    icon: faBars,
+    icon: IconMenu2,
   },
   {
     label: 'Users',
     to: '/manage-users',
-    icon: faUser,
+    icon: IconUser,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
   },
   {
     label: 'Site Settings',
     to: '/site-settings',
-    icon: faCog,
+    icon: IconSettings,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
   },
 ];

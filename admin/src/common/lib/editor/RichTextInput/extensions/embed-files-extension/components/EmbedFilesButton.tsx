@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import type { Editor } from '@tiptap/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconFileText } from '@tabler/icons-react';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import { MAX_FILES_COUNT } from '../utils';
 import FilesSelectorModal from './FilesSelectorModal';
 import type { EmbedFileItem } from '../types';
@@ -48,7 +46,7 @@ const EmbedFilesButton = ({
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-[#808496]" />
+              <IconFileText size={18} className="text-[#808496]" />
             )}
           </button>
         </Tooltip>

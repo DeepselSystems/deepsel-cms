@@ -1,5 +1,3 @@
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Modal } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import QRCode from 'qrcode';
@@ -10,6 +8,7 @@ import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
 import Switch from '../ui/Switch.jsx';
 import TextInput from '../ui/TextInput.jsx';
+import { IconCheck } from '@tabler/icons-react';
 
 export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = () => {} }) {
   const { t } = useTranslation();
@@ -158,7 +157,7 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
 
         <div className="w-full grow flex mt-8">
           <Button type="submit" className="w-full grow" disabled={isUse2Fa === isUse2FaOriginal}>
-            <FontAwesomeIcon icon={faCheck} className="mr-1 h-4 w-4" />
+            <IconCheck size={16} className="mr-1" />
             {t('Confirm')}
           </Button>
         </div>

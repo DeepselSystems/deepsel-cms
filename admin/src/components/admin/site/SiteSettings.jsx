@@ -10,18 +10,6 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
 import { useState, useEffect } from 'react';
 import { LoadingOverlay, Select, MultiSelect, Text, TagsInput } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faLanguage,
-  faRobot,
-  faKey,
-  faNewspaper,
-  faGlobe,
-  faCode,
-  faDatabase,
-  faDownload,
-  faUpload,
-} from '@fortawesome/free-solid-svg-icons';
 import { Button, Modal, FileInput, Group, Alert } from '@mantine/core';
 import Switch from '../../../common/ui/Switch.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
@@ -37,6 +25,7 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
+import { IconCode, IconDatabase, IconDownload, IconKey, IconLanguage, IconNews, IconRobot, IconUpload, IconWorld } from '@tabler/icons-react';
 
 export default function SiteSettings() {
   const { t } = useTranslation();
@@ -365,7 +354,7 @@ export default function SiteSettings() {
 
           <div className={`mt-6 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faGlobe} className="text-gray-600" />
+              <IconWorld size={16} className="text-gray-600" />
               <H2>{t('Basic Information')}</H2>
             </div>
 
@@ -404,7 +393,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faLanguage} className="text-gray-600" />
+              <IconLanguage size={16} className="text-gray-600" />
               <H2 className={``}>{t('Languages')}</H2>
             </div>
 
@@ -445,7 +434,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faRobot} className="text-gray-600" />
+              <IconRobot size={16} className="text-gray-600" />
               <H2>{t('AI Writing')}</H2>
             </div>
 
@@ -458,7 +447,7 @@ export default function SiteSettings() {
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <FontAwesomeIcon icon={faKey} className="text-gray-500" size="sm" />
+                  <IconKey size={16} className="text-gray-500" />
                   <Text size="sm" weight={500}>
                     {t('API Keys')}
                   </Text>
@@ -563,7 +552,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faRobot} className="text-gray-600" />
+              <IconRobot size={16} className="text-gray-600" />
               <H2>{t('Website AI Assistant')}</H2>
             </div>
 
@@ -612,7 +601,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faNewspaper} className="text-gray-600" />
+              <IconNews size={16} className="text-gray-600" />
               <H2>{t('Blog Settings')}</H2>
             </div>
 
@@ -661,7 +650,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faCode} className="text-gray-600" />
+              <IconCode size={16} className="text-gray-600" />
               <H2>{t('Custom Code')}</H2>
             </div>
 
@@ -697,7 +686,7 @@ export default function SiteSettings() {
 
           <div className={`mt-8 flex flex-col gap-4`}>
             <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faDatabase} className="text-gray-600" />
+              <IconDatabase size={16} className="text-gray-600" />
               <H2>{t('Backup & Restore')}</H2>
             </div>
 
@@ -709,7 +698,7 @@ export default function SiteSettings() {
 
             <div className="flex gap-4">
               <Button
-                leftSection={<FontAwesomeIcon icon={faDownload} />}
+                leftSection={<IconDownload size={16} />}
                 onClick={handleExport}
                 variant="outline"
                 loading={exportLoading}
@@ -718,7 +707,7 @@ export default function SiteSettings() {
               </Button>
 
               <Button
-                leftSection={<FontAwesomeIcon icon={faUpload} />}
+                leftSection={<IconUpload size={16} />}
                 onClick={() => setImportModalOpen(true)}
                 variant="outline"
                 color="red"

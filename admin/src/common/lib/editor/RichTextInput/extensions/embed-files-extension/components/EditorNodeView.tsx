@@ -1,9 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { IconPencil, IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from '../utils';
@@ -105,7 +103,7 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
           )}
           title={t('Edit Files')}
         >
-          <FontAwesomeIcon icon={faPen as IconProp} className="w-6 h-6" />
+          <IconPencil size={24} />
         </button>
         <button
           onClick={handleDeleteClick}
@@ -115,7 +113,7 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
           )}
           title={t('Delete Files')}
         >
-          <FontAwesomeIcon icon={faTrash as IconProp} className="w-6 h-6" />
+          <IconTrash size={24} />
         </button>
       </div>
 

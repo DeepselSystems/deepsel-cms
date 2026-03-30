@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { EMBED_VIDEO_ATTRIBUTES, EMBED_VIDEO_CLASSES } from '../utils';
@@ -76,7 +74,7 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
           )}
           title={t('Delete Video')}
         >
-          <FontAwesomeIcon icon={faTrash as IconProp} className="w-6 h-6" />
+          <IconTrash size={24} />
         </button>
       </div>
 

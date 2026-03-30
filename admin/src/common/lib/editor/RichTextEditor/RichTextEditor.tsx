@@ -1,8 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { faImage } from '@fortawesome/free-solid-svg-icons';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconPhoto } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
 import Highlight from '@tiptap/extension-highlight';
@@ -156,7 +154,7 @@ export function RichTextEditor({
                 className="w-[26px] h-[26px] flex justify-center items-center
                            rounded-[4px] border-[#9093a4] border p-1"
               >
-                <FontAwesomeIcon icon={faImage as IconProp} className="text-[#808496]" />
+                <IconPhoto size={18} className="text-[#808496]" />
               </button>
             </MantineRichTextEditor.ControlsGroup>
           </MantineRichTextEditor.Toolbar>

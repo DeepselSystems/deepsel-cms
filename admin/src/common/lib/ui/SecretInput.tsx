@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box, Button, TextInput, Group, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faEdit, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { IconCheck, IconEdit, IconRefresh } from '@tabler/icons-react';
 
 interface LabelAndDescriptionProps {
   label?: React.ReactNode;
@@ -98,7 +97,7 @@ export const SecretInput = React.forwardRef<SecretInputRef, SecretInputProps>(
               size="sm"
               variant="filled"
               color="blue"
-              leftSection={<FontAwesomeIcon icon={faCheck} />}
+              leftSection={<IconCheck size={16} />}
               disabled={!editingValue}
               onClick={handleDoneClick}
               className="shrink-0"
@@ -109,7 +108,7 @@ export const SecretInput = React.forwardRef<SecretInputRef, SecretInputProps>(
               size="sm"
               variant="outline"
               color="blue"
-              leftSection={<FontAwesomeIcon icon={faRefresh} />}
+              leftSection={<IconRefresh size={16} />}
               onClick={handleResetClick}
               className="shrink-0"
             >
@@ -134,7 +133,7 @@ export const SecretInput = React.forwardRef<SecretInputRef, SecretInputProps>(
               size="sm"
               variant="outline"
               color="blue"
-              leftSection={<FontAwesomeIcon icon={faEdit} />}
+              leftSection={<IconEdit size={16} />}
               onClick={handleEditClick}
               className="shrink-0"
             >

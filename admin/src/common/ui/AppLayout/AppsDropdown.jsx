@@ -1,6 +1,5 @@
 import { Menu } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTranslation } from 'react-i18next';
 import H3 from '../H3.jsx';
 import useAuthentication from '../../api/useAuthentication.js';
@@ -42,7 +41,7 @@ const AppsDropdown = ({ apps, showApps }) => {
                   <div
                     className={`w-[60px] h-[60px] border border-gray-200 shadow text-lg transition-all !rounded-xl hover:-translate-y-0.5 p-0 flex justify-center items-center cursor-pointer ${link.className}`}
                   >
-                    <FontAwesomeIcon icon={link.icon} />
+                    {link.icon && <link.icon size={20} />}
                   </div>
                   <div className="text-[13px] font-[500] text-wrap text-center">
                     {t(link.label)}

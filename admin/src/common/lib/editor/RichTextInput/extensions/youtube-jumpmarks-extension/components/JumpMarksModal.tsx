@@ -13,15 +13,7 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
-import {
-  faArrowDown,
-  faArrowUp,
-  faInfoCircle,
-  faPlus,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconArrowDown, IconArrowUp, IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { YOUTUBE_REG_EXP } from '../utils';
 import type { JumpMark, JumpMarkData } from '../types';
@@ -252,7 +244,7 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
           description={t('If left empty, no title will be displayed above the video')}
         />
 
-        <Alert icon={<FontAwesomeIcon icon={faInfoCircle as IconProp} />} color="blue">
+        <Alert icon={<IconInfoCircle size={16} />} color="blue">
           {t('Supported formats: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID')}
         </Alert>
 
@@ -272,7 +264,7 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
               </Text>
               <Button
                 size="xs"
-                leftSection={<FontAwesomeIcon icon={faPlus as IconProp} />}
+                leftSection={<IconPlus size={16} />}
                 onClick={addJumpMark}
               >
                 {t('Add Jump Mark')}
@@ -315,7 +307,7 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
                         onClick={() => moveJumpMark(index, 'up')}
                         disabled={index === 0}
                       >
-                        <FontAwesomeIcon icon={faArrowUp as IconProp} />
+                        <IconArrowUp size={14} />
                       </ActionIcon>
 
                       <ActionIcon
@@ -323,11 +315,11 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
                         onClick={() => moveJumpMark(index, 'down')}
                         disabled={index === jumpMarks.length - 1}
                       >
-                        <FontAwesomeIcon icon={faArrowDown as IconProp} />
+                        <IconArrowDown size={14} />
                       </ActionIcon>
 
                       <ActionIcon size="sm" color="red" onClick={() => removeJumpMark(index)}>
-                        <FontAwesomeIcon icon={faTrash as IconProp} />
+                        <IconTrash size={14} />
                       </ActionIcon>
                     </Group>
 

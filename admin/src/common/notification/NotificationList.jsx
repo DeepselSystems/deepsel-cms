@@ -2,9 +2,8 @@ import { useTranslation } from 'react-i18next';
 import useModel from '../api/useModel.jsx';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { faEllipsis, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Menu, Tooltip } from '@mantine/core';
+import { IconDots, IconTrash } from '@tabler/icons-react';
 
 function Notification({ notification, onDelete }) {
   const { t } = useTranslation();
@@ -20,14 +19,14 @@ function Notification({ notification, onDelete }) {
         <Menu shadow="md" width={100}>
           <Menu.Target>
             <button>
-              <FontAwesomeIcon icon={faEllipsis} />
+              <IconDots size={16} />
             </button>
           </Menu.Target>
 
           <Menu.Dropdown>
             <Menu.Item
               color="red"
-              leftSection={<FontAwesomeIcon icon={faTrash} />}
+              leftSection={<IconTrash size={16} />}
               onClick={() => onDelete(notification.id)}
             >
               {t('Delete')}

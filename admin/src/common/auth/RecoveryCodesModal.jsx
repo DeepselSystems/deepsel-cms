@@ -1,9 +1,8 @@
-import { faCheck, faCircleCheck, faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
+import { IconCheck, IconCircleCheck, IconCopy, IconDownload } from '@tabler/icons-react';
 export default function RecoveryCodesModal({ isOpen, close, onFinish, recoveryCodes = [] }) {
   const { t } = useTranslation();
   const { notify } = NotificationState((state) => state);
@@ -54,7 +53,7 @@ export default function RecoveryCodesModal({ isOpen, close, onFinish, recoveryCo
       closeOnEscape={false}
       title={
         <div className="flex items-center gap-4 px-4">
-          <FontAwesomeIcon icon={faCircleCheck} className="h-6 w-6 text-[#4DB783] self-start" />
+          <IconCircleCheck size={24} className="text-[#4DB783] self-start" />
           <div className={`font-semibold text-lg`}>
             {t('Two-Factor Authentication - Enabled via Authenticator App')}
           </div>
@@ -82,17 +81,17 @@ export default function RecoveryCodesModal({ isOpen, close, onFinish, recoveryCo
         </div>
         <div className="flex">
           <Button className="!bg-gray-300 !text-[#14354C]" onClick={handleDownload}>
-            <FontAwesomeIcon icon={faDownload} className="mr-2 h-4 w-4" />
+            <IconDownload size={16} className="mr-2" />
             {t('Download')}
           </Button>
           <Button className="ml-2 !bg-gray-300 !text-[#14354C]" onClick={handleCopy}>
-            <FontAwesomeIcon icon={faCopy} className="mr-2 h-4 w-4" />
+            <IconCopy size={16} className="mr-2" />
             {t('Copy')}
           </Button>
         </div>
       </div>
       <Button className="ml-8 mt-8" onClick={handleCLose}>
-        <FontAwesomeIcon icon={faCheck} className="mr-2 h-4 w-4" />
+        <IconCheck size={16} className="mr-2" />
         {t('Finish Setup')}
       </Button>
     </Modal>

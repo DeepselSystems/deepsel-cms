@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { IconArrowRight } from '@tabler/icons-react';
 
 interface RecordDisplayProps {
   label?: React.ReactNode;
@@ -40,7 +39,7 @@ export const RecordDisplay = ({
         style={{ fontSize: `var(--mantine-font-size-${size})` }}
       >
         {children || value}
-        {(children || value) && <FontAwesomeIcon icon={faArrowRight} className="ml-1" />}
+        {(children || value) && <IconArrowRight size={16} className="ml-1" />}
       </Link>
     </div>
   );

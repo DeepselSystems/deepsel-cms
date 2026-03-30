@@ -1,14 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import {
-  faPlus,
-  faTrash,
-  faGear,
-  faImage,
-  faPen,
-  faPenNib,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import ChooseAttachmentModal from '../../../common/ui/ChooseAttachmentModal.jsx';
@@ -32,6 +23,7 @@ import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
 import AuthorSelector from './components/AuthorSelector.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
+import { IconPencil, IconPhoto, IconPlus, IconSettings, IconTrash, IconWriting } from '@tabler/icons-react';
 
 export default function BlogPostCreate({ modalMode, onSuccess }) {
   const { t } = useTranslation();
@@ -222,7 +214,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                         <Menu.Dropdown>
                           <Menu.Item
                             color="red"
-                            leftSection={<FontAwesomeIcon icon={faTrash} />}
+                            leftSection={<IconTrash size={16} />}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteContent(content.id);
@@ -244,7 +236,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                       }}
                       className="bg-gray-100 hover:bg-gray-200"
                     >
-                      <FontAwesomeIcon icon={faPlus} />
+                      <IconPlus size={16} />
                     </Tabs.Tab>
                   </Tooltip>
                 </Tabs.List>
@@ -277,7 +269,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                         className="px-2"
                         disabled={!aiWritingAvailable}
                       >
-                        <FontAwesomeIcon icon={faPenNib} className="mr-2" />
+                        <IconWriting size={16} className="mr-2" />
                         {t('AI Writer')}
                       </Button>
                     </div>
@@ -299,7 +291,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                       onClick={openSettingsDrawer}
                       className="px-2"
                     >
-                      <FontAwesomeIcon icon={faGear} />
+                      <IconSettings size={16} />
                     </Button>
                   </Tooltip>
                 </div>
@@ -316,7 +308,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                       />
                       <div className="absolute inset-0 backdrop-blur-sm bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 rounded-md">
                         <Button variant="filled" size="sm" onClick={openFeaturedImageModal}>
-                          <FontAwesomeIcon icon={faPen} className="mr-2" />
+                          <IconPencil size={16} className="mr-2" />
                           {t('Change')}
                         </Button>
                         <Button
@@ -328,7 +320,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                             updateContentField(content.id, 'featured_image_id', null);
                           }}
                         >
-                          <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                          <IconTrash size={16} className="mr-2" />
                           {t('Remove')}
                         </Button>
                       </div>
@@ -338,7 +330,7 @@ export default function BlogPostCreate({ modalMode, onSuccess }) {
                       className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
                       onClick={openFeaturedImageModal}
                     >
-                      <FontAwesomeIcon icon={faImage} className="text-xl" />
+                      <IconPhoto size={16} className="text-xl" />
                       <span className="font-medium">{t('Add Featured Image')}</span>
                     </div>
                   )}

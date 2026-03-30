@@ -12,10 +12,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { Modal, Alert } from '@mantine/core';
 import { useState } from 'react';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faPlus, faPaperPlane, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import useFetch from '../../../common/api/useFetch.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
+import { IconCheck, IconInfoCircle, IconPlus, IconSend } from '@tabler/icons-react';
 
 export default function EmailTemplateView() {
   const { t } = useTranslation();
@@ -91,7 +90,7 @@ export default function EmailTemplateView() {
           <div className="flex justify-between">
             <H1>{t('Email Template')}</H1>
             <Button onClick={() => open()}>
-              <FontAwesomeIcon icon={faPaperPlane} className="mr-2 h-3 w-3" size={`sm`} />
+              <IconSend size={14} className="mr-2" />
               {t('Send Test Email')}
             </Button>
           </div>
@@ -120,7 +119,7 @@ export default function EmailTemplateView() {
             variant="light"
             color="blue"
             className={`mb-4`}
-            icon={<FontAwesomeIcon icon={faCircleInfo} className={``} />}
+            icon={<IconInfoCircle size={16} />}
           >
             {t('A test email will be sent to all users with role ‘Email Tester’')}
           </Alert>
@@ -152,11 +151,11 @@ export default function EmailTemplateView() {
             className={`mt-4 w-fit text-primary-main text-left p-2 hover:bg-primary-main hover:text-primary-contrastText rounded-md text-xs font-semibold`}
             onClick={() => addParam()}
           >
-            <FontAwesomeIcon icon={faPlus} className={`mr-1`} />
+            <IconPlus size={16} className="mr-1" />
             {t('Add Variable')}
           </button>
           <Button className="mx-auto mt-20 !w-full" onClick={handleTestEmail} loading={loading}>
-            <FontAwesomeIcon icon={faCheck} className="mr-2 h-4 w-4" />
+            <IconCheck size={16} className="mr-2" />
             {t('Send Test Email')}
           </Button>
         </div>

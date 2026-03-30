@@ -7,8 +7,6 @@ import NavigationLinks from '../ui/AppLayout/NavigationLinks.jsx';
 import AppsDropdown from '../ui/AppLayout/AppsDropdown.jsx';
 import ProfileDropdown from '../ui/AppLayout/ProfileDropdown.jsx';
 import NotificationsDropdown from '../ui/AppLayout/NotificationsDropdown.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faUsers } from '@fortawesome/free-solid-svg-icons';
 import Notification from '../notification/Notification.jsx';
 import Button from '../ui/Button.jsx';
 import apps from '../../constants/apps.js';
@@ -24,7 +22,7 @@ import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
 import { useNavigate } from 'react-router-dom';
-import { faSquareArrowUpRight } from '@fortawesome/free-solid-svg-icons';
+import { IconArrowLeft, IconExternalLink, IconUsers } from '@tabler/icons-react';
 
 export default function AppLayout(props) {
   const {
@@ -112,7 +110,7 @@ export default function AppLayout(props) {
     ...apps,
     {
       label: 'Organization',
-      icon: faUsers,
+      icon: IconUsers,
       className: 'bg-white text-slate-500',
       to: '/users',
       roleIds: ['super_admin_role', 'admin_role'],
@@ -155,7 +153,7 @@ export default function AppLayout(props) {
                   onClick={() => confirmNavigation(back)}
                   variant="subtle"
                   size="sm"
-                  leftSection={<FontAwesomeIcon icon={faArrowLeft} />}
+                  leftSection={<IconArrowLeft size={16} />}
                 >
                   {t('Back')}
                 </Button>
@@ -185,10 +183,7 @@ export default function AppLayout(props) {
               )}
               {/*endregion site selector*/}
               <a href="/" target="_blank" className="block my-2 w-8 h-8">
-                <FontAwesomeIcon
-                  icon={faSquareArrowUpRight}
-                  className="w-full h-full text-xl text-primary-main hover:translate-y-0.5 transition-all"
-                />
+                <IconExternalLink size={16} className="w-full h-full text-xl text-primary-main hover:translate-y-0.5 transition-all" />
               </a>
             </div>
             <div className={`flex items-center gap-4`}>

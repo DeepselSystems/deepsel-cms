@@ -7,8 +7,7 @@ import fromPairs from 'lodash/fromPairs';
 import sortBy from 'lodash/sortBy';
 import Button from './Button.jsx';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { IconPlus } from '@tabler/icons-react';
 
 // Removed _ALL_SITES_SELECTION_KEY since we don't want "All Sites" option
 
@@ -127,7 +126,7 @@ const SiteSelector = ({ value, setValue, exceptedIds = [], inputClassNames = {},
                       <div className="border-t border-gray-200 my-1" />
                       <Button
                         variant="subtle"
-                        leftSection={<FontAwesomeIcon icon={faPlus} />}
+                        leftSection={<IconPlus size={16} />}
                         onClick={() => {
                           combobox.closeDropdown();
                           onAddClick();

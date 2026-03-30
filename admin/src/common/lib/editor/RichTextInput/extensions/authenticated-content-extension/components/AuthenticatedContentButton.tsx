@@ -1,7 +1,5 @@
 import React, { useCallback } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { IconLock } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { Tooltip } from '@mantine/core';
@@ -46,7 +44,7 @@ const AuthenticatedContentButton = ({ editor, className }: AuthenticatedContentB
         title={t('Insert Authenticated Content')}
         type="button"
       >
-        <FontAwesomeIcon icon={faLock as IconProp} className="text-[#808496]" />
+        <IconLock size={18} className="text-[#808496]" />
       </button>
     </Tooltip>
   );

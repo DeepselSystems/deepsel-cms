@@ -8,18 +8,11 @@ import { useNavigate } from 'react-router-dom';
 import CreateFormActionBar from '../../../common/ui/CreateFormActionBar.jsx';
 import { useState, useEffect } from 'react';
 import { LoadingOverlay, Select, MultiSelect, Text, TagsInput } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faLanguage,
-  faRobot,
-  faKey,
-  faNewspaper,
-  faGlobe,
-} from '@fortawesome/free-solid-svg-icons';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import PasswordInput from '../../../common/ui/PasswordInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
+import { IconKey, IconLanguage, IconNews, IconRobot, IconWorld } from '@tabler/icons-react';
 
 export default function SiteCreate() {
   const { t } = useTranslation();
@@ -215,7 +208,7 @@ export default function SiteCreate() {
 
         <div className={`mt-6 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faGlobe} className="text-gray-600" />
+            <IconWorld size={16} className="text-gray-600" />
             <H2>{t('Basic Information')}</H2>
           </div>
 
@@ -252,7 +245,7 @@ export default function SiteCreate() {
 
         <div className={`mt-8 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faLanguage} className="text-gray-600" />
+            <IconLanguage size={16} className="text-gray-600" />
             <H2>{t('Languages')}</H2>
           </div>
 
@@ -289,7 +282,7 @@ export default function SiteCreate() {
 
         <div className={`mt-8 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faRobot} className="text-gray-600" />
+            <IconRobot size={16} className="text-gray-600" />
             <H2>{t('AI Writing')}</H2>
           </div>
 
@@ -332,7 +325,7 @@ export default function SiteCreate() {
 
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <FontAwesomeIcon icon={faKey} className="text-gray-500" size="sm" />
+                <IconKey size={16} className="text-gray-500" />
                 <Text size="sm" weight={500}>
                   {t('API Keys')}
                 </Text>
@@ -409,7 +402,7 @@ export default function SiteCreate() {
 
         <div className={`mt-8 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faRobot} className="text-gray-600" />
+            <IconRobot size={16} className="text-gray-600" />
             <H2>{t('Website AI Assistant')}</H2>
           </div>
 
@@ -458,7 +451,7 @@ export default function SiteCreate() {
 
         <div className={`mt-8 flex flex-col gap-4`}>
           <div className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faNewspaper} className="text-gray-600" />
+            <IconNews size={16} className="text-gray-600" />
             <H2>{t('Blog Settings')}</H2>
           </div>
 

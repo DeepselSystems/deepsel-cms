@@ -1,10 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faArrowLeft, faCheck } from '@fortawesome/free-solid-svg-icons';
+
 import { Button } from '../Button';
 import { useBack } from '../../hooks';
+import { IconArrowLeft, IconCheck } from '@tabler/icons-react';
 
 /** Slot overrides for injecting additional buttons */
 interface EditFormActionBarSlots {
@@ -35,7 +34,7 @@ export function EditFormActionBar({ loading, slot, showBack = true }: EditFormAc
       <div>
         {showBack && (
           <Button className="shadow text-[14px] font-[600]" variant="outline" onClick={back}>
-            <FontAwesomeIcon icon={faArrowLeft as IconProp} className="mr-1 h-3 w-3" size="sm" />
+            <IconArrowLeft size={14} className="mr-1" />
             {t('Back')}
           </Button>
         )}
@@ -50,7 +49,7 @@ export function EditFormActionBar({ loading, slot, showBack = true }: EditFormAc
           variant="filled"
           type="submit"
         >
-          <FontAwesomeIcon icon={faCheck as IconProp} className="mr-1 h-4 w-4" size="sm" />
+          <IconCheck size={16} className="mr-1" />
           {t('Save')}
         </Button>
       </div>

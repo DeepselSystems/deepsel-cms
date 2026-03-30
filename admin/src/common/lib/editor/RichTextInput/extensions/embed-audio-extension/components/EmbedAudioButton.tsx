@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { IconVolume } from '@tabler/icons-react';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
 import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
 import type { User } from '../../../../../types';
@@ -43,7 +41,7 @@ const EmbedAudioButton = ({
             className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
             {children || (
-              <FontAwesomeIcon icon={faVolumeUp as IconProp} className="text-[#808496]" />
+              <IconVolume size={18} className="text-[#808496]" />
             )}
           </button>
         </Tooltip>

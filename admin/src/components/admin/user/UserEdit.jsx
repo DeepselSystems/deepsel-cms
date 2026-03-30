@@ -1,11 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faFingerprint,
-  faAddressBook,
-  faShieldHalved,
-  faKey,
-} from '@fortawesome/free-solid-svg-icons';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Select from '../../../common/ui/Select.jsx';
@@ -33,6 +26,7 @@ import { useDisclosure } from '@mantine/hooks';
 import Configure2FaModal from '../../../common/auth/Configure2FaModal.jsx';
 import RecoveryCodesModal from '../../../common/auth/RecoveryCodesModal.jsx';
 import useHash from '../../../common/api/useHash.js';
+import { IconAddressBook, IconFingerprint, IconKey, IconShield } from '@tabler/icons-react';
 
 export default function UserEdit() {
   const { t } = useTranslation();
@@ -191,11 +185,11 @@ export default function UserEdit() {
             {currentUser.id === record.id && (
               <div className={`flex gap-2`}>
                 <Button onClick={() => setChangePasswordModalOpen(true)}>
-                  <FontAwesomeIcon icon={faKey} className="mr-1 h-4 w-4" size={`sm`} />
+                  <IconKey size={14} className="mr-1" />
                   {t('Change Password')}
                 </Button>
                 <Button onClick={open2FaModal}>
-                  <FontAwesomeIcon icon={faShieldHalved} className="mr-1 h-4 w-4" size={`sm`} />
+                  <IconShield size={14} className="mr-1" />
                   {t('Configure 2FA')}
                 </Button>
               </div>
@@ -256,7 +250,7 @@ export default function UserEdit() {
             <Tabs.List>
               <Tabs.Tab
                 value="contact"
-                leftSection={<FontAwesomeIcon icon={faAddressBook} className="h-4 w-4 " />}
+                leftSection={<IconAddressBook size={16} />}
               >
                 {t('Contact Info')}
               </Tabs.Tab>
@@ -266,7 +260,7 @@ export default function UserEdit() {
               >
                 <Tabs.Tab
                   value="access"
-                  leftSection={<FontAwesomeIcon icon={faFingerprint} className="h-4 w-4 " />}
+                  leftSection={<IconFingerprint size={16} />}
                 >
                   {t('Access')}
                 </Tabs.Tab>

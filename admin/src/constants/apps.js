@@ -1,9 +1,9 @@
-import { faPenRuler } from '@fortawesome/free-solid-svg-icons';
+import { IconPencilBolt } from '@tabler/icons-react';
 
 export default [
   {
     label: 'CMS',
-    icon: faPenRuler,
+    icon: IconPencilBolt,
     className: 'text-blue-600 bg-white',
     to: '/pages',
     roleIds: [

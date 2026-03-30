@@ -3,9 +3,7 @@ import type { Editor } from '@tiptap/core';
 import { Button, Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faFile, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { IconFile, IconPlus, IconTrash } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { getShortUrl, MAX_FILES_COUNT } from '../utils';
 import type { EmbedFileItem } from '../types';
@@ -164,7 +162,7 @@ const FilesSelectorModal = ({
                       'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200',
                     )}
                   >
-                    <FontAwesomeIcon icon={faFile as IconProp} className="text-blue-500 text-lg" />
+                    <IconFile size={20} className="text-blue-500" />
                     <div className="flex-1 truncate" title={file.name || shortUrl}>
                       {file.name || shortUrl}
                     </div>
@@ -173,7 +171,7 @@ const FilesSelectorModal = ({
                       className="p-2 text-primary-main hover:bg-red-50 rounded transition"
                       title={t('Remove')}
                     >
-                      <FontAwesomeIcon icon={faTrash as IconProp} />
+                      <IconTrash size={16} />
                     </button>
                   </div>
                 );
@@ -189,7 +187,7 @@ const FilesSelectorModal = ({
           <div className="flex gap-2 justify-between pt-4 border-t">
             <Button
               variant="outline"
-              leftSection={<FontAwesomeIcon icon={faPlus as IconProp} />}
+              leftSection={<IconPlus size={16} />}
               onClick={() => setIsAttachmentModalOpened(true)}
               disabled={selectedFiles.length >= MAX_FILES_COUNT}
             >

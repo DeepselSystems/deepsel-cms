@@ -1,18 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faArrowUp,
-  faArrowDown,
-  faPlus,
-  faTrash,
-  faPencil,
-  faLink,
-  faLayerGroup,
-} from '@fortawesome/free-solid-svg-icons';
 import { Card, Tooltip, Button } from '@mantine/core';
 import ChangeParentModal from './ChangeParentModal.jsx';
 import VisibilityControl from '../../../../common/auth/VisibilityControl.jsx';
+import { IconArrowDown, IconArrowUp, IconLink, IconPencil, IconPlus, IconStack2, IconTrash } from '@tabler/icons-react';
 
 const MenuItem = (props) => {
   const {
@@ -102,7 +93,7 @@ const MenuItem = (props) => {
         <div className="flex items-center">
           <div className="flex-grow">
             <div className="text-sm text-gray-500 flex items-center">
-              <FontAwesomeIcon icon={faLink} className="mr-2" />
+              <IconLink size={16} className="mr-2" />
               <div className="flex">
                 {getAvailableLanguages().map((localeCode) => {
                   const translation = item.translations[localeCode];
@@ -159,7 +150,7 @@ const MenuItem = (props) => {
                   className="mr-1"
                   onClick={() => moveItemUp(item.id)}
                 >
-                  <FontAwesomeIcon icon={faArrowUp} />
+                  <IconArrowUp size={16} />
                 </Button>
               </Tooltip>
               <Tooltip label={t('Move Down')} position="top" withArrow>
@@ -169,12 +160,12 @@ const MenuItem = (props) => {
                   className="mr-1"
                   onClick={() => moveItemDown(item.id)}
                 >
-                  <FontAwesomeIcon icon={faArrowDown} />
+                  <IconArrowDown size={16} />
                 </Button>
               </Tooltip>
               <Tooltip label={t('Edit')} position="top" withArrow>
                 <Button variant="subtle" size="xs" className="mr-1" onClick={() => editItem(item)}>
-                  <FontAwesomeIcon icon={faPencil} />
+                  <IconPencil size={16} />
                 </Button>
               </Tooltip>
               <Tooltip label={t('Add Child')} position="top" withArrow>
@@ -184,7 +175,7 @@ const MenuItem = (props) => {
                   className="mr-1"
                   onClick={() => addChild(item.id)}
                 >
-                  <FontAwesomeIcon icon={faPlus} />
+                  <IconPlus size={16} />
                 </Button>
               </Tooltip>
               <Tooltip label={t('Change Parent')} position="top" withArrow>
@@ -194,12 +185,12 @@ const MenuItem = (props) => {
                   className="mr-1"
                   onClick={() => setShowParentModal(true)}
                 >
-                  <FontAwesomeIcon icon={faLayerGroup} />
+                  <IconStack2 size={16} />
                 </Button>
               </Tooltip>
               <Tooltip label={t('Delete')} position="top" withArrow>
                 <Button variant="subtle" color="red" size="xs" onClick={() => deleteItem(item.id)}>
-                  <FontAwesomeIcon icon={faTrash} />
+                  <IconTrash size={16} />
                 </Button>
               </Tooltip>
             </div>

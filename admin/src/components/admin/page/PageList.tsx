@@ -11,13 +11,6 @@ import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 import { buildPageUrlWithDomain, buildPagePath } from '../../../utils/domainUtils.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faTriangleExclamation,
-  faPlus,
-  faExternalLinkAlt,
-  faPalette,
-} from '@fortawesome/free-solid-svg-icons';
 import { Alert, Badge } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -29,6 +22,7 @@ import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { Preferences } from '@capacitor/preferences';
+import { IconAlertTriangle, IconExternalLink, IconPalette, IconPlus } from '@tabler/icons-react';
 
 type PageLocale = {
   iso_code?: string;
@@ -227,7 +221,7 @@ export default function PageList() {
         if (isThemeRow(params.row)) {
           return (
             <LinkedCell params={params} to={params.row._themeEditorLink}>
-              <FontAwesomeIcon icon={faPalette} className="h-4 w-4 text-violet-500" />
+              <IconPalette size={16} className="text-violet-500" />
             </LinkedCell>
           );
         }
@@ -370,7 +364,7 @@ export default function PageList() {
                 className="p-1 min-w-0 text-gray-600 hover:text-primary-main"
                 title={t('Go to page')}
               >
-                <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4" />
+                <IconExternalLink size={16} />
               </ButtonAny>
             </div>
           );
@@ -402,7 +396,7 @@ export default function PageList() {
               className="p-1 min-w-0 text-gray-600 hover:text-primary-main"
               title={t('Go to page')}
             >
-              <FontAwesomeIcon icon={faExternalLinkAlt} className="h-4 w-4" />
+              <IconExternalLink size={16} />
             </ButtonAny>
           </div>
         );
@@ -432,7 +426,7 @@ export default function PageList() {
                 className={`shadow bg-primary-main text-primary-contrastText`}
                 color={`primary`}
               >
-                <FontAwesomeIcon icon={faPlus} className="sm:mr-1 h-4 w-4" />
+                <IconPlus size={16} className="sm:mr-1" />
                 {t('')}
                 <span className={`hidden sm:inline`}>{t('Create Page')}</span>
               </ButtonAny>
@@ -463,7 +457,7 @@ export default function PageList() {
             variant="light"
             title="Error"
             className="mb-4"
-            icon={<FontAwesomeIcon icon={faTriangleExclamation} />}
+            icon={<IconAlertTriangle size={16} />}
           >
             {error}
           </Alert>

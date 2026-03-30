@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Button, Spoiler, Stack, Alert } from '@mantine/core';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUndo, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { modals } from '@mantine/modals';
 import NotificationState from '../stores/NotificationState.js';
 import dayjs from 'dayjs';
 import { Preferences } from '@capacitor/preferences';
 import backendHost from '../../constants/backendHost.js';
+import { IconAlertTriangle, IconArrowBack } from '@tabler/icons-react';
 
 function RevisionItem({ revision, hasWritePermission, onRestore, loading }) {
   const sanitizeHtml = (html) => {
@@ -78,7 +77,7 @@ function RevisionItem({ revision, hasWritePermission, onRestore, loading }) {
               <Button
                 size="xs"
                 variant="filled"
-                leftSection={<FontAwesomeIcon icon={faUndo} size="sm" />}
+                leftSection={<IconArrowBack size={16} />}
                 onClick={() => onRestore(revision)}
                 loading={loading}
               >
@@ -124,7 +123,7 @@ export default function ActivityContentRevision({
       title: 'Restore Content',
       children: (
         <Stack spacing="md">
-          <Alert icon={<FontAwesomeIcon icon={faExclamationTriangle} />}>
+          <Alert icon={<IconAlertTriangle size={16} />}>
             <div className="text-sm">
               Restore content for <strong>{currentLanguage}</strong> to this point? This action will
               replace the existing content.

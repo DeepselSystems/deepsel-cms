@@ -1,14 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  faPlus,
-  faTrash,
-  faSave,
-  faChevronRight,
-  faChevronDown,
-  faFile,
-  faFolder,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tabs, Tooltip, Menu, Modal, Loader } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -28,6 +18,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-css';
 import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
+import { IconChevronDown, IconChevronRight, IconDeviceFloppy, IconFile, IconFolder, IconPlus, IconTrash } from '@tabler/icons-react';
 
 function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
   const [isExpanded, setIsExpanded] = useState(level === 0);
@@ -40,12 +31,8 @@ function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <FontAwesomeIcon
-            icon={isExpanded ? faChevronDown : faChevronRight}
-            className="mr-2 text-gray-500"
-            size="sm"
-          />
-          <FontAwesomeIcon icon={faFolder} className="mr-2 text-yellow-500" />
+          {isExpanded ? <IconChevronDown size={14} className="mr-2 text-gray-500" /> : <IconChevronRight size={14} className="mr-2 text-gray-500" />}
+          <IconFolder size={16} className="mr-2 text-yellow-500" />
           <span className="text-sm">{node.name}</span>
         </div>
         {isExpanded && node.children && (
@@ -73,7 +60,7 @@ function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
       style={{ paddingLeft: `${level * 16 + 24}px` }}
       onClick={() => onSelectFile(node.path)}
     >
-      <FontAwesomeIcon icon={faFile} className="mr-2 text-gray-400" size="sm" />
+      <IconFile size={16} className="mr-2 text-gray-400" />
       <span className="text-sm">{node.name}</span>
     </div>
   );
@@ -408,7 +395,7 @@ export default function ThemeFileEdit() {
                   disabled={saving || loading || !fileData}
                   loading={saving || loading}
                 >
-                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  <IconDeviceFloppy size={16} className="mr-2" />
                   {saving ? t('Building...') : t('Save')}
                 </Button>
               </div>
@@ -452,7 +439,7 @@ export default function ThemeFileEdit() {
                             <Menu.Dropdown>
                               <Menu.Item
                                 color="red"
-                                leftSection={<FontAwesomeIcon icon={faTrash} />}
+                                leftSection={<IconTrash size={16} />}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteContent(content.id || 0);
@@ -475,7 +462,7 @@ export default function ThemeFileEdit() {
                         }}
                         className="bg-gray-100 hover:bg-gray-200"
                       >
-                        <FontAwesomeIcon icon={faPlus} />
+                        <IconPlus size={16} />
                       </Tabs.Tab>
                     </Tooltip>
                   </Tabs.List>
