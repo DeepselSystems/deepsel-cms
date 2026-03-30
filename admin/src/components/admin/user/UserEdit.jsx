@@ -185,11 +185,11 @@ export default function UserEdit() {
             {currentUser.id === record.id && (
               <div className={`flex gap-2`}>
                 <Button onClick={() => setChangePasswordModalOpen(true)}>
-                  <IconKey size={14} className="mr-1" />
+                  <IconKey size={18} className="mr-1" />
                   {t('Change Password')}
                 </Button>
                 <Button onClick={open2FaModal}>
-                  <IconShield size={14} className="mr-1" />
+                  <IconShield size={18} className="mr-1" />
                   {t('Configure 2FA')}
                 </Button>
               </div>

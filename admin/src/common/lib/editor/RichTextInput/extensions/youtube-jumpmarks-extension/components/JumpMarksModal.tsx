@@ -307,7 +307,7 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
                         onClick={() => moveJumpMark(index, 'up')}
                         disabled={index === 0}
                       >
-                        <IconArrowUp size={14} />
+                        <IconArrowUp size={18} />
                       </ActionIcon>
 
                       <ActionIcon
@@ -315,11 +315,11 @@ const JumpMarksModal = ({ isOpen, onClose, onSave, initialData = null }: JumpMar
                         onClick={() => moveJumpMark(index, 'down')}
                         disabled={index === jumpMarks.length - 1}
                       >
-                        <IconArrowDown size={14} />
+                        <IconArrowDown size={18} />
                       </ActionIcon>
 
                       <ActionIcon size="sm" color="red" onClick={() => removeJumpMark(index)}>
-                        <IconTrash size={14} />
+                        <IconTrash size={18} />
                       </ActionIcon>
                     </Group>
 

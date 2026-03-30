@@ -31,7 +31,7 @@ function FileTreeNode({ node, onSelectFile, selectedPath, level = 0 }) {
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          {isExpanded ? <IconChevronDown size={14} className="mr-2 text-gray-500" /> : <IconChevronRight size={14} className="mr-2 text-gray-500" />}
+          {isExpanded ? <IconChevronDown size={18} className="mr-2 text-gray-500" /> : <IconChevronRight size={18} className="mr-2 text-gray-500" />}
           <IconFolder size={16} className="mr-2 text-yellow-500" />
           <span className="text-sm">{node.name}</span>
         </div>

@@ -164,7 +164,7 @@ export default function ListViewSearchBar(props) {
               </span>
 
               <Button size={`xs`} onClick={handleDelete} color={`red`}>
-                <IconX size={14} className="mr-1" />
+                <IconX size={18} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>

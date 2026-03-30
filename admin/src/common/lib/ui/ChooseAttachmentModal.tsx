@@ -557,7 +557,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
                     variant="subtle"
                     className="px-2 py-1"
                   >
-                    <IconX size={14} className="mr-1" />
+                    <IconX size={18} className="mr-1" />
                     {t('Delete')}
                   </Button>
                 )}
@@ -568,12 +568,12 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
                     variant="subtle"
                     className="px-2 py-1"
                   >
-                    <IconChecks size={14} className="mr-1" />
+                    <IconChecks size={18} className="mr-1" />
                     {isSelectAll() ? t('Deselect all') : t('Select all')}
                   </Button>
                 )}
                 <Button onClick={handleToggleEdit} size="xs" variant="subtle" className="px-2 py-1">
-                  <IconEdit size={14} className="mr-1" />
+                  <IconEdit size={18} className="mr-1" />
                   {t('Toggle edit')}
                 </Button>
               </div>

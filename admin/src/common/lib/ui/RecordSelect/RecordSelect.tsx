@@ -292,7 +292,7 @@ export function RecordSelect({
                   className="w-full border-t border-gray-border text-primary-main text-left p-2 hover:bg-primary-main hover:text-primary-contrastText rounded-b text-xs font-semibold"
                   onClick={() => setShowModal(true)}
                 >
-                  <IconPlus size={14} className="mr-1" />
+                  <IconPlus size={18} className="mr-1" />
                   {t('Create')}
                 </button>
               )}

@@ -19,7 +19,6 @@ import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import SlugInput from './components/SlugInput.jsx';
 import HomepageSwitch from './components/HomepageSwitch.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
@@ -954,22 +953,6 @@ export default function PageEdit({ onSuccess }) {
                       <div className="flex flex-col grow gap-2"></div>
                     </div>
 
-                    {/* Slug Input */}
-                    {!record?.is_homepage && (
-                      <div className="mb-4">
-                        <SlugInput
-                          isHomepage={!!record?.is_homepage}
-                          contentId={content?._addNew ? null : content?.id}
-                          localeId={content?.locale_id}
-                          title={content?.title || ''}
-                          value={content?.slug || ''}
-                          themeName={siteSettings?.selected_theme}
-                          onChange={(newSlug) => {
-                            updateContentField(content.id, 'slug', newSlug);
-                          }}
-                        />
-                      </div>
-                    )}
 
                     {/* Content Editor */}
                     <div className="my-4">
@@ -1231,6 +1214,7 @@ export default function PageEdit({ onSuccess }) {
           updateContentField={updateContentField}
           page={record}
           updatePageField={(field, value) => setRecord({ ...record, [field]: value })}
+          themeName={siteSettings?.selected_theme}
         />
       )}
 

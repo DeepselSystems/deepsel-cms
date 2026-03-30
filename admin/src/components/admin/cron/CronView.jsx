@@ -55,7 +55,7 @@ export default function CronView() {
             <div className={`flex justify-between items-center`}>
               <H1>{t('Scheduled Action')}</H1>
               <Button onClick={execute} loading={loading}>
-                <IconPlayerPlay size={14} className="mr-1" />
+                <IconPlayerPlay size={18} className="mr-1" />
                 Execute Manually
               </Button>
             </div>

@@ -34,7 +34,7 @@ export function EditFormActionBar({ loading, slot, showBack = true }: EditFormAc
       <div>
         {showBack && (
           <Button className="shadow text-[14px] font-[600]" variant="outline" onClick={back}>
-            <IconArrowLeft size={14} className="mr-1" />
+            <IconArrowLeft size={18} className="mr-1" />
             {t('Back')}
           </Button>
         )}

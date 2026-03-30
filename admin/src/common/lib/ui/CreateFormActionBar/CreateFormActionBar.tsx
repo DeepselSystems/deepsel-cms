@@ -36,7 +36,7 @@ export function CreateFormActionBar({
       {!modalMode && (
         <div>
           <Button className="shadow text-[14px] font-[600]" variant="outline" onClick={back}>
-            <IconArrowLeft size={14} className="mr-1" />
+            <IconArrowLeft size={18} className="mr-1" />
             {t('Back')}
           </Button>
         </div>

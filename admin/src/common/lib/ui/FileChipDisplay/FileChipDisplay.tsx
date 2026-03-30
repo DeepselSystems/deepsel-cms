@@ -37,7 +37,7 @@ export function FileChipDisplay({ attachment, backendHost }: FileChipDisplayProp
       style={{ fontSize: 'var(--mantine-font-size-sm)' }}
     >
       <Chip
-        icon={<IconDownload size={14} className="mr-1 text-primary-main" />}
+        icon={<IconDownload size={18} className="mr-1 text-primary-main" />}
         size="xs"
         variant="outline"
         checked={true}

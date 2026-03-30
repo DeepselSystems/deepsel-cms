@@ -298,27 +298,27 @@ export function GalleryModal({
                                 className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white"
                                 title="Edit Caption"
                               >
-                                <IconEdit size={14} className="text-gray-700" />
+                                <IconEdit size={18} className="text-gray-700" />
                               </button>
                               <button
                                 className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                                 onClick={() => moveAttachment(index, 'up')}
                                 disabled={index === 0}
                               >
-                                <IconArrowUp size={14} className="text-gray-700" />
+                                <IconArrowUp size={18} className="text-gray-700" />
                               </button>
                               <button
                                 className={`w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${index === selectedAttachments.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                                 onClick={() => moveAttachment(index, 'down')}
                                 disabled={index === selectedAttachments.length - 1}
                               >
-                                <IconArrowDown size={14} className="text-gray-700" />
+                                <IconArrowDown size={18} className="text-gray-700" />
                               </button>
                               <button
                                 className="w-7 h-7 rounded-full bg-white/80 flex items-center justify-center hover:bg-white hover:text-red-500"
                                 onClick={() => removeAttachment(index)}
                               >
-                                <IconTrash size={14} className="text-gray-700" />
+                                <IconTrash size={18} className="text-gray-700" />
                               </button>
                             </div>
                           </div>

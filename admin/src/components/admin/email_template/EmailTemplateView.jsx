@@ -90,7 +90,7 @@ export default function EmailTemplateView() {
           <div className="flex justify-between">
             <H1>{t('Email Template')}</H1>
             <Button onClick={() => open()}>
-              <IconSend size={14} className="mr-2" />
+              <IconSend size={18} className="mr-2" />
               {t('Send Test Email')}
             </Button>
           </div>

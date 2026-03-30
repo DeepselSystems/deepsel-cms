@@ -11,7 +11,7 @@ const NotificationsDropdown = () => {
       <Menu.Target>
         {/*<Indicator label="5" color="red" size={13}>*/}
         <div>
-          <IconBell size={14} className="cursor-pointer" />
+          <IconBell size={18} className="cursor-pointer" />
         </div>
         {/*</Indicator>*/}
       </Menu.Target>

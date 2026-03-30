@@ -4,6 +4,7 @@ import { Drawer } from '@mantine/core';
 import Switch from '../../../../common/ui/Switch.jsx';
 import SeoMetadataForm from '../../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
 import H3 from '../../../../common/ui/H3.jsx';
+import SlugInput from './SlugInput.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
@@ -25,7 +26,7 @@ import 'prismjs/themes/prism.css';
  * React.RefAttributes<{unknow}>>}
  */
 const PageContentSettingDrawer = React.forwardRef(
-  ({ pageContent, updateContentField, opened, onClose, page, updatePageField }, ref) => {
+  ({ pageContent, updateContentField, opened, onClose, page, updatePageField, themeName }, ref) => {
     // Translation
     const { t } = useTranslation();
 
@@ -62,6 +63,20 @@ const PageContentSettingDrawer = React.forwardRef(
                 description={t('When enabled, users must be logged in to view this page')}
                 onChange={(e) => updatePageField('require_login', e.currentTarget.checked)}
               />
+
+              {!page?.is_homepage && (
+                <SlugInput
+                  isHomepage={!!page?.is_homepage}
+                  contentId={pageContent?._addNew ? null : pageContent?.id}
+                  localeId={pageContent?.locale_id}
+                  title={pageContent?.title || ''}
+                  value={pageContent?.slug || ''}
+                  themeName={themeName}
+                  onChange={(newSlug) => {
+                    updateContentField(pageContent.id, 'slug', newSlug);
+                  }}
+                />
+              )}
             </div>
 
             <SeoMetadataForm pageContent={pageContent} updateContentField={updateContentField} />

@@ -110,11 +110,11 @@ function FileCard({ file, onDelete }) {
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
               <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={14} className="mr-1" />
+                <IconLink size={18} className="mr-1" />
                 {t('Copy Link')}
               </Button>
               <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={14} className="mr-1" />
+                <IconDownload size={18} className="mr-1" />
                 {t('Download')}
               </Button>
               <Button
@@ -124,7 +124,7 @@ function FileCard({ file, onDelete }) {
                 color="red"
                 className="px-2 py-1"
               >
-                <IconTrash size={14} className="mr-1" />
+                <IconTrash size={18} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>
@@ -145,11 +145,11 @@ function FileCard({ file, onDelete }) {
           {showOverlay && (
             <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
               <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={14} className="mr-1" />
+                <IconLink size={18} className="mr-1" />
                 {t('Copy Link')}
               </Button>
               <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={14} className="mr-1" />
+                <IconDownload size={18} className="mr-1" />
                 {t('Download')}
               </Button>
               <Button
@@ -159,7 +159,7 @@ function FileCard({ file, onDelete }) {
                 color="red"
                 className="px-2 py-1"
               >
-                <IconTrash size={14} className="mr-1" />
+                <IconTrash size={18} className="mr-1" />
                 {t('Delete')}
               </Button>
             </div>

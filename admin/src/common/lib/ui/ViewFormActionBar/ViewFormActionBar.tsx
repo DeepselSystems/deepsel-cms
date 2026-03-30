@@ -141,7 +141,7 @@ export function ViewFormActionBar({
           variant="outline"
           onClick={() => back()}
         >
-          <IconArrowLeft size={14} className="mr-1" />
+          <IconArrowLeft size={18} className="mr-1" />
           <span className="hidden sm:block">{t('Back')}</span>
         </Button>
       </div>
@@ -158,13 +158,13 @@ export function ViewFormActionBar({
               loading={loading}
               variant="filled"
             >
-              <IconPencil size={14} className="mr-2" />
+              <IconPencil size={18} className="mr-2" />
               {t('Edit')}
             </Button>
           )}
           {canDelete && (
             <Button variant="outline" onClick={handleDelete}>
-              <IconTrash size={14} className="mr-2" />
+              <IconTrash size={18} className="mr-2" />
               {t('Delete')}
             </Button>
           )}
