@@ -22,7 +22,7 @@ import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
 import { useNavigate } from 'react-router-dom';
-import { IconArrowLeft, IconExternalLink, IconUsers } from '@tabler/icons-react';
+import { IconArrowLeft, IconArrowUpRight, IconUsers } from '@tabler/icons-react';
 
 export default function AppLayout(props) {
   const {
@@ -183,7 +183,7 @@ export default function AppLayout(props) {
               )}
               {/*endregion site selector*/}
               <a href="/" target="_blank" className="block my-2 w-8 h-8">
-                <IconExternalLink
+                <IconArrowUpRight
                   size={16}
                   className="w-full h-full text-xl text-white bg-black rounded p-1 hover:translate-y-0.5 transition-all"
                 />
