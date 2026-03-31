@@ -1,5 +1,5 @@
 const DEFAULT_DEV_BACKEND = 'http://localhost:8000';
-const DEFAULT_PROD_BACKEND = 'http://localhost:8000';
+const DEFAULT_PROD_BACKEND = '';
 
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
