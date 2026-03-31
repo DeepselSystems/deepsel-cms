@@ -4,17 +4,30 @@ const DEFAULT_PROD_BACKEND = 'http://localhost:8000';
 const getInitialBackendHost = () => {
   // Check if window is defined (client-side) before accessing it
   const windowPublicBackend = typeof window !== 'undefined' ? window.PUBLIC_BACKEND : undefined;
+
+  // Use ?? (nullish coalescing) so that empty string "" is preserved as a valid
+  // relative-path value. With ||, "" would be falsy and fall through to defaults.
   const configuredBackend =
-    import.meta.env.VITE_PUBLIC_BACKEND || import.meta.env.PUBLIC_BACKEND || windowPublicBackend;
+    import.meta.env.VITE_PUBLIC_BACKEND ?? import.meta.env.PUBLIC_BACKEND ?? windowPublicBackend;
+
+  const source =
+    import.meta.env.VITE_PUBLIC_BACKEND != null
+      ? 'VITE_PUBLIC_BACKEND'
+      : import.meta.env.PUBLIC_BACKEND != null
+        ? 'PUBLIC_BACKEND'
+        : windowPublicBackend != null
+          ? 'window.PUBLIC_BACKEND'
+          : 'default';
+
   let host =
-    configuredBackend || (import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND);
+    configuredBackend ?? (import.meta.env.DEV ? DEFAULT_DEV_BACKEND : DEFAULT_PROD_BACKEND);
 
   // Add /api/v1 suffix if not already present
   if (!host.endsWith('/api/v1')) {
     host = host.endsWith('/') ? host + 'api/v1' : host + '/api/v1';
   }
 
-  return host;
+  return { host, source };
 };
 
 const checkBackendHealth = async (url) => {
@@ -55,13 +68,15 @@ const getPullRequestBackendHost = async () => {
   return null;
 };
 
-let backendHost = getInitialBackendHost();
+const { host: initialHost, source } = getInitialBackendHost();
+let backendHost = initialHost;
 
 // Initialize PR backend host if applicable
 getPullRequestBackendHost().then((prHost) => {
   if (prHost) {
     backendHost = prHost;
+    console.log(`backendHost ${backendHost} (source: PR branch override)`);
   }
 });
-console.log('backendHost', backendHost);
+console.log(`backendHost ${backendHost} (source: ${source})`);
 export default backendHost;
