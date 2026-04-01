@@ -62,8 +62,8 @@ def get_blog_post(
     if target_lang == "default":
         target_lang = org_settings.default_language.iso_code
 
-    # Add leading slash if not present (database stores slugs with leading slash)
-    post_slug = "/" + post_slug.lstrip("/")
+    # Strip any leading slashes (database stores slugs without leading slash)
+    post_slug = post_slug.lstrip("/")
 
     # Find the blog post with matching slug and organization
     blog_post = (
@@ -139,7 +139,7 @@ def get_blog_post(
     # Build language alternatives
     language_alternatives = [
         LanguageAlternative(
-            slug=f"/blog{blog_post.slug}",
+            slug=f"/blog/{blog_post.slug}",
             locale=LocaleData(
                 id=content.locale.id,
                 name=content.locale.name,

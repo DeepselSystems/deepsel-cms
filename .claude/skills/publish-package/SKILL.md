@@ -2,6 +2,7 @@
 name: publish-package
 description: Publish an npm package.
 argument-hint: <package-name> [version]
+user_invocable: true
 ---
 
 # Publish Package
