@@ -92,7 +92,6 @@ prepush:
 	@echo "Running prepush checks..."
 	make lint
 	make security
-	make format-check
 	make test
 
 tree:

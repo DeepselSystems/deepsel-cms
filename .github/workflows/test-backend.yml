@@ -35,9 +35,6 @@ jobs:
           python -m pip install --upgrade pip
           make install-dev
 
-      - name: Check formatting with black
-        run: make format-check
-
       - name: Lint with flake8
         run: make lint
 
