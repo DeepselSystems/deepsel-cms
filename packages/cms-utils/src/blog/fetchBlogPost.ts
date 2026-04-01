@@ -1,6 +1,7 @@
 import type { BlogPostData } from './types.js';
 import { fetchPublicSettings } from '../page/index.js';
 import type { SiteSettings } from '../types.js';
+import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
 
 interface FetchBlogPostProps {
   path: string;
@@ -19,7 +20,7 @@ export async function fetchBlogPost({
   lang = 'default',
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000',
+  backendHost = getDefaultBackendHost(),
 }: FetchBlogPostProps): Promise<BlogPostData> {
   try {
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;

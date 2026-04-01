@@ -1,4 +1,5 @@
 export * from './cookieUtils.js';
+export * from './getDefaultBackendHost.js';
 export * from './isObjectOrArray.js';
 
 /**

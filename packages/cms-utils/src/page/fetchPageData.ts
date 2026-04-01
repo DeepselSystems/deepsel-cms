@@ -1,6 +1,7 @@
 import { fetchPublicSettings } from './fetchPublicSettings.js';
 import type { PageData } from './types.js';
 import type { SiteSettings } from '../types.js';
+import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
 
 interface FetchPageDataProps {
   path: string;
@@ -18,7 +19,7 @@ export async function fetchPageData({
   lang,
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000',
+  backendHost = getDefaultBackendHost(),
 }: FetchPageDataProps): Promise<PageData> {
   try {
     // Format the path properly, make sure it starts with a slash

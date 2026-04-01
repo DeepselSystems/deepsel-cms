@@ -1,5 +1,6 @@
 import { fetchPublicSettings } from './fetchPublicSettings.js';
 import type { SiteSettings } from '../types.js';
+import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
 
 export interface SearchResultItem {
   id: string;
@@ -38,7 +39,7 @@ export async function fetchSearchResults({
   limit = 100,
   astroRequest,
   authToken,
-  backendHost = 'http://localhost:8000',
+  backendHost = getDefaultBackendHost(),
 }: FetchSearchResultsProps): Promise<SearchResultsData> {
   // Build hostname for headers
   let hostname: string | null = null;
@@ -61,12 +62,7 @@ export async function fetchSearchResults({
   }
 
   // Always fetch public_settings alongside the search call
-  const settingsPromise = fetchPublicSettings(
-    null,
-    astroRequest ?? null,
-    lang,
-    `http://localhost:8000`,
-  );
+  const settingsPromise = fetchPublicSettings(null, astroRequest ?? null, lang, backendHost);
 
   // If no query, skip the search call and return empty results
   if (!q.trim()) {

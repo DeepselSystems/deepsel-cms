@@ -1,4 +1,5 @@
 import type { SiteSettings } from '../types.js';
+import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
 
 /**
  * Fetches public settings from the backend
@@ -7,7 +8,7 @@ export async function fetchPublicSettings(
   orgId: number | null = null,
   astroRequest: Request | null = null,
   lang: string | null = null,
-  backendHost: string = 'http://localhost:8000',
+  backendHost: string = getDefaultBackendHost(),
 ): Promise<SiteSettings> {
   try {
     let url;

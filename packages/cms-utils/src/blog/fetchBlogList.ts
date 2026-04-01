@@ -1,5 +1,6 @@
 import type { BlogListData } from './types.js';
 import type { Pagination } from '../page/getPathType.js';
+import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
 
 interface FetchBlogListProps {
   lang?: string;
@@ -18,7 +19,7 @@ export async function fetchBlogList({
   pagination,
   authToken,
   lang = 'default',
-  backendHost = 'http://localhost:8000',
+  backendHost = getDefaultBackendHost(),
 }: FetchBlogListProps): Promise<BlogListData> {
   try {
     let url = `${backendHost}/api/v1/blog_post/list/${lang}`;
