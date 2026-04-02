@@ -270,10 +270,13 @@ def upgrade(db, from_version, to_version):
     # Full-text search vectors
     _migrate_add_search_vectors(db, __name__, from_version, to_version)
 
-    # Setup themes (now uses SQLAlchemy models instead of raw SQL)
-    from .utils.setup_themes import setup_themes
+    # Setup themes (skip when running client separately)
+    from .utils.client_process import NO_CLIENT
 
-    setup_themes()
+    if not NO_CLIENT:
+        from .utils.setup_themes import setup_themes
+
+        setup_themes()
 
     # Set default theme synchronously before starting client,
     # so seed data + post_install run on fresh DB
