@@ -139,6 +139,8 @@ export function getBlogListThemeComponent(data: BlogListData, lang?: string): an
 }
 
 export function getBlogPostThemeComponent(data: BlogPostData, lang?: string): any {
+  if (data.notFound) return null;
+
   const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(data);
   const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
   const langPrefix = isNonDefaultLang ? `${lang}:` : '';

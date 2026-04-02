@@ -73,7 +73,7 @@ export async function fetchBlogPost({
       const siteSettings: SiteSettings = await fetchPublicSettings(
         null,
         astroRequest,
-        lang,
+        lang === 'default' ? null : lang,
         backendHost,
       );
 
