@@ -15,7 +15,7 @@ This guide provides step-by-step instructions for testing SAML authentication us
 Ensure these environment variables are configured:
 
 ```bash
-BACKEND_URL=http://localhost:8000
+PUBLIC_URL=http://localhost:8000
 FRONTEND_URL=http://localhost:4321
 ```
 

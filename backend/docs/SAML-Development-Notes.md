@@ -55,7 +55,7 @@ def get_public_settings(self):
 
 #### constants/__init__.py
 ```python
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+PUBLIC_URL = os.getenv("PUBLIC_URL", "http://localhost:8000")
 ```
 - Added for proper SAML endpoint URL construction
 - Critical for metadata generation and ACS URL configuration
@@ -382,7 +382,7 @@ const storeAccessToken = useCallback(async () => {
 
 #### Environment Variables
 ```bash
-BACKEND_URL=http://localhost:8000    # Required for SAML endpoints
+PUBLIC_URL=http://localhost:8000    # Required for SAML endpoints
 FRONTEND_URL=http://localhost:4321   # Required for redirects
 ```
 

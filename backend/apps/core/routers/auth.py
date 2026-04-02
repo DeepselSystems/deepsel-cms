@@ -12,7 +12,7 @@ from settings import (
     APP_SECRET,
     AUTH_ALGORITHM,
     DEFAULT_ORG_ID,
-    BACKEND_URL,
+    PUBLIC_URL,
 )
 from db import get_db
 from apps.core.schemas.user import CurrentUser
@@ -51,9 +51,9 @@ auth_service = AuthService(
     encrypt_fn=lambda text: encrypt(text, APP_SECRET),
     decrypt_fn=lambda text: decrypt(text, APP_SECRET),
 )
-google_service = GoogleOAuthService(APP_SECRET, AUTH_ALGORITHM, BACKEND_URL)
+google_service = GoogleOAuthService(APP_SECRET, AUTH_ALGORITHM, PUBLIC_URL)
 saml_service = SamlService(
-    APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, BACKEND_URL, BACKEND_URL
+    APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, PUBLIC_URL, PUBLIC_URL
 )
 
 
@@ -168,7 +168,7 @@ async def login_google(request: Request, db=Depends(get_db)):
 async def auth_google(request: Request, db: Session = Depends(get_db)):
     result = await google_service.handle_callback(request, db)
     return RedirectResponse(
-        f"{BACKEND_URL}/google-authenticated?access_token={result.access_token}"
+        f"{PUBLIC_URL}/google-authenticated?access_token={result.access_token}"
     )
 
 
@@ -189,10 +189,10 @@ async def auth_saml(request: Request, db: Session = Depends(get_db)):
 
     if result.relay_state:
         return RedirectResponse(
-            f"{BACKEND_URL}/admin/saml-authenticated?access_token={result.access_token}&redirect={quote(result.relay_state, safe='')}"
+            f"{PUBLIC_URL}/admin/saml-authenticated?access_token={result.access_token}&redirect={quote(result.relay_state, safe='')}"
         )
     return RedirectResponse(
-        f"{BACKEND_URL}/admin/saml-authenticated?access_token={result.access_token}"
+        f"{PUBLIC_URL}/admin/saml-authenticated?access_token={result.access_token}"
     )
 
 

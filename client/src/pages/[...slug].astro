@@ -26,6 +26,7 @@ import {
   resolveThemeName,
 } from '../utils/getThemeComponent';
 
+const backendHost = 'http://localhost:8000';
 const { slug = '/' } = Astro.params;
 const { lang, path, pathType, pagination } = parseSlug(slug);
 
@@ -36,29 +37,29 @@ let blogPostData: BlogPostData | null = null;
 let searchData: SearchResultsData | null = null;
 
 if (pathType === WebsiteDataTypes.Home) {
-  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
+  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request, backendHost });
   ThemeComponent = getHomeThemeComponent(pageData, lang);
 } else if (pathType === WebsiteDataTypes.Page && isAnyThemeClientPage(path)) {
   // Client-only page — skip backend page fetch, only fetch public settings for theme resolution
-  const publicSettings = await fetchPublicSettings(null, Astro.request, lang);
+  const publicSettings = await fetchPublicSettings(null, Astro.request, lang, backendHost);
   const selectedTheme = resolveThemeName(publicSettings?.selected_theme);
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   const clientComponent = getClientPageTheme(path, selectedTheme, lang, defaultLangIsoCode);
   pageData = buildClientPageData(path, publicSettings);
   ThemeComponent = clientComponent;
 } else if (pathType === WebsiteDataTypes.BlogList) {
-  blogListData = await fetchBlogList({ lang, pagination, astroRequest: Astro.request });
+  blogListData = await fetchBlogList({ lang, pagination, astroRequest: Astro.request, backendHost });
   ThemeComponent = getBlogListThemeComponent(blogListData, lang);
 } else if (pathType === WebsiteDataTypes.BlogPost) {
-  blogPostData = await fetchBlogPost({ path, lang, astroRequest: Astro.request });
+  blogPostData = await fetchBlogPost({ path, lang, astroRequest: Astro.request, backendHost });
   ThemeComponent = getBlogPostThemeComponent(blogPostData, lang);
 } else if (pathType === WebsiteDataTypes.SearchResults) {
   const url = new URL(Astro.request.url);
   const q = url.searchParams.get('q') || '';
-  searchData = await fetchSearchResults({ lang, q, astroRequest: Astro.request });
+  searchData = await fetchSearchResults({ lang, q, astroRequest: Astro.request, backendHost });
   ThemeComponent = getSearchThemeComponent(searchData, lang);
 } else {
-  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request });
+  pageData = await fetchPageData({ path, lang, astroRequest: Astro.request, backendHost });
   ThemeComponent = getPageThemeComponent(pageData, lang);
 }
 

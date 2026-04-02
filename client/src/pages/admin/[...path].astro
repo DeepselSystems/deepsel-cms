@@ -6,9 +6,10 @@ import '@deepsel/admin/style.css';
 import { fetchPublicSettings } from '@deepsel/cms-utils';
 
 // Fetch site settings for admin
+const backendHost = 'http://localhost:8000';
 let siteSettings = null;
 try {
-  siteSettings = await fetchPublicSettings(1, Astro.request); // Default to organization ID 1 for admin
+  siteSettings = await fetchPublicSettings(1, Astro.request, null, backendHost); // Default to organization ID 1 for admin
 } catch (error) {
   console.error('Error fetching site settings:', error);
 }

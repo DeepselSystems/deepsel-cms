@@ -13,9 +13,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     const response = await fetch(backendUrl, {
       method: context.request.method,
       headers,
-      body: context.request.method !== 'GET' && context.request.method !== 'HEAD'
-        ? context.request.body
-        : undefined,
+      body:
+        context.request.method !== 'GET' && context.request.method !== 'HEAD'
+          ? context.request.body
+          : undefined,
       // @ts-ignore - duplex needed for streaming body
       duplex: 'half',
     });
