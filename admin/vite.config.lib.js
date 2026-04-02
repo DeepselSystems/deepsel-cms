@@ -46,8 +46,6 @@ export default defineConfig({
           'recharts',
           'react-helmet',
           'react-device-detect',
-          'react-simple-code-editor',
-          'prismjs',
         ];
         return externalPrefixes.some((prefix) => id === prefix || id.startsWith(prefix + '/'));
       },
