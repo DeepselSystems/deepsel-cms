@@ -75,9 +75,9 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
 
     @classmethod
     def _get_frontend_url(cls):
-        from settings import FRONTEND_URL
+        from settings import BACKEND_URL
 
-        return FRONTEND_URL
+        return BACKEND_URL
 
     @classmethod
     def _get_is_authless(cls):

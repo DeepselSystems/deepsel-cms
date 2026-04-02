@@ -78,7 +78,9 @@ class CMSSettingsMixin(_CMSSettingsEncryptedData):
             return public_settings
 
         # Use provided lang or fall back to default language
-        target_lang = lang or (
+        # Treat 'default' as unset — callers may pass it as a placeholder
+        effective_lang = lang if lang and lang != "default" else None
+        target_lang = effective_lang or (
             organization.default_language.iso_code
             if organization.default_language
             else None

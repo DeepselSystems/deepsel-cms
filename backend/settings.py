@@ -34,7 +34,6 @@ MAX_STORAGE_LIMIT = os.getenv("MAX_STORAGE_LIMIT", None)
 if MAX_STORAGE_LIMIT is not None:
     MAX_STORAGE_LIMIT = float(MAX_STORAGE_LIMIT)
 APP_SECRET = os.getenv("APP_SECRET", "your-secret-key")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Optional
