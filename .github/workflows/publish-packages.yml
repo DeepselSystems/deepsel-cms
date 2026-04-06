@@ -92,7 +92,9 @@ jobs:
         run: npm run build --workspace=packages/cms-react
 
       - name: Update npm
-        run: npx npm@latest --version && npx npm@latest install -g npm@latest || true
+        run: |
+          corepack disable
+          npm install -g npm@latest
 
       - name: Publish package
         run: npm publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
