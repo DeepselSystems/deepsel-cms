@@ -17,6 +17,9 @@ from settings import (
     DEFAULT_ORG_ID,
     installed_apps,
     version as src_version,
+    SESSION_STORE_BACKEND,
+    REDIS_URL,
+    SESSION_DIR,
 )
 from deepsel.sqlalchemy import DatabaseManager
 from deepsel.utils.install_apps import install_routers, install_seed_data
@@ -78,6 +81,17 @@ async def lifespan(application: FastAPI):
             sys.exit(0)
     else:
         logger.info("Skipping database setup (NO_MIGRATE)")
+
+    # Initialize session store for cookie-based auth
+    from deepsel.auth.session import create_session_store
+
+    session_store = create_session_store(
+        redis_url=REDIS_URL,
+        db_session_factory=get_db_context,
+        session_dir=SESSION_DIR,
+        backend=SESSION_STORE_BACKEND,
+    )
+    application.state.session_store = session_store
 
     # Configure deepsel router utilities before importing routers
     set_api_prefix(API_PREFIX)

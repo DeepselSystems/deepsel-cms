@@ -13,6 +13,8 @@ from settings import (
     AUTH_ALGORITHM,
     DEFAULT_ORG_ID,
     PUBLIC_URL,
+    SESSION_COOKIE_SECURE,
+    SESSION_COOKIE_NAME,
 )
 from db import get_db
 from apps.core.schemas.user import CurrentUser
@@ -57,6 +59,32 @@ saml_service = SamlService(
 )
 
 
+def _get_session_store(request: Request):
+    return getattr(request.app.state, "session_store", None)
+
+
+def _set_session_cookie(response: Response, session_id: str, max_age: int):
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=session_id,
+        httponly=True,
+        secure=SESSION_COOKIE_SECURE,
+        samesite="lax",
+        max_age=max_age,
+        path="/",
+    )
+
+
+def _clear_session_cookie(response: Response):
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        httponly=True,
+        secure=SESSION_COOKIE_SECURE,
+        samesite="lax",
+        path="/",
+    )
+
+
 def _build_current_user(user):
     permissions = user.get_user_permissions()
     all_roles = user.get_user_roles()
@@ -69,10 +97,15 @@ def _build_current_user(user):
 
 @router.post("/token", response_model=TokenResponse)
 def login_for_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db),
     otp: Optional[str] = Form(None),
 ):
+    # Inject session store if available
+    session_store = _get_session_store(request)
+    auth_service.session_store = session_store
+
     result = auth_service.login(db, form_data.username, form_data.password, otp)
 
     if result.require_2fa_setup:
@@ -83,11 +116,43 @@ def login_for_access_token(
         )
 
     current_user = _build_current_user(result.user)
-    return TokenResponse(
+    response_data = TokenResponse(
         access_token=result.access_token,
         user=current_user,
         is_require_user_config_2fa=False,
     )
+
+    # Set session cookie if session was created
+    response = Response(
+        content=response_data.model_dump_json(),
+        media_type="application/json",
+    )
+    if result.session_id:
+        # Default 24h, can be org-specific
+        max_age = 60 * 60 * 24
+        if result.user and result.user.organization:
+            org_minutes = result.user.organization.access_token_expire_minutes
+            if org_minutes:
+                max_age = int(org_minutes * 60)
+        _set_session_cookie(response, result.session_id, max_age)
+
+    return response
+
+
+@router.post("/logout")
+def logout(request: Request):
+    session_id = request.cookies.get(SESSION_COOKIE_NAME)
+    session_store = _get_session_store(request)
+
+    if session_id and session_store:
+        session_store.delete(session_id)
+
+    response = Response(
+        content='{"success": true}',
+        media_type="application/json",
+    )
+    _clear_session_cookie(response)
+    return response
 
 
 @router.post("/signup", response_model=SignupResponse)
@@ -167,8 +232,30 @@ async def login_google(request: Request, db=Depends(get_db)):
 @router.get("/auth/google")
 async def auth_google(request: Request, db: Session = Depends(get_db)):
     result = await google_service.handle_callback(request, db)
+
+    # Create session and set cookie on redirect
+    session_store = _get_session_store(request)
+    redirect_url = f"{PUBLIC_URL}/admin/google-authenticated"
+
+    if session_store:
+        auth_service.session_store = session_store
+        session_id = auth_service.create_session(
+            result.user,
+            db=db,
+            ip=request.client.host if request.client else "",
+            user_agent=request.headers.get("user-agent", ""),
+        )
+        if session_id:
+            response = RedirectResponse(redirect_url)
+            max_age = 60 * 60 * 24
+            if result.organization and result.organization.access_token_expire_minutes:
+                max_age = int(result.organization.access_token_expire_minutes * 60)
+            _set_session_cookie(response, session_id, max_age)
+            return response
+
+    # Fallback: pass token in URL (backward compat)
     return RedirectResponse(
-        f"{PUBLIC_URL}/google-authenticated?access_token={result.access_token}"
+        f"{redirect_url}?access_token={result.access_token}"
     )
 
 
@@ -187,12 +274,32 @@ async def login_saml(
 async def auth_saml(request: Request, db: Session = Depends(get_db)):
     result = await saml_service.handle_assertion(request, db)
 
+    redirect_path = "/admin/saml-authenticated"
     if result.relay_state:
-        return RedirectResponse(
-            f"{PUBLIC_URL}/admin/saml-authenticated?access_token={result.access_token}&redirect={quote(result.relay_state, safe='')}"
+        redirect_path += f"?redirect={quote(result.relay_state, safe='')}"
+
+    # Create session and set cookie on redirect
+    session_store = _get_session_store(request)
+    if session_store:
+        auth_service.session_store = session_store
+        session_id = auth_service.create_session(
+            result.user,
+            db=db,
+            ip=request.client.host if request.client else "",
+            user_agent=request.headers.get("user-agent", ""),
         )
+        if session_id:
+            response = RedirectResponse(f"{PUBLIC_URL}{redirect_path}")
+            max_age = 60 * 60 * 24
+            if result.organization and result.organization.access_token_expire_minutes:
+                max_age = int(result.organization.access_token_expire_minutes * 60)
+            _set_session_cookie(response, session_id, max_age)
+            return response
+
+    # Fallback: pass token in URL
+    separator = "&" if "?" in redirect_path else "?"
     return RedirectResponse(
-        f"{PUBLIC_URL}/admin/saml-authenticated?access_token={result.access_token}"
+        f"{PUBLIC_URL}{redirect_path}{separator}access_token={result.access_token}"
     )
 
 

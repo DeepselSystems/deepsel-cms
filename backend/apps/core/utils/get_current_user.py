@@ -1,19 +1,46 @@
 from typing import Optional
-import os
+
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
-from settings import APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, AUTHLESS
+
+from settings import APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, AUTHLESS, SESSION_COOKIE_NAME
 from db import get_db
 from apps.core.utils.models_pool import models_pool
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
+def _get_session_store(request: Request):
+    """Get session store from app state, or None if not initialized."""
+    return getattr(request.app.state, "session_store", None)
+
+
+def _resolve_user_from_session(request: Request, db: Session):
+    """Try to authenticate via session cookie. Returns user or None."""
+    session_id = request.cookies.get(SESSION_COOKIE_NAME)
+    if not session_id:
+        return None
+
+    session_store = _get_session_store(request)
+    if not session_store:
+        return None
+
+    session_data = session_store.get(session_id)
+    if session_data is None:
+        return None
+
+    UserModel = models_pool["user"]
+    user = db.query(UserModel).get(session_data.user_id)
+    return user
+
+
 def get_current_user(
-    token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ):
     UserModel = models_pool["user"]
     OrgModel = models_pool["organization"]
@@ -36,6 +63,12 @@ def get_current_user(
             )
         return user
 
+    # 1. Try session cookie first (browser requests)
+    session_user = _resolve_user_from_session(request, db)
+    if session_user is not None:
+        return session_user
+
+    # 2. Fall back to Bearer token (API clients, backward compat)
     if token is None:
         # public user with string_id = 'public_user'
         user = (
@@ -85,7 +118,9 @@ def get_current_user(
 
 
 def get_current_user_optional(
-    token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ):
     """
     Optional authentication - returns user if authenticated, None if not.
@@ -93,6 +128,12 @@ def get_current_user_optional(
     """
     UserModel = models_pool["user"]
 
+    # 1. Try session cookie
+    session_user = _resolve_user_from_session(request, db)
+    if session_user is not None:
+        return session_user
+
+    # 2. Try Bearer token
     if token is None:
         return None
 
