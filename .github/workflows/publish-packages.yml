@@ -92,4 +92,4 @@ jobs:
         run: npm run build --workspace=packages/cms-react
 
       - name: Publish package
-        run: npx -y npm@latest publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
+        run: npm publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
