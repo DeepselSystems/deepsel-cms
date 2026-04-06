@@ -64,5 +64,8 @@ jobs:
       - name: Build library
         run: npm run build:lib --workspace=admin
 
+      - name: Update npm
+        run: npx npm@latest --version && npx npm@latest install -g npm@latest || true
+
       - name: Publish package
         run: npm publish --provenance --workspace=admin
