@@ -64,10 +64,5 @@ jobs:
       - name: Build library
         run: npm run build:lib --workspace=admin
 
-      - name: Update npm
-        run: |
-          corepack disable
-          npm install -g npm@latest
-
       - name: Publish package
-        run: npm publish --provenance --workspace=admin
+        run: npx -y npm@latest publish --provenance --workspace=admin

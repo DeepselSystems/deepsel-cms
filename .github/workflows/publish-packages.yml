@@ -91,10 +91,5 @@ jobs:
         if: needs.detect-changes.outputs.tagged-package != 'cms-utils'
         run: npm run build --workspace=packages/cms-react
 
-      - name: Update npm
-        run: |
-          corepack disable
-          npm install -g npm@latest
-
       - name: Publish package
-        run: npm publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
+        run: npx -y npm@latest publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
