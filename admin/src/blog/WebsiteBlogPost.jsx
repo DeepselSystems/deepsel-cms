@@ -16,6 +16,7 @@ import CustomCodeRenderer from '../components/website/CustomCodeRenderer.jsx';
 import CustomCodeErrorBoundary from '../components/website/CustomCodeErrorBoundary.jsx';
 import { useProtectedAuth } from '../common/auth/ProtectedAuth.jsx';
 import SpecialTemplateRenderer from '../components/website/SpecialTemplateRenderer.jsx';
+import { useBasename } from '../common/BasenameContext.js';
 
 // Lazy load the AdminHeader component
 const AdminHeader = lazy(() => import('../components/website/AdminHeader.jsx'));
@@ -28,6 +29,7 @@ export default function WebsiteBlogPost(props) {
   const { user } = useAuthentication();
   const { t, i18n } = useTranslation();
   const { setRequiresLogin } = useProtectedAuth();
+  const basename = useBasename();
 
   // State for client-side data fetching (when no server data available)
   const [clientBlogPost, setClientBlogPost] = useState(null);
@@ -283,9 +285,9 @@ export default function WebsiteBlogPost(props) {
         {user && blogPost && (
           <Suspense fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}>
             <AdminHeader
-              dashboardPath={'/admin/blog_posts'}
+              dashboardPath={`${basename}/blog_posts`}
               allowEdit={allowEdit}
-              editPath={`/admin/blog_posts/${blogPost.id}/edit`}
+              editPath={`${basename}/blog_posts/${blogPost.id}/edit`}
             />
           </Suspense>
         )}

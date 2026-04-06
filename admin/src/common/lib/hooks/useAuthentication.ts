@@ -39,10 +39,10 @@ export interface UseAuthenticationConfig {
 export interface UseAuthenticationReturn {
   user: User | null;
   setUser: (user: User | null) => void;
-  saveUserData: (userData: User, token: string) => Promise<void[]>;
+  saveUserData: (userData: User) => Promise<void>;
   initUser: () => Promise<unknown>;
-  fetchUserData: (token: string) => Promise<User>;
-  fetchUser: (token?: string | null) => Promise<void>;
+  fetchUserData: () => Promise<User>;
+  fetchUser: () => Promise<void>;
   login: (credentials: LoginCredentials) => Promise<User | { is_require_user_config_2fa: boolean }>;
   signup: (credentials: SignupCredentials, autoLogin?: boolean) => Promise<unknown>;
   logout: () => Promise<never>;
@@ -52,11 +52,13 @@ export interface UseAuthenticationReturn {
 }
 
 /**
- * Hook for managing user authentication — login, signup, logout, session persistence
+ * Hook for managing user authentication — login, signup, logout, session persistence.
+ *
+ * Uses httpOnly session cookies for auth (set by the server).
+ * Token is never stored client-side — the cookie is managed by the browser automatically.
  */
 export function useAuthentication(config: UseAuthenticationConfig): UseAuthenticationReturn {
-  const { backendHost, user, setUser, organizationId, setOrganizationId, setCookie, removeCookie } =
-    config;
+  const { backendHost, user, setUser, organizationId, setOrganizationId } = config;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,17 +66,9 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
   const location = useLocation();
   const deviceData = useDeviceData(navigator.userAgent);
 
-  async function saveUserData(userData: User, token: string): Promise<void[]> {
-    setUser({ ...userData, token });
-
-    if (setCookie) {
-      setCookie('token', token, 30);
-    }
-
-    return Promise.all([
-      Preferences.set({ key: 'userData', value: JSON.stringify(userData) }),
-      Preferences.set({ key: 'token', value: token }),
-    ]);
+  async function saveUserData(userData: User): Promise<void> {
+    setUser(userData);
+    await Preferences.set({ key: 'userData', value: JSON.stringify(userData) });
   }
 
   async function initUser(): Promise<unknown> {
@@ -99,6 +93,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     const res = await fetch(`${backendHost}/init`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         device_info: deviceInfoExtended,
         organization_id: user?.organization_id || organizationId,
@@ -108,9 +103,9 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     return res.json();
   }
 
-  async function fetchUserData(token: string): Promise<User> {
+  async function fetchUserData(): Promise<User> {
     const response = await fetch(`${backendHost}/user/util/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
     });
     if (response.status !== 200) {
       const { detail } = await response.json();
@@ -122,13 +117,9 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     return response.json();
   }
 
-  async function fetchUser(token: string | null = null): Promise<void> {
-    const userToken = token || user?.token;
-    if (!userToken) {
-      throw new Error('No token available');
-    }
-    const userData = await fetchUserData(userToken);
-    await saveUserData(userData, userToken);
+  async function fetchUser(): Promise<void> {
+    const userData = await fetchUserData();
+    await saveUserData(userData);
   }
 
   async function login(
@@ -142,6 +133,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const response = await fetch(`${backendHost}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        credentials: 'include',
         body: `username=${encodedUsername}&password=${encodedPassword}&otp=${otp}`,
       });
 
@@ -156,7 +148,6 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const responseData: LoginResponse = await response.json();
       const {
         is_require_user_config_2fa,
-        access_token: token,
         user: userData,
       } = responseData || {};
 
@@ -172,11 +163,11 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         return { is_require_user_config_2fa };
       }
 
-      if (!userData || !token) {
+      if (!userData) {
         throw new Error('Invalid response from server');
       }
 
-      await saveUserData(userData, token);
+      await saveUserData(userData);
       return userData;
     } finally {
       setLoading(false);
@@ -190,6 +181,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const response = await fetch(`${backendHost}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: username,
           password,
@@ -216,16 +208,17 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
   }
 
   async function logout(): Promise<never> {
-    await Promise.all([
-      Preferences.remove({ key: 'token' }),
-      Preferences.remove({ key: 'userData' }),
-    ]);
-
-    // Remove token from cookies
-    if (removeCookie) {
-      removeCookie('token');
+    // Tell server to invalidate session and clear cookie
+    try {
+      await fetch(`${backendHost}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // Best effort — proceed with local cleanup even if server is unreachable
     }
 
+    await Preferences.remove({ key: 'userData' });
     setUser(null);
     window.location.reload();
     throw new Error('Unauthorized');
@@ -234,7 +227,9 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
   async function passwordlessLogin(passwordlessToken: string): Promise<User> {
     try {
       setLoading(true);
-      const response = await fetch(`${backendHost}/passwordless-login?token=${passwordlessToken}`);
+      const response = await fetch(`${backendHost}/passwordless-login?token=${passwordlessToken}`, {
+        credentials: 'include',
+      });
 
       if (response.status !== 200) {
         const { detail } = (await response.json()) as { detail: string };
@@ -243,13 +238,13 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       }
 
       const responseData: LoginResponse = await response.json();
-      const { access_token: token, user: userData } = responseData || {};
+      const { user: userData } = responseData || {};
 
-      if (!userData || !token) {
+      if (!userData) {
         throw new Error('Invalid response from server');
       }
 
-      await saveUserData(userData, token);
+      await saveUserData(userData);
       return userData;
     } finally {
       setLoading(false);

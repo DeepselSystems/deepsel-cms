@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Preferences } from '@capacitor/preferences';
 import type { User } from '../types';
 
 export interface UseFetchConfig {
@@ -33,6 +32,8 @@ export interface UseFetchReturn<T = unknown, R = unknown> {
 /**
  * Generic data-fetching hook with GET / POST / PUT / DELETE support,
  * automatic 401 handling, and optional auto-fetch on param changes.
+ *
+ * Uses httpOnly session cookies for auth — no manual token management.
  *
  * @param url    - Default API path (e.g. "attachment/config/upload_size_limit")
  * @param config - Runtime DI config (backendHost, setUser)
@@ -76,13 +77,12 @@ export function useFetch<T = unknown, R = unknown>(
     try {
       let endpoint = `${backendHost}/${path}`;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      const tokenResult = await Preferences.get({ key: 'token' });
 
-      if (tokenResult?.value) {
-        headers.Authorization = `Bearer ${tokenResult.value}`;
-      }
-
-      const fetchOptions: RequestInit = { method, headers };
+      const fetchOptions: RequestInit = {
+        method,
+        headers,
+        credentials: 'include',
+      };
 
       if (method !== 'GET' && data) {
         fetchOptions.body = JSON.stringify(data);
@@ -111,10 +111,6 @@ export function useFetch<T = unknown, R = unknown>(
   }
 
   async function resetAuth() {
-    await Promise.all([
-      Preferences.remove({ key: 'token' }),
-      Preferences.remove({ key: 'userData' }),
-    ]);
     setUser(null);
     console.warn('useFetch.resetAuth redirect to login');
     if (redirectLoginIfUnauthorized) {

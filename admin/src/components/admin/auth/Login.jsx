@@ -10,11 +10,13 @@ import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import { useDisclosure } from '@mantine/hooks';
 import useFetch from '../../../common/api/useFetch.js';
+import { useBasename } from '../../../common/BasenameContext.js';
 
 export default function Login() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const basename = useBasename();
   const { backendHost } = BackendHostURLState((state) => state);
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -86,9 +88,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       let redirectPath = redirect || '/pages';
-      if (redirectPath.startsWith('/admin/')) {
-        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
-      } else if (redirectPath === '/admin') {
+      if (redirectPath.startsWith(basename + '/')) {
+        redirectPath = redirectPath.substring(basename.length) || '/pages';
+      } else if (redirectPath === basename) {
         redirectPath = '/pages';
       }
       navigate(redirectPath);
@@ -128,9 +130,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       let redirectPath = redirect || '/pages';
-      if (redirectPath.startsWith('/admin/')) {
-        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
-      } else if (redirectPath === '/admin') {
+      if (redirectPath.startsWith(basename + '/')) {
+        redirectPath = redirectPath.substring(basename.length) || '/pages';
+      } else if (redirectPath === basename) {
         redirectPath = '/pages';
       }
       navigate(redirectPath);
@@ -221,9 +223,9 @@ export default function Login() {
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
       let redirectPath = redirect || '/pages';
-      if (redirectPath.startsWith('/admin/')) {
-        redirectPath = redirectPath.substring('/admin'.length) || '/pages';
-      } else if (redirectPath === '/admin') {
+      if (redirectPath.startsWith(basename + '/')) {
+        redirectPath = redirectPath.substring(basename.length) || '/pages';
+      } else if (redirectPath === basename) {
         redirectPath = '/pages';
       }
       navigate(redirectPath);

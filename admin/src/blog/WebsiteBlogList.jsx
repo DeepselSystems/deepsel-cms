@@ -12,6 +12,7 @@ import BackendHostURLState from '../common/stores/BackendHostURLState.js';
 import { apiRequest } from '../utils/apiUtils.js';
 import CustomCodeRenderer from '../components/website/CustomCodeRenderer.jsx';
 import CustomCodeErrorBoundary from '../components/website/CustomCodeErrorBoundary.jsx';
+import { useBasename } from '../common/BasenameContext.js';
 
 // Lazy load the AdminHeader component
 const AdminHeader = lazy(() => import('../components/website/AdminHeader.jsx'));
@@ -22,6 +23,7 @@ export default function WebsiteBlogList(props) {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9; // 9 posts per page
   const { user } = useAuthentication();
+  const basename = useBasename();
   const { i18n } = useTranslation();
   const { backendHost } = BackendHostURLState();
 
@@ -122,7 +124,7 @@ export default function WebsiteBlogList(props) {
       <main className="min-h-screen flex flex-col">
         {user && (
           <Suspense fallback={<div className="bg-gray-100 shadow-lg py-2"></div>}>
-            <AdminHeader dashboardPath={'/admin/blog_posts'} />
+            <AdminHeader dashboardPath={`${basename}/blog_posts`} />
           </Suspense>
         )}
 

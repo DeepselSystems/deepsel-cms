@@ -38,7 +38,7 @@ export default function useUserPreferences(
 
     await Promise.all([
       updateUserOnServer(newUserData),
-      saveUserData(newUserData, newUserData.token),
+      saveUserData(newUserData),
     ]);
   }
 

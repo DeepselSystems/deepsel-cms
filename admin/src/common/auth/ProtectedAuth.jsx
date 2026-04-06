@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import useAuthentication from '../api/useAuthentication.js';
 import { useEffect, useState, useMemo, memo, createContext, useContext } from 'react';
-import { Preferences } from '@capacitor/preferences';
 import trackingSettings from '../../constants/trackingSettings.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import SpecialTemplateRenderer from '../../components/website/SpecialTemplateRenderer.jsx';
@@ -87,26 +86,14 @@ function ProtectedAuth() {
             console.error('Authless login failed', e);
           }
         } else if (!currentUser) {
-          // Try to get user data from storage if available, but don't require it
-          const tokenResult = await Preferences.get({ key: 'token' });
-          const token = tokenResult.value;
-
-          if (token) {
-            try {
-              const user = await fetchUserData(token);
-              if (!cancelled) {
-                await saveUserData(user, token);
-              }
-            } catch (e) {
-              console.warn('Token invalid, continuing as unauthenticated:', e);
-              if (!cancelled) {
-                // Clear invalid token
-                await Promise.all([
-                  Preferences.remove({ key: 'token' }),
-                  Preferences.remove({ key: 'userData' }),
-                ]);
-              }
+          // Try to restore session from cookie by calling the server
+          try {
+            const user = await fetchUserData();
+            if (!cancelled) {
+              await saveUserData(user);
             }
+          } catch {
+            // No valid session — continue as unauthenticated
           }
         }
 
