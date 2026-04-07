@@ -85,6 +85,30 @@ The admin is bundled into the client at path `/admin` and served at `http://loca
 cd admin && npm run dev
 ```
 
+### Session & authentication
+
+The backend uses **server-side sessions** with httpOnly cookies. On login, the backend creates a session and sets a `session_id` cookie. The admin frontend sends this cookie automatically via `credentials: 'include'`.
+
+**Session store** auto-detects the best backend in this order:
+1. **Redis** — if `REDIS_URL` is set
+2. **PostgreSQL** — uses the existing database (creates `auth_session` table)
+3. **Filesystem** — fallback, stores JSON files in `SESSION_DIR`
+
+You can force a backend with `SESSION_STORE=redis|postgres|filesystem`.
+
+**Local dev cookie setup:**  
+In local dev, the admin panel runs on the Astro client and API calls go through the Astro proxy (`/api/v1` → `localhost:8000`), so cookies work on the same origin. You must set `SESSION_COOKIE_SECURE=false` in your `.env` since local dev uses HTTP, not HTTPS:
+
+```bash
+# In your .env file
+SESSION_COOKIE_SECURE=false
+```
+
+Without this, the browser will reject the cookie (Secure cookies require HTTPS).
+
+**Bearer token fallback:**  
+The backend still supports `Authorization: Bearer <jwt>` for API clients. Browser-based admin uses cookies; external API clients can use JWT tokens from `POST /api/v1/token`.
+
 ### Theme development
 
 Simply make changes to the theme files in the `themes/` directory, and the client hot reloads your changes.
