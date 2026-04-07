@@ -8,7 +8,7 @@ export default function SamlAuth() {
   const query = useQuery();
   const navigate = useNavigate();
   const basename = useBasename();
-  const { fetchUserData, saveUserData } = useAuthentication();
+  const { fetchUser } = useAuthentication();
 
   const handleAuth = useCallback(async () => {
     const redirect = query.get('redirect');
@@ -16,8 +16,7 @@ export default function SamlAuth() {
     // Session cookie was set by the server on the SAML redirect.
     // Fetch the user data to populate the UI state.
     try {
-      const userData = await fetchUserData();
-      await saveUserData(userData);
+      await fetchUser();
     } catch (error) {
       console.error('Failed to fetch user data after SAML auth:', error);
     }
@@ -30,7 +29,7 @@ export default function SamlAuth() {
       targetPath = targetPath.substring(basename.length) || '/pages';
     }
     navigate(targetPath);
-  }, [query, navigate, basename, fetchUserData, saveUserData]);
+  }, [query, navigate, basename, fetchUser]);
 
   useEffect(() => {
     handleAuth();

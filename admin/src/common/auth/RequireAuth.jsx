@@ -3,18 +3,21 @@ import useAuthentication from '../api/useAuthentication.js';
 import { useEffect, useState, useMemo, memo } from 'react';
 import trackingSettings from '../../constants/trackingSettings.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
-import backendHost from '../../constants/backendHost.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
+import UserState from '../stores/UserState.js';
 
 /**
- * RequireAuth - Mandatory authentication guard for admin routes
- *
- * Uses httpOnly session cookies for authentication. Validates the session
- * by calling /user/util/me — if the cookie is valid the server returns
- * the user, otherwise 401.
+ * Check if user is a real authenticated user (not the public guest).
+ * The public guest user has string_id="public_user" and is returned
+ * by the backend when no valid session or token exists.
  */
+function isAuthenticated(user) {
+  return user && user.string_id !== 'public_user';
+}
+
 function RequireAuth() {
   const location = useLocation();
-  const { user: currentUser, fetchUserData, login } = useAuthentication();
+  const { user: currentUser, fetchUser, login } = useAuthentication();
   const [initialized, setInitialized] = useState(false);
   const navigate = useNavigate();
   const { settings: siteSettings, setSettings } = SitePublicSettingsState();
@@ -24,10 +27,12 @@ function RequireAuth() {
       try {
         let isAuthlessMode = siteSettings?.authless;
 
-        // If site settings are not loaded, try to fetch them
         if (!siteSettings) {
           try {
-            const response = await fetch(`${backendHost}/util/public_settings/1`);
+            const { backendHost } = BackendHostURLState.getState();
+            const response = await fetch(`${backendHost}/util/public_settings/1`, {
+              credentials: 'include',
+            });
             if (response.ok) {
               const settings = await response.json();
               setSettings(settings);
@@ -39,7 +44,7 @@ function RequireAuth() {
         }
 
         if (isAuthlessMode) {
-          if (!currentUser) {
+          if (!isAuthenticated(currentUser)) {
             try {
               await login({ username: 'authless', password: 'authless' });
             } catch (e) {
@@ -50,47 +55,47 @@ function RequireAuth() {
           return;
         }
 
-        if (!currentUser) {
+        if (!isAuthenticated(currentUser)) {
           const fullPath = location.pathname + location.search;
-          const searchParams = new URLSearchParams({
-            redirect: fullPath,
-          }).toString();
-          const rejectLink = '/login?' + searchParams;
+          const rejectLink = '/login?' + new URLSearchParams({ redirect: fullPath }).toString();
 
           try {
-            // Validate session by fetching current user (cookie sent automatically)
-            await fetchUserData();
+            await fetchUser();
           } catch (e) {
-            // Session invalid or no session — redirect to login
+            return navigate(rejectLink);
+          }
+
+          // fetchUser succeeded but check if the returned user is actually authenticated
+          // (not just the public guest user). We need to re-check after fetchUser updates the store.
+          const updatedUser = UserState.getState().user;
+          if (!isAuthenticated(updatedUser)) {
             return navigate(rejectLink);
           }
         }
 
-        // this depends on token being saved in local storage,
-        // so we await all saveUserData calls
-        if (trackingSettings.enableXRAY && window.XRAY) {
+        if (currentUser && trackingSettings.enableXRAY && window.XRAY) {
           window.XRAY.setCurrentUser(currentUser);
         }
       } finally {
         setInitialized(true);
       }
     },
-    [
-      currentUser,
-      fetchUserData,
-      location,
-      navigate,
-      siteSettings,
-      login,
-      setSettings,
-    ],
+    [currentUser, fetchUser, location, navigate, siteSettings, login, setSettings],
   );
 
   useEffect(() => {
     checkAuth();
   }, []);
 
-  return initialized ? <Outlet /> : <div>Loading...</div>;
+  // Redirect to login when user loses authentication (logout, session expiry)
+  useEffect(() => {
+    if (initialized && !isAuthenticated(currentUser)) {
+      const fullPath = location.pathname + location.search;
+      navigate('/login?' + new URLSearchParams({ redirect: fullPath }).toString());
+    }
+  }, [initialized, currentUser, location, navigate]);
+
+  return initialized && isAuthenticated(currentUser) ? <Outlet /> : <div>Loading...</div>;
 }
 
 export default memo(RequireAuth);

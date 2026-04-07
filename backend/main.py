@@ -140,6 +140,11 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=APP_SECRET)
 
 
+@app.get(f"{API_PREFIX}/openapi.json", include_in_schema=False)
+def get_openapi_schema():
+    return app.openapi()
+
+
 @app.exception_handler(Exception)
 def global_exception_handler(request: Request, exc: Exception):
     logger.error("Unhandled exception", exc_info=exc)

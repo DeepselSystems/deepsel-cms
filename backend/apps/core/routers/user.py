@@ -86,62 +86,102 @@ def get_me(user: Model = Depends(get_current_user)):
 
 @router.put("/me/2fa-config")
 def update_2fa_config(
-    is_use_2fa: Annotated[bool, Body(embed=True)],
-    confirmed: Annotated[bool, Body(embed=True)] = False,
-    crosscheck_otp: Annotated[str, Body(embed=True)] = None,
+    action: Annotated[str, Body(embed=True)],
+    otp: Annotated[str, Body(embed=True)] = None,
     user: Model = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Info2Fa:
-    if confirmed:
-        # cross check otp to make sure user already scan qr code
-        totp = pyotp.TOTP(_decrypt(user.secret_key_2fa, APP_SECRET))
-        if not totp.verify(crosscheck_otp):
+    """Manage 2FA configuration.
+
+    Actions:
+        setup   — generate temp TOTP secret, return QR code URI
+        confirm — verify OTP against temp secret, activate 2FA, return recovery codes
+        disable — verify OTP against active secret, deactivate 2FA
+    """
+    if action == "setup":
+        secret_key = pyotp.random_base32()
+        user.temp_secret_key_2fa = _encrypt(secret_key, APP_SECRET)
+        db.commit()
+
+        totp_uri = pyotp.totp.TOTP(secret_key).provisioning_uri(
+            name=user.username, issuer_name=user.organization.name
+        )
+        return Info2Fa(totp_uri=totp_uri)
+
+    elif action == "confirm":
+        if not user.temp_secret_key_2fa:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid OTP"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No 2FA setup in progress. Call with action='setup' first.",
+            )
+        if not otp:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="OTP is required",
             )
 
-        recovery_codes = []
-        # in case confirm using 2fa. secret_key already generated before. no need to create secret_key again.
-        if is_use_2fa:
-            if not user.secret_key_2fa:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="secret_key_2fa not found",
-                )
-            user.is_use_2fa = True
-            # also generate recovery code for backup
-            if not user.recovery_codes:
-                recovery_codes = generate_recovery_codes()
-                hashed_recovery_codes = [hash_text(code) for code in recovery_codes]
-                user.recovery_codes = json.dumps(hashed_recovery_codes)
-        else:
-            user.is_use_2fa = False
-            user.secret_key_2fa = None
-            user.recovery_codes = None
+        temp_secret = _decrypt(user.temp_secret_key_2fa, APP_SECRET)
+        if isinstance(temp_secret, bytes):
+            temp_secret = temp_secret.decode("utf-8")
+
+        totp = pyotp.TOTP(temp_secret)
+        if not totp.verify(otp):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid OTP. Please scan the QR code and try again.",
+            )
+
+        user.secret_key_2fa = user.temp_secret_key_2fa
+        user.temp_secret_key_2fa = None
+        user.is_use_2fa = True
+
+        recovery_codes = generate_recovery_codes()
+        hashed_codes = [hash_text(code) for code in recovery_codes]
+        user.recovery_codes = json.dumps(hashed_codes)
         db.commit()
 
-        return Info2Fa(
-            is_use_2fa=is_use_2fa, recovery_codes=recovery_codes if is_use_2fa else []
+        return Info2Fa(is_use_2fa=True, recovery_codes=recovery_codes)
+
+    elif action == "disable":
+        if not user.is_use_2fa:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="2FA is not enabled",
+            )
+        if not otp:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="OTP is required to disable 2FA",
+            )
+
+        secret = _decrypt(user.secret_key_2fa, APP_SECRET)
+        if isinstance(secret, bytes):
+            secret = secret.decode("utf-8")
+
+        totp = pyotp.TOTP(secret)
+        if not totp.verify(otp):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid OTP",
+            )
+
+        user.is_use_2fa = False
+        user.secret_key_2fa = None
+        user.temp_secret_key_2fa = None
+        user.recovery_codes = None
+        db.commit()
+
+        return Info2Fa(is_use_2fa=False)
+
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown action '{action}'. Use 'setup', 'confirm', or 'disable'.",
         )
-
-    # if not confirmed => only get secret_key (create if not exist) for showing QR
-    if not user.secret_key_2fa:
-        secret_key = pyotp.random_base32()
-        user.secret_key_2fa = _encrypt(secret_key, APP_SECRET)
-        db.commit()
-    totp_uri = pyotp.totp.TOTP(
-        _decrypt(user.secret_key_2fa, APP_SECRET)
-    ).provisioning_uri(name=user.username, issuer_name=user.organization.name)
-    return Info2Fa(totp_uri=totp_uri)
 
 
 @router.get("/me/2fa-config")
-def get_2fa_uri(
+def get_2fa_config(
     user: Model = Depends(get_current_user),
 ) -> Info2Fa:
-    if user.is_use_2fa:
-        totp_uri = pyotp.totp.TOTP(
-            _decrypt(user.secret_key_2fa, APP_SECRET)
-        ).provisioning_uri(name=user.username, issuer_name=user.organization.name)
-        return Info2Fa(is_use_2fa=user.is_use_2fa, totp_uri=totp_uri)
-    return Info2Fa()
+    return Info2Fa(is_use_2fa=user.is_use_2fa)

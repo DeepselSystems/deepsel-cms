@@ -53,7 +53,7 @@ import backendHost from '../../constants/backendHost.js';
  */
 function ProtectedAuth() {
   const location = useLocation();
-  const { user: currentUser, fetchUserData, saveUserData, login } = useAuthentication();
+  const { user: currentUser, fetchUser, login } = useAuthentication();
   const [initialized, setInitialized] = useState(false);
   const [requiresLogin, setRequiresLogin] = useState(false);
   const { settings: siteSettings, setSettings } = SitePublicSettingsState();
@@ -88,9 +88,8 @@ function ProtectedAuth() {
         } else if (!currentUser) {
           // Try to restore session from cookie by calling the server
           try {
-            const user = await fetchUserData();
             if (!cancelled) {
-              await saveUserData(user);
+              await fetchUser();
             }
           } catch {
             // No valid session — continue as unauthenticated
@@ -113,7 +112,7 @@ function ProtectedAuth() {
     return () => {
       cancelled = true;
     };
-  }, [currentUser, fetchUserData, saveUserData, login, siteSettings, setSettings]);
+  }, [currentUser, fetchUser, login, siteSettings, setSettings]);
 
   useEffect(() => {
     if (currentUser && requiresLogin) {

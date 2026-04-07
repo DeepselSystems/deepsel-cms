@@ -4,23 +4,20 @@ import { useEffect, useMemo, memo } from 'react';
 import { Preferences } from '@capacitor/preferences';
 
 function PublicAuth() {
-  const { user, fetchUserData, saveUserData, setUser } = useAuthentication();
+  const { user, fetchUser, setUser } = useAuthentication();
 
   const initUserData = useMemo(
     () => async () => {
       if (!user) {
-        // Try to restore user from session cookie by calling the server
         try {
-          const userData = await fetchUserData();
-          await saveUserData(userData);
+          await fetchUser();
         } catch {
-          // No valid session — clear any stale local data
           await Preferences.remove({ key: 'userData' });
           setUser(null);
         }
       }
     },
-    [user, fetchUserData, saveUserData, setUser],
+    [user, fetchUser, setUser],
   );
 
   useEffect(() => {

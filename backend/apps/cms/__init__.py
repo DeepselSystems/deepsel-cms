@@ -260,12 +260,53 @@ def _migrate_add_search_vectors(db, *args, **kwargs):
         raise
 
 
+@migration_task("Encrypt org mail_password and google_client_secret", "1.0.7")
+def _migrate_encrypt_org_secrets(db, *args, **kwargs):
+    """Encrypt plaintext mail_password and google_client_secret in organization table."""
+    _logger = logging.getLogger(f"{__name__}:{_migrate_encrypt_org_secrets.__name__}")
+
+    try:
+        from apps.core.models.organization import OrganizationModel
+
+        all_orgs = db.query(OrganizationModel).all()
+        if not all_orgs:
+            _logger.info("No organizations found. Skipping.")
+            return
+
+        for org in all_orgs:
+            if org._mail_password:
+                try:
+                    _decrypt(org._mail_password, APP_SECRET)
+                    _logger.info(f"Org {org.id} mail_password already encrypted")
+                except Exception:
+                    org.mail_password = org._mail_password
+                    _logger.info(f"Encrypted mail_password for org {org.id}")
+
+            if org._google_client_secret:
+                try:
+                    _decrypt(org._google_client_secret, APP_SECRET)
+                    _logger.info(f"Org {org.id} google_client_secret already encrypted")
+                except Exception:
+                    org.google_client_secret = org._google_client_secret
+                    _logger.info(f"Encrypted google_client_secret for org {org.id}")
+
+        db.commit()
+        _logger.info("Org secrets encryption migration completed.")
+    except Exception as e:
+        _logger.error(f"Org secrets migration failed: {e}")
+        db.rollback()
+        raise
+
+
 def upgrade(db, from_version, to_version):
     """Upgrade app from current version in db to version in file settings.py"""
     logger.info(f"Start upgrade from version {from_version} to {to_version}")
 
     # Encrypts cms api keys
     _migrate_cms_api_keys_to_encrypted_value(db, __name__, from_version, to_version)
+
+    # Encrypt org secrets (mail_password, google_client_secret)
+    _migrate_encrypt_org_secrets(db, __name__, from_version, to_version)
 
     # Full-text search vectors
     _migrate_add_search_vectors(db, __name__, from_version, to_version)

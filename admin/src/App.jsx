@@ -59,6 +59,8 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import './i18n.js';
 import { useTranslation } from 'react-i18next';
 import SitePublicSettingsState from './common/stores/SitePublicSettingsState.js';
+import BackendHostURLState from './common/stores/BackendHostURLState.js';
+import APISchemaState from './common/stores/APISchemaState.js';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
@@ -79,7 +81,7 @@ import { BasenameProvider } from './common/BasenameContext.js';
 
 export default function App(props) {
   console.log('APP', { props });
-  const { siteSettings, basename = '/admin' } = props;
+  const { siteSettings, basename = '/admin', backendHost: backendHostProp } = props;
   const { i18n } = useTranslation();
   const { setSettings } = SitePublicSettingsState();
   const browserLanguages = useBrowserLanguages();
@@ -229,6 +231,16 @@ export default function App(props) {
       setSettings(siteSettings);
     }
   }, [i18n, setSettings, siteSettings]);
+
+  useEffect(() => {
+    // Override backendHost when provided by the host app (e.g. Astro)
+    // so API calls go through the same-origin proxy and cookies work
+    if (backendHostProp) {
+      BackendHostURLState.getState().setBackendHost(backendHostProp);
+    }
+    // Fetch API schema after backendHost is configured
+    APISchemaState.getState().fetchAPISchema();
+  }, [backendHostProp]);
 
   return (
     <BasenameProvider value={basename}>

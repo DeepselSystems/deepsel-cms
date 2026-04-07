@@ -44,6 +44,7 @@ const organizationId = siteSettings?.id || undefined;
     <App
       client:only="react"
       basename="/admin"
+      backendHost="/api/v1"
       siteSettings={siteSettings}
       organizationId={organizationId}
     />

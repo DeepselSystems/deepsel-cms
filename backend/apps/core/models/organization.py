@@ -1,8 +1,14 @@
+import logging
+
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from db import Base
 from apps.core.mixins.orm import ORMBaseMixin
 from deepsel.orm.organization_mixin import OrganizationMixin
+from settings import APP_SECRET
+from deepsel.utils.crypto import encrypt as _encrypt, decrypt as _decrypt
+
+_logger = logging.getLogger(__name__)
 
 
 class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
@@ -22,9 +28,9 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     image_attachment_id = Column(Integer, ForeignKey("attachment.id"))
     image = relationship("AttachmentModel", foreign_keys=[image_attachment_id])
 
-    # internal settings
+    # internal settings — encrypted fields
     mail_username = Column(String)
-    mail_password = Column(String)
+    _mail_password = Column("mail_password", String)
     mail_timeout = Column(Integer, default=60)
     mail_from = Column(String)
     mail_port = Column(String)
@@ -46,7 +52,7 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     # google sign in
     is_enabled_google_sign_in = Column(Boolean, default=False)
     google_client_id = Column(String)
-    google_client_secret = Column(String)
+    _google_client_secret = Column("google_client_secret", String)
     google_redirect_uri = Column(String)
 
     # SAML configuration
@@ -66,6 +72,40 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     )
 
     current_version = Column(String)
+
+    # --- Encrypted property accessors ---
+
+    @property
+    def mail_password(self):
+        if self._mail_password:
+            try:
+                return _decrypt(self._mail_password, APP_SECRET).decode("utf-8")
+            except Exception:
+                return self._mail_password  # legacy unencrypted value
+        return None
+
+    @mail_password.setter
+    def mail_password(self, value):
+        if value:
+            self._mail_password = _encrypt(value, APP_SECRET)
+        else:
+            self._mail_password = None
+
+    @property
+    def google_client_secret(self):
+        if self._google_client_secret:
+            try:
+                return _decrypt(self._google_client_secret, APP_SECRET).decode("utf-8")
+            except Exception:
+                return self._google_client_secret  # legacy unencrypted value
+        return None
+
+    @google_client_secret.setter
+    def google_client_secret(self, value):
+        if value:
+            self._google_client_secret = _encrypt(value, APP_SECRET)
+        else:
+            self._google_client_secret = None
 
     # --- OrganizationMixin settings ---
 

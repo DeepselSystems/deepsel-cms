@@ -6,104 +6,95 @@ import { useTranslation } from 'react-i18next';
 import useFetch from '../api/useFetch.js';
 import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
-import Switch from '../ui/Switch.jsx';
 import TextInput from '../ui/TextInput.jsx';
-import { IconCheck } from '@tabler/icons-react';
+import { IconCheck, IconShield, IconShieldOff } from '@tabler/icons-react';
 
 export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = () => {} }) {
   const { t } = useTranslation();
   const { get: get2FaConfig, put: update2FaConfig } = useFetch(`user/me/2fa-config`);
-  const [isUse2Fa, setIsUse2Fa] = useState(false);
-  const [urlQrCode, setUrlQrCode] = useState('');
   const { notify } = NotificationState((state) => state);
   const [visible, { open: openLoading, close: closeLoading }] = useDisclosure(false);
-  const [isUse2FaOriginal, setIsUse2FaOriginal] = useState(null); // data from backend
+
+  const [is2FaEnabled, setIs2FaEnabled] = useState(false);
+  const [step, setStep] = useState('idle'); // idle | qr | confirm-disable
+  const [urlQrCode, setUrlQrCode] = useState('');
   const [otp, setOtp] = useState('');
 
+  // Fetch current 2FA status when modal opens
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    initialize();
+    if (!isOpen) return;
+    (async () => {
+      openLoading();
+      try {
+        const config = await get2FaConfig();
+        setIs2FaEnabled(config?.is_use_2fa || false);
+        setStep('idle');
+        setUrlQrCode('');
+        setOtp('');
+      } finally {
+        closeLoading();
+      }
+    })();
   }, [isOpen]);
 
-  async function initialize() {
+  // Step 1: Start 2FA setup — get QR code
+  async function handleSetup() {
     openLoading();
-    const config2FaInfo = await get2FaConfig();
-    setIsUse2FaOriginal(config2FaInfo.is_use_2fa);
-    if (config2FaInfo?.is_use_2fa && config2FaInfo?.totp_uri) {
-      const urlQrCode = await QRCode.toDataURL(config2FaInfo.totp_uri, {
-        type: 'image/png',
-      });
-      setUrlQrCode(urlQrCode);
-      setIsUse2Fa(true);
-    } else {
-      setUrlQrCode('');
-      setIsUse2Fa(false);
+    try {
+      const { totp_uri } = await update2FaConfig({ action: 'setup' });
+      if (totp_uri) {
+        const qrDataUrl = await QRCode.toDataURL(totp_uri, { type: 'image/png' });
+        setUrlQrCode(qrDataUrl);
+        setStep('qr');
+        setOtp('');
+      }
+    } catch (error) {
+      notify({ message: error.message, type: 'error' });
+    } finally {
+      closeLoading();
     }
-    closeLoading();
   }
 
-  async function confirm2Fa(e) {
+  // Step 2: Confirm OTP to activate 2FA
+  async function handleConfirm(e) {
+    e.preventDefault();
+    if (!e.target.reportValidity()) return;
+
+    openLoading();
     try {
-      e.stopPropagation();
-      e.preventDefault();
-      if (!e.target.reportValidity()) {
-        return;
-      }
-      openLoading();
-      const result = await update2FaConfig({
-        confirmed: true,
-        is_use_2fa: isUse2Fa,
-        crosscheck_otp: otp,
-      });
-      setIsUse2FaOriginal(result.is_use_2fa);
-      notify({
-        message: t('Saved successfully!'),
-        type: 'success',
-      });
+      const result = await update2FaConfig({ action: 'confirm', otp });
+      setIs2FaEnabled(true);
+      setStep('idle');
+      setUrlQrCode('');
+      setOtp('');
+      notify({ message: t('Two-Factor Authentication enabled!'), type: 'success' });
       close();
 
       if (result?.recovery_codes?.length) {
         onConfirmUsed2Fa(result.recovery_codes);
       }
     } catch (error) {
-      console.error(error);
-      notify({
-        message: error.message,
-        type: 'error',
-      });
+      notify({ message: error.message, type: 'error' });
     } finally {
       closeLoading();
     }
   }
 
-  async function handleUse2FaChange(isUse2Fa) {
-    setIsUse2Fa(isUse2Fa);
+  // Disable 2FA with OTP confirmation
+  async function handleDisable(e) {
+    e.preventDefault();
+    if (!e.target.reportValidity()) return;
+
+    openLoading();
     try {
-      // when switch on. call api to generate QR if QR not exist yet.
-      if (isUse2Fa && !urlQrCode) {
-        openLoading();
-        const { totp_uri } = await update2FaConfig({
-          is_use_2fa: isUse2Fa,
-          confirmed: false,
-        });
-        if (totp_uri) {
-          const urlQrCode = await QRCode.toDataURL(totp_uri, {
-            type: 'image/png',
-          });
-          setUrlQrCode(urlQrCode);
-          setOtp('');
-        } else {
-          setUrlQrCode('');
-        }
-      }
+      await update2FaConfig({ action: 'disable', otp });
+      setIs2FaEnabled(false);
+      setStep('idle');
+      setOtp('');
+      notify({ message: t('Two-Factor Authentication disabled'), type: 'success' });
+      close();
     } catch (error) {
-      console.error(error);
-      notify({
-        message: error.message,
-        type: 'error',
-      });
+      notify({ message: error.message, type: 'error' });
     } finally {
       closeLoading();
     }
@@ -112,56 +103,136 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
   return (
     <Modal
       opened={isOpen}
-      onClose={close}
+      onClose={() => {
+        setStep('idle');
+        setOtp('');
+        close();
+      }}
       title={
-        <div className={`font-semibold text-lg`}>{t('Configure Two Factor Authentication')}</div>
+        <div className="font-semibold text-lg">{t('Configure Two Factor Authentication')}</div>
       }
       size={500}
     >
       <LoadingOverlay
         visible={visible}
         zIndex={1000}
-        overlayProps={{
-          radius: 'sm',
-          blur: 2,
-        }}
-        loaderProps={{
-          color: 'pink',
-          type: 'bars',
-        }}
+        overlayProps={{ radius: 'sm', blur: 2 }}
+        loaderProps={{ color: 'pink', type: 'bars' }}
       />
-      <form className="border-t py-4" onSubmit={confirm2Fa}>
-        <div className="flex items-center justify-between">
-          <Switch
-            checked={isUse2Fa}
-            onChange={(event) => handleUse2FaChange(event.currentTarget.checked)}
-            label={t('Enable Two Factor Authentication')}
-          />
-        </div>
-        {isUse2Fa && urlQrCode && (
-          <div className="mt-8">
-            <div>{t('Please use Google Authenticator app to scan the QR code below:')}</div>
-            <img src={urlQrCode} className="w-[200px] h-[200px] mx-auto mt-8" />
+
+      <div className="border-t py-4">
+        {/* Idle state: show current status and action buttons */}
+        {step === 'idle' && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <IconShield size={20} className={is2FaEnabled ? 'text-green-600' : 'text-gray-400'} />
+              <span>
+                {is2FaEnabled
+                  ? t('Two-Factor Authentication is enabled')
+                  : t('Two-Factor Authentication is not enabled')}
+              </span>
+            </div>
+
+            {is2FaEnabled ? (
+              <Button
+                color="red"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setStep('confirm-disable');
+                  setOtp('');
+                }}
+              >
+                <IconShieldOff size={16} className="mr-1" />
+                {t('Disable 2FA')}
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={handleSetup}>
+                <IconShield size={16} className="mr-1" />
+                {t('Enable 2FA')}
+              </Button>
+            )}
           </div>
         )}
 
-        {isUse2Fa !== isUse2FaOriginal && (
-          <TextInput
-            className="mt-4"
-            label={t('Verify OTP')}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            required
-          />
+        {/* QR code step: scan and enter OTP to confirm */}
+        {step === 'qr' && (
+          <form onSubmit={handleConfirm}>
+            <div className="text-sm text-gray-600 mb-4">
+              {t('Scan the QR code below with your authenticator app (e.g. Google Authenticator), then enter the 6-digit code to verify.')}
+            </div>
+
+            {urlQrCode && (
+              <img src={urlQrCode} className="w-[200px] h-[200px] mx-auto mb-4" alt="2FA QR Code" />
+            )}
+
+            <TextInput
+              label={t('Enter verification code')}
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              autoFocus
+              autoComplete="one-time-code"
+              className="mb-4"
+            />
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setStep('idle');
+                  setOtp('');
+                }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button type="submit" className="flex-1">
+                <IconCheck size={16} className="mr-1" />
+                {t('Verify & Enable')}
+              </Button>
+            </div>
+          </form>
         )}
 
-        <div className="w-full grow flex mt-8">
-          <Button type="submit" className="w-full grow" disabled={isUse2Fa === isUse2FaOriginal}>
-            <IconCheck size={16} className="mr-1" />
-            {t('Confirm')}
-          </Button>
-        </div>
-      </form>
+        {/* Disable confirmation step */}
+        {step === 'confirm-disable' && (
+          <form onSubmit={handleDisable}>
+            <div className="text-sm text-gray-600 mb-4">
+              {t('Enter your authenticator code to disable Two-Factor Authentication.')}
+            </div>
+
+            <TextInput
+              label={t('Enter verification code')}
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              autoFocus
+              autoComplete="one-time-code"
+              className="mb-4"
+            />
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setStep('idle');
+                  setOtp('');
+                }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button type="submit" color="red" className="flex-1">
+                <IconShieldOff size={16} className="mr-1" />
+                {t('Disable 2FA')}
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
     </Modal>
   );
 }

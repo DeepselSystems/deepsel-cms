@@ -8,7 +8,7 @@ export default function GoogleAuth() {
   const query = useQuery();
   const navigate = useNavigate();
   const basename = useBasename();
-  const { fetchUserData, saveUserData } = useAuthentication();
+  const { fetchUser } = useAuthentication();
 
   useEffect(() => {
     handleAuth();
@@ -20,8 +20,7 @@ export default function GoogleAuth() {
     // Session cookie was set by the server on the OAuth redirect.
     // Fetch the user data to populate the UI state.
     try {
-      const userData = await fetchUserData();
-      await saveUserData(userData);
+      await fetchUser();
     } catch (error) {
       console.error('Failed to fetch user data after Google auth:', error);
     }
