@@ -64,8 +64,6 @@ jobs:
       - name: Build library
         run: npm run build:lib --workspace=admin
 
-      - name: Install working npm version
-        run: npm install -g npm@10.9.4
-
       - name: Publish package
-        run: npm publish --provenance --workspace=admin
+        working-directory: admin
+        run: npm publish --provenance
