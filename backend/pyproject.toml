@@ -24,7 +24,7 @@ classifiers = [
 keywords = ["cms", "fastapi", "sqlalchemy", "deepsel"]
 requires-python = ">=3.12"
 dependencies = [
-    "deepsel>=0.10.10",
+    "deepsel>=0.11.1",
     "pydantic>=2.7.0",
     "SQLAlchemy>=2.0.30",
     "fastapi>=0.115.0",
@@ -36,6 +36,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+redis = [
+    "redis>=5.0.0",
+]
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
