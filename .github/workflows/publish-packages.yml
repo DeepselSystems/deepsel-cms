@@ -93,5 +93,3 @@ jobs:
 
       - name: Publish package
         run: npm publish --provenance --workspace=packages/${{ needs.detect-changes.outputs.tagged-package }}
-        env:
-          NODE_AUTH_TOKEN: ''

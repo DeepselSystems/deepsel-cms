@@ -66,5 +66,3 @@ jobs:
 
       - name: Publish package
         run: npm publish --provenance --workspace=admin
-        env:
-          NODE_AUTH_TOKEN: ''
