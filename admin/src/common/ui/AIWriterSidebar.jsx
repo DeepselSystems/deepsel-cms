@@ -212,7 +212,7 @@ export default function AIWriterSidebar({
         {loading && (
           <div className="flex justify-start">
             <div className="bg-gray-100 text-gray-500 rounded-lg px-3 py-2 text-sm">
-              <IconLoader2 size={16} className="mr-2" />
+              <IconLoader2 size={16} className="mr-2 animate-spin" />
               {t('Writing...')}
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function AIWriterSidebar({
             minRows={3}
             maxRows={6}
             autosize
-            radius="lg"
+            radius="md"
             className="flex-1"
             disabled={loading}
           />

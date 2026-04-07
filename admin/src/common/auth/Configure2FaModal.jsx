@@ -159,7 +159,9 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
         {step === 'qr' && (
           <form onSubmit={handleConfirm}>
             <div className="text-sm text-gray-600 mb-4">
-              {t('Scan the QR code below with your authenticator app (e.g. Google Authenticator), then enter the 6-digit code to verify.')}
+              {t(
+                'Scan the QR code below with your authenticator app (e.g. Google Authenticator), then enter the 6-digit code to verify.',
+              )}
             </div>
 
             {urlQrCode && (

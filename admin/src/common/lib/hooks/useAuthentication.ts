@@ -146,10 +146,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       }
 
       const responseData: LoginResponse = await response.json();
-      const {
-        is_require_user_config_2fa,
-        user: userData,
-      } = responseData || {};
+      const { is_require_user_config_2fa, user: userData } = responseData || {};
 
       if (
         userData?.organization_id &&

@@ -36,10 +36,7 @@ export default function useUserPreferences(
       },
     };
 
-    await Promise.all([
-      updateUserOnServer(newUserData),
-      saveUserData(newUserData),
-    ]);
+    await Promise.all([updateUserOnServer(newUserData), saveUserData(newUserData)]);
   }
 
   // sync
