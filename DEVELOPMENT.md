@@ -58,6 +58,9 @@ Run the backend:
 # Install dependencies
 make install-dev
 
+# With Redis session store support (optional)
+# pip install './backend[dev,redis]'
+
 # Run the backend
 uvicorn main:app --reload
 ```
