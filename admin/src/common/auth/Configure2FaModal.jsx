@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useFetch from '../api/useFetch.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
 import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
 import TextInput from '../ui/TextInput.jsx';
@@ -11,7 +12,8 @@ import { IconCheck, IconShield, IconShieldOff } from '@tabler/icons-react';
 
 export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = () => {} }) {
   const { t } = useTranslation();
-  const { get: get2FaConfig, put: update2FaConfig } = useFetch(`user/me/2fa-config`);
+  const { get: get2FaConfig } = useFetch(`user/me/2fa-config`);
+  const { backendHost } = BackendHostURLState();
   const { notify } = NotificationState((state) => state);
   const [visible, { open: openLoading, close: closeLoading }] = useDisclosure(false);
 
@@ -41,9 +43,19 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
   async function handleSetup() {
     openLoading();
     try {
-      const { totp_uri } = await update2FaConfig({ action: 'setup' });
-      if (totp_uri) {
-        const qrDataUrl = await QRCode.toDataURL(totp_uri, { type: 'image/png' });
+      const response = await fetch(`${backendHost}/user/me/2fa-config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'setup' }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        notify({ message: result?.detail || t('Failed to setup 2FA'), type: 'error' });
+        return;
+      }
+      if (result.totp_uri) {
+        const qrDataUrl = await QRCode.toDataURL(result.totp_uri, { type: 'image/png' });
         setUrlQrCode(qrDataUrl);
         setStep('qr');
         setOtp('');
@@ -58,11 +70,24 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
   // Step 2: Confirm OTP to activate 2FA
   async function handleConfirm(e) {
     e.preventDefault();
+    e.stopPropagation();
     if (!e.target.reportValidity()) return;
 
     openLoading();
     try {
-      const result = await update2FaConfig({ action: 'confirm', otp });
+      const response = await fetch(`${backendHost}/user/me/2fa-config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'confirm', otp }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        notify({ message: result?.detail || t('Invalid OTP'), type: 'error' });
+        setOtp('');
+        return;
+      }
+
       setIs2FaEnabled(true);
       setStep('idle');
       setUrlQrCode('');
@@ -83,11 +108,24 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
   // Disable 2FA with OTP confirmation
   async function handleDisable(e) {
     e.preventDefault();
+    e.stopPropagation();
     if (!e.target.reportValidity()) return;
 
     openLoading();
     try {
-      await update2FaConfig({ action: 'disable', otp });
+      const response = await fetch(`${backendHost}/user/me/2fa-config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'disable', otp }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        notify({ message: result?.detail || t('Invalid OTP'), type: 'error' });
+        setOtp('');
+        return;
+      }
+
       setIs2FaEnabled(false);
       setStep('idle');
       setOtp('');
