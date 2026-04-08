@@ -200,7 +200,7 @@ async def set_default_domains(db):
 
 
 def set_default_theme_if_empty(db):
-    """Set default theme to alcoris if not already set, and load its seed data."""
+    """Set default theme to starter_react if not already set, and load its seed data."""
     logger.info("Checking and setting default theme if needed")
     try:
         orgs_without_theme = (
@@ -212,13 +212,13 @@ def set_default_theme_if_empty(db):
         if orgs_without_theme:
             for org in orgs_without_theme:
                 logger.info(f"Setting default theme for organization ID: {org.id}")
-                org.selected_theme = "alcoris"
+                org.selected_theme = "starter_react"
 
             db.commit()
 
             from .utils.setup_themes import load_seed_data_for_theme
 
-            load_seed_data_for_theme("alcoris", db)
+            load_seed_data_for_theme("starter_react", db)
             logger.info("Default theme set successfully")
     except Exception as e:
         logger.error(f"Error setting default theme: {e}")
@@ -321,7 +321,7 @@ def upgrade(db, from_version, to_version):
 
     # Read the selected theme for single-theme imports
     org = db.query(CMSSettingsModel).first()
-    selected_theme = org.selected_theme if org else "alcoris"
+    selected_theme = org.selected_theme if org else "starter_react"
 
     # Setup themes
     from .utils.client_process import NO_CLIENT
