@@ -3,14 +3,23 @@ from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
+from deepsel.utils.api_router import get_api_prefix
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
-from settings import APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, AUTHLESS, SESSION_COOKIE_NAME
+from settings import (
+    APP_SECRET,
+    AUTH_ALGORITHM,
+    DEFAULT_ORG_ID,
+    AUTHLESS,
+    SESSION_COOKIE_NAME,
+)
 from db import get_db
 from apps.core.utils.models_pool import models_pool
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{get_api_prefix()}/token", auto_error=False
+)
 
 
 def _get_session_store(request: Request):

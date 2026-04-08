@@ -254,9 +254,7 @@ async def auth_google(request: Request, db: Session = Depends(get_db)):
             return response
 
     # Fallback: pass token in URL (backward compat)
-    return RedirectResponse(
-        f"{redirect_url}?access_token={result.access_token}"
-    )
+    return RedirectResponse(f"{redirect_url}?access_token={result.access_token}")
 
 
 # --- SAML ---

@@ -66,10 +66,16 @@ DEFAULT_ORG_ID = 1
 AUTHLESS = os.getenv("AUTHLESS", "false").lower() in ["true", "1", "yes"]
 
 # Session store
-SESSION_STORE_BACKEND = os.getenv("SESSION_STORE", None)  # redis|postgres|filesystem|None (auto-detect)
+SESSION_STORE_BACKEND = os.getenv(
+    "SESSION_STORE", None
+)  # redis|postgres|filesystem|None (auto-detect)
 REDIS_URL = os.getenv("REDIS_URL", None)
 SESSION_DIR = os.getenv("SESSION_DIR", None)
-SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "true").lower() in ["true", "1", "yes"]
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "true").lower() in [
+    "true",
+    "1",
+    "yes",
+]
 SESSION_COOKIE_NAME = "session_id"
 
 # Server flags
