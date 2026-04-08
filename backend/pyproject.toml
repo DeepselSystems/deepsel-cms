@@ -55,6 +55,8 @@ dev = [
     "black>=26.1.0",
     "flake8>=7.2.0",
     "bandit>=1.9.3",
+    "build>=0.10.0",
+    "twine>=6.2.0",
 ]
 
 [project.urls]
