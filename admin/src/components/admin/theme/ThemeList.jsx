@@ -35,6 +35,7 @@ export default function ThemeList() {
   const [downloadingTheme, setDownloadingTheme] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [resettingTheme, setResettingTheme] = useState(null);
+  const [rebuilding, setRebuilding] = useState(false);
 
   useEffect(() => {
     fetchThemes();
@@ -101,6 +102,41 @@ export default function ThemeList() {
     }
   };
 
+  const pollBuildStatus = () => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${backendHost}/theme/build-status`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+            credentials: 'include',
+          });
+          if (!res.ok) {
+            clearInterval(interval);
+            reject(new Error('Failed to check build status'));
+            return;
+          }
+          const status = await res.json();
+          if (status.status === 'idle') {
+            clearInterval(interval);
+            resolve();
+          } else if (status.status === 'error') {
+            clearInterval(interval);
+            reject(new Error(status.error || 'Build failed'));
+          }
+        } catch (err) {
+          clearInterval(interval);
+          reject(err);
+        }
+      }, 2000);
+
+      // Safety timeout: stop polling after 5 minutes
+      setTimeout(() => {
+        clearInterval(interval);
+        reject(new Error('Build timed out'));
+      }, 300000);
+    });
+  };
+
   const handleSelectTheme = async (folderName) => {
     try {
       setSelectingTheme(folderName);
@@ -122,6 +158,12 @@ export default function ThemeList() {
 
       const data = await response.json();
 
+      if (data.rebuilding) {
+        setSelectingTheme(null);
+        setRebuilding(true);
+        await pollBuildStatus();
+      }
+
       // Refresh site settings to get updated selected_theme
       const updatedSettings = await fetchPublicSettings();
       if (updatedSettings) {
@@ -140,6 +182,7 @@ export default function ThemeList() {
       });
     } finally {
       setSelectingTheme(null);
+      setRebuilding(false);
     }
   };
 
@@ -259,6 +302,20 @@ export default function ThemeList() {
             </Button>
           </div>
         </div>
+
+        {rebuilding && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 flex flex-col items-center gap-4 shadow-xl">
+              <Loader size="xl" />
+              <Text size="lg" fw={600}>
+                {t('Rebuilding site with new theme...')}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {t('This may take a minute. Please wait.')}
+              </Text>
+            </div>
+          </div>
+        )}
 
         {error && (
           <Alert
