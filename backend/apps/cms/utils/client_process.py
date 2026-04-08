@@ -31,7 +31,7 @@ class ClientProcessManager:
         if self._initialized:
             return
         self._process: subprocess.Popen | None = None
-        self._process_lock = threading.Lock()
+        self._process_lock = threading.RLock()
         self._shutting_down = False
         self._cleanup_registered = False
         self._initialized = True

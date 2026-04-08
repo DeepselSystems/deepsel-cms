@@ -35,13 +35,13 @@ Astro is framework-agnostic — theme developers can use React, Vue, Svelte, Ang
 themes/{theme_name}/
 ├── theme.json           # Metadata: name, description, preview image
 ├── package.json         # Dependencies (React, UI libs, etc.)
-├── Index.astro          # Home page template
-├── page.astro           # Generic page template (renders CMS pages)
-├── Blog.astro           # Blog listing page
-├── single-blog.astro    # Individual blog post
-├── search.astro         # Search results page
-├── 404.astro            # Not found page
-├── my-page.astro        # Custom page (optional, any name)
+├── page.astro           # Page template, renders CMS page from backend data (required)
+├── 404.astro            # Not found template (required)
+├── index.astro          # Home page (optional)
+├── blog.astro           # Blog listing (optional)
+├── single-blog.astro    # Individual blog post (optional)
+├── search.astro         # Search results (optional)
+├── my-page.astro        # Custom page (optional, file name is page slug)
 ├── components/          # React/Astro components
 ├── assets/              # CSS, images, fonts
 └── main.css             # Global styles (if using Tailwind, etc.)
@@ -49,15 +49,7 @@ themes/{theme_name}/
 
 ## Step-by-Step: Creating a New Theme
 
-### Step 1: Scaffold from Existing Theme
-
-Copy an existing theme as a starting point:
-
-```bash
-cp -r themes/interlinked themes/<theme-name>
-```
-
-Then update these files:
+### Step 1: Create Theme Directory and Metadata
 
 #### theme.json
 
@@ -95,12 +87,33 @@ Always run `npm install` from the repo root to ensure proper hoisting.
 
 ### Step 2: Create Template Files
 
-Every `.astro` template receives a `data` prop with the appropriate type. Basic pattern:
+Every `.astro` template receives a `data` prop with the appropriate type. Write the page layout in HTML/Astro and use React components only where interactivity is needed (e.g., navigation menus with dropdowns). This keeps pages fast by shipping minimal JavaScript.
+
+Here's the basic pattern — the page is HTML, with a React "island" for the interactive header menu:
+
+**MenuIsland.tsx** — A small React wrapper that provides CMS context to the menu:
+
+```tsx
+import { WebsiteDataTypes, type PageData } from "@deepsel/cms-utils";
+import { WebsiteDataProvider } from "@deepsel/cms-react";
+import Menu from "./Menu";
+
+export default function MenuIsland({ pageData }: { pageData: PageData }) {
+  return (
+    <WebsiteDataProvider websiteData={{ type: WebsiteDataTypes.Page, data: pageData }}>
+      <Menu />
+    </WebsiteDataProvider>
+  );
+}
+```
+
+**page.astro** — The template itself is mostly HTML, with `MenuIsland` as the only React island:
 
 ```astro
 ---
 import type { PageData } from "@deepsel/cms-utils";
-import Page from "./components/Page";
+import MenuIsland from "./components/MenuIsland";
+import Footer from "./components/Footer.astro";
 import "@deepsel/cms-utils/styles.css";
 import "./main.css";
 
@@ -121,80 +134,72 @@ const { data } = Astro.props;
     <meta name="robots" content={data.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
 </head>
 <body>
-    <Page client:load pageData={data} />
+    <MenuIsland client:load pageData={data} />
+    <main>
+        <article set:html={data.content} />
+    </main>
+    <footer><!-- Footer content --></footer>
 </body>
 </html>
 ```
 
-Interactive React components must use `client:load` to hydrate on the client side.
+Use `client:load` on React components that need interactivity (like menus). Static parts like footers can be plain Astro components or HTML.
+
+#### Why the island wrapper?
+
+Each `client:load` component becomes an **isolated React tree** — there is no shared React context between islands. If `Menu` uses `useWebsiteData()`, it needs a `WebsiteDataProvider` above it in the tree. But the `.astro` file is server-rendered HTML, not a React tree, so it can't provide that context. The island wrapper puts the provider and the component in the same React tree:
+
+```
+Astro (static HTML)
+  └── MenuIsland (client:load → React island boundary)
+        └── WebsiteDataProvider (React context)
+              └── Menu (can now call useWebsiteData())
+```
+
+Alternatively, a component can set up its own provider internally — no separate wrapper needed. Both approaches work; the wrapper just keeps context plumbing separate from component logic.
 
 ### Step 3: Implement Components
 
-#### Rendering CMS Content
+#### Content Styles
 
-For `page.astro` and `Index.astro`, the page content from the admin editor is in `data.content`. Use `ContentRenderer` from `@deepsel/cms-react`:
-
-```tsx
-import { WebsiteDataProvider, ContentRenderer } from "@deepsel/cms-react";
-import { WebsiteDataTypes, type PageData } from "@deepsel/cms-utils";
-
-export default function Page({ pageData }: { pageData: PageData }) {
-  return (
-    <WebsiteDataProvider
-      websiteData={{ type: WebsiteDataTypes.Page, data: pageData }}
-    >
-      <header>{/* Navigation, logo, etc. */}</header>
-      <main>
-        <ContentRenderer />
-      </main>
-      <footer>{/* Footer content */}</footer>
-    </WebsiteDataProvider>
-  );
-}
-```
-
-`WebsiteDataProvider` makes page data available to all child components via `useWebsiteData()`.
-
-#### Import Rules
-
-```tsx
-import { WebsiteDataTypes, type PageData, type BlogListData, type BlogPostData } from "@deepsel/cms-utils";
-import { isActiveMenu, type MenuItem } from "@deepsel/cms-utils";
-import { WebsiteDataProvider, ContentRenderer, useWebsiteData } from "@deepsel/cms-react";
-import { useLanguage } from "@deepsel/cms-react";
-```
+Templates that render CMS editor content (pages, blog posts) should import the shared content styles from `@deepsel/cms-utils`. These styles handle editor-generated elements like collapsible sections, embedded files/video/audio, code blocks, and more:
 
 ```astro
-// In .astro files that render CMS content (page, single-blog, Index):
+---
 import "@deepsel/cms-utils/styles.css";
+import "./main.css";
+---
 ```
 
-### Step 4: Register the Theme
+Import `@deepsel/cms-utils/styles.css` **before** your theme's own CSS so theme styles can override if needed.
 
-The backend's `setup_themes()` auto-registers themes, but during development you may need to manually update `client/src/themes.ts` between the auto-managed comment markers:
+### Step 4: Theme Registration (Automatic)
 
-```typescript
-'<theme-name>': {
-  [themeSystemKeys.Page]: ThemeIndex,
-  [themeSystemKeys.BlogList]: ThemeBlog,
-  [themeSystemKeys.BlogPost]: ThemeSingleBlog,
-  [themeSystemKeys.NotFound]: Theme404,
-  'about': ThemeAbout,        // Custom page
-  'services': ThemeServices,  // Custom page
-},
-```
+`client/src/themes.ts` and `client/tailwind.config.js` are **fully auto-generated** by the backend — do not edit them manually. The backend scans `themes/` on startup and regenerates these files to import only the currently selected theme.
+
+When a theme is selected via the admin or `/theme/select` API:
+- `themes.ts` is regenerated with imports and `themeMap` for just that theme
+- `tailwind.config.js` is regenerated with only that theme's Tailwind preset
+- In production, the client is rebuilt and restarted automatically
+- In dev mode (`NO_CLIENT=true`), files are regenerated locally and Astro HMR picks up changes
+
+**No manual registration step is needed** — just create your theme files and select the theme.
 
 ### Step 5: Activate and Test
 
+Select the theme via the admin Themes page, or via the API:
+
 ```bash
-# Activate theme in DB
-PGPASSWORD=dummy psql -h localhost -p 5432 -U user -d deepsel_cms -c "UPDATE organization SET selected_theme = '<theme-name>' WHERE id = (SELECT id FROM organization LIMIT 1);"
+curl -X POST http://localhost:8000/api/v1/theme/select \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"folder_name": "<theme-name>"}'
+```
 
-# Install dependencies and build
-npm install
-npm run build
+Then start the dev server if not already running:
 
-# Start dev server
+```bash
+npm install  # from repo root
 npm run dev
 ```
 
@@ -202,23 +207,23 @@ npm run dev
 
 The CMS recognizes six special template files. Each maps to a URL pattern and receives typed data.
 
-### Index.astro — Home Page
+### index.astro — Home Page
 
 **URL:** `/` or `/{lang}/`
 **Data type:** `PageData`
 
-Renders the home page. Falls back to `page.astro` if not present.
+Renders the home page. Overrides any CMS-defined home page.
 
 ### page.astro — Generic Page
 
 **URL:** `/{slug}` or `/{lang}/{slug}`
 **Data type:** `PageData`
 
-Main workhorse template. CMS pages (e.g., `/about`, `/contact`) render through this. `PageData.content` contains rich text from the TipTap editor — render with `<ContentRenderer />`.
+Main workhorse template. CMS pages (e.g., `/about`, `/contact`) render through this. `PageData.content` contains rich text from the TipTap editor.
 
 This template is a styling wrapper — it provides site layout (header, footer, sidebar) while actual content comes from the CMS database.
 
-### Blog.astro — Blog Listing
+### blog.astro — Blog Listing
 
 **URL:** `/blog`, `/blog/page/{n}` or `/{lang}/blog`
 **Data type:** `BlogListData`
@@ -255,7 +260,7 @@ Any `.astro` file that isn't a special template becomes a **custom page** with i
 | `pricing.astro`         | `/pricing` or `/{lang}/pricing`  |
 | `my-custom-page.astro`  | `/my-custom-page`                |
 
-Custom pages are **client-only** — they don't fetch from the CMS backend. They receive minimal `PageData` with `slug`, `public_settings`, and auto-generated `seo_metadata.title` from the filename.
+Custom page contents are **static** — they don't fetch content from the CMS backend. They receive a minimal `PageData` with `slug`, `public_settings`, and an auto-generated `seo_metadata.title` derived from the filename.
 
 Useful for pages with fully custom layouts that don't need the CMS editor (landing pages, contact forms, etc.).
 
@@ -351,22 +356,10 @@ interface SearchResultsData {
 - **`@deepsel/cms-utils`** — Data types (`PageData`, `BlogListData`, etc.) and fetch utilities
 - **`@deepsel/cms-react`** — React components and hooks:
   - `WebsiteDataProvider` / `useWebsiteData()` — Context for page data
-  - `ContentRenderer` — Renders TipTap HTML content from the CMS editor
+
   - `useLanguage` — Language switching utilities
   - `useAuthentication` — Auth state for preview mode
   - `PageTransition` — Page transition animations
-
-## Auto-Registration
-
-The backend's `setup_themes()` process:
-
-1. Discovers all `.astro` files in your theme folder
-2. Generates import statements and theme map in `client/src/themes.ts`
-3. Maps special filenames to system keys (`Index.astro` → `index`, `page.astro` → `page`, etc.)
-4. Maps other `.astro` files as custom page keys (e.g., `contact.astro` → `contact`)
-5. Discovers language variant folders and registers them with `{lang}:{key}` prefixes
-
-This runs automatically when the backend starts.
 
 ## Theme Seed Data
 
@@ -399,19 +392,19 @@ def post_install(db):
         db.commit()
 ```
 
-Use `post_install` for setup logic that can't be expressed as CSV records (e.g., language defaults, CMS settings). The hook runs once when the theme is selected, not on every server restart.
+Use `post_install` for setup logic that can't be expressed as CSV records, such as:
+
+- Adding languages to the site's available languages list
+- Setting the default site language
+- Configuring theme-specific CMS settings
+
+### Loading Behavior
+
+- Seed data is loaded by `load_seed_data_for_theme()` in `backend/apps/cms/utils/setup_themes.py`
+- Runs **once when a theme is selected** — either via the `/theme/select` API or when `set_default_theme_if_empty()` assigns the initial theme on a fresh DB
+- Does **not** run on every server restart — user edits (e.g., deleting a menu item) are preserved across restarts
+- CSV records with `string_id` are checked for existence — existing records are updated, not duplicated
 
 CSV format follows the same rules as backend app data — see `backend/docs/DataInsertion.md`.
 
-## Reserved Filenames
-
-These are reserved for special templates:
-
-- `Index.astro` (or `index.astro`)
-- `page.astro`
-- `Blog.astro` (or `blog.astro`)
-- `single-blog.astro`
-- `search.astro`
-- `404.astro`
-
-The path `blog/*` is reserved for blog routing — avoid custom pages that conflict with it.
+The Claude skill [data-insertion](.claude/skills/data-insertion/SKILL.md) is also available for AI agents to autonomously generate and manage CSV data.

@@ -16,7 +16,24 @@ from .language_codes import get_valid_language_codes
 logger = logging.getLogger(__name__)
 
 
-def generate_theme_imports(data_dir_path: str):
+def get_selected_theme_from_db() -> str | None:
+    """Read selected_theme from the first organization in the DB."""
+    try:
+        from db import get_db_context
+        from apps.core.utils.models_pool import models_pool
+
+        CMSSettingsModel = models_pool.get("organization")
+        if not CMSSettingsModel:
+            return None
+        with get_db_context() as db:
+            org = db.query(CMSSettingsModel).first()
+            return org.selected_theme if org else None
+    except Exception as e:
+        logger.warning(f"Could not read selected_theme from DB: {e}")
+        return None
+
+
+def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None):
     """
     Generate static imports for all theme variants in client/src/themes.ts
     This is idempotent and can be called multiple times safely.
@@ -45,8 +62,16 @@ def generate_theme_imports(data_dir_path: str):
             [f for f in all_folders if f not in valid_language_codes]
         )
 
-        # logger.info(f"Theme folders: {theme_folders}")
-        # logger.info(f"Language folders: {lang_folders}")
+        # Filter to selected theme only
+        effective_theme = selected_theme or get_selected_theme_from_db()
+        if effective_theme:
+            if effective_theme in theme_folders:
+                theme_folders = [effective_theme]
+            else:
+                logger.warning(
+                    f"Selected theme '{effective_theme}' not found on disk. "
+                    f"Falling back to all themes: {theme_folders}"
+                )
 
         # System keys mapping (matches themeSystemKeys in themes.ts)
         system_key_mapping = {
@@ -107,6 +132,9 @@ def generate_theme_imports(data_dir_path: str):
                     if os.path.isdir(os.path.join(lang_themes_dir, d))
                 ]
             )
+
+            if effective_theme:
+                lang_themes = [t for t in lang_themes if t == effective_theme]
 
             for theme in lang_themes:
                 theme_path = os.path.join(lang_themes_dir, theme)
@@ -212,6 +240,29 @@ export type ThemeName = keyof typeof themeMap;
         traceback.print_exc()
 
 
+def _replace_between_markers(
+    text: str, start_marker: str, end_marker: str, replacement: str
+) -> tuple[str, bool]:
+    start_idx = text.find(start_marker)
+    if start_idx == -1:
+        return text, False
+    start_line_end = text.find("\n", start_idx)
+    if start_line_end == -1:
+        return text, False
+
+    end_idx = text.find(end_marker, start_line_end + 1)
+    if end_idx == -1:
+        return text, False
+    end_line_start = text.rfind("\n", 0, end_idx)
+    if end_line_start == -1:
+        end_line_start = end_idx
+    else:
+        end_line_start = end_line_start + 1
+
+    new_text = text[: start_line_end + 1] + replacement + text[end_line_start:]
+    return new_text, True
+
+
 def _patch_themes_ts(
     *,
     content: str,
@@ -219,28 +270,6 @@ def _patch_themes_ts(
     theme_map_code: str,
 ) -> str:
     updated = content
-
-    def _replace_between_markers(
-        text: str, start_marker: str, end_marker: str, replacement: str
-    ) -> tuple[str, bool]:
-        start_idx = text.find(start_marker)
-        if start_idx == -1:
-            return text, False
-        start_line_end = text.find("\n", start_idx)
-        if start_line_end == -1:
-            return text, False
-
-        end_idx = text.find(end_marker, start_line_end + 1)
-        if end_idx == -1:
-            return text, False
-        end_line_start = text.rfind("\n", 0, end_idx)
-        if end_line_start == -1:
-            end_line_start = end_idx
-        else:
-            end_line_start = end_line_start + 1
-
-        new_text = text[: start_line_end + 1] + replacement + text[end_line_start:]
-        return new_text, True
 
     new_import_block = "\n".join(import_lines) + "\n"
     updated, _ = _replace_between_markers(
@@ -258,3 +287,82 @@ def _patch_themes_ts(
     )
 
     return updated
+
+
+def generate_tailwind_config(data_dir_path: str, selected_theme: str | None = None):
+    """
+    Generate Tailwind CSS preset imports in client/tailwind.config.js
+    by scanning theme folders for tailwind.config.js files.
+    Themes without a tailwind.config.js are silently skipped.
+    """
+    try:
+        themes_dir = os.path.join(data_dir_path, "themes")
+        output_file = os.path.join(data_dir_path, "client/tailwind.config.js")
+
+        if not os.path.exists(themes_dir) or not os.path.exists(output_file):
+            return
+
+        # Find themes that have a tailwind.config.js
+        theme_folders = sorted(
+            d
+            for d in os.listdir(themes_dir)
+            if os.path.isdir(os.path.join(themes_dir, d))
+            and os.path.isfile(os.path.join(themes_dir, d, "tailwind.config.js"))
+        )
+
+        # Filter to selected theme only
+        effective_theme = selected_theme or get_selected_theme_from_db()
+        if effective_theme:
+            if effective_theme in theme_folders:
+                theme_folders = [effective_theme]
+            else:
+                logger.warning(
+                    f"Selected theme '{effective_theme}' not found in tailwind configs, using all"
+                )
+
+        # Generate import lines and preset names
+        imports = []
+        preset_names = []
+        for theme in theme_folders:
+            # Convert theme_name to camelCase preset variable name
+            parts = re.split(r"[-_]", theme)
+            var_name = parts[0] + "".join(w.capitalize() for w in parts[1:]) + "Preset"
+            imports.append(
+                f"import {var_name} from '../themes/{theme}/tailwind.config.js';"
+            )
+            preset_names.append(var_name)
+
+        import_block = "\n".join(imports) + "\n" if imports else "\n"
+        presets_block = (
+            f"  presets: [{', '.join(preset_names)}],\n" if preset_names else ""
+        )
+
+        with open(output_file, "r", encoding="utf-8") as f:
+            existing = f.read()
+
+        updated = existing
+        updated, _ = _replace_between_markers(
+            updated,
+            "// TAILWIND_IMPORTS_START (auto-managed)",
+            "// TAILWIND_IMPORTS_END",
+            import_block,
+        )
+        updated, _ = _replace_between_markers(
+            updated,
+            "// TAILWIND_PRESETS_START (auto-managed)",
+            "// TAILWIND_PRESETS_END",
+            presets_block,
+        )
+
+        if updated != existing:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(updated)
+            logger.info(
+                f"Updated tailwind.config.js with {len(preset_names)} theme presets"
+            )
+
+    except Exception as e:
+        logger.error(f"Error generating tailwind config: {e}")
+        import traceback
+
+        traceback.print_exc()

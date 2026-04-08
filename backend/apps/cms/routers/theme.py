@@ -35,7 +35,7 @@ def get_themes_dir() -> str:
     data_themes = os.path.join(data_dir, "themes")
     if os.path.exists(data_themes):
         return data_themes
-    return "../themes"
+    return SOURCE_THEMES_DIR
 
 
 class ThemeInfo(BaseModel):
@@ -390,6 +390,7 @@ def upload_theme(
 @router.post("/select")
 def select_theme(
     request: SelectThemeRequest,
+    background_tasks: BackgroundTasks,
     current_user: UserModel = Depends(check_website_admin_role),
     db: Session = Depends(get_db),
 ):
@@ -398,9 +399,9 @@ def select_theme(
     Updates the selected_theme field in CMSSettingsModel.
     """
     try:
-        # Verify theme exists
-        theme_path = os.path.join(get_themes_dir(), request.folder_name)
-        if not os.path.exists(theme_path) or not os.path.isdir(theme_path):
+        # Verify theme exists (check both data dir and source dir)
+        theme_path = _resolve_theme_path(request.folder_name)
+        if not theme_path:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Theme '{request.folder_name}' not found",
@@ -442,10 +443,38 @@ def select_theme(
             f"for organization {organization_id}"
         )
 
+        # Regenerate imports for the newly selected theme
+        from ..utils.client_process import NO_CLIENT
+
+        if NO_CLIENT:
+            # Dev mode: regenerate files synchronously, Astro HMR handles the rest
+            from ..utils.theme_imports import (
+                generate_theme_imports,
+                generate_tailwind_config,
+            )
+
+            project_root = os.path.normpath(
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
+            )
+            generate_theme_imports(
+                data_dir_path=project_root, selected_theme=request.folder_name
+            )
+            generate_tailwind_config(
+                data_dir_path=project_root, selected_theme=request.folder_name
+            )
+            rebuilding = False
+        else:
+            # Production: trigger full rebuild in background
+            background_tasks.add_task(
+                trigger_setup_themes, selected_theme=request.folder_name
+            )
+            rebuilding = True
+
         return {
             "success": True,
             "message": f"Theme '{request.folder_name}' selected successfully",
             "selected_theme": request.folder_name,
+            "rebuilding": rebuilding,
         }
 
     except HTTPException:
@@ -457,6 +486,16 @@ def select_theme(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to select theme: {str(e)}",
         )
+
+
+@router.get("/build-status")
+def get_build_status_endpoint(
+    current_user: UserModel = Depends(check_website_admin_role),
+):
+    """Return current theme build status for admin polling."""
+    from ..utils.build_status import get_build_status
+
+    return get_build_status()
 
 
 @router.post("/reset")
@@ -517,8 +556,19 @@ def reset_theme(
                         f"Removed language variant: {entry}/{request.folder_name}"
                     )
 
-        # Rebuild in background
-        background_tasks.add_task(trigger_setup_themes, force_sync=True)
+        # Rebuild in background (pass selected theme for single-theme imports)
+        CMSSettingsModel = models_pool.get("organization")
+        org = (
+            db.query(CMSSettingsModel)
+            .filter(CMSSettingsModel.id == current_user.organization_id)
+            .first()
+        )
+        current_selected = org.selected_theme if org else None
+        background_tasks.add_task(
+            trigger_setup_themes,
+            force_sync=True,
+            selected_theme=current_selected,
+        )
 
         logger.info(
             f"User {current_user.username} reset theme '{request.folder_name}' "
@@ -694,18 +744,26 @@ def release_build_lock(db: Session):
     db.execute(text("SELECT pg_advisory_unlock(:id)"), {"id": THEME_BUILD_LOCK_ID})
 
 
-def trigger_setup_themes(force_sync=False):
+def trigger_setup_themes(force_sync=False, selected_theme: str | None = None):
     """
     Background task to run full theme setup (idempotent)
 
     Args:
         force_sync: If True, force sync themes folder to restore original files
+        selected_theme: If provided, only import this theme
     """
+    from ..utils.build_status import set_building, set_idle, set_error
+
     try:
+        set_building(selected_theme or "unknown")
         from ..utils.setup_themes import setup_themes
 
-        logger.info("Running theme setup after file save...")
-        setup_themes(force_build=True, force_sync=force_sync)
+        logger.info("Running theme setup after theme change...")
+        setup_themes(
+            force_build=True,
+            force_sync=force_sync,
+            selected_theme=selected_theme,
+        )
         logger.info("Theme setup completed successfully")
 
         # Restart client to pick up the new build
@@ -715,8 +773,11 @@ def trigger_setup_themes(force_sync=False):
         if manager:
             logger.info("Restarting Astro client after theme rebuild...")
             manager.restart()
+
+        set_idle()
     except Exception as e:
         logger.error(f"Error during theme setup: {e}")
+        set_error(str(e))
 
 
 @router.post("/file/save")
@@ -832,9 +893,15 @@ def save_theme_file(
         # Run setup_themes in background to update state hashes and sync
         # (build will be skipped since dist is fresh)
         if has_deletions:
-            background_tasks.add_task(trigger_setup_themes, force_sync=True)
+            background_tasks.add_task(
+                trigger_setup_themes,
+                force_sync=True,
+                selected_theme=request.theme_name,
+            )
         else:
-            background_tasks.add_task(trigger_setup_themes)
+            background_tasks.add_task(
+                trigger_setup_themes, selected_theme=request.theme_name
+            )
 
         # Restart client to pick up the new build
         from ..utils.client_process import get_client_manager

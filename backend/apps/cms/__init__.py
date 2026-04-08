@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import os
 from sqlalchemy import text as sa_text
 from apps.core.utils.models_pool import models_pool
 from deepsel.utils import migration_task
@@ -199,7 +200,7 @@ async def set_default_domains(db):
 
 
 def set_default_theme_if_empty(db):
-    """Set default theme to starter_react if not already set, and load its seed data."""
+    """Set default theme to alcoris if not already set, and load its seed data."""
     logger.info("Checking and setting default theme if needed")
     try:
         orgs_without_theme = (
@@ -211,13 +212,13 @@ def set_default_theme_if_empty(db):
         if orgs_without_theme:
             for org in orgs_without_theme:
                 logger.info(f"Setting default theme for organization ID: {org.id}")
-                org.selected_theme = "starter_react"
+                org.selected_theme = "alcoris"
 
             db.commit()
 
             from .utils.setup_themes import load_seed_data_for_theme
 
-            load_seed_data_for_theme("starter_react", db)
+            load_seed_data_for_theme("alcoris", db)
             logger.info("Default theme set successfully")
     except Exception as e:
         logger.error(f"Error setting default theme: {e}")
@@ -274,20 +275,24 @@ def _migrate_encrypt_org_secrets(db, *args, **kwargs):
             return
 
         for org in all_orgs:
+            # mail_password: try decrypt — if it fails, it's plaintext, so re-set via property
             if org._mail_password:
                 try:
                     _decrypt(org._mail_password, APP_SECRET)
                     _logger.info(f"Org {org.id} mail_password already encrypted")
                 except Exception:
-                    org.mail_password = org._mail_password
+                    org.mail_password = org._mail_password  # setter encrypts
                     _logger.info(f"Encrypted mail_password for org {org.id}")
 
+            # google_client_secret
             if org._google_client_secret:
                 try:
                     _decrypt(org._google_client_secret, APP_SECRET)
                     _logger.info(f"Org {org.id} google_client_secret already encrypted")
                 except Exception:
-                    org.google_client_secret = org._google_client_secret
+                    org.google_client_secret = (
+                        org._google_client_secret
+                    )  # setter encrypts
                     _logger.info(f"Encrypted google_client_secret for org {org.id}")
 
         db.commit()
@@ -311,17 +316,34 @@ def upgrade(db, from_version, to_version):
     # Full-text search vectors
     _migrate_add_search_vectors(db, __name__, from_version, to_version)
 
-    # Setup themes (skip when running client separately)
+    # Ensure a theme is selected BEFORE generating imports
+    set_default_theme_if_empty(db)
+
+    # Read the selected theme for single-theme imports
+    org = db.query(CMSSettingsModel).first()
+    selected_theme = org.selected_theme if org else "alcoris"
+
+    # Setup themes
     from .utils.client_process import NO_CLIENT
 
-    if not NO_CLIENT:
+    if NO_CLIENT:
+        # Dev mode: generate theme imports and tailwind config locally
+        from .utils.theme_imports import (
+            generate_theme_imports,
+            generate_tailwind_config,
+        )
+
+        project_root = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        generate_theme_imports(
+            data_dir_path=project_root, selected_theme=selected_theme
+        )
+        generate_tailwind_config(
+            data_dir_path=project_root, selected_theme=selected_theme
+        )
+    else:
         from .utils.setup_themes import setup_themes
 
-        setup_themes()
-
-    # Set default theme synchronously before starting client,
-    # so seed data + post_install run on fresh DB
-    set_default_theme_if_empty(db)
+        setup_themes(selected_theme=selected_theme)
 
     # Start the Astro client after themes are built
     from .utils.client_process import get_client_manager

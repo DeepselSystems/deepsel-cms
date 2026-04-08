@@ -16,7 +16,7 @@ from apps.core.utils.models_pool import models_pool
 from db import get_db_context
 from .hash_utils import hash_file, hash_directory, hash_theme_files
 from .state_utils import load_setup_state, save_setup_state
-from .theme_imports import generate_theme_imports
+from .theme_imports import generate_theme_imports, generate_tailwind_config
 from .theme_language import ensure_language_theme_exists
 from .sync_utils import sync_directory
 from platformdirs import user_data_dir
@@ -144,8 +144,9 @@ def validate_theme_build(theme_name, file_path, contents):
             with open(dest_path, "w", encoding="utf-8") as f:
                 f.write(content_data.content)
 
-        # Regenerate theme imports for the temp workspace
-        generate_theme_imports(data_dir_path=temp_dir)
+        # Regenerate theme imports and tailwind config for the temp workspace
+        generate_theme_imports(data_dir_path=temp_dir, selected_theme=theme_name)
+        generate_tailwind_config(data_dir_path=temp_dir, selected_theme=theme_name)
 
         # Build (skip npm install — symlinked node_modules is already up to date)
         build_in_dir(temp_dir, run_install=False, run_build=True)
@@ -157,7 +158,9 @@ def validate_theme_build(theme_name, file_path, contents):
         raise
 
 
-def setup_themes(force_build=False, force_sync=False):
+def setup_themes(
+    force_build=False, force_sync=False, selected_theme: str | None = None
+):
     """
     Setup themes - idempotent function that can be called on server start or after file edits:
     1. Sync client and themes folders to data dir (only if source changed)
@@ -424,8 +427,9 @@ def setup_themes(force_build=False, force_sync=False):
             else:
                 logger.info("No theme edits in database to reconcile")
 
-        # Generate theme imports for client_build (after sync and reconciliation)
-        generate_theme_imports(data_dir_path=data_dir)
+        # Generate theme imports and tailwind config for client_build (after sync and reconciliation)
+        generate_theme_imports(data_dir_path=data_dir, selected_theme=selected_theme)
+        generate_tailwind_config(data_dir_path=data_dir, selected_theme=selected_theme)
 
         # Determine if npm install is needed
         node_modules_path = os.path.join(data_dir, "node_modules")

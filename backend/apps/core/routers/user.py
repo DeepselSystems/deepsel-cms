@@ -99,6 +99,7 @@ def update_2fa_config(
         disable — verify OTP against active secret, deactivate 2FA
     """
     if action == "setup":
+        # Generate a new temp secret (does NOT activate 2FA yet)
         secret_key = pyotp.random_base32()
         user.temp_secret_key_2fa = _encrypt(secret_key, APP_SECRET)
         db.commit()
@@ -109,6 +110,7 @@ def update_2fa_config(
         return Info2Fa(totp_uri=totp_uri)
 
     elif action == "confirm":
+        # Verify OTP against temp secret, then activate 2FA
         if not user.temp_secret_key_2fa:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -131,10 +133,12 @@ def update_2fa_config(
                 detail="Invalid OTP. Please scan the QR code and try again.",
             )
 
+        # OTP verified — commit the secret and activate 2FA
         user.secret_key_2fa = user.temp_secret_key_2fa
         user.temp_secret_key_2fa = None
         user.is_use_2fa = True
 
+        # Generate recovery codes
         recovery_codes = generate_recovery_codes()
         hashed_codes = [hash_text(code) for code in recovery_codes]
         user.recovery_codes = json.dumps(hashed_codes)

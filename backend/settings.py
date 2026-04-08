@@ -1,9 +1,12 @@
 import datetime
 import os
+from pathlib import Path
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
 
-load_dotenv()
+_backend_dir = Path(__file__).resolve().parent
+load_dotenv(_backend_dir / ".env")  # backend/.env takes precedence
+load_dotenv(_backend_dir.parent / ".env")  # top-level .env as fallback
 
 installed_apps = [
     "core",

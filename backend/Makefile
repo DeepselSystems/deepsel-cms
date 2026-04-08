@@ -132,7 +132,7 @@ bump-patch:
 	echo "Version bumped from $$current to $$new_version"
 
 run:
-	uvicorn main:app --reload
+	uvicorn main:app --reload --timeout-graceful-shutdown 3
 
 db:
 	docker-compose -f local.docker-compose.yml up -d
