@@ -67,12 +67,17 @@ def get_page_by_lang_and_slug(
     preview: bool = Query(
         False, description="Enable preview mode to show unpublished pages"
     ),
+    org_id: int = Query(
+        None, description="Organization ID override for preview"
+    ),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_optional),
 ) -> PageContentResponse:
     """Get page content by language and slug"""
 
-    return get_page_content(request, lang, slug, preview, db, current_user)
+    return get_page_content(
+        request, lang, slug, preview, db, current_user, org_id=org_id
+    )
 
 
 class AIWritingMessage(BaseModel):

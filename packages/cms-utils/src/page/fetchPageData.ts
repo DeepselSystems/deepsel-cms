@@ -34,11 +34,19 @@ export async function fetchPageData({
     const langPrefix = lang || 'default';
     let url = `${backendHost}/api/v1/page/website/${langPrefix}${formattedPath}`;
 
-    // Add preview parameter if enabled
+    // Forward preview and org_id parameters from the incoming request
     if (astroRequest) {
-      const previewParam = new URL(astroRequest.url).searchParams.get('preview');
-      if (previewParam === 'true') {
-        url += `?preview=true`;
+      const incomingParams = new URL(astroRequest.url).searchParams;
+      const queryParams = new URLSearchParams();
+      if (incomingParams.get('preview') === 'true') {
+        queryParams.set('preview', 'true');
+      }
+      if (incomingParams.get('org_id')) {
+        queryParams.set('org_id', incomingParams.get('org_id')!);
+      }
+      const qs = queryParams.toString();
+      if (qs) {
+        url += `?${qs}`;
       }
     }
 

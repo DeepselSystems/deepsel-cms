@@ -422,22 +422,20 @@ export default function PageEdit({ onSuccess }) {
     }
   }, [currentContent?.content, currentContent?.locale?.iso_code, organizationId]);
 
-  // Generate preview URL and data for postMessage
+  // Generate preview URL — uses same-origin path so iframe can communicate
+  // via postMessage and session cookies are sent automatically
   const previewUrl = useMemo(() => {
     if (!currentContent?.content) return null;
 
     const selectedLocaleCode = currentContent.locale?.iso_code;
 
-    let baseUrl;
+    let path;
     if (!currentContent.slug || isCreateMode) {
-      // In create mode or no slug - use dedicated preview route
-      baseUrl = buildFullUrl(record, `/${selectedLocaleCode}/preview`, organizations);
+      path = `/${selectedLocaleCode}/preview`;
     } else {
-      // Build path with language prefix
       const isDefaultLanguage =
         selectedLocaleCode?.toLowerCase() ===
         siteSettings?.default_language?.iso_code?.toLowerCase();
-      let path;
 
       if (isDefaultLanguage) {
         path = currentContent.slug;
@@ -448,26 +446,21 @@ export default function PageEdit({ onSuccess }) {
           : `/${currentContent.slug}`;
         path = `${localePrefix}${cleanSlug}`;
       }
-
-      // Use the page's actual slug with correct domain
-      baseUrl = buildFullUrl(record, path, organizations);
     }
 
-    // Add preview parameters
-    const url = new URL(baseUrl);
+    // Use same-origin path — session cookie handles auth, org_id tells backend which site
+    const url = new URL(path, window.location.origin);
     url.searchParams.set('preview', 'true');
-    if (user?.token) {
-      url.searchParams.set('token', user.token);
+    if (record?.organization_id) {
+      url.searchParams.set('org_id', String(record.organization_id));
     }
     return url.toString();
   }, [
     activeContentTab,
     currentContent,
     record,
-    organizations,
     siteSettings?.default_language?.iso_code,
     isCreateMode,
-    user?.token,
   ]);
 
   const previewData = useMemo(() => {

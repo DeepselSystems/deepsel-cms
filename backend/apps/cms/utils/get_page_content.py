@@ -37,6 +37,7 @@ def get_page_content(
     preview: bool,
     db: Session,
     current_user,
+    org_id: int = None,
 ) -> PageContentResponse:
     """Get page content by language and slug"""
 
@@ -49,9 +50,12 @@ def get_page_content(
     LocaleModel = models_pool["locale"]
     OrganizationModel = models_pool["organization"]
 
-    # Detect organization by domain
-    domain = detect_domain_from_request(request)
-    org_settings = OrganizationModel.find_organization_by_domain(domain, db)
+    # Use explicit org_id if provided (preview from admin), otherwise detect by domain
+    if org_id:
+        org_settings = db.query(OrganizationModel).get(org_id)
+    else:
+        domain = detect_domain_from_request(request)
+        org_settings = OrganizationModel.find_organization_by_domain(domain, db)
 
     if not org_settings:
         raise HTTPException(
