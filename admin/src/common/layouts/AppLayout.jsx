@@ -16,6 +16,8 @@ import SidebarState from '../stores/SidebarState.js';
 import ShowHeaderBackButtonState from '../stores/ShowHeaderBackButtonState.js';
 import useBack from '../hooks/useBack.js';
 import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
+import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
 import { useEffect, useMemo } from 'react';
 import LangSwitcher from '../ui/AppLayout/LangSwitcher.jsx';
 import SiteSelector from '../ui/SiteSelector.jsx';
@@ -48,6 +50,17 @@ export default function AppLayout(props) {
   const { back } = useBack();
   const { confirmNavigation } = NavigationConfirmationState();
   const { organizationId, setOrganizationId } = OrganizationIdState((state) => state);
+  const { setSettings } = SitePublicSettingsState();
+  const { backendHost } = BackendHostURLState();
+
+  // Refresh site settings when organization changes
+  useEffect(() => {
+    if (!organizationId) return;
+    fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (data) setSettings(data); })
+      .catch(() => {});
+  }, [organizationId, backendHost, setSettings]);
 
   // Check if there are any visible navigation links for the current user
   const hasVisibleNavLinks = useMemo(() => {
