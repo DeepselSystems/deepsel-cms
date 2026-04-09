@@ -137,12 +137,16 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         body: `username=${encodedUsername}&password=${encodedPassword}&otp=${otp}`,
       });
 
-      if (response.status !== 200) {
-        const { detail } = await response.json();
-        if (typeof detail === 'string') {
-          setError(detail);
-          throw new Error(detail);
+      if (!response.ok) {
+        let message = 'Login failed';
+        try {
+          const errorBody = await response.json();
+          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+        } catch {
+          // response body not parseable
         }
+        setError(message);
+        throw new Error(message);
       }
 
       const responseData: LoginResponse = await response.json();
@@ -186,12 +190,16 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         }),
       });
 
-      if (response.status !== 200) {
-        const { detail } = await response.json();
-        if (typeof detail === 'string') {
-          setError(detail);
-          throw new Error(detail);
+      if (!response.ok) {
+        let message = 'Signup failed';
+        try {
+          const errorBody = await response.json();
+          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+        } catch {
+          // response body not parseable
         }
+        setError(message);
+        throw new Error(message);
       }
 
       if (autoLogin) {
@@ -228,10 +236,16 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         credentials: 'include',
       });
 
-      if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+      if (!response.ok) {
+        let message = 'Login failed';
+        try {
+          const errorBody = await response.json();
+          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+        } catch {
+          // response body not parseable
+        }
+        setError(message);
+        throw new Error(message);
       }
 
       const responseData: LoginResponse = await response.json();
