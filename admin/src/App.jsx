@@ -1,3 +1,4 @@
+import Notification from './common/notification/Notification.jsx';
 import TemplateEdit from './components/admin/template/TemplateEdit.jsx';
 import TemplateList from './components/admin/template/TemplateList.jsx';
 import ThemeList from './components/admin/theme/ThemeList.jsx';
@@ -248,6 +249,7 @@ export default function App(props) {
         <ModalsProvider>
           <MuiThemeProvider theme={muiTheme}>
             <BrowserRouter basename={basename}>
+              <Notification />
               <Routes>
                 <Route element={<PublicAuth />}>
                   <Route path="/google-authenticated" element={<GoogleAuth />} />
