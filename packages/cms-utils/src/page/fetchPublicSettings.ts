@@ -1,5 +1,6 @@
 import type { SiteSettings } from '../types.js';
 import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
+import { getHostname } from '../common/utils/getHostname.js';
 
 /**
  * Fetches public settings from the backend
@@ -42,22 +43,10 @@ export async function fetchPublicSettings(
 
     // For domain-based detection, send the current hostname to the backend
     if (orgId === null) {
-      let hostname = null;
-
-      // Server-side: Extract hostname from Astro request
-      if (astroRequest) {
-        const url = new URL(astroRequest.url);
-        hostname = url.hostname;
-      }
-      // Client-side: Extract hostname from window
-      else if (typeof window !== 'undefined') {
-        hostname = window.location.hostname;
-      }
-
+      const hostname = getHostname(astroRequest);
       if (hostname) {
         headers['X-Original-Host'] = hostname;
         headers['X-Frontend-Host'] = hostname;
-        // Note: Cannot override Host header due to browser security restrictions
       }
     }
 

@@ -1,6 +1,7 @@
 import { fetchPublicSettings } from './fetchPublicSettings.js';
 import type { SiteSettings } from '../types.js';
 import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
+import { getHostname } from '../common/utils/getHostname.js';
 
 export interface SearchResultItem {
   id: string;
@@ -42,13 +43,7 @@ export async function fetchSearchResults({
   backendHost = getDefaultBackendHost(),
 }: FetchSearchResultsProps): Promise<SearchResultsData> {
   // Build hostname for headers
-  let hostname: string | null = null;
-  if (astroRequest) {
-    const requestUrl = new URL(astroRequest.url);
-    hostname = requestUrl.hostname;
-  } else if (typeof window !== 'undefined') {
-    hostname = window.location.hostname;
-  }
+  const hostname = getHostname(astroRequest);
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

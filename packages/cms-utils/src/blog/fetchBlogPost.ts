@@ -2,6 +2,7 @@ import type { BlogPostData } from './types.js';
 import { fetchPublicSettings } from '../page/index.js';
 import type { SiteSettings } from '../types.js';
 import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
+import { getHostname } from '../common/utils/getHostname.js';
 
 interface FetchBlogPostProps {
   path: string;
@@ -38,15 +39,7 @@ export async function fetchBlogPost({
       } as Record<string, string>,
     };
 
-    let hostname = null;
-
-    if (astroRequest) {
-      const url = new URL(astroRequest.url);
-      hostname = url.hostname;
-    } else if (typeof window !== 'undefined') {
-      hostname = window.location.hostname;
-    }
-
+    const hostname = getHostname(astroRequest);
     if (hostname) {
       fetchOptions.headers['X-Original-Host'] = hostname;
       fetchOptions.headers['X-Frontend-Host'] = hostname;

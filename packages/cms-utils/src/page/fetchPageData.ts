@@ -2,6 +2,7 @@ import { fetchPublicSettings } from './fetchPublicSettings.js';
 import type { PageData } from './types.js';
 import type { SiteSettings } from '../types.js';
 import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
+import { getHostname } from '../common/utils/getHostname.js';
 
 interface FetchPageDataProps {
   path: string;
@@ -49,23 +50,11 @@ export async function fetchPageData({
       } as Record<string, string>,
     };
 
-    // Send the current hostname to the backend for proper domain detection
-    let hostname = null;
-
-    // Server-side: Extract hostname from Astro request
-    if (astroRequest) {
-      const requestUrl = new URL(astroRequest.url);
-      hostname = requestUrl.hostname;
-    }
-    // Client-side: Extract hostname from window
-    else if (typeof window !== 'undefined') {
-      hostname = window.location.hostname;
-    }
-
+    // Send the current hostname to the backend for domain-based org detection
+    const hostname = getHostname(astroRequest);
     if (hostname) {
       fetchOptions.headers['X-Original-Host'] = hostname;
       fetchOptions.headers['X-Frontend-Host'] = hostname;
-      // Note: Cannot override Host header due to browser security restrictions
     }
 
     // Add authentication headers if token exists (for both preview and protected content)

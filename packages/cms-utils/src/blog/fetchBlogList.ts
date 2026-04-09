@@ -1,6 +1,7 @@
 import type { BlogListData } from './types.js';
 import type { Pagination } from '../page/getPathType.js';
 import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
+import { getHostname } from '../common/utils/getHostname.js';
 
 interface FetchBlogListProps {
   lang?: string;
@@ -38,15 +39,7 @@ export async function fetchBlogList({
       } as Record<string, string>,
     };
 
-    let hostname = null;
-
-    if (astroRequest) {
-      const url = new URL(astroRequest.url);
-      hostname = url.hostname;
-    } else if (typeof window !== 'undefined') {
-      hostname = window.location.hostname;
-    }
-
+    const hostname = getHostname(astroRequest);
     if (hostname) {
       fetchOptions.headers['X-Original-Host'] = hostname;
       fetchOptions.headers['X-Frontend-Host'] = hostname;
