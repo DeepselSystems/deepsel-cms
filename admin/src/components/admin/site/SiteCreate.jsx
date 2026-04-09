@@ -4,6 +4,7 @@ import H1 from '../../../common/ui/H1.jsx';
 import H2 from '../../../common/ui/H2.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
+import useOrganization from '../../../common/hooks/useOrganization.js';
 import { useNavigate } from 'react-router-dom';
 import CreateFormActionBar from '../../../common/ui/CreateFormActionBar.jsx';
 import { useState, useEffect } from 'react';
@@ -18,6 +19,7 @@ export default function SiteCreate() {
   const { t } = useTranslation();
   const { create } = useModel('organization');
   const { notify } = NotificationState((state) => state);
+  const { refresh: refreshOrganizations } = useOrganization();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -187,6 +189,7 @@ export default function SiteCreate() {
         message: t('Website created successfully!'),
         type: 'success',
       });
+      await refreshOrganizations();
       navigate('/site-settings');
     } catch (error) {
       console.error(error);
