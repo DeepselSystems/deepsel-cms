@@ -10,6 +10,8 @@ import useSidebar from '../../../common/hooks/useSidebar.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
+import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
+import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
 import NavigationConfirmationState from '../../../common/stores/NavigationConfirmationState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
@@ -19,7 +21,6 @@ import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
-import HomepageSwitch from './components/HomepageSwitch.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
@@ -34,14 +35,16 @@ import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 import {
+  IconAi,
+  IconCheck,
   IconDeviceDesktop,
-  IconDeviceFloppy,
   IconDeviceMobile,
   IconDeviceTablet,
   IconPlus,
   IconSettings,
+  IconSparkles2,
+  IconSubtitlesAi,
   IconTrash,
-  IconWriting,
 } from '@tabler/icons-react';
 
 export default function PageEdit({ onSuccess }) {
@@ -53,6 +56,8 @@ export default function PageEdit({ onSuccess }) {
   const { organizationId } = OrganizationIdState();
   const { organizations } = OrganizationState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
+  const { setHideSiteSelector } = ShowSiteSelectorState();
+  const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
   const backWithRedirect = useBackWithRedirect();
   const { setNavigationConfirmation, clearNavigationConfirmation } = NavigationConfirmationState();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
@@ -382,14 +387,22 @@ export default function PageEdit({ onSuccess }) {
     };
   }, [clearTemporaryOverride]);
 
-  // Enable back button on mount and disable on unmount
+  // Enable back button and hide header items on mount, restore on unmount
   useEffect(() => {
     setShowBackButton(true);
+    setHideSiteSelector(true);
+    setHideNotifications(true);
+    setHideProfileDropdown(true);
+    setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
+      setHideSiteSelector(false);
+      setHideNotifications(false);
+      setHideProfileDropdown(false);
+      setHideGoToSite(false);
       clearNavigationConfirmation();
     };
-  }, [setShowBackButton, clearNavigationConfirmation]);
+  }, [setShowBackButton, setHideSiteSelector, setHideNotifications, setHideProfileDropdown, setHideGoToSite, clearNavigationConfirmation]);
 
   // Set/clear navigation confirmation based on unsaved changes
   useEffect(() => {
@@ -425,13 +438,12 @@ export default function PageEdit({ onSuccess }) {
   // Generate preview URL — uses same-origin path so iframe can communicate
   // via postMessage and session cookies are sent automatically
   const previewUrl = useMemo(() => {
-    if (!currentContent?.content) return null;
-
-    const selectedLocaleCode = currentContent.locale?.iso_code;
+    const selectedLocaleCode = currentContent?.locale?.iso_code;
+    if (!selectedLocaleCode) return null;
 
     let path;
     if (!currentContent.slug || isCreateMode) {
-      path = `/${selectedLocaleCode}/preview`;
+      path = `/preview?lang=${selectedLocaleCode}`;
     } else {
       const isDefaultLanguage =
         selectedLocaleCode?.toLowerCase() ===
@@ -464,7 +476,7 @@ export default function PageEdit({ onSuccess }) {
   ]);
 
   const previewData = useMemo(() => {
-    if (!currentContent?.content) return null;
+    if (!currentContent?.locale?.iso_code) return null;
 
     return {
       id: record?.id || currentContent.id || 'new',
@@ -624,15 +636,6 @@ export default function PageEdit({ onSuccess }) {
       setHasUnsavedChanges(false);
     }
   }, [record]);
-
-  // AI Writer functions
-  const openAiWriterSidebar = () => {
-    setAiWriterSidebarOpened(true);
-  };
-
-  const closeAiWriterSidebar = () => {
-    setAiWriterSidebarOpened(false);
-  };
 
   const handleContentInserted = () => {
     setPreviewTrigger((prev) => prev + 1);
@@ -850,40 +853,6 @@ export default function PageEdit({ onSuccess }) {
             onContinueEditing={handleContinueEditing}
           />
 
-          {/* Title and Controls */}
-          <div className="">
-            <div className="flex justify-between flex-1 flex-col">
-              {activeContentTab &&
-              record.contents.find((c) => String(c.id) === activeContentTab) ? (
-                <div className="space-y-2 mb-3">
-                  <TextInput
-                    className="flex-1 max-w-2xl"
-                    placeholder={t('Title')}
-                    classNames={{
-                      input: 'text-3xl! font-bold! px-0! border-0! bg-transparent!',
-                    }}
-                    maxLength={255}
-                    size="xl"
-                    variant="unstyled"
-                    required
-                    value={activeContent?.title || ''}
-                    onChange={(e) => {
-                      const newTitle = e.target.value;
-                      const content = record.contents.find(
-                        (c) => String(c.id) === activeContentTab,
-                      );
-                      if (content) {
-                        updateContentField(content.id, 'title', newTitle);
-                      }
-                    }}
-                  />
-                </div>
-              ) : (
-                <h1 className="text-3xl font-bold">{t('Page')}</h1>
-              )}
-            </div>
-          </div>
-
           {/* Content Editing Section */}
           <div>
             <LoadingOverlay
@@ -955,6 +924,20 @@ export default function PageEdit({ onSuccess }) {
                       <div className="flex flex-col grow gap-2"></div>
                     </div>
 
+                    {/* Title */}
+                    <TextInput
+                      className="w-full"
+                      classNames={{ input: 'font-bold text-[42px]' }}
+                      placeholder={t('Enter a title...')}
+                      size="xl"
+                      variant="unstyled"
+                      required
+                      value={content.title || ''}
+                      onChange={(e) => {
+                        updateContentField(content.id, 'title', e.target.value);
+                      }}
+                    />
+
                     {/* Content Editor */}
                     <div className="my-4">
                       <RichTextInput
@@ -965,7 +948,10 @@ export default function PageEdit({ onSuccess }) {
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}
-                        classNames={{ content: 'min-h-[1000px]' }}
+                        classNames={{
+                          root: 'border-none',
+                          content: 'min-h-[1000px]',
+                        }}
                         autoComplete={aiAutocompleteEnabled && aiAutoCompleteAvailable}
                       />
                     </div>
@@ -1023,52 +1009,63 @@ export default function PageEdit({ onSuccess }) {
                 </Button>
               </div>
 
-              {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
-              <div className="flex items-center gap-3">
-                <Tooltip
-                  label={
-                    'Please specify an API key and autocomplete model in Site Settings to use this feature.'
-                  }
-                  disabled={aiAutoCompleteAvailable}
-                >
-                  <div className="inline-flex items-center">
-                    <Switch
-                      label={t('AI Autocomplete')}
-                      checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                      disabled={!aiAutoCompleteAvailable}
-                      size="md"
-                    />
-                  </div>
-                </Tooltip>
-                <Tooltip
-                  label={
-                    aiWritingAvailable
-                      ? t('AI Writer')
-                      : t(
-                          'Please specify an API key and writing model in Site Settings to use this feature.',
-                        )
-                  }
-                >
-                  <div>
-                    <Button
-                      variant="filled"
-                      size="sm"
-                      onClick={openAiWriterSidebar}
-                      className="px-2"
-                      disabled={!aiWritingAvailable}
-                    >
-                      <IconWriting size={16} className="mr-2" />
-                      {t('AI Writer')}
+              {/* AI, Publish Toggle, Save, and Settings - Right Side */}
+              <div className="flex items-center gap-2">
+                <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
+                  <Menu.Target>
+                    <Button variant="subtle" size="md" className="px-2">
+                      <IconAi size={40} />
                     </Button>
-                  </div>
-                </Tooltip>
-                <Tooltip label={t('Settings')}>
-                  <Button variant="subtle" size="sm" onClick={openSettingsDrawer} className="px-2">
-                    <IconSettings size={16} />
-                  </Button>
-                </Tooltip>
-                <HomepageSwitch page={record} setPage={setRecord} />
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item closeMenuOnClick={false}>
+                      <Tooltip
+                        label={t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )}
+                        disabled={aiWritingAvailable}
+                      >
+                        <div className="inline-flex items-center">
+                          <Switch
+                            label={
+                              <span className="inline-flex items-center gap-1">
+                                <IconSparkles2 size={16} />
+                                {t('AI Writer')}
+                              </span>
+                            }
+                            checked={aiWriterSidebarOpened}
+                            onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
+                            disabled={!aiWritingAvailable}
+                            size="md"
+                          />
+                        </div>
+                      </Tooltip>
+                    </Menu.Item>
+                    <Menu.Item closeMenuOnClick={false}>
+                      <Tooltip
+                        label={t(
+                          'Please specify an API key and autocomplete model in Site Settings to use this feature.',
+                        )}
+                        disabled={aiAutoCompleteAvailable}
+                      >
+                        <div className="inline-flex items-center">
+                          <Switch
+                            label={
+                              <span className="inline-flex items-center gap-1">
+                                <IconSubtitlesAi size={16} />
+                                {t('AI Autocomplete')}
+                              </span>
+                            }
+                            checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                            onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                            disabled={!aiAutoCompleteAvailable}
+                            size="md"
+                          />
+                        </div>
+                      </Tooltip>
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
                 <Switch
                   checked={record.published}
                   onLabel={t('Published')}
@@ -1080,14 +1077,21 @@ export default function PageEdit({ onSuccess }) {
                   onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
                 />
                 <Button
-                  type="submit"
-                  variant="filled"
-                  size="sm"
+                  className="text-[14px] font-[600]"
+                  disabled={loading || isCheckingConflicts}
                   loading={loading || isCheckingConflicts}
+                  variant="subtle"
+                  type="submit"
+                  color="green"
                 >
-                  <IconDeviceFloppy size={16} className="mr-2" />
+                  <IconCheck size={16} className="mr-1" />
                   {t('Save')}
                 </Button>
+                <Tooltip label={t('Settings')}>
+                  <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+                    <IconSettings size={20} />
+                  </Button>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -1141,7 +1145,7 @@ export default function PageEdit({ onSuccess }) {
         </form>
         <AIWriterSidebar
           opened={aiWriterSidebarOpened}
-          onClose={closeAiWriterSidebar}
+          onClose={() => setAiWriterSidebarOpened(false)}
           activeContent={activeContent}
           updateContentField={updateContentField}
           onContentInserted={handleContentInserted}
@@ -1214,6 +1218,7 @@ export default function PageEdit({ onSuccess }) {
           pageContent={activeContent}
           updateContentField={updateContentField}
           page={record}
+          setPage={setRecord}
           updatePageField={(field, value) => setRecord({ ...record, [field]: value })}
           themeName={siteSettings?.selected_theme}
         />

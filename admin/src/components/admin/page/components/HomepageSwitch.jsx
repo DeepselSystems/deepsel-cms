@@ -83,13 +83,10 @@ const HomepageSwitch = React.forwardRef(({ page, setPage }, ref) => {
       {!!page && (
         <>
           <Switch
-            size="xl"
-            classNames={{
-              track: 'px-2',
-            }}
+            size="lg"
             disabled={isDisabledSwitch}
-            onLabel={t('Homepage')}
-            offLabel={t('Homepage')}
+            label={t('Homepage')}
+            description={t('Set this page as the homepage')}
             checked={!!page.is_homepage}
             onChange={({ currentTarget: { checked } }) =>
               setPage((prevState) => ({

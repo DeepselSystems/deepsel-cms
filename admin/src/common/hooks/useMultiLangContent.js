@@ -58,7 +58,7 @@ export default function useMultiLangContent({
           _addNew: true,
           id: newId,
           title: '',
-          content: contentType === 'page' ? '<p>This is the start of your new page!</p>' : '',
+          content: '',
           locale_id: defaultLocale.id,
           locale: defaultLocale,
           slug: null,

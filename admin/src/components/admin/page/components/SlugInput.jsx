@@ -134,6 +134,7 @@ const SlugInput = React.forwardRef(
           description={t(
             'URL path for this language version. Will be auto-generated from title if left empty.',
           )}
+          variant='filled'
           value={isHomepage ? HOMEPAGE_DEFAULT_SLUG : value}
           onChange={({ target: { value } }) => handleSlugChange(value)}
           error={
