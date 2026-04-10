@@ -12,6 +12,8 @@ import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsSt
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
 import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
+import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
+import UserState from '../../../common/stores/UserState.js';
 import useSidebar from '../../../common/hooks/useSidebar.js';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
@@ -60,13 +62,35 @@ export default function BlogPostEdit() {
   const { setShowBackButton } = ShowHeaderBackButtonState();
   const { setHideSiteSelector } = ShowSiteSelectorState();
   const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
+  const { organizationId } = OrganizationIdState();
+  const { user } = UserState();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
 
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
 
-  const query = useModel('blog_post', { id, autoFetch: true });
-  const { record, setRecord, update, loading, getOne } = query;
+  // Determine if this is create mode (no id) or edit mode (has id)
+  const isCreateMode = !id;
+
+  // Initialize record for create mode
+  const [createRecord, setCreateRecord] = useState({
+    title: '',
+    content: '',
+    reading_length: '',
+    published: false,
+    slug: '',
+    contents: [],
+    author_id: user?.id || null,
+    publish_date: new Date(),
+  });
+
+  // Single useModel query for both modes
+  const query = useModel('blog_post', { id, autoFetch: !!id });
+
+  // Use create record for create mode, query record for edit mode
+  const record = isCreateMode ? createRecord : query.record;
+  const setRecord = isCreateMode ? setCreateRecord : query.setRecord;
+  const { update, create, loading, getOne } = query;
 
   const { data: locales } = useModel('locale', {
     autoFetch: true,
@@ -111,12 +135,11 @@ export default function BlogPostEdit() {
     [activeContentTab, record?.contents],
   );
 
-  // Edit session management for parallel edit detection
-  // Note: Using null for contentId to track blog post level editing (not individual content items)
+  // Edit session management for parallel edit detection (edit mode only)
   const { parallelEditWarning, clearParallelEditWarning } = useEditSession(
     'blog_post',
-    id,
-    null, // Track at blog post level, not per-content-item
+    isCreateMode ? null : id,
+    null,
   );
 
   // Simple conflict resolution state
@@ -233,12 +256,12 @@ export default function BlogPostEdit() {
     setIsResolvingConflict(false);
   };
 
-  // Start edit session only once when record is first loaded, not on activeContent changes
+  // Start edit session only once when record is first loaded (edit mode only)
   useEffect(() => {
-    if (record && !editStartTimestamp) {
+    if (!isCreateMode && record && !editStartTimestamp) {
       startEditSession();
     }
-  }, [record?.id, editStartTimestamp]);
+  }, [record?.id, editStartTimestamp, isCreateMode]);
 
   // Auto-collapse sidebar on mount
   useEffect(() => {
@@ -280,6 +303,18 @@ export default function BlogPostEdit() {
     setHideGoToSite,
   ]);
 
+  // Function to generate slug from title (used in create mode)
+  const generateSlug = (title) => {
+    if (!title) return '/';
+    const slug = title
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    return slug.startsWith('/') ? slug : `/${slug}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -298,22 +333,40 @@ export default function BlogPostEdit() {
         })),
       };
 
-      // Check for conflicts before saving, send processed contents for AI explanation
-      const conflictResult = await checkForConflicts('blog_post', record.id, processedContents);
+      if (isCreateMode) {
+        // Generate slug if empty
+        if (!recordToSave.slug && recordToSave.contents.length > 0) {
+          const firstContent = recordToSave.contents[0];
+          if (firstContent.title) {
+            recordToSave.slug = generateSlug(firstContent.title);
+          }
+        }
+        // Ensure slug starts with a forward slash
+        if (recordToSave.slug && !recordToSave.slug.startsWith('/')) {
+          recordToSave.slug = `/${recordToSave.slug}`;
+        } else if (!recordToSave.slug) {
+          recordToSave.slug = '/';
+        }
 
-      if (conflictResult.hasConflict) {
-        // Conflict detected - store the record we were trying to save for the modal
-        setConflictData((prev) => ({
-          ...prev,
-          userRecordToSave: recordToSave, // Store what user was actually trying to save
-        }));
+        await create({ ...recordToSave, organization_id: organizationId });
+        notify({ message: t('Blog Post created successfully!'), type: 'success' });
+        navigate(-1);
+      } else {
+        // Check for conflicts before saving, send processed contents for AI explanation
+        const conflictResult = await checkForConflicts('blog_post', record.id, processedContents);
 
-        return;
+        if (conflictResult.hasConflict) {
+          setConflictData((prev) => ({
+            ...prev,
+            userRecordToSave: recordToSave,
+          }));
+          return;
+        }
+
+        await update(recordToSave);
+        notify({ message: t('Blog Post updated successfully!'), type: 'success' });
+        navigate(-1);
       }
-
-      await update(recordToSave);
-      notify({ message: t('Blog Post updated successfully!'), type: 'success' });
-      navigate(-1);
     } catch (error) {
       console.error(error);
       notify({ message: error.message, type: 'error' });
@@ -395,7 +448,7 @@ export default function BlogPostEdit() {
     clearParallelEditWarning();
   };
 
-  return !loading && record ? (
+  return (isCreateMode || (!loading && record)) ? (
     <>
       <div className="w-full flex overflow-y-auto" style={{ height: 'calc(100dvh - 70px)' }}>
         <form className={`flex-1 max-w-screen-xl m-auto px-[24px]`} onSubmit={handleSubmit}>

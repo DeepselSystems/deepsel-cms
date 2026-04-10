@@ -11,7 +11,6 @@ import CronCreate from './components/admin/cron/CronCreate.jsx';
 import CronEdit from './components/admin/cron/CronEdit.jsx';
 import CronView from './components/admin/cron/CronView.jsx';
 import CronList from './components/admin/cron/CronList.jsx';
-import BlogPostCreate from './components/admin/blog_post/BlogPostCreate.jsx';
 import BlogPostEdit from './components/admin/blog_post/BlogPostEdit.jsx';
 import BlogPostList from './components/admin/blog_post/BlogPostList.jsx';
 import CMSLayout from './components/layouts/CMSLayout.jsx';
@@ -270,7 +269,7 @@ export default function App(props) {
                     <Route path="/themes/edit/:themeName" element={<ThemeFileEdit />} />
 
                     <Route path="/blog_posts" element={<BlogPostList />} />
-                    <Route path="/blog_posts/create" element={<BlogPostCreate />} />
+                    <Route path="/blog_posts/create" element={<BlogPostEdit />} />
                     <Route path="/blog_posts/:id/edit" element={<BlogPostEdit />} />
                     <Route path="/pages" element={<PageList />} />
                     <Route path="/pages/create" element={<PageEdit />} />
