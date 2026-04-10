@@ -141,7 +141,10 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let message = 'Login failed';
         try {
           const errorBody = await response.json();
-          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+          message =
+            typeof errorBody.detail === 'string'
+              ? errorBody.detail
+              : JSON.stringify(errorBody.detail);
         } catch {
           // response body not parseable
         }
@@ -194,7 +197,10 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let message = 'Signup failed';
         try {
           const errorBody = await response.json();
-          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+          message =
+            typeof errorBody.detail === 'string'
+              ? errorBody.detail
+              : JSON.stringify(errorBody.detail);
         } catch {
           // response body not parseable
         }
@@ -240,7 +246,10 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let message = 'Login failed';
         try {
           const errorBody = await response.json();
-          message = typeof errorBody.detail === 'string' ? errorBody.detail : JSON.stringify(errorBody.detail);
+          message =
+            typeof errorBody.detail === 'string'
+              ? errorBody.detail
+              : JSON.stringify(errorBody.detail);
         } catch {
           // response body not parseable
         }

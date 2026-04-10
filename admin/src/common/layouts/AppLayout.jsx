@@ -14,6 +14,9 @@ import trackingSettings from '../../constants/trackingSettings.js';
 import { useTranslation } from 'react-i18next';
 import SidebarState from '../stores/SidebarState.js';
 import ShowHeaderBackButtonState from '../stores/ShowHeaderBackButtonState.js';
+import ShowSiteSelectorState from '../stores/ShowSiteSelectorState.js';
+import GoToSiteLinkState from '../stores/GoToSiteLinkState.js';
+import HideHeaderItemsState from '../stores/HideHeaderItemsState.js';
 import useBack from '../hooks/useBack.js';
 import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
@@ -47,6 +50,9 @@ export default function AppLayout(props) {
     temporaryToggle,
   } = SidebarState();
   const { showBackButton } = ShowHeaderBackButtonState();
+  const { hideSiteSelector } = ShowSiteSelectorState();
+  const { goToSiteLink } = GoToSiteLinkState();
+  const { hideNotifications, hideProfileDropdown, hideGoToSite } = HideHeaderItemsState();
   const { back } = useBack();
   const { confirmNavigation } = NavigationConfirmationState();
   const { organizationId, setOrganizationId } = OrganizationIdState((state) => state);
@@ -57,8 +63,10 @@ export default function AppLayout(props) {
   useEffect(() => {
     if (!organizationId) return;
     fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' })
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => { if (data) setSettings(data); })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setSettings(data);
+      })
       .catch(() => {});
   }, [organizationId, backendHost, setSettings]);
 
@@ -173,7 +181,7 @@ export default function AppLayout(props) {
               )}
 
               {/*region site selector*/}
-              {showSiteSelector && (
+              {showSiteSelector && !hideSiteSelector && (
                 <VisibilityControl
                   roleIds={[
                     'super_admin_role',
@@ -195,12 +203,14 @@ export default function AppLayout(props) {
                 </VisibilityControl>
               )}
               {/*endregion site selector*/}
-              <a href="/" target="_blank" className="block my-2 w-8 h-8">
-                <IconArrowUpRight
-                  size={16}
-                  className="w-full h-full text-xl text-white bg-black rounded p-1 hover:translate-y-0.5 transition-all"
-                />
-              </a>
+              {!hideGoToSite && (
+                <a href={goToSiteLink} target="_blank" className="block my-2 w-8 h-8">
+                  <IconArrowUpRight
+                    size={16}
+                    className="w-full h-full text-xl text-white bg-black rounded p-1 hover:translate-y-0.5 transition-all"
+                  />
+                </a>
+              )}
             </div>
             <div className={`flex items-center gap-4`}>
               {(trackingSettings.enableAnonUsers ? user?.signed_up === true : user) ? (
@@ -210,10 +220,10 @@ export default function AppLayout(props) {
                   <AppsDropdown apps={adjustedApps} showApps={showApps} />
 
                   {/*notifications dropdown   */}
-                  <NotificationsDropdown />
+                  {!hideNotifications && <NotificationsDropdown />}
 
                   {/*profile dropdown*/}
-                  <ProfileDropdown />
+                  {!hideProfileDropdown && <ProfileDropdown />}
                 </>
               ) : (
                 <Link to={`/login`}>

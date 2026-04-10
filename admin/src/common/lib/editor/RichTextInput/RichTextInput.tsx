@@ -44,7 +44,7 @@ import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEditor } from '@tiptap/react';
+import { useEditor, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
@@ -270,6 +270,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
   const [isJumpMarksModalOpened, { open: openJumpMarksModal, close: closeJumpMarksModal }] =
     useDisclosure(false);
   const [jumpMarksData, setJumpMarksData] = useState<JumpMarkData | null>(null);
+  const [showInsertTools, setShowInsertTools] = useState(false);
 
   const [
     isHtmlComponentsModalOpened,
@@ -350,6 +351,11 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         if (e) {
           onChange(e.getHTML());
         }
+      },
+      editorProps: {
+        attributes: {
+          class: '!p-0',
+        },
       },
     },
     [isAIAvailable, backendHost, user?.token],
@@ -452,6 +458,16 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     };
   }, [editor, openGalleryModal, openRichTextModal]);
 
+  // Reset insert tools when cursor moves
+  useEffect(() => {
+    if (!editor) return;
+    const reset = () => setShowInsertTools(false);
+    editor.on('selectionUpdate', reset);
+    return () => {
+      editor.off('selectionUpdate', reset);
+    };
+  }, [editor]);
+
   /**
    * Apply the selected font size to the current selection
    */
@@ -477,6 +493,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
       <style>{`
         .ProseMirror {
           outline: none;
+          padding: 0;
         }
       `}</style>
 
@@ -487,227 +504,342 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           className={`w-full ${className ?? ''}`}
           {...restProps}
         >
-          <MantineRichTextEditor.Toolbar sticky stickyOffset={60} className="!z-50">
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.Bold />
-              <MantineRichTextEditor.Italic />
-              <MantineRichTextEditor.Underline />
-              <MantineRichTextEditor.Strikethrough />
-              <MantineRichTextEditor.ClearFormatting />
-              <MantineRichTextEditor.Highlight />
-              <MantineRichTextEditor.Code />
+          {/* Table styles */}
+          <style>{`
+            .ProseMirror table {
+              border-collapse: collapse;
+              table-layout: fixed;
+              width: 100%;
+              margin: 1rem 0;
+              overflow: hidden;
+              position: relative;
+            }
+            .ProseMirror td,
+            .ProseMirror th {
+              min-width: 1em;
+              border: 2px solid #ced4da;
+              padding: 8px 12px;
+              vertical-align: top;
+              box-sizing: border-box;
+              position: relative;
+            }
+            .ProseMirror th {
+              font-weight: bold;
+              text-align: left;
+              background-color: #f8f9fa;
+            }
+            .ProseMirror .selectedCell:after {
+              z-index: 2;
+              position: absolute;
+              content: '';
+              left: 0;
+              right: 0;
+              top: 0;
+              bottom: 0;
+              background: rgba(200, 200, 255, 0.4);
+              pointer-events: none;
+            }
+            .ProseMirror .column-resize-handle {
+              position: absolute;
+              right: -2px;
+              top: 0;
+              bottom: -2px;
+              width: 4px;
+              background-color: #adf;
+              pointer-events: none;
+            }
+            .ProseMirror.resize-cursor {
+              cursor: ew-resize;
+              cursor: col-resize;
+            }
+            .ProseMirror table:hover .table-controls {
+              opacity: 1 !important;
+            }
+            .ProseMirror tr:hover .table-row-controls {
+              opacity: 1 !important;
+            }
+            .ProseMirror td:hover .table-col-controls,
+            .ProseMirror th:hover .table-col-controls {
+              opacity: 1 !important;
+            }
+            .table-controls {
+              opacity: 0;
+              transition: opacity 0.2s ease-in-out;
+            }
+            .table-row-controls {
+              position: absolute;
+              left: -40px;
+              top: 50%;
+              transform: translateY(-50%);
+              display: flex;
+              flex-direction: column;
+              gap: 3px;
+              z-index: 10;
+            }
+            .table-col-controls {
+              position: absolute;
+              top: -40px;
+              left: 50%;
+              transform: translateX(-50%);
+              display: flex;
+              gap: 3px;
+              z-index: 10;
+            }
+            .table-control-btn {
+              width: 28px;
+              height: 28px;
+              background: white;
+              border: 1px solid #dee2e6;
+              border-radius: 6px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+              font-weight: normal;
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+              transition: all 0.2s ease;
+              color: #495057;
+              line-height: 1;
+            }
+            .table-control-btn:hover {
+              background: #f8f9fa;
+              border-color: #adb5bd;
+              transform: scale(1.15);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+            .table-control-btn:active {
+              transform: scale(0.95);
+            }
+            .table-control-btn.delete {
+              color: #dc3545;
+            }
+            .table-control-btn.delete:hover {
+              background: #f8d7da;
+              border-color: #dc3545;
+            }
+            .table-control-btn.add {
+              color: #28a745;
+            }
+            .table-control-btn.add:hover {
+              background: #d4edda;
+              border-color: #28a745;
+            }
+          `}</style>
 
-              {/* Insert Code Block Button */}
-              <EnhancedCodeBlockButton editor={editor} />
-            </MantineRichTextEditor.ControlsGroup>
+          {/* Bubble Menu - formatting controls on text selection */}
+          {editor && (
+            <BubbleMenu editor={editor} tippyOptions={{ maxWidth: '100%' }}>
+              <div className="flex flex-wrap gap-0.5 bg-white rounded-lg shadow-lg border border-gray-200 p-1">
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.Bold />
+                  <MantineRichTextEditor.Italic />
+                  <MantineRichTextEditor.Underline />
+                  <MantineRichTextEditor.Strikethrough />
+                  <MantineRichTextEditor.ClearFormatting />
+                  <MantineRichTextEditor.Highlight />
+                  <MantineRichTextEditor.Code />
+                  <EnhancedCodeBlockButton editor={editor} />
+                </MantineRichTextEditor.ControlsGroup>
 
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.H1 />
-              <MantineRichTextEditor.H2 />
-              <MantineRichTextEditor.H3 />
-              <MantineRichTextEditor.H4 />
-            </MantineRichTextEditor.ControlsGroup>
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.H1 />
+                  <MantineRichTextEditor.H2 />
+                  <MantineRichTextEditor.H3 />
+                  <MantineRichTextEditor.H4 />
+                </MantineRichTextEditor.ControlsGroup>
 
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.Blockquote />
-              <MantineRichTextEditor.Hr />
-              <MantineRichTextEditor.BulletList />
-              <MantineRichTextEditor.OrderedList />
-              <MantineRichTextEditor.Subscript />
-              <MantineRichTextEditor.Superscript />
-            </MantineRichTextEditor.ControlsGroup>
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.Blockquote />
+                  <MantineRichTextEditor.Hr />
+                  <MantineRichTextEditor.BulletList />
+                  <MantineRichTextEditor.OrderedList />
+                  <MantineRichTextEditor.Subscript />
+                  <MantineRichTextEditor.Superscript />
+                </MantineRichTextEditor.ControlsGroup>
 
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.Link />
-              <MantineRichTextEditor.Unlink />
-            </MantineRichTextEditor.ControlsGroup>
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.Link />
+                  <MantineRichTextEditor.Unlink />
+                </MantineRichTextEditor.ControlsGroup>
 
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.AlignLeft />
-              <MantineRichTextEditor.AlignCenter />
-              <MantineRichTextEditor.AlignJustify />
-              <MantineRichTextEditor.AlignRight />
-            </MantineRichTextEditor.ControlsGroup>
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.AlignLeft />
+                  <MantineRichTextEditor.AlignCenter />
+                  <MantineRichTextEditor.AlignJustify />
+                  <MantineRichTextEditor.AlignRight />
+                </MantineRichTextEditor.ControlsGroup>
 
-            <MantineRichTextEditor.ControlsGroup>
-              <MantineRichTextEditor.Undo />
-              <MantineRichTextEditor.Redo />
-            </MantineRichTextEditor.ControlsGroup>
+                <MantineRichTextEditor.ControlsGroup>
+                  <MantineRichTextEditor.Undo />
+                  <MantineRichTextEditor.Redo />
+                </MantineRichTextEditor.ControlsGroup>
 
-            {/* Table Controls - only show when cursor is in a table */}
-            {editor?.isActive('table') && (
-              <MantineRichTextEditor.ControlsGroup>
-                <Tooltip label={t('Add Column Before')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().addColumnBefore().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconArrowLeft size={12} className="text-[#808496]" />
-                    <IconPlus size={12} className="text-[#808496]" />
-                    <span className="text-[#808496] text-xs">Col</span>
-                  </button>
-                </Tooltip>
+                {/* Font Size Controls */}
+                <MantineRichTextEditor.ControlsGroup>
+                  <Tooltip label={t('Decrease Font Size')}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!editor) return;
+                        const newSize = Math.max(8, parseInt(fontSize || '16') - 1);
+                        setFontSize(newSize.toString());
+                        applyFontSize(newSize.toString());
+                      }}
+                      className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                    >
+                      <IconMinus size={18} className="text-[#808496]" />
+                    </button>
+                  </Tooltip>
+                  <div className="flex items-center px-1">
+                    <Select
+                      value={fontSize}
+                      radius="md"
+                      onChange={(value) => {
+                        if (value) {
+                          setFontSize(value);
+                          applyFontSize(value);
+                        }
+                      }}
+                      data={FONT_SIZE_OPTIONS}
+                      className="w-[70px]"
+                      classNames={{ dropdown: 'overflow-auto' }}
+                      styles={{
+                        input: {
+                          height: '26px',
+                          minHeight: '26px',
+                          paddingLeft: '8px',
+                          paddingRight: '8px',
+                        },
+                        wrapper: { height: '26px' },
+                        dropdown: { maxHeight: '200px' },
+                      }}
+                    />
+                  </div>
+                  <Tooltip label={t('Increase Font Size')}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!editor) return;
+                        const newSize = parseInt(fontSize || '16') + 1;
+                        setFontSize(newSize.toString());
+                        applyFontSize(newSize.toString());
+                      }}
+                      className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                    >
+                      <IconPlus size={18} className="text-[#808496]" />
+                    </button>
+                  </Tooltip>
+                </MantineRichTextEditor.ControlsGroup>
 
-                <Tooltip label={t('Add Column After')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().addColumnAfter().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconPlus size={12} className="text-[#808496]" />
-                    <span className="text-[#808496] text-xs">Col</span>
-                    <IconArrowRight size={12} className="text-[#808496]" />
-                  </button>
-                </Tooltip>
-
-                <Tooltip label={t('Delete Column')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().deleteColumn().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconTrash size={12} className="text-red-500" />
-                    <span className="text-red-500 text-xs">Col</span>
-                  </button>
-                </Tooltip>
-
-                <Tooltip label={t('Add Row Before')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().addRowBefore().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconPlus size={12} className="text-[#808496]" />
-                    <span className="text-[#808496] text-xs">Row</span>
-                    <IconArrowUp size={12} className="text-[#808496]" />
-                  </button>
-                </Tooltip>
-
-                <Tooltip label={t('Add Row After')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().addRowAfter().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconPlus size={12} className="text-[#808496]" />
-                    <span className="text-[#808496] text-xs">Row</span>
-                    <IconArrowDown size={12} className="text-[#808496]" />
-                  </button>
-                </Tooltip>
-
-                <Tooltip label={t('Delete Row')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().deleteRow().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconTrash size={12} className="text-red-500" />
-                    <span className="text-red-500 text-xs">Row</span>
-                  </button>
-                </Tooltip>
-
-                <Tooltip label={t('Delete Table')}>
-                  <button
-                    type="button"
-                    onClick={() => editor.chain().focus().deleteTable().run()}
-                    className="h-[26px] px-2 flex justify-center items-center gap-1
-                              rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconX size={12} className="text-red-500" />
-                    <span className="text-red-500 text-xs">Table</span>
-                  </button>
-                </Tooltip>
-              </MantineRichTextEditor.ControlsGroup>
-            )}
-
-            {/* Font Size Controls */}
-            <MantineRichTextEditor.ControlsGroup>
-              <Tooltip label={t('Decrease Font Size')}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!editor) return;
-                    const newSize = Math.max(8, parseInt(fontSize || '16') - 1);
-                    setFontSize(newSize.toString());
-                    applyFontSize(newSize.toString());
-                  }}
-                  className="w-[26px] h-[26px] flex justify-center items-center
-                            rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                >
-                  <IconMinus size={18} className="text-[#808496]" />
-                </button>
-              </Tooltip>
-
-              <div className="flex items-center px-1">
-                <Select
-                  value={fontSize}
-                  radius="md"
-                  onChange={(value) => {
-                    if (value) {
-                      setFontSize(value);
-                      applyFontSize(value);
-                    }
-                  }}
-                  data={FONT_SIZE_OPTIONS}
-                  className="w-[70px]"
-                  classNames={{
-                    dropdown: 'overflow-auto',
-                  }}
-                  styles={{
-                    input: {
-                      height: '26px',
-                      minHeight: '26px',
-                      paddingLeft: '8px',
-                      paddingRight: '8px',
-                    },
-                    wrapper: {
-                      height: '26px',
-                    },
-                    dropdown: {
-                      maxHeight: '200px',
-                    },
-                  }}
-                />
+                {/* Table Controls - only show when cursor is in a table */}
+                {editor?.isActive('table') && (
+                  <MantineRichTextEditor.ControlsGroup>
+                    <Tooltip label={t('Add Column Before')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().addColumnBefore().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconArrowLeft size={12} className="text-[#808496]" />
+                        <IconPlus size={12} className="text-[#808496]" />
+                        <span className="text-[#808496] text-xs">Col</span>
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Add Column After')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().addColumnAfter().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconPlus size={12} className="text-[#808496]" />
+                        <span className="text-[#808496] text-xs">Col</span>
+                        <IconArrowRight size={12} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Delete Column')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().deleteColumn().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconTrash size={12} className="text-red-500" />
+                        <span className="text-red-500 text-xs">Col</span>
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Add Row Before')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().addRowBefore().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconPlus size={12} className="text-[#808496]" />
+                        <span className="text-[#808496] text-xs">Row</span>
+                        <IconArrowUp size={12} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Add Row After')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().addRowAfter().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconPlus size={12} className="text-[#808496]" />
+                        <span className="text-[#808496] text-xs">Row</span>
+                        <IconArrowDown size={12} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Delete Row')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().deleteRow().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconTrash size={12} className="text-red-500" />
+                        <span className="text-red-500 text-xs">Row</span>
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Delete Table')}>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().deleteTable().run()}
+                        className="h-[26px] px-2 flex justify-center items-center gap-1 rounded-[4px] font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconX size={12} className="text-red-500" />
+                        <span className="text-red-500 text-xs">Table</span>
+                      </button>
+                    </Tooltip>
+                  </MantineRichTextEditor.ControlsGroup>
+                )}
               </div>
+            </BubbleMenu>
+          )}
 
-              <Tooltip label={t('Increase Font Size')}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!editor) return;
-                    const newSize = parseInt(fontSize || '16') + 1;
-                    setFontSize(newSize.toString());
-                    applyFontSize(newSize.toString());
-                  }}
-                  className="w-[26px] h-[26px] flex justify-center items-center
-                            rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                >
-                  <IconPlus size={18} className="text-[#808496]" />
-                </button>
-              </Tooltip>
-            </MantineRichTextEditor.ControlsGroup>
-
-            {canAddImage && (
-              <MantineRichTextEditor.ControlsGroup>
-                {/* Insert Image Button */}
-                <EnhancedImageButton
-                  editor={editor}
-                  onAddImageOverride={onAddImageOverride}
-                  backendHost={backendHost}
-                  user={user}
-                  setUser={setUser}
-                />
-
-                {/* Insert Gallery Button */}
-                <Menu shadow="md" width={200} position="bottom-start">
-                  <Menu.Target>
+          {/* Floating Menu - insert tools on empty lines */}
+          {editor && canAddImage && (
+            <FloatingMenu editor={editor} tippyOptions={{ placement: 'left', offset: [0, 150] }}>
+              <div className="flex items-center gap-1">
+                <Tooltip label={t('Insert')}>
+                  <button
+                    type="button"
+                    onClick={() => setShowInsertTools((prev) => !prev)}
+                    className="w-8 h-8 flex justify-center items-center rounded-full border border-gray-300 bg-white shadow-sm cursor-pointer hover:bg-gray-50 transition-all"
+                  >
+                    <IconPlus
+                      size={16}
+                      className={`text-gray-500 transition-transform duration-200 ${showInsertTools ? 'rotate-45' : ''}`}
+                    />
+                  </button>
+                </Tooltip>
+                {showInsertTools && (
+                  <div className="flex items-center gap-0.5 bg-white rounded-lg shadow-lg border border-gray-200 p-1">
+                    <EnhancedImageButton
+                      editor={editor}
+                      onAddImageOverride={onAddImageOverride}
+                      backendHost={backendHost}
+                      user={user}
+                      setUser={setUser}
+                    />
                     <Tooltip label={t('Insert Gallery')}>
                       <button
                         type="button"
@@ -715,249 +847,85 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                           setGalleryData(null);
                           openGalleryModal();
                         }}
-                        className="w-[26px] h-[26px] flex justify-center items-center
-                                  rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
                         <IconLibraryPhoto size={18} className="text-[#808496]" />
                       </button>
                     </Tooltip>
-                  </Menu.Target>
-                </Menu>
-
-                {/* Insert Authenticated Content Button */}
-                <AuthenticatedContentButton editor={editor} />
-
-                {/* Insert Video Button */}
-                <EmbedVideoButton
-                  editor={editor}
-                  backendHost={backendHost}
-                  user={user}
-                  setUser={setUser}
-                />
-
-                {/* Insert Audio Button */}
-                <EmbedAudioButton
-                  editor={editor}
-                  backendHost={backendHost}
-                  user={user}
-                  setUser={setUser}
-                />
-
-                {/* Insert Files Button */}
-                <EmbedFilesButton
-                  backendHost={backendHost}
-                  user={user}
-                  setUser={setUser}
-                  editor={editor}
-                />
-
-                {/* Insert Table Button */}
-                <Menu shadow="md" width={200} position="bottom-start">
-                  <Menu.Target>
+                    <AuthenticatedContentButton editor={editor} />
+                    <EmbedVideoButton
+                      editor={editor}
+                      backendHost={backendHost}
+                      user={user}
+                      setUser={setUser}
+                    />
+                    <EmbedAudioButton
+                      editor={editor}
+                      backendHost={backendHost}
+                      user={user}
+                      setUser={setUser}
+                    />
+                    <EmbedFilesButton
+                      backendHost={backendHost}
+                      user={user}
+                      setUser={setUser}
+                      editor={editor}
+                    />
                     <Tooltip label={t('Insert Table')}>
                       <button
                         type="button"
                         onClick={openTableModal}
-                        className="w-[26px] h-[26px] flex justify-center items-center
-                                  rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
                         <IconTable size={18} className="text-[#808496]" />
                       </button>
                     </Tooltip>
-                  </Menu.Target>
-                </Menu>
-
-                {/* Insert HTML Components Button */}
-                <Tooltip label={t('Insert HTML Component')}>
-                  <button
-                    type="button"
-                    onClick={openHtmlComponentsModal}
-                    className="w-[26px] h-[26px] flex justify-center items-center
-                              rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                  >
-                    <IconCube size={18} className="text-[#808496]" />
-                  </button>
-                </Tooltip>
-
-                {/* Insert YouTube Video with Jump Marks Button */}
-                <Tooltip label={t('Insert Youtube Video with Jump Marks')}>
-                  <button
-                    type="button"
-                    className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                    onClick={() => {
-                      setJumpMarksData(null);
-                      openJumpMarksModal();
-                    }}
-                  >
-                    <IconBrandYoutube size={18} className="text-[#808496]" />
-                  </button>
-                </Tooltip>
-
-                {/* Add Collapsible content - hide when inside another collapse */}
-                {!isInsideCollapse && (
-                  <Tooltip label={t('Insert Collapse')}>
-                    <button
-                      type="button"
-                      className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        editor
-                          ?.chain()
-                          .focus()
-                          .insertContent(
-                            `<details><summary>${t('Click to expand')}</summary><div data-type="details-content"><p>${t('Add your content here...')}</p></div></details>`,
-                          )
-                          .run();
-                      }}
-                    >
-                      <IconChevronDown size={18} className="text-[#808496]" />
-                    </button>
-                  </Tooltip>
+                    <Tooltip label={t('Insert HTML Component')}>
+                      <button
+                        type="button"
+                        onClick={openHtmlComponentsModal}
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconCube size={18} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip label={t('Insert Youtube Video with Jump Marks')}>
+                      <button
+                        type="button"
+                        className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        onClick={() => {
+                          setJumpMarksData(null);
+                          openJumpMarksModal();
+                        }}
+                      >
+                        <IconBrandYoutube size={18} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    {!isInsideCollapse && (
+                      <Tooltip label={t('Insert Collapse')}>
+                        <button
+                          type="button"
+                          className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            editor
+                              ?.chain()
+                              .focus()
+                              .insertContent(
+                                `<details><summary>${t('Click to expand')}</summary><div data-type="details-content"><p>${t('Add your content here...')}</p></div></details>`,
+                              )
+                              .run();
+                          }}
+                        >
+                          <IconChevronDown size={18} className="text-[#808496]" />
+                        </button>
+                      </Tooltip>
+                    )}
+                  </div>
                 )}
-
-                {/* Table styles */}
-                <style>{`
-                  .ProseMirror table {
-                    border-collapse: collapse;
-                    table-layout: fixed;
-                    width: 100%;
-                    margin: 1rem 0;
-                    overflow: hidden;
-                    position: relative;
-                  }
-
-                  .ProseMirror td,
-                  .ProseMirror th {
-                    min-width: 1em;
-                    border: 2px solid #ced4da;
-                    padding: 8px 12px;
-                    vertical-align: top;
-                    box-sizing: border-box;
-                    position: relative;
-                  }
-
-                  .ProseMirror th {
-                    font-weight: bold;
-                    text-align: left;
-                    background-color: #f8f9fa;
-                  }
-
-                  .ProseMirror .selectedCell:after {
-                    z-index: 2;
-                    position: absolute;
-                    content: '';
-                    left: 0;
-                    right: 0;
-                    top: 0;
-                    bottom: 0;
-                    background: rgba(200, 200, 255, 0.4);
-                    pointer-events: none;
-                  }
-
-                  .ProseMirror .column-resize-handle {
-                    position: absolute;
-                    right: -2px;
-                    top: 0;
-                    bottom: -2px;
-                    width: 4px;
-                    background-color: #adf;
-                    pointer-events: none;
-                  }
-
-                  .ProseMirror.resize-cursor {
-                    cursor: ew-resize;
-                    cursor: col-resize;
-                  }
-
-                  .ProseMirror table:hover .table-controls {
-                    opacity: 1 !important;
-                  }
-
-                  .ProseMirror tr:hover .table-row-controls {
-                    opacity: 1 !important;
-                  }
-
-                  .ProseMirror td:hover .table-col-controls,
-                  .ProseMirror th:hover .table-col-controls {
-                    opacity: 1 !important;
-                  }
-
-                  .table-controls {
-                    opacity: 0;
-                    transition: opacity 0.2s ease-in-out;
-                  }
-
-                  .table-row-controls {
-                    position: absolute;
-                    left: -40px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    display: flex;
-                    flex-direction: column;
-                    gap: 3px;
-                    z-index: 10;
-                  }
-
-                  .table-col-controls {
-                    position: absolute;
-                    top: -40px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    display: flex;
-                    gap: 3px;
-                    z-index: 10;
-                  }
-
-                  .table-control-btn {
-                    width: 28px;
-                    height: 28px;
-                    background: white;
-                    border: 1px solid #dee2e6;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 14px;
-                    font-weight: normal;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-                    transition: all 0.2s ease;
-                    color: #495057;
-                    line-height: 1;
-                  }
-
-                  .table-control-btn:hover {
-                    background: #f8f9fa;
-                    border-color: #adb5bd;
-                    transform: scale(1.15);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                  }
-
-                  .table-control-btn:active {
-                    transform: scale(0.95);
-                  }
-
-                  .table-control-btn.delete {
-                    color: #dc3545;
-                  }
-
-                  .table-control-btn.delete:hover {
-                    background: #f8d7da;
-                    border-color: #dc3545;
-                  }
-
-                  .table-control-btn.add {
-                    color: #28a745;
-                  }
-
-                  .table-control-btn.add:hover {
-                    background: #d4edda;
-                    border-color: #28a745;
-                  }
-                `}</style>
-              </MantineRichTextEditor.ControlsGroup>
-            )}
-          </MantineRichTextEditor.Toolbar>
+              </div>
+            </FloatingMenu>
+          )}
 
           <MantineRichTextEditor.Content />
         </MantineRichTextEditor>

@@ -19,7 +19,11 @@ import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 
-const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
+const renderCell = (params) => (
+  <LinkedCell params={params} to={`${params.row.id}/edit`}>
+    {params.value}
+  </LinkedCell>
+);
 
 export default function BlogPostList() {
   const { t } = useTranslation();
@@ -136,13 +140,21 @@ export default function BlogPostList() {
 
         return selectedContent.title || '-';
       },
-      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
+      renderCell: (params) => (
+        <LinkedCell params={params} to={`${params.row.id}/edit`}>
+          {params.value}
+        </LinkedCell>
+      ),
     },
     {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
-      renderCell: (params) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
+      renderCell: (params) => (
+        <LinkedCell params={params} to={`${params.row.id}/edit`}>
+          {params.value || '-'}
+        </LinkedCell>
+      ),
     },
     {
       field: 'languages',
@@ -181,7 +193,7 @@ export default function BlogPostList() {
       headerName: t('Published'),
       width: 200,
       renderCell: (params) => (
-        <LinkedCell params={params}>
+        <LinkedCell params={params} to={`${params.row.id}/edit`}>
           <Checkbox checked={params.value} readOnly />
         </LinkedCell>
       ),

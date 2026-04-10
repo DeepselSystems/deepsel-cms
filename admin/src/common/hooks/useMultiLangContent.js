@@ -106,13 +106,13 @@ export default function useMultiLangContent({
   const generateSlug = (title) => {
     if (!title) return '/';
     const slug = title
-      .normalize('NFD')               // Decompose accented characters (ợ → o + combining mark)
+      .normalize('NFD') // Decompose accented characters (ợ → o + combining mark)
       .replace(/[\u0300-\u036f]/g, '') // Strip combining diacritical marks → pure ASCII for Latin scripts
       .toLowerCase()
-      .replace(/\s+/g, '-')           // Spaces to hyphens
-      .replace(/[^a-z0-9-]/g, '')     // Keep only alphanumeric and hyphens
-      .replace(/-+/g, '-')            // Collapse multiple hyphens
-      .replace(/^-|-$/g, '');         // Trim leading/trailing hyphens
+      .replace(/\s+/g, '-') // Spaces to hyphens
+      .replace(/[^a-z0-9-]/g, '') // Keep only alphanumeric and hyphens
+      .replace(/-+/g, '-') // Collapse multiple hyphens
+      .replace(/^-|-$/g, ''); // Trim leading/trailing hyphens
 
     // Ensure slug starts with a forward slash
     return slug.startsWith('/') ? slug : `/${slug}`;

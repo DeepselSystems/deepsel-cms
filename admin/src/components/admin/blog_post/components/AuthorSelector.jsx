@@ -48,20 +48,19 @@ const AuthorSelector = React.memo(({ value, onChange }) => {
   });
 
   return (
-    <>
-      <Select
-        isLoading={isLoading}
-        disabled={isLoading}
-        label={t('Author')}
-        placeholder={t('Select an author')}
-        data={selectOptions}
-        value={value ? String(value) : value}
-        onChange={(value) => onChange?.(isNaN(+value) ? value : +value)}
-        onClear={() => onChange?.(null)}
-        clearable
-        searchable
-      />
-    </>
+    <Select
+      isLoading={isLoading}
+      disabled={isLoading}
+      label={t('Author')}
+      placeholder={t('Select an author')}
+      data={selectOptions}
+      value={value ? String(value) : value}
+      onChange={(value) => onChange?.(isNaN(+value) ? value : +value)}
+      onClear={() => onChange?.(null)}
+      clearable
+      searchable
+      variant="filled"
+    />
   );
 });
 

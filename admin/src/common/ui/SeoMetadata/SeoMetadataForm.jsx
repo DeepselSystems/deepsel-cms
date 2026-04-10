@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import TextArea from '../TextArea.jsx';
 import Switch from '../Switch.jsx';
 import FileInput from '../FileInput.jsx';
-import H3 from '../H3.jsx';
 /**
  * SEO metadata form
  * This form is using for both Blog-Post-Content and Page-Content
@@ -21,12 +20,12 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
   return (
     <>
       <div className="space-y-3">
-        <H3>{t('SEO Settings')}</H3>
         <TextInput
           label={t('Title')}
           description={t('Defaults to associated content title')}
           size="sm"
           type="text"
+          variant="filled"
           value={pageContent.seo_metadata_title || ''}
           onChange={({ target: { value } }) =>
             updateContentField?.(pageContent.id, 'seo_metadata_title', value)
@@ -38,6 +37,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
           description={t('Meta description for search results')}
           size="sm"
           type="text"
+          variant="filled"
           value={pageContent.seo_metadata_description || ''}
           onChange={({ target: { value } }) =>
             updateContentField?.(pageContent.id, 'seo_metadata_description', value)

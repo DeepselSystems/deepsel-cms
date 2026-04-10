@@ -25,10 +25,12 @@
   ],
   "exports": {
     ".": {
+      "source": "./src/index.ts",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./common/utils": {
+      "source": "./src/common/utils/index.ts",
       "import": "./dist/common/utils/index.js",
       "types": "./dist/common/utils/index.d.ts"
     },

@@ -55,7 +55,9 @@ export default {
           persian: '#1D4ED8',
         },
         green: {
-          mantis: '#83BF6E',
+          main: '#2bdd66',
+          light: '#7aea9f',
+          dark: '#00973c',
         },
       },
     },

@@ -1,5 +1,5 @@
-import { useMemo, useEffect } from 'react';
-import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer } from '@mantine/core';
+import { useMemo, useEffect, useRef } from 'react';
+import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer, Accordion } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
 import { useDisclosure } from '@mantine/hooks';
 import ChooseAttachmentModal from '../../../common/ui/ChooseAttachmentModal.jsx';
@@ -9,7 +9,10 @@ import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
-import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
+import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
+import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
+import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
+import useSidebar from '../../../common/hooks/useSidebar.js';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
@@ -27,20 +30,24 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
-import H3 from '../../../common/ui/H3.jsx';
+import H2 from '../../../common/ui/H2.jsx';
 import useEditSession from '../../../common/hooks/useEditSession.js';
 import useFetch from '../../../common/api/useFetch.js';
 import { useState } from 'react';
 import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
 import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
+import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
 import {
+  IconAi,
+  IconCheck,
   IconPencil,
   IconPhoto,
   IconPlus,
   IconSettings,
+  IconSparkles2,
+  IconSubtitlesAi,
   IconTrash,
-  IconWriting,
 } from '@tabler/icons-react';
 
 export default function BlogPostEdit() {
@@ -50,9 +57,16 @@ export default function BlogPostEdit() {
   const { notify } = NotificationState((state) => state);
   const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
+  const { setShowBackButton } = ShowHeaderBackButtonState();
+  const { setHideSiteSelector } = ShowSiteSelectorState();
+  const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
+  const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
+
+  const initialSidebarStateRef = useRef(null);
+  const sidebarInitializedRef = useRef(false);
 
   const query = useModel('blog_post', { id, autoFetch: true });
-  const { record, setRecord, update, loading } = query;
+  const { record, setRecord, update, loading, getOne } = query;
 
   const { data: locales } = useModel('locale', {
     autoFetch: true,
@@ -226,6 +240,46 @@ export default function BlogPostEdit() {
     }
   }, [record?.id, editStartTimestamp]);
 
+  // Auto-collapse sidebar on mount
+  useEffect(() => {
+    if (!sidebarInitializedRef.current) {
+      initialSidebarStateRef.current = isCollapsed;
+      sidebarInitializedRef.current = true;
+      if (!isCollapsed) {
+        temporaryCollapse();
+      }
+    }
+  }, [isCollapsed, temporaryCollapse]);
+
+  // Restore sidebar state on unmount
+  useEffect(() => {
+    return () => {
+      clearTemporaryOverride();
+    };
+  }, [clearTemporaryOverride]);
+
+  // Enable back button and hide header items on mount, restore on unmount
+  useEffect(() => {
+    setShowBackButton(true);
+    setHideSiteSelector(true);
+    setHideNotifications(true);
+    setHideProfileDropdown(true);
+    setHideGoToSite(true);
+    return () => {
+      setShowBackButton(false);
+      setHideSiteSelector(false);
+      setHideNotifications(false);
+      setHideProfileDropdown(false);
+      setHideGoToSite(false);
+    };
+  }, [
+    setShowBackButton,
+    setHideSiteSelector,
+    setHideNotifications,
+    setHideProfileDropdown,
+    setHideGoToSite,
+  ]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -343,13 +397,8 @@ export default function BlogPostEdit() {
 
   return !loading && record ? (
     <>
-      <div className="w-full flex overflow-hidden" style={{ height: 'calc(100dvh - 70px)' }}>
-        <form
-          className={`flex-1 overflow-y-auto max-w-screen-xl m-auto my-[50px] px-[24px]`}
-          onSubmit={handleSubmit}
-        >
-          <EditFormActionBar query={query} loading={loading || isCheckingConflicts} />
-
+      <div className="w-full flex overflow-y-auto" style={{ height: 'calc(100dvh - 70px)' }}>
+        <form className={`flex-1 max-w-screen-xl m-auto px-[24px]`} onSubmit={handleSubmit}>
           {/* Parallel Edit Warning */}
           <ParallelEditWarning
             warning={parallelEditWarning}
@@ -422,39 +471,56 @@ export default function BlogPostEdit() {
                   </Tooltip>
                 </Tabs.List>
                 <div className="flex items-center gap-2">
-                  <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
-                    <div className="inline-flex items-center">
-                      <Switch
-                        label={t('AI Autocomplete')}
-                        checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                        onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                        disabled={!isAiFeatureAvailable}
-                        size="md"
-                      />
-                    </div>
-                  </Tooltip>
-                  <Tooltip
-                    label={
-                      aiWritingAvailable
-                        ? t('AI Writer')
-                        : t(
-                            'Please specify an API key and writing model in Site Settings to use this feature.',
-                          )
-                    }
-                  >
-                    <div>
-                      <Button
-                        variant="filled"
-                        size="sm"
-                        onClick={() => setAiWriterSidebarOpened(true)}
-                        className="px-2"
-                        disabled={!aiWritingAvailable}
-                      >
-                        <IconWriting size={16} className="mr-2" />
-                        {t('AI Writer')}
+                  <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
+                    <Menu.Target>
+                      <Button variant="subtle" size="md" className="px-2">
+                        <IconAi size={40} />
                       </Button>
-                    </div>
-                  </Tooltip>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item closeMenuOnClick={false}>
+                        <Tooltip
+                          label={t(
+                            'Please specify an API key and writing model in Site Settings to use this feature.',
+                          )}
+                          disabled={aiWritingAvailable}
+                        >
+                          <div className="inline-flex items-center">
+                            <Switch
+                              label={
+                                <span className="inline-flex items-center gap-1">
+                                  <IconSparkles2 size={16} />
+                                  {t('AI Writer')}
+                                </span>
+                              }
+                              checked={aiWriterSidebarOpened}
+                              onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
+                              disabled={!aiWritingAvailable}
+                              size="md"
+                            />
+                          </div>
+                        </Tooltip>
+                      </Menu.Item>
+                      <Menu.Item closeMenuOnClick={false}>
+                        <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
+                          <div className="inline-flex items-center">
+                            <Switch
+                              label={
+                                <span className="inline-flex items-center gap-1">
+                                  <IconSubtitlesAi size={16} />
+                                  {t('AI Autocomplete')}
+                                </span>
+                              }
+                              checked={aiAutocompleteEnabled && isAiFeatureAvailable}
+                              onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                              disabled={!isAiFeatureAvailable}
+                              size="md"
+                            />
+                          </div>
+                        </Tooltip>
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
                   <Switch
                     checked={record.published}
                     onLabel={t('Published')}
@@ -465,6 +531,17 @@ export default function BlogPostEdit() {
                     }}
                     onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
                   />
+                  <Button
+                    className="text-[14px] font-[600]"
+                    disabled={loading || isCheckingConflicts}
+                    loading={loading || isCheckingConflicts}
+                    variant="subtle"
+                    type="submit"
+                    color="green"
+                  >
+                    <IconCheck size={16} className="mr-1" />
+                    {t('Save')}
+                  </Button>
                   <Tooltip label={t('Settings')}>
                     <Button
                       variant="subtle"
@@ -472,7 +549,7 @@ export default function BlogPostEdit() {
                       onClick={openSettingsDrawer}
                       className="px-2"
                     >
-                      <IconSettings size={16} />
+                      <IconSettings size={20} />
                     </Button>
                   </Tooltip>
                 </div>
@@ -520,9 +597,10 @@ export default function BlogPostEdit() {
                       <div className="flex flex-col grow gap-2">
                         <TextInput
                           className="w-full"
-                          classNames={{ input: 'font-bold' }}
-                          placeholder={t('Enter a title for your post')}
-                          size="lg"
+                          classNames={{ input: 'font-bold text-[42px]' }}
+                          placeholder={t('Enter a title...')}
+                          size="xl"
+                          variant="unstyled"
                           required
                           value={content.title || ''}
                           onChange={(e) => updateContentField(content.id, 'title', e.target.value)}
@@ -538,7 +616,10 @@ export default function BlogPostEdit() {
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}
-                        classNames={{ content: 'min-h-[1000px]' }}
+                        classNames={{
+                          root: 'border-none',
+                          content: 'min-h-[1000px]',
+                        }}
                         autoComplete={aiAutocompleteEnabled && isAiFeatureAvailable}
                       />
                     </div>
@@ -615,116 +696,160 @@ export default function BlogPostEdit() {
       <Drawer
         opened={settingsDrawerOpened}
         onClose={closeSettingsDrawer}
-        title={<div className="font-bold">{t('Settings')}</div>}
         size="md"
         position="right"
         transitionProps={{ transition: 'slide-left', duration: 200 }}
       >
-        <div className="mb-10 space-y-4">
-          <AuthorSelector
-            value={record.author_id}
-            onChange={(value) => setRecord((prev) => ({ ...prev, author_id: value }))}
-          />
+        <Accordion defaultValue="post-settings" variant="unstyled" radius="md" classNames={{ control: 'px-0', content: 'px-0' }}>
+          <Accordion.Item value="post-settings">
+            <Accordion.Control>
+              <H2>{t('Post settings')}</H2>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <div className="space-y-4">
+                <AuthorSelector
+                  value={record.author_id}
+                  onChange={(value) => setRecord((prev) => ({ ...prev, author_id: value }))}
+                />
 
-          <DateTimePickerInput
-            label={t('Publication Date')}
-            placeholder={t('Select publication date')}
-            valueFormat="DD MMM YYYY hh:mm A"
-            value={record.publish_date ? new Date(record.publish_date) : new Date()}
-            onChange={(date) => setRecord({ ...record, publish_date: date })}
-            className="mb-4"
-            clearable={false}
-          />
+                <DateTimePickerInput
+                  label={t('Publication Date')}
+                  placeholder={t('Select publication date')}
+                  valueFormat="DD MMM YYYY hh:mm A"
+                  value={record.publish_date ? new Date(record.publish_date) : new Date()}
+                  onChange={(date) => setRecord({ ...record, publish_date: date })}
+                  clearable={false}
+                  variant="filled"
+                />
 
-          <TextInput
-            className="w-full"
-            label={t('Slug')}
-            placeholder={t('Enter URL slug (required)')}
-            required
-            value={record.slug || ''}
-            onChange={(e) => setRecord({ ...record, slug: e.target.value })}
-          />
+                <TextInput
+                  className="w-full"
+                  variant="filled"
+                  label={t('Slug')}
+                  placeholder={t('Enter URL slug (required)')}
+                  required
+                  value={record.slug || ''}
+                  onChange={(e) => setRecord({ ...record, slug: e.target.value })}
+                />
 
-          <Switch
-            classNames={{
-              body: 'flex-col-reverse gap-2',
-              label: 'px-0',
-              description: 'px-0 mt-0',
-            }}
-            checked={record.require_login || false}
-            size="lg"
-            label={t('Require Login')}
-            description={t('When enabled, users must be logged in to view this blog post')}
-            onChange={(e) => setRecord({ ...record, require_login: e.currentTarget.checked })}
-          />
-        </div>
+                <Switch
+                  classNames={{
+                    body: 'flex-col-reverse gap-2',
+                    label: 'px-0',
+                    description: 'px-0 mt-0',
+                  }}
+                  checked={record.require_login || false}
+                  size="lg"
+                  label={t('Require Login')}
+                  description={t('When enabled, users must be logged in to view this blog post')}
+                  onChange={(e) => setRecord({ ...record, require_login: e.currentTarget.checked })}
+                />
+              </div>
+            </Accordion.Panel>
+          </Accordion.Item>
 
-        <div className="space-y-10">
-          <SeoMetadataForm pageContent={activeContent} updateContentField={updateContentField} />
+          <Accordion.Item value="seo-settings">
+            <Accordion.Control>
+              <H2>{t('SEO')}</H2>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <SeoMetadataForm
+                pageContent={activeContent}
+                updateContentField={updateContentField}
+              />
+            </Accordion.Panel>
+          </Accordion.Item>
 
-          {/* Custom Code Section */}
           {activeContentTab && activeContentTab !== 'add_new' && (
-            <div className="space-y-3">
-              <H3>{t('Custom Code')}</H3>
+            <Accordion.Item value="custom-code">
+              <Accordion.Control>
+                <H2>{t('Custom code')}</H2>
+              </Accordion.Control>
+              <Accordion.Panel>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('Language-specific custom code')}
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {t(
+                        'This code will be injected only for this language version of the blog post, after the content.',
+                      )}
+                    </p>
+                    <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
+                      <Editor
+                        className="w-full h-full"
+                        value={activeContent?.custom_code || ''}
+                        onValueChange={(code) => {
+                          if (activeContent?.id) {
+                            updateContentField(activeContent.id, 'custom_code', code);
+                          }
+                        }}
+                        highlight={(code) => highlight(code, languages.markup, 'html')}
+                        padding={10}
+                        style={{
+                          fontSize: 12,
+                          backgroundColor: '#f6f8fa',
+                          minHeight: '150px',
+                        }}
+                        placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('Language-specific custom code')}
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  {t(
-                    'This code will be injected only for this language version of the blog post, after the content.',
-                  )}
-                </p>
-                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
-                  <Editor
-                    className="w-full h-full"
-                    value={activeContent?.custom_code || ''}
-                    onValueChange={(code) => {
-                      if (activeContent?.id) {
-                        updateContentField(activeContent.id, 'custom_code', code);
-                      }
-                    }}
-                    highlight={(code) => highlight(code, languages.markup, 'html')}
-                    padding={10}
-                    style={{
-                      fontSize: 12,
-                      backgroundColor: '#f6f8fa',
-                      minHeight: '150px',
-                    }}
-                    placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {t('Blog post custom code (all languages)')}
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {t(
+                        'This code will be injected in all language versions of this blog post, after the content.',
+                      )}
+                    </p>
+                    <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
+                      <Editor
+                        className="w-full h-full"
+                        value={record?.blog_post_custom_code || ''}
+                        onValueChange={(code) =>
+                          setRecord({ ...record, blog_post_custom_code: code })
+                        }
+                        highlight={(code) => highlight(code, languages.markup, 'html')}
+                        padding={10}
+                        style={{
+                          fontSize: 12,
+                          backgroundColor: '#f6f8fa',
+                          minHeight: '150px',
+                        }}
+                        placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('Blog post custom code (all languages)')}
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  {t(
-                    'This code will be injected in all language versions of this blog post, after the content.',
-                  )}
-                </p>
-                <div className="border border-gray-300 rounded" style={{ height: '150px' }}>
-                  <Editor
-                    className="w-full h-full"
-                    value={record?.blog_post_custom_code || ''}
-                    onValueChange={(code) => setRecord({ ...record, blog_post_custom_code: code })}
-                    highlight={(code) => highlight(code, languages.markup, 'html')}
-                    padding={10}
-                    style={{
-                      fontSize: 12,
-                      backgroundColor: '#f6f8fa',
-                      minHeight: '150px',
-                    }}
-                    placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
-                  />
-                </div>
-              </div>
-            </div>
+              </Accordion.Panel>
+            </Accordion.Item>
           )}
-        </div>
+
+          {activeContent?.revisions?.length > 0 && (
+            <Accordion.Item value="revisions">
+              <Accordion.Control>
+                <H2>{t('Revisions')}</H2>
+              </Accordion.Control>
+              <Accordion.Panel>
+                <ActivityContentRevision
+                  revisions={activeContent.revisions}
+                  contentType="blog_post_content"
+                  contentId={activeContent.id}
+                  currentLanguage={getLanguageName(activeContent.locale_id)}
+                  hasWritePermission={true}
+                  onContentRestored={async () => {
+                    await getOne(id);
+                    setEditorKey((k) => k + 1);
+                  }}
+                />
+              </Accordion.Panel>
+            </Accordion.Item>
+          )}
+        </Accordion>
       </Drawer>
 
       {/* Conflict Resolution Modal */}
