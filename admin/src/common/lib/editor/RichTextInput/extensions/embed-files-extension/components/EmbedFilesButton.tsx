@@ -43,9 +43,9 @@ const EmbedFilesButton = ({
               setSelectedFiles([]);
               setIsFilesSelectorModalOpened(true);
             }}
-            className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+            className="w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
           >
-            {children || <IconFileText size={18} className="text-[#808496]" />}
+            {children || <IconFileText size={22} className="text-[#808496]" />}
           </button>
         </Tooltip>
 

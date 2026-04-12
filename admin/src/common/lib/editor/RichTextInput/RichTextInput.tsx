@@ -30,6 +30,7 @@ import {
   IconChevronDown,
   IconCube,
   IconBrandYoutube,
+  IconDots,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { Link, RichTextEditor as MantineRichTextEditor } from '@mantine/tiptap';
@@ -48,7 +49,7 @@ import { useEditor, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
-import { Menu, Modal, NumberInput, Select, Tooltip } from '@mantine/core';
+import { Menu, Modal, NumberInput, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../ui/Button';
 import { YoutubeJumpMarks } from './extensions/youtube-jumpmarks-extension';
@@ -163,28 +164,6 @@ export interface RichTextInputProps {
    */
   notify?: NotifyFn;
 }
-
-/**
- * Available font sizes for the editor toolbar
- */
-const FONT_SIZE_OPTIONS = [
-  { value: '8', label: '8' },
-  { value: '9', label: '9' },
-  { value: '10', label: '10' },
-  { value: '11', label: '11' },
-  { value: '12', label: '12' },
-  { value: '14', label: '14' },
-  { value: '16', label: '16' },
-  { value: '18', label: '18' },
-  { value: '20', label: '20' },
-  { value: '22', label: '22' },
-  { value: '24', label: '24' },
-  { value: '26', label: '26' },
-  { value: '28', label: '28' },
-  { value: '36', label: '36' },
-  { value: '48', label: '48' },
-  { value: '72', label: '72' },
-];
 
 /**
  * Default font size value
@@ -635,102 +614,134 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                   <MantineRichTextEditor.Bold />
                   <MantineRichTextEditor.Italic />
                   <MantineRichTextEditor.Underline />
-                  <MantineRichTextEditor.Strikethrough />
-                  <MantineRichTextEditor.ClearFormatting />
-                  <MantineRichTextEditor.Highlight />
-                  <MantineRichTextEditor.Code />
-                  <EnhancedCodeBlockButton editor={editor} />
                 </MantineRichTextEditor.ControlsGroup>
 
                 <MantineRichTextEditor.ControlsGroup>
                   <MantineRichTextEditor.H1 />
                   <MantineRichTextEditor.H2 />
                   <MantineRichTextEditor.H3 />
-                  <MantineRichTextEditor.H4 />
                 </MantineRichTextEditor.ControlsGroup>
 
                 <MantineRichTextEditor.ControlsGroup>
-                  <MantineRichTextEditor.Blockquote />
-                  <MantineRichTextEditor.Hr />
                   <MantineRichTextEditor.BulletList />
                   <MantineRichTextEditor.OrderedList />
-                  <MantineRichTextEditor.Subscript />
-                  <MantineRichTextEditor.Superscript />
                 </MantineRichTextEditor.ControlsGroup>
 
                 <MantineRichTextEditor.ControlsGroup>
                   <MantineRichTextEditor.Link />
-                  <MantineRichTextEditor.Unlink />
-                </MantineRichTextEditor.ControlsGroup>
-
-                <MantineRichTextEditor.ControlsGroup>
-                  <MantineRichTextEditor.AlignLeft />
-                  <MantineRichTextEditor.AlignCenter />
-                  <MantineRichTextEditor.AlignJustify />
-                  <MantineRichTextEditor.AlignRight />
-                </MantineRichTextEditor.ControlsGroup>
-
-                <MantineRichTextEditor.ControlsGroup>
-                  <MantineRichTextEditor.Undo />
-                  <MantineRichTextEditor.Redo />
                 </MantineRichTextEditor.ControlsGroup>
 
                 {/* Font Size Controls */}
                 <MantineRichTextEditor.ControlsGroup>
-                  <Tooltip label={t('Decrease Font Size')}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!editor) return;
-                        const newSize = Math.max(8, parseInt(fontSize || '16') - 1);
-                        setFontSize(newSize.toString());
-                        applyFontSize(newSize.toString());
-                      }}
-                      className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                    >
-                      <IconMinus size={18} className="text-[#808496]" />
-                    </button>
-                  </Tooltip>
-                  <div className="flex items-center px-1">
-                    <Select
-                      value={fontSize}
-                      radius="md"
-                      onChange={(value) => {
-                        if (value) {
-                          setFontSize(value);
-                          applyFontSize(value);
-                        }
-                      }}
-                      data={FONT_SIZE_OPTIONS}
-                      className="w-[70px]"
-                      classNames={{ dropdown: 'overflow-auto' }}
-                      styles={{
-                        input: {
-                          height: '26px',
-                          minHeight: '26px',
-                          paddingLeft: '8px',
-                          paddingRight: '8px',
-                        },
-                        wrapper: { height: '26px' },
-                        dropdown: { maxHeight: '200px' },
-                      }}
-                    />
+                  <div className="flex items-center border border-gray-300 rounded">
+                    <Tooltip label={t('Decrease font size')}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!editor) return;
+                          const newSize = Math.max(8, parseInt(fontSize || '16') - 1);
+                          setFontSize(newSize.toString());
+                          applyFontSize(newSize.toString());
+                        }}
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconMinus size={18} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                    <div className="flex items-center px-1">
+                      <NumberInput
+                        value={parseInt(fontSize || '16')}
+                        min={8}
+                        max={200}
+                        hideControls
+                        variant="unstyled"
+                        onChange={(value) => {
+                          const next = typeof value === 'number' ? value : parseInt(String(value));
+                          if (!isNaN(next) && next >= 8) {
+                            const str = next.toString();
+                            setFontSize(str);
+                            applyFontSize(str);
+                          }
+                        }}
+                        className="w-[44px]"
+                        styles={{
+                          input: {
+                            height: '26px',
+                            minHeight: '26px',
+                            textAlign: 'center',
+                          },
+                          wrapper: { height: '26px' },
+                        }}
+                      />
+                    </div>
+                    <Tooltip label={t('Increase font size')}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!editor) return;
+                          const newSize = parseInt(fontSize || '16') + 1;
+                          setFontSize(newSize.toString());
+                          applyFontSize(newSize.toString());
+                        }}
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconPlus size={18} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
                   </div>
-                  <Tooltip label={t('Increase Font Size')}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!editor) return;
-                        const newSize = parseInt(fontSize || '16') + 1;
-                        setFontSize(newSize.toString());
-                        applyFontSize(newSize.toString());
-                      }}
-                      className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-                    >
-                      <IconPlus size={18} className="text-[#808496]" />
-                    </button>
-                  </Tooltip>
                 </MantineRichTextEditor.ControlsGroup>
+
+                {/* More formatting options */}
+                <Menu shadow="md" position="bottom-start" closeOnItemClick={false} withinPortal>
+                  <Menu.Target>
+                    <Tooltip label={t('More')}>
+                      <button
+                        type="button"
+                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                      >
+                        <IconDots size={18} className="text-[#808496]" />
+                      </button>
+                    </Tooltip>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <div className="flex flex-wrap gap-0.5 p-1 max-w-[240px]">
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.Strikethrough />
+                        <MantineRichTextEditor.ClearFormatting />
+                        <MantineRichTextEditor.Highlight />
+                        <MantineRichTextEditor.Code />
+                        <EnhancedCodeBlockButton editor={editor} />
+                      </MantineRichTextEditor.ControlsGroup>
+
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.H4 />
+                      </MantineRichTextEditor.ControlsGroup>
+
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.Blockquote />
+                        <MantineRichTextEditor.Hr />
+                        <MantineRichTextEditor.Subscript />
+                        <MantineRichTextEditor.Superscript />
+                      </MantineRichTextEditor.ControlsGroup>
+
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.Unlink />
+                      </MantineRichTextEditor.ControlsGroup>
+
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.AlignLeft />
+                        <MantineRichTextEditor.AlignCenter />
+                        <MantineRichTextEditor.AlignJustify />
+                        <MantineRichTextEditor.AlignRight />
+                      </MantineRichTextEditor.ControlsGroup>
+
+                      <MantineRichTextEditor.ControlsGroup>
+                        <MantineRichTextEditor.Undo />
+                        <MantineRichTextEditor.Redo />
+                      </MantineRichTextEditor.ControlsGroup>
+                    </div>
+                  </Menu.Dropdown>
+                </Menu>
 
                 {/* Table Controls - only show when cursor is in a table */}
                 {editor?.isActive('table') && (
@@ -847,9 +858,9 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                           setGalleryData(null);
                           openGalleryModal();
                         }}
-                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-8 h-8 flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <IconLibraryPhoto size={18} className="text-[#808496]" />
+                        <IconLibraryPhoto size={22} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                     <AuthenticatedContentButton editor={editor} />
@@ -875,37 +886,37 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                       <button
                         type="button"
                         onClick={openTableModal}
-                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-8 h-8 flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <IconTable size={18} className="text-[#808496]" />
+                        <IconTable size={22} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                     <Tooltip label={t('Insert HTML Component')}>
                       <button
                         type="button"
                         onClick={openHtmlComponentsModal}
-                        className="w-[26px] h-[26px] flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-8 h-8 flex justify-center items-center rounded-[4px] p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                       >
-                        <IconCube size={18} className="text-[#808496]" />
+                        <IconCube size={22} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                     <Tooltip label={t('Insert Youtube Video with Jump Marks')}>
                       <button
                         type="button"
-                        className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                        className="w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                         onClick={() => {
                           setJumpMarksData(null);
                           openJumpMarksModal();
                         }}
                       >
-                        <IconBrandYoutube size={18} className="text-[#808496]" />
+                        <IconBrandYoutube size={22} className="text-[#808496]" />
                       </button>
                     </Tooltip>
                     {!isInsideCollapse && (
                       <Tooltip label={t('Insert Collapse')}>
                         <button
                           type="button"
-                          className="w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+                          className="w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
                           onClick={(event) => {
                             event.preventDefault();
                             editor
@@ -917,7 +928,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                               .run();
                           }}
                         >
-                          <IconChevronDown size={18} className="text-[#808496]" />
+                          <IconChevronDown size={22} className="text-[#808496]" />
                         </button>
                       </Tooltip>
                     )}

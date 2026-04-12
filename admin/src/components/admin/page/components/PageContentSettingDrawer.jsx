@@ -27,7 +27,10 @@ import 'prismjs/themes/prism.css';
  * React.RefAttributes<{unknow}>>}
  */
 const PageContentSettingDrawer = React.forwardRef(
-  ({ pageContent, updateContentField, opened, onClose, page, setPage, updatePageField, themeName }, ref) => {
+  (
+    { pageContent, updateContentField, opened, onClose, page, setPage, updatePageField, themeName },
+    ref,
+  ) => {
     // Translation
     const { t } = useTranslation();
 
@@ -47,7 +50,12 @@ const PageContentSettingDrawer = React.forwardRef(
           position="right"
           transitionProps={{ transition: 'slide-left', duration: 200 }}
         >
-          <Accordion defaultValue="page-settings" variant="unstyled" radius="md" classNames={{ control: 'px-0', content: 'px-0' }}>
+          <Accordion
+            defaultValue="page-settings"
+            variant="unstyled"
+            radius="md"
+            classNames={{ control: 'px-0', content: 'px-0' }}
+          >
             <Accordion.Item value="page-settings">
               <Accordion.Control>
                 <H2>{t('Page settings')}</H2>
@@ -86,7 +94,10 @@ const PageContentSettingDrawer = React.forwardRef(
                 <H2>{t('SEO')}</H2>
               </Accordion.Control>
               <Accordion.Panel>
-                <SeoMetadataForm pageContent={pageContent} updateContentField={updateContentField} />
+                <SeoMetadataForm
+                  pageContent={pageContent}
+                  updateContentField={updateContentField}
+                />
               </Accordion.Panel>
             </Accordion.Item>
 

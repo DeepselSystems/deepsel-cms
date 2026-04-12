@@ -38,13 +38,13 @@ const AuthenticatedContentButton = ({ editor, className }: AuthenticatedContentB
       <button
         onClick={handleClick}
         className={clsx(
-          'w-6 h-6 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]',
+          'w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]',
           className,
         )}
         title={t('Insert Authenticated Content')}
         type="button"
       >
-        <IconLock size={18} className="text-[#808496]" />
+        <IconLock size={22} className="text-[#808496]" />
       </button>
     </Tooltip>
   );

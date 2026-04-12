@@ -225,7 +225,11 @@ export default function PageList() {
             </LinkedCell>
           );
         }
-        return <strong>#{params.value}</strong>;
+        return (
+          <LinkedCell params={params} to={`/pages/${params.row.id}/edit`}>
+            <strong>#{params.value}</strong>
+          </LinkedCell>
+        );
       },
     },
     {
@@ -253,7 +257,7 @@ export default function PageList() {
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
-          <LinkedCell params={params} to={themeLink || undefined}>
+          <LinkedCell params={params} to={themeLink || `/pages/${params.row.id}/edit`}>
             {params.value}
           </LinkedCell>
         );
@@ -285,7 +289,7 @@ export default function PageList() {
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
-          <LinkedCell params={params} to={themeLink || undefined}>
+          <LinkedCell params={params} to={themeLink || `/pages/${params.row.id}/edit`}>
             {params.value || '-'}
           </LinkedCell>
         );
@@ -338,7 +342,7 @@ export default function PageList() {
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
-          <LinkedCell params={params} to={themeLink || undefined}>
+          <LinkedCell params={params} to={themeLink || `/pages/${params.row.id}/edit`}>
             <Checkbox checked={Boolean(params.value)} readOnly />
           </LinkedCell>
         );

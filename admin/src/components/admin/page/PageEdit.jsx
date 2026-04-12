@@ -402,7 +402,14 @@ export default function PageEdit({ onSuccess }) {
       setHideGoToSite(false);
       clearNavigationConfirmation();
     };
-  }, [setShowBackButton, setHideSiteSelector, setHideNotifications, setHideProfileDropdown, setHideGoToSite, clearNavigationConfirmation]);
+  }, [
+    setShowBackButton,
+    setHideSiteSelector,
+    setHideNotifications,
+    setHideProfileDropdown,
+    setHideGoToSite,
+    clearNavigationConfirmation,
+  ]);
 
   // Set/clear navigation confirmation based on unsaved changes
   useEffect(() => {
@@ -717,7 +724,7 @@ export default function PageEdit({ onSuccess }) {
           const created = await create(recordWithOrganization);
           resetUnsavedChanges();
           notify({ message: t('Page created successfully!'), type: 'success' });
-          onSuccess ? onSuccess(created) : navigate(`/pages/${created?.id || ''}`);
+          if (onSuccess) onSuccess(created);
         } else {
           await update(updatedRecord);
           resetUnsavedChanges();
@@ -732,7 +739,6 @@ export default function PageEdit({ onSuccess }) {
           );
 
           notify({ message: t('Page updated successfully!'), type: 'success' });
-          navigate(`/pages/${id}`);
         }
       } catch (error) {
         console.error(error);
@@ -864,7 +870,13 @@ export default function PageEdit({ onSuccess }) {
 
             <Tabs
               value={activeContentTab}
-              onChange={setActiveContentTab}
+              onChange={(value) => {
+                if (value === 'add_new') {
+                  handleAddContent();
+                  return;
+                }
+                setActiveContentTab(value);
+              }}
               variant="pills"
               radius="lg"
             >
@@ -904,14 +916,7 @@ export default function PageEdit({ onSuccess }) {
                 ))}
 
                 <Tooltip label={t('Add Language')}>
-                  <Tabs.Tab
-                    value="add_new"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddContent();
-                    }}
-                    className="bg-gray-100 hover:bg-gray-200"
-                  >
+                  <Tabs.Tab value="add_new" className="bg-gray-100 hover:bg-gray-200">
                     <IconPlus size={16} />
                   </Tabs.Tab>
                 </Tooltip>

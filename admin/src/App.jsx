@@ -4,7 +4,6 @@ import TemplateList from './components/admin/template/TemplateList.jsx';
 import ThemeList from './components/admin/theme/ThemeList.jsx';
 import ThemeFileEdit from './components/admin/theme/ThemeFileEdit.jsx';
 import PageEdit from './components/admin/page/PageEdit.jsx';
-import PageViewComponent from './components/admin/page/PageViewComponent.jsx';
 import PageList from './components/admin/page/PageList.tsx';
 import MenuTree from './components/admin/menu/MenuTree.jsx';
 import CronCreate from './components/admin/cron/CronCreate.jsx';
@@ -274,7 +273,7 @@ export default function App(props) {
                     <Route path="/pages" element={<PageList />} />
                     <Route path="/pages/create" element={<PageEdit />} />
                     <Route path="/pages/:id/edit" element={<PageEdit />} />
-                    <Route path="/pages/:id" element={<PageViewComponent />} />
+                    <Route path="/pages/:id" element={<Navigate to="edit" replace />} />
                     <Route path="/menus" element={<MenuTree />} />
                     <Route path="/manage-users" element={<UserList />} />
                     <Route path="/manage-users/:id/edit" element={<UserEdit />} />

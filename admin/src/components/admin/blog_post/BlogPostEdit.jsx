@@ -44,7 +44,7 @@ import {
   IconAi,
   IconCheck,
   IconPencil,
-  IconPhoto,
+  IconPhotoPlus,
   IconPlus,
   IconSettings,
   IconSparkles2,
@@ -448,7 +448,7 @@ export default function BlogPostEdit() {
     clearParallelEditWarning();
   };
 
-  return (isCreateMode || (!loading && record)) ? (
+  return isCreateMode || (!loading && record) ? (
     <>
       <div className="w-full flex overflow-y-auto" style={{ height: 'calc(100dvh - 70px)' }}>
         <form className={`flex-1 max-w-screen-xl m-auto px-[24px]`} onSubmit={handleSubmit}>
@@ -470,7 +470,13 @@ export default function BlogPostEdit() {
 
             <Tabs
               value={activeContentTab}
-              onChange={setActiveContentTab}
+              onChange={(value) => {
+                if (value === 'add_new') {
+                  handleAddContent();
+                  return;
+                }
+                setActiveContentTab(value);
+              }}
               variant="pills"
               radius="lg"
             >
@@ -510,15 +516,8 @@ export default function BlogPostEdit() {
                     </div>
                   ))}
 
-                  <Tooltip label={t('Add Language')}>
-                    <Tabs.Tab
-                      value="add_new"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAddContent();
-                      }}
-                      className="bg-gray-100 hover:bg-gray-200"
-                    >
+                  <Tooltip label={t('Add language')}>
+                    <Tabs.Tab value="add_new" className="bg-gray-100 hover:bg-gray-200">
                       <IconPlus size={16} />
                     </Tabs.Tab>
                   </Tooltip>
@@ -639,11 +638,11 @@ export default function BlogPostEdit() {
                       </div>
                     ) : (
                       <div
-                        className="w-full my-4 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary-main transition-colors flex items-center justify-center gap-2 text-gray-500"
+                        className="w-full mt-6 cursor-pointer hover:text-green-600 transition-colors flex gap-2 text-gray-500"
                         onClick={openFeaturedImageModal}
                       >
-                        <IconPhoto size={16} className="text-xl" />
-                        <span className="font-medium">{t('Add Featured Image')}</span>
+                        <IconPhotoPlus size={20} className="text-xl" />
+                        <span className="font-medium">{t('Add featured image')}</span>
                       </div>
                     )}
                     <div className="flex gap-4 my-2">
@@ -753,7 +752,12 @@ export default function BlogPostEdit() {
         position="right"
         transitionProps={{ transition: 'slide-left', duration: 200 }}
       >
-        <Accordion defaultValue="post-settings" variant="unstyled" radius="md" classNames={{ control: 'px-0', content: 'px-0' }}>
+        <Accordion
+          defaultValue="post-settings"
+          variant="unstyled"
+          radius="md"
+          classNames={{ control: 'px-0', content: 'px-0' }}
+        >
           <Accordion.Item value="post-settings">
             <Accordion.Control>
               <H2>{t('Post settings')}</H2>
