@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dropzone } from '@mantine/dropzone';
-import { Group, Text } from '@mantine/core';
+import { Checkbox, Group, Text } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
 import useUpload from '../../../common/api/useUpload.js';
 import { getAttachmentUrl, downloadFromAttachUrl } from '../../../common/utils/index.js';
@@ -61,11 +61,20 @@ function getFileTypeIcon(filename) {
     : '/images/fileTypeIcons/generic.png';
 }
 
-function FileCard({ file, onDelete }) {
+function FileCard({ file, onDelete, selected, onToggleSelect, selectionMode }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const { notify } = NotificationState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
+
+  const handleCardClick = () => {
+    if (selectionMode) onToggleSelect(file);
+  };
+
+  const handleCheckboxClick = (e) => {
+    e.stopPropagation();
+    onToggleSelect(file);
+  };
 
   const handleDownload = (e) => {
     e.stopPropagation();
@@ -103,10 +112,21 @@ function FileCard({ file, onDelete }) {
 
   return (
     <div
-      className="relative shadow border-gray-300 border rounded-lg overflow-hidden cursor-pointer"
+      className={`relative shadow border rounded-lg overflow-hidden cursor-pointer ${
+        selected ? 'border-primary-main ring-2 ring-primary-main' : 'border-gray-300'
+      }`}
       onMouseEnter={() => setShowOverlay(true)}
       onMouseLeave={() => setShowOverlay(false)}
+      onClick={handleCardClick}
     >
+      <div
+        className={`absolute top-2 left-2 z-10 bg-white rounded p-0.5 shadow ${
+          selected || showOverlay || selectionMode ? 'opacity-100' : 'opacity-0'
+        } transition-opacity`}
+        onClick={handleCheckboxClick}
+      >
+        <Checkbox checked={selected} onChange={() => {}} size="sm" />
+      </div>
       {isImage ? (
         <div className="relative">
           <img
@@ -210,6 +230,7 @@ export default function Media() {
 
   const { uploadFileModel } = useUpload();
   const [newUploads, setNewUploads] = useState(new Set());
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [storageInfo, setStorageInfo] = useState({
     usedStorage: 0,
     maxStorage: null,
@@ -280,6 +301,63 @@ export default function Media() {
     }
   };
 
+  const toggleSelect = (file) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(file.id)) next.delete(file.id);
+      else next.add(file.id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const sortedFiles = useMemo(
+    () => sortFilesWithNewUploadsFirst(files, newUploads),
+    [files, newUploads],
+  );
+
+  const allSelected = sortedFiles.length > 0 && selectedIds.size === sortedFiles.length;
+  const selectAll = () => {
+    if (allSelected) clearSelection();
+    else setSelectedIds(new Set(sortedFiles.map((f) => f.id)));
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    try {
+      await deleteWithConfirm(
+        ids,
+        () => {
+          setNewUploads((prev) => {
+            const updated = new Set(prev);
+            ids.forEach((id) => updated.delete(id));
+            return updated;
+          });
+          setFiles((prevFiles) => prevFiles.filter((f) => !selectedIds.has(f.id)));
+          clearSelection();
+          notify({
+            title: t('Success'),
+            message: t('Files deleted successfully'),
+            type: 'success',
+          });
+          fetchStorageInfo();
+        },
+        (error) => {
+          console.error('Error deleting files:', error);
+          notify({
+            title: t('Error'),
+            message: error.message || t('Failed to delete files'),
+            type: 'error',
+          });
+        },
+      );
+    } catch (error) {
+      console.error('Unexpected error in handleBulkDelete:', error);
+    }
+  };
+
   const handleDelete = async (file) => {
     try {
       // Pass file.id as an array since deleteWithConfirm expects an array of IDs
@@ -324,15 +402,14 @@ export default function Media() {
     }
   };
 
-  // Sort files to show new uploads first
-  const sortFilesWithNewUploadsFirst = (files, newUploads) => {
+  function sortFilesWithNewUploadsFirst(files, newUploads) {
     if (!files) return [];
     return [...files].sort((a, b) => {
       if (newUploads.has(a.id) && !newUploads.has(b.id)) return -1;
       if (!newUploads.has(a.id) && newUploads.has(b.id)) return 1;
       return 0;
     });
-  };
+  }
 
   return (
     <>
@@ -374,9 +451,44 @@ export default function Media() {
           </Dropzone>
         </div>
 
+        {sortedFiles.length > 0 && (
+          <div className="flex items-center justify-between mb-3 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={selectedIds.size > 0 && !allSelected}
+                onChange={selectAll}
+                label={
+                  selectedIds.size > 0
+                    ? t('{{count}} selected', { count: selectedIds.size })
+                    : t('Select all')
+                }
+              />
+            </div>
+            {selectedIds.size > 0 && (
+              <div className="flex items-center gap-2">
+                <Button onClick={clearSelection} size="xs" variant="default">
+                  {t('Cancel')}
+                </Button>
+                <Button onClick={handleBulkDelete} size="xs" color="red" variant="filled">
+                  <IconTrash size={16} className="mr-1" />
+                  {t('Delete')} ({selectedIds.size})
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {sortFilesWithNewUploadsFirst(files, newUploads).map((file, index) => (
-            <FileCard key={file.id || index} file={file} onDelete={handleDelete} />
+          {sortedFiles.map((file, index) => (
+            <FileCard
+              key={file.id || index}
+              file={file}
+              onDelete={handleDelete}
+              selected={selectedIds.has(file.id)}
+              onToggleSelect={toggleSelect}
+              selectionMode={selectedIds.size > 0}
+            />
           ))}
         </div>
       </div>
