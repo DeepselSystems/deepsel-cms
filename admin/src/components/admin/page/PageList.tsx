@@ -10,7 +10,7 @@ import i18n from 'i18next';
 import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
-import { buildPageUrlWithDomain, buildPagePath } from '../../../utils/domainUtils.js';
+import { buildPageUrlWithDomain, buildPagePath, buildFullUrl } from '../../../utils/domainUtils.js';
 import { Alert, Badge } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
@@ -357,11 +357,16 @@ export default function PageList() {
       disableColumnMenu: true,
       renderCell: (params: any) => {
         if (isThemeRow(params.row)) {
+          const themePageUrl = buildFullUrl(
+            { organization_id: organizationId },
+            params.row._themeSlug,
+            organizations,
+          );
           return (
             <div className="flex justify-center">
               <ButtonAny
                 component="a"
-                href={params.row._themeSlug}
+                href={themePageUrl}
                 target="_blank"
                 variant="subtle"
                 size="sm"
