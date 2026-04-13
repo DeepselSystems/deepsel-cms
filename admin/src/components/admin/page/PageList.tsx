@@ -111,16 +111,9 @@ export default function PageList() {
   const query = useModel('page', {
     autoFetch: true,
     searchFields: ['contents.title', 'contents.slug'],
-    syncPagingParamsWithURL: true,
     orderBy: { field: 'id', direction: 'desc' },
     filters: organizationId
-      ? [
-          {
-            field: 'organization_id',
-            operator: '=',
-            value: organizationId,
-          },
-        ]
+      ? [{ field: 'organization_id', operator: '=', value: organizationId }]
       : [],
   } as any) as any;
 
@@ -169,16 +162,11 @@ export default function PageList() {
     return [...themeRows, ...filteredItems];
   }, [items, themeSlugs, page, searchTerm, siteSettings?.selected_theme]);
 
+  // Re-sync org filter when org changes (autoFetch handles initial + re-fetch)
   useEffect(() => {
     setFilters(
       organizationId
-        ? [
-            {
-              field: 'organization_id',
-              operator: '=',
-              value: organizationId,
-            },
-          ]
+        ? [{ field: 'organization_id', operator: '=', value: organizationId }]
         : [],
     );
   }, [organizationId, setFilters]);

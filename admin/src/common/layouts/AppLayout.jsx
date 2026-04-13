@@ -61,14 +61,33 @@ export default function AppLayout(props) {
 
   // Refresh site settings when organization changes
   useEffect(() => {
-    if (!organizationId) return;
-    fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) setSettings(data);
-      })
-      .catch(() => {});
-  }, [organizationId, backendHost, setSettings]);
+    // Fetch on mount if current orgId doesn't match siteSettings
+    const currentOrgId = OrganizationIdState.getState().organizationId;
+    const currentSettings = SitePublicSettingsState.getState().settings;
+    if (currentOrgId && currentOrgId !== currentSettings?.id) {
+      const { backendHost: host } = BackendHostURLState.getState();
+      fetch(`${host}/util/public_settings/${currentOrgId}`, { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) SitePublicSettingsState.getState().setSettings(data);
+        })
+        .catch(() => {});
+    }
+
+    // Subscribe for subsequent changes
+    const unsub = OrganizationIdState.subscribe((state, prev) => {
+      const newId = state.organizationId;
+      if (!newId || newId === prev.organizationId) return;
+      const { backendHost: host } = BackendHostURLState.getState();
+      fetch(`${host}/util/public_settings/${newId}`, { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) SitePublicSettingsState.getState().setSettings(data);
+        })
+        .catch(() => {});
+    });
+    return unsub;
+  }, []);
 
   // Check if there are any visible navigation links for the current user
   const hasVisibleNavLinks = useMemo(() => {
