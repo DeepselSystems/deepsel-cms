@@ -209,13 +209,13 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.LEFT)}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.LEFT,
               },
             )}
           >
-            <IconAlignLeft size={12} className="text-gray-600" />
+            <IconAlignLeft size={16} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -226,13 +226,13 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
               type="button"
               onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.CENTER)}
               className={clsx(
-                'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+                'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
                 {
                   'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.CENTER,
                 },
               )}
             >
-              <IconAlignCenter size={12} className="text-gray-600" />
+              <IconAlignCenter size={16} className="text-gray-600" />
             </button>
           </Tooltip>
         )}
@@ -243,13 +243,13 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={() => handleAlignmentChange(ENHANCED_IMAGE_ALIGNMENTS.RIGHT)}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': alignment === ENHANCED_IMAGE_ALIGNMENTS.RIGHT,
               },
             )}
           >
-            <IconAlignRight size={12} className="text-gray-600" />
+            <IconAlignRight size={16} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -258,9 +258,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           <button
             type="button"
             onClick={() => handleSizeChange(true)}
-            className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
+            className="w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
           >
-            <IconPlus size={12} className="text-gray-600" />
+            <IconPlus size={16} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -269,9 +269,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           <button
             type="button"
             onClick={() => handleSizeChange(false)}
-            className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
+            className="w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100"
           >
-            <IconMinus size={12} className="text-gray-600" />
+            <IconMinus size={16} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -281,14 +281,14 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={handleRoundedToggle}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': rounded,
               },
             )}
           >
             <div
-              className={clsx('w-3 h-3 border-2 border-gray-600', {
+              className={clsx('w-4 h-4 border-2 border-gray-600', {
                 rounded: rounded,
               })}
             />
@@ -301,14 +301,14 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={handleCircleToggle}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-gray-200': circle,
               },
             )}
           >
             <IconCircle
-              size={12}
+              size={16}
               className={clsx({
                 'text-gray-600': !circle,
                 'text-blue-600': circle,
@@ -323,14 +323,14 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={handleInlineToggle}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-blue-200': inline,
               },
             )}
           >
             <IconTextWrap
-              size={12}
+              size={16}
               className={clsx({
                 'text-gray-600': !inline,
                 'text-blue-600': inline,
@@ -345,13 +345,13 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
             type="button"
             onClick={() => setIsModalOpen(true)}
             className={clsx(
-              'w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
+              'w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-gray-100',
               {
                 'bg-blue-100': description && description.trim(),
               },
             )}
           >
-            <IconEdit size={12} className="text-gray-600" />
+            <IconEdit size={16} className="text-gray-600" />
           </button>
         </Tooltip>
 
@@ -360,9 +360,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           <button
             type="button"
             onClick={deleteNode}
-            className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100"
+            className="w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100"
           >
-            <IconTrash size={12} className="text-red-500" />
+            <IconTrash size={16} className="text-red-500" />
           </button>
         </Tooltip>
       </div>

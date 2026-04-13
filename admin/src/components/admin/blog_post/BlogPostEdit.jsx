@@ -470,13 +470,7 @@ export default function BlogPostEdit() {
 
             <Tabs
               value={activeContentTab}
-              onChange={(value) => {
-                if (value === 'add_new') {
-                  handleAddContent();
-                  return;
-                }
-                setActiveContentTab(value);
-              }}
+              onChange={setActiveContentTab}
               variant="pills"
               radius="lg"
             >
@@ -495,7 +489,7 @@ export default function BlogPostEdit() {
                         closeDelay={400}
                       >
                         <Menu.Target>
-                          <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                          <Tabs.Tab value={String(content.id)}>
                             <span className="mr-1">{getLanguageFlag(content.locale_id)}</span>
                             {getLanguageName(content.locale_id)}
                           </Tabs.Tab>
@@ -517,9 +511,13 @@ export default function BlogPostEdit() {
                   ))}
 
                   <Tooltip label={t('Add language')}>
-                    <Tabs.Tab value="add_new" className="bg-gray-100 hover:bg-gray-200">
+                    <button
+                      type="button"
+                      onClick={handleAddContent}
+                      className="border border-dashed px-2 rounded-xl border-gray-300 hover:bg-gray-200"
+                    >
                       <IconPlus size={16} />
-                    </Tabs.Tab>
+                    </button>
                   </Tooltip>
                 </Tabs.List>
                 <div className="flex items-center gap-2">

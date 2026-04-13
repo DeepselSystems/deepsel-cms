@@ -91,9 +91,9 @@ export function FileInput({
   const defaultPlaceholder = useMemo(
     () =>
       type === 'image' ? (
-        <IconPhoto size={16} className="text-gray-300" />
+        <IconPhoto size={50} className="text-gray-300" />
       ) : (
-        <IconFile size={16} className="text-gray-300" />
+        <IconFile size={50} className="text-gray-300" />
       ),
     [],
   );

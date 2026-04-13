@@ -17,7 +17,7 @@ import Button from '../../../common/ui/Button.jsx';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
-import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
+import { IconAlertTriangle, IconPhoto, IconPlus } from '@tabler/icons-react';
 
 const renderCell = (params) => (
   <LinkedCell params={params} to={`${params.row.id}/edit`}>
@@ -91,6 +91,20 @@ export default function BlogPostList() {
     setFilters(buildFilters());
   }, [organizationId, user.id, user.roles]);
 
+  const pickContent = (contents) => {
+    if (!contents || contents.length === 0) return null;
+    const currentLang = i18n.language;
+    const defaultLangId = siteSettings?.default_language_id;
+    const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
+
+    let selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
+    if (!selectedContent && defaultLangContent) selectedContent = defaultLangContent;
+    if (!selectedContent)
+      selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
+    if (!selectedContent) selectedContent = contents[0];
+    return selectedContent;
+  };
+
   const columns = [
     {
       field: 'id',
@@ -99,46 +113,37 @@ export default function BlogPostList() {
       renderCell: (params) => <strong>#{params.value}</strong>,
     },
     {
+      field: 'featured_image',
+      headerName: t('Image'),
+      width: 140,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const selectedContent = pickContent(params.row.contents);
+        const image = selectedContent?.featured_image;
+        if (image?.name) {
+          return (
+            <img
+              src={`/api/v1/attachment/serve/${image.name}`}
+              alt={image.alt_text || ''}
+              className="w-28 h-20 object-cover rounded"
+            />
+          );
+        }
+        return (
+          <div className="w-28 h-20 flex items-center justify-center bg-gray-100 rounded text-gray-400">
+            <IconPhoto size={28} />
+          </div>
+        );
+      },
+    },
+    {
       field: 'contents',
       headerName: t('Title'),
       width: 350,
       valueGetter: (params) => {
-        const contents = params.row.contents || [];
-        if (contents.length === 0) return '-';
-
-        // Get the current language from i18n
-        const currentLang = i18n.language;
-
-        // Get the default site language code
-        const defaultLangId = siteSettings?.default_language_id;
-        const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
-
-        // Find content based on priority order:
-        // 1. Selected language
-        // 2. Default site language
-        // 3. English (en_US)
-        // 4. First found content
-        let selectedContent;
-
-        // 1. Try to find content matching the current selected language
-        selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
-
-        // 2. If not found, try to find content matching the default site language
-        if (!selectedContent && defaultLangContent) {
-          selectedContent = defaultLangContent;
-        }
-
-        // 3. If still not found, try to find English content
-        if (!selectedContent) {
-          selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
-        }
-
-        // 4. If still not found, use the first content
-        if (!selectedContent) {
-          selectedContent = contents[0];
-        }
-
-        return selectedContent.title || '-';
+        const selectedContent = pickContent(params.row.contents);
+        return selectedContent?.title || '-';
       },
       renderCell: (params) => (
         <LinkedCell params={params} to={`${params.row.id}/edit`}>
@@ -274,6 +279,7 @@ export default function BlogPostList() {
           page={page - 1}
           onPageChange={(newPage) => setPage(newPage + 1)}
           rowsPerPageOptions={[20, 30, 50, 100]}
+          rowHeight={96}
           disableRowSelectionOnClick
           checkboxSelection
           className={`!border-0 flex-1`}

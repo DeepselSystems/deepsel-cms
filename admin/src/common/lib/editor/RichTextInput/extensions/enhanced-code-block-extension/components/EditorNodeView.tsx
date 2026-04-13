@@ -121,9 +121,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
           <button
             type="button"
             onClick={deleteNode}
-            className="w-6 h-6 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="w-8 h-8 flex justify-center items-center rounded p-1 cursor-pointer hover:bg-red-100 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <IconTrash size={12} className="text-red-500" />
+            <IconTrash size={16} className="text-red-500" />
           </button>
         </Tooltip>
       </div>

@@ -139,7 +139,8 @@ export default function PageEdit({ onSuccess }) {
   });
 
   const iframeRef = useRef(null);
-  const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [previewDevice, setPreviewDevice] = useState(null);
+  const previewVisible = previewDevice !== null;
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -541,7 +542,7 @@ export default function PageEdit({ onSuccess }) {
 
   // Update iframe URL
   useEffect(() => {
-    if (previewUrl && iframeRef.current) {
+    if (previewUrl && iframeRef.current && previewVisible) {
       // Reset iframe ready state when URL changes
       setIsIframeReady(false);
 
@@ -558,7 +559,7 @@ export default function PageEdit({ onSuccess }) {
         iframeRef.current.src = previewUrl;
       }
     }
-  }, [previewUrl]);
+  }, [previewUrl, previewVisible]);
 
   // Debounced postMessage sending to avoid too many updates
   useEffect(() => {
@@ -844,13 +845,150 @@ export default function PageEdit({ onSuccess }) {
 
   return (!loading && record) || isCreateMode ? (
     <>
-      <div className="w-full flex overflow-hidden" style={{ height: 'calc(100dvh - 70px)' }}>
-        {/* Form Section - Left Side */}
-        <form
-          className="overflow-y-auto px-2 pb-2"
-          style={{ width: `${width}px`, flexShrink: 0 }}
-          onSubmit={handleSubmit}
-        >
+      <form
+        onSubmit={handleSubmit}
+        className="w-full flex flex-col overflow-hidden"
+        style={{ height: 'calc(100dvh - 70px)' }}
+      >
+        {/* Top Toolbar */}
+        <div className="flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
+          <Menu shadow="md" width={180} position="bottom-end" withArrow radius="md">
+            <Menu.Target>
+              <Tooltip label={t('Preview')}>
+                <Button
+                  variant={previewVisible ? 'filled' : 'subtle'}
+                  size="md"
+                  className="px-2"
+                >
+                  <IconDeviceDesktop size={20} />
+                </Button>
+              </Tooltip>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconDeviceDesktop size={16} />}
+                onClick={() => setPreviewDevice('desktop')}
+                color={previewDevice === 'desktop' ? 'blue' : undefined}
+              >
+                {t('Desktop')}
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconDeviceTablet size={16} />}
+                onClick={() => setPreviewDevice('tablet')}
+                color={previewDevice === 'tablet' ? 'blue' : undefined}
+              >
+                {t('Tablet')}
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconDeviceMobile size={16} />}
+                onClick={() => setPreviewDevice('mobile')}
+                color={previewDevice === 'mobile' ? 'blue' : undefined}
+              >
+                {t('Mobile')}
+              </Menu.Item>
+              {previewVisible && (
+                <>
+                  <Menu.Divider />
+                  <Menu.Item color="red" onClick={() => setPreviewDevice(null)}>
+                    {t('Hide preview')}
+                  </Menu.Item>
+                </>
+              )}
+            </Menu.Dropdown>
+          </Menu>
+          <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
+            <Menu.Target>
+              <Button variant="subtle" size="md" className="px-2">
+                <IconAi size={40} />
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item closeMenuOnClick={false}>
+                <Tooltip
+                  label={t(
+                    'Please specify an API key and writing model in Site Settings to use this feature.',
+                  )}
+                  disabled={aiWritingAvailable}
+                >
+                  <div className="inline-flex items-center">
+                    <Switch
+                      label={
+                        <span className="inline-flex items-center gap-1">
+                          <IconSparkles2 size={16} />
+                          {t('AI Writer')}
+                        </span>
+                      }
+                      checked={aiWriterSidebarOpened}
+                      onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
+                      disabled={!aiWritingAvailable}
+                      size="md"
+                    />
+                  </div>
+                </Tooltip>
+              </Menu.Item>
+              <Menu.Item closeMenuOnClick={false}>
+                <Tooltip
+                  label={t(
+                    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
+                  )}
+                  disabled={aiAutoCompleteAvailable}
+                >
+                  <div className="inline-flex items-center">
+                    <Switch
+                      label={
+                        <span className="inline-flex items-center gap-1">
+                          <IconSubtitlesAi size={16} />
+                          {t('AI Autocomplete')}
+                        </span>
+                      }
+                      checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                      disabled={!aiAutoCompleteAvailable}
+                      size="md"
+                    />
+                  </div>
+                </Tooltip>
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+          <Switch
+            checked={record.published}
+            onLabel={t('Published')}
+            offLabel={t('Unpublished')}
+            size="xl"
+            classNames={{
+              track: 'px-2',
+            }}
+            onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
+          />
+          <Button
+            className="text-[14px] font-[600]"
+            disabled={loading || isCheckingConflicts}
+            loading={loading || isCheckingConflicts}
+            variant="subtle"
+            type="submit"
+            color="green"
+          >
+            <IconCheck size={16} className="mr-1" />
+            {t('Save')}
+          </Button>
+          <Tooltip label={t('Settings')}>
+            <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+              <IconSettings size={20} />
+            </Button>
+          </Tooltip>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Form Section - Left Side */}
+          <div
+            className={
+              previewVisible
+                ? 'overflow-y-auto px-2 pb-2'
+                : 'overflow-y-auto pb-2 flex-1 max-w-screen-xl m-auto px-[24px]'
+            }
+            style={previewVisible ? { width: `${width}px`, flexShrink: 0 } : undefined}
+          >
           {/* Parallel Edit Warning */}
           <ParallelEditWarning
             warning={parallelEditWarning}
@@ -870,13 +1008,7 @@ export default function PageEdit({ onSuccess }) {
 
             <Tabs
               value={activeContentTab}
-              onChange={(value) => {
-                if (value === 'add_new') {
-                  handleAddContent();
-                  return;
-                }
-                setActiveContentTab(value);
-              }}
+              onChange={setActiveContentTab}
               variant="pills"
               radius="lg"
             >
@@ -894,7 +1026,7 @@ export default function PageEdit({ onSuccess }) {
                       closeDelay={400}
                     >
                       <Menu.Target>
-                        <Tabs.Tab value={String(content.id)} className="mr-1 mb-1">
+                        <Tabs.Tab value={String(content.id)}>
                           <span className="mr-1">{content.locale?.emoji_flag}</span>
                           {content.locale?.name}
                         </Tabs.Tab>
@@ -916,9 +1048,13 @@ export default function PageEdit({ onSuccess }) {
                 ))}
 
                 <Tooltip label={t('Add Language')}>
-                  <Tabs.Tab value="add_new" className="bg-gray-100 hover:bg-gray-200">
+                  <button
+                    type="button"
+                    onClick={handleAddContent}
+                    className="border border-dashed px-2 rounded-xl border-gray-300 hover:bg-gray-200"
+                  >
                     <IconPlus size={16} />
-                  </Tabs.Tab>
+                  </button>
                 </Tooltip>
               </Tabs.List>
 
@@ -944,7 +1080,7 @@ export default function PageEdit({ onSuccess }) {
                     />
 
                     {/* Content Editor */}
-                    <div className="my-4">
+                    <div className="my-4 pl-1">
                       <RichTextInput
                         key={`editor-${content.id}-${editorKey}`}
                         variant="subtle"
@@ -967,187 +1103,72 @@ export default function PageEdit({ onSuccess }) {
               )}
             </Tabs>
           </div>
-        </form>
+        </div>
 
-        {/* Resize Handle */}
-        <div
-          className="hover:bg-blue-200 cursor-col-resize transition-colors"
-          onMouseDown={handleMouseDown}
-          style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
-          title="Drag to resize"
-        />
+        {previewVisible && (
+          <>
+            {/* Resize Handle */}
+            <div
+              className="hover:bg-blue-200 cursor-col-resize transition-colors"
+              onMouseDown={handleMouseDown}
+              style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
+              title="Drag to resize"
+            />
 
-        {/* Preview Panel - Right Side */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 relative flex flex-col"
-          style={{ minWidth: 0 }}
-        >
-          {/* Preview Header */}
-          <div className="flex-shrink-0 px-4 py-2">
-            <div className="flex items-center justify-between">
-              {/* Device Icons - Left Side */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant={previewDevice === 'desktop' ? 'filled' : 'subtle'}
-                  size="sm"
-                  onClick={() => setPreviewDevice('desktop')}
-                  className="px-2"
-                >
-                  <IconDeviceDesktop size={16} />
-                </Button>
-                <Button
-                  variant={previewDevice === 'tablet' ? 'filled' : 'subtle'}
-                  size="sm"
-                  onClick={() => setPreviewDevice('tablet')}
-                  className="px-2"
-                >
-                  <IconDeviceTablet size={16} />
-                </Button>
-                <Button
-                  variant={previewDevice === 'mobile' ? 'filled' : 'subtle'}
-                  size="sm"
-                  onClick={() => setPreviewDevice('mobile')}
-                  className="px-2"
-                >
-                  <IconDeviceMobile size={16} />
-                </Button>
-              </div>
-
-              {/* AI, Publish Toggle, Save, and Settings - Right Side */}
-              <div className="flex items-center gap-2">
-                <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
-                  <Menu.Target>
-                    <Button variant="subtle" size="md" className="px-2">
-                      <IconAi size={40} />
-                    </Button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item closeMenuOnClick={false}>
-                      <Tooltip
-                        label={t(
-                          'Please specify an API key and writing model in Site Settings to use this feature.',
-                        )}
-                        disabled={aiWritingAvailable}
-                      >
-                        <div className="inline-flex items-center">
-                          <Switch
-                            label={
-                              <span className="inline-flex items-center gap-1">
-                                <IconSparkles2 size={16} />
-                                {t('AI Writer')}
-                              </span>
-                            }
-                            checked={aiWriterSidebarOpened}
-                            onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
-                            disabled={!aiWritingAvailable}
-                            size="md"
-                          />
-                        </div>
-                      </Tooltip>
-                    </Menu.Item>
-                    <Menu.Item closeMenuOnClick={false}>
-                      <Tooltip
-                        label={t(
-                          'Please specify an API key and autocomplete model in Site Settings to use this feature.',
-                        )}
-                        disabled={aiAutoCompleteAvailable}
-                      >
-                        <div className="inline-flex items-center">
-                          <Switch
-                            label={
-                              <span className="inline-flex items-center gap-1">
-                                <IconSubtitlesAi size={16} />
-                                {t('AI Autocomplete')}
-                              </span>
-                            }
-                            checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                            onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                            disabled={!aiAutoCompleteAvailable}
-                            size="md"
-                          />
-                        </div>
-                      </Tooltip>
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-                <Switch
-                  checked={record.published}
-                  onLabel={t('Published')}
-                  offLabel={t('Unpublished')}
-                  size="xl"
-                  classNames={{
-                    track: 'px-2',
-                  }}
-                  onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-                />
-                <Button
-                  className="text-[14px] font-[600]"
-                  disabled={loading || isCheckingConflicts}
-                  loading={loading || isCheckingConflicts}
-                  variant="subtle"
-                  type="submit"
-                  color="green"
-                >
-                  <IconCheck size={16} className="mr-1" />
-                  {t('Save')}
-                </Button>
-                <Tooltip label={t('Settings')}>
-                  <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
-                    <IconSettings size={20} />
-                  </Button>
-                </Tooltip>
-              </div>
-            </div>
-          </div>
-
-          {/* Preview Content */}
-          <div className="flex-1 relative">
-            {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
-            {isResizing && (
-              <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
-            )}
-            <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
-              <div
-                className="bg-white shadow-lg transition-all duration-300"
-                style={{
-                  width:
-                    previewDevice === 'desktop'
-                      ? '100%'
-                      : previewDevice === 'tablet'
-                        ? '1024px'
-                        : '393px',
-                  height:
-                    previewDevice === 'desktop'
-                      ? 'calc(100% - 0px)'
-                      : previewDevice === 'tablet'
-                        ? '852px'
-                        : '852px',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  borderRadius: '8px',
-                }}
-              >
-                {previewUrl ? (
-                  <iframe
-                    ref={iframeRef}
-                    className="w-full h-full border border-gray-300 !shadow"
-                    style={{ borderRadius: '8px' }}
-                    title={`Preview`}
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    <div className="text-center">
-                      <p>{t('No content selected')}</p>
-                      <p className="text-sm mt-1">{t('Select a language tab to preview')}</p>
-                    </div>
-                  </div>
+            {/* Preview Panel - Right Side */}
+            <div className="flex-1 relative flex flex-col" style={{ minWidth: 0 }}>
+              {/* Preview Content */}
+              <div className="flex-1 relative">
+                {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
+                {isResizing && (
+                  <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
                 )}
+                <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                  <div
+                    className="bg-white shadow-lg transition-all duration-300"
+                    style={{
+                      width:
+                        previewDevice === 'desktop'
+                          ? '100%'
+                          : previewDevice === 'tablet'
+                            ? '1024px'
+                            : '393px',
+                      height:
+                        previewDevice === 'desktop'
+                          ? 'calc(100% - 0px)'
+                          : previewDevice === 'tablet'
+                            ? '852px'
+                            : '852px',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    {previewUrl ? (
+                      <iframe
+                        ref={iframeRef}
+                        className="w-full h-full border border-gray-300 !shadow"
+                        style={{ borderRadius: '8px' }}
+                        title={`Preview`}
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        <div className="text-center">
+                          <p>{t('No content selected')}</p>
+                          <p className="text-sm mt-1">
+                            {t('Select a language tab to preview')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </form>
+          </>
+        )}
+        </div>
         <AIWriterSidebar
           opened={aiWriterSidebarOpened}
           onClose={() => setAiWriterSidebarOpened(false)}
@@ -1155,7 +1176,7 @@ export default function PageEdit({ onSuccess }) {
           updateContentField={updateContentField}
           onContentInserted={handleContentInserted}
         />
-      </div>
+      </form>
 
       {/* Add Language Modal */}
       <Modal
