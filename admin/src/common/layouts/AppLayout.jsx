@@ -100,7 +100,11 @@ export default function AppLayout(props) {
       const org = orgs.find((o) => o.id === settings.id);
       const domain = getOrganizationDomain(org || settings);
       const protocol = window.location.protocol;
-      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      const port = domain.includes(':')
+        ? ''
+        : window.location.port
+          ? `:${window.location.port}`
+          : '';
       GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
     });
     // Also run immediately
@@ -110,7 +114,11 @@ export default function AppLayout(props) {
       const org = orgs.find((o) => o.id === settings.id);
       const domain = getOrganizationDomain(org || settings);
       const protocol = window.location.protocol;
-      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      const port = domain.includes(':')
+        ? ''
+        : window.location.port
+          ? `:${window.location.port}`
+          : '';
       GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
     }
     return unsub;

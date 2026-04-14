@@ -165,9 +165,7 @@ export default function PageList() {
   // Re-sync org filter when org changes (autoFetch handles initial + re-fetch)
   useEffect(() => {
     setFilters(
-      organizationId
-        ? [{ field: 'organization_id', operator: '=', value: organizationId }]
-        : [],
+      organizationId ? [{ field: 'organization_id', operator: '=', value: organizationId }] : [],
     );
   }, [organizationId, setFilters]);
 
