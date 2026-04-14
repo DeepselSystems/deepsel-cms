@@ -26,6 +26,8 @@ import LangSwitcher from '../ui/AppLayout/LangSwitcher.jsx';
 import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
+import OrganizationState from '../stores/OrganizationState.js';
+import { getOrganizationDomain } from '../../utils/domainUtils.js';
 import { useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconArrowUpRight, IconUsers } from '@tabler/icons-react';
 
@@ -86,6 +88,31 @@ export default function AppLayout(props) {
         })
         .catch(() => {});
     });
+    return unsub;
+  }, []);
+
+  // Update "go to site" link when org changes
+  useEffect(() => {
+    const unsub = SitePublicSettingsState.subscribe((state) => {
+      const settings = state.settings;
+      if (!settings) return;
+      const orgs = OrganizationState.getState().organizations;
+      const org = orgs.find((o) => o.id === settings.id);
+      const domain = getOrganizationDomain(org || settings);
+      const protocol = window.location.protocol;
+      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
+    });
+    // Also run immediately
+    const settings = SitePublicSettingsState.getState().settings;
+    if (settings) {
+      const orgs = OrganizationState.getState().organizations;
+      const org = orgs.find((o) => o.id === settings.id);
+      const domain = getOrganizationDomain(org || settings);
+      const protocol = window.location.protocol;
+      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
+    }
     return unsub;
   }, []);
 
