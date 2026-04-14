@@ -33,6 +33,26 @@ def get_selected_theme_from_db() -> str | None:
         return None
 
 
+def get_all_active_themes_from_db() -> set[str]:
+    """Collect selected_theme from ALL organizations in the DB."""
+    try:
+        from db import get_db_context
+        from apps.core.utils.models_pool import models_pool
+
+        CMSSettingsModel = models_pool.get("organization")
+        if not CMSSettingsModel:
+            return set()
+        with get_db_context() as db:
+            themes = set()
+            for org in db.query(CMSSettingsModel).all():
+                if org.selected_theme:
+                    themes.add(org.selected_theme)
+            return themes
+    except Exception as e:
+        logger.warning(f"Could not read active themes from DB: {e}")
+        return set()
+
+
 def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None):
     """
     Generate static imports for all theme variants in client/src/themes.ts
@@ -62,14 +82,17 @@ def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None
             [f for f in all_folders if f not in valid_language_codes]
         )
 
-        # Filter to selected theme only
-        effective_theme = selected_theme or get_selected_theme_from_db()
-        if effective_theme:
-            if effective_theme in theme_folders:
-                theme_folders = [effective_theme]
+        # Collect all themes actively used by any organization
+        active_themes = get_all_active_themes_from_db()
+        if selected_theme:
+            active_themes.add(selected_theme)
+        if active_themes:
+            available = [t for t in theme_folders if t in active_themes]
+            if available:
+                theme_folders = available
             else:
                 logger.warning(
-                    f"Selected theme '{effective_theme}' not found on disk. "
+                    f"Active themes {active_themes} not found on disk. "
                     f"Falling back to all themes: {theme_folders}"
                 )
 
@@ -133,8 +156,8 @@ def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None
                 ]
             )
 
-            if effective_theme:
-                lang_themes = [t for t in lang_themes if t == effective_theme]
+            if active_themes:
+                lang_themes = [t for t in lang_themes if t in active_themes]
 
             for theme in lang_themes:
                 theme_path = os.path.join(lang_themes_dir, theme)
@@ -311,13 +334,16 @@ def generate_tailwind_config(data_dir_path: str, selected_theme: str | None = No
         )
 
         # Filter to selected theme only
-        effective_theme = selected_theme or get_selected_theme_from_db()
-        if effective_theme:
-            if effective_theme in theme_folders:
-                theme_folders = [effective_theme]
+        active_themes = get_all_active_themes_from_db()
+        if selected_theme:
+            active_themes.add(selected_theme)
+        if active_themes:
+            available = [t for t in theme_folders if t in active_themes]
+            if available:
+                theme_folders = available
             else:
                 logger.warning(
-                    f"Selected theme '{effective_theme}' not found in tailwind configs, using all"
+                    f"Active themes {active_themes} not found in tailwind configs, using all"
                 )
 
         # Generate import lines and preset names

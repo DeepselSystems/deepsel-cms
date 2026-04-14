@@ -9,6 +9,7 @@ import Button from '../../../common/ui/Button.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
+import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import { fetchPublicSettings } from '../../../utils/pageUtils.js';
 import {
@@ -27,6 +28,7 @@ export default function ThemeList() {
   const { backendHost } = BackendHostURLState();
   const { user } = useAuthentication();
   const { settings: siteSettings, setSettings } = SitePublicSettingsState();
+  const { organizationId } = OrganizationIdState();
   const { notify } = NotificationState((state) => state);
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function ThemeList() {
 
   useEffect(() => {
     fetchThemes();
-  }, []);
+  }, [organizationId, siteSettings?.selected_theme]);
 
   const fetchThemes = async () => {
     try {
@@ -145,10 +147,9 @@ export default function ThemeList() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
         },
         credentials: 'include',
-        body: JSON.stringify({ folder_name: folderName }),
+        body: JSON.stringify({ folder_name: folderName, organization_id: organizationId }),
       });
 
       if (!response.ok) {
@@ -164,8 +165,8 @@ export default function ThemeList() {
         await pollBuildStatus();
       }
 
-      // Refresh site settings to get updated selected_theme
-      const updatedSettings = await fetchPublicSettings();
+      // Refresh site settings to get updated selected_theme for this org
+      const updatedSettings = await fetchPublicSettings(organizationId);
       if (updatedSettings) {
         setSettings(updatedSettings);
       }

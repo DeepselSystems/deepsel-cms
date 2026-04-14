@@ -67,17 +67,27 @@ const EditMenuItemModal = ({
   }, [opened, siteSettings?.selected_theme, backendHost]);
 
   // Fetch page_content records for the active language tab
-  const { data: pageContents } = useModel('page_content', {
-    autoFetch: !!activeTranslationTab,
+  const { data: pageContents, get: fetchPages } = useModel('page_content', {
+    autoFetch: false,
     pageSize: null,
     searchFields: ['title', 'slug'],
-    filters: [
-      { field: 'locale.iso_code', operator: '=', value: activeTranslationTab || '' },
-      ...(organizationId
-        ? [{ field: 'page.organization_id', operator: '=', value: organizationId }]
-        : []),
-    ],
   });
+
+  useEffect(() => {
+    if (!activeTranslationTab) return;
+    const query = {
+      search: {
+        AND: [
+          { field: 'locale.iso_code', operator: '=', value: activeTranslationTab },
+          ...(organizationId
+            ? [{ field: 'page.organization_id', operator: '=', value: organizationId }]
+            : []),
+        ],
+        OR: [],
+      },
+    };
+    fetchPages(query);
+  }, [activeTranslationTab, organizationId]);
 
   // Build combined page options: DB pages + theme pages
   const buildPageOptions = (isoCode) => {

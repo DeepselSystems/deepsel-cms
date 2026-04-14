@@ -8,11 +8,15 @@
  * @returns {string} Port string (e.g., ":3000" or "")
  */
 function getPortForDomain(domain) {
+  // If domain already includes a port, don't add another
+  if (domain && domain.includes(':')) {
+    return '';
+  }
+
   if (!window.location.port) {
     return '';
   }
 
-  // Always use current port if available
   return `:${window.location.port}`;
 }
 

@@ -26,6 +26,8 @@ import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
 import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
+import OrganizationState from '../stores/OrganizationState.js';
+import { getOrganizationDomain } from '../../utils/domainUtils.js';
 import { useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconArrowUpRight, IconUsers } from '@tabler/icons-react';
 
@@ -61,14 +63,58 @@ export default function AppLayout(props) {
 
   // Refresh site settings when organization changes
   useEffect(() => {
-    if (!organizationId) return;
-    fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) setSettings(data);
-      })
-      .catch(() => {});
-  }, [organizationId, backendHost, setSettings]);
+    // Fetch on mount if current orgId doesn't match siteSettings
+    const currentOrgId = OrganizationIdState.getState().organizationId;
+    const currentSettings = SitePublicSettingsState.getState().settings;
+    if (currentOrgId && currentOrgId !== currentSettings?.id) {
+      const { backendHost: host } = BackendHostURLState.getState();
+      fetch(`${host}/util/public_settings/${currentOrgId}`, { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) SitePublicSettingsState.getState().setSettings(data);
+        })
+        .catch(() => {});
+    }
+
+    // Subscribe for subsequent changes
+    const unsub = OrganizationIdState.subscribe((state, prev) => {
+      const newId = state.organizationId;
+      if (!newId || newId === prev.organizationId) return;
+      const { backendHost: host } = BackendHostURLState.getState();
+      fetch(`${host}/util/public_settings/${newId}`, { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) SitePublicSettingsState.getState().setSettings(data);
+        })
+        .catch(() => {});
+    });
+    return unsub;
+  }, []);
+
+  // Update "go to site" link when org changes
+  useEffect(() => {
+    const unsub = SitePublicSettingsState.subscribe((state) => {
+      const settings = state.settings;
+      if (!settings) return;
+      const orgs = OrganizationState.getState().organizations;
+      const org = orgs.find((o) => o.id === settings.id);
+      const domain = getOrganizationDomain(org || settings);
+      const protocol = window.location.protocol;
+      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
+    });
+    // Also run immediately
+    const settings = SitePublicSettingsState.getState().settings;
+    if (settings) {
+      const orgs = OrganizationState.getState().organizations;
+      const org = orgs.find((o) => o.id === settings.id);
+      const domain = getOrganizationDomain(org || settings);
+      const protocol = window.location.protocol;
+      const port = domain.includes(':') ? '' : (window.location.port ? `:${window.location.port}` : '');
+      GoToSiteLinkState.getState().setGoToSiteLink(`${protocol}//${domain}${port}/`);
+    }
+    return unsub;
+  }, []);
 
   // Check if there are any visible navigation links for the current user
   const hasVisibleNavLinks = useMemo(() => {

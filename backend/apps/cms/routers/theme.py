@@ -52,6 +52,7 @@ class SelectThemeRequest(BaseModel):
     """Schema for selecting a theme"""
 
     folder_name: str
+    organization_id: int | None = None
 
 
 class ThemeFileNode(BaseModel):
@@ -408,7 +409,7 @@ def select_theme(
             )
 
         # Get organization from user
-        organization_id = current_user.organization_id
+        organization_id = request.organization_id or current_user.organization_id
         if not organization_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
