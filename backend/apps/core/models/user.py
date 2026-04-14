@@ -12,7 +12,7 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
     id = Column(Integer, primary_key=True)
     string_id = Column(String, unique=True)
 
-    username = Column(String, unique=True, nullable=False)
+    username = Column(String, unique=True)
     email = Column(String, unique=True, nullable=False)
 
     # profile fields
@@ -100,10 +100,6 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
     @classmethod
     def _get_admin_role_string_ids(cls):
         return ["admin_role", "super_admin_role", "website_admin_role"]
-
-    @classmethod
-    def _get_public_user_string_id(cls):
-        return "public_user"
 
     @classmethod
     def _get_admin_user_string_id(cls):

@@ -24,7 +24,6 @@ router = CRUDRouter(
     create_schema=PageCreate,
     update_schema=PageUpdate,
     table_name=table_name,
-    dependencies=[Depends(get_current_user)],
 )
 
 

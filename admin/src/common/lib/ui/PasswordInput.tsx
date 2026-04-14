@@ -6,6 +6,6 @@ export type { PasswordInputProps };
 /**
  * PasswordInput component - thin wrapper around Mantine's PasswordInput
  */
-export const PasswordInput = (props: PasswordInputProps) => {
-  return <MantinePasswordInput {...props} />;
+export const PasswordInput = ({ radius = 'md', size = 'md', ...props }: PasswordInputProps) => {
+  return <MantinePasswordInput radius={radius} size={size} {...props} />;
 };

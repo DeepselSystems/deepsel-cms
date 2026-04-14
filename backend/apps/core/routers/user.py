@@ -42,17 +42,24 @@ class UserCustomRouter(CRUDRouter):
             user: Model = Depends(get_current_user),
         ) -> [Model]:
             values = model.dict()
-            # check if username already exists, including lowercase
-            if db.query(Model).filter(Model.username.ilike(values["username"])).first():
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Username already exists",
-                )
+            username = values.get("username")
+            if username:
+                # check if username already exists, including lowercase
+                if db.query(Model).filter(Model.username.ilike(username)).first():
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Username already exists",
+                    )
 
-            new_user = self.db_model.create(db, user, model.dict())
+            password = values.pop("password", None)
+            new_user = self.db_model.create(db, user, values)
 
-            # send password setup email to new user
-            background_tasks.add_task(new_user.send_set_password_email, db)
+            if password:
+                new_user.hashed_password = Model._get_password_context().hash(password)
+                db.commit()
+            else:
+                # send password setup email to new user
+                background_tasks.add_task(new_user.send_set_password_email, db)
 
             return new_user
 
@@ -105,7 +112,7 @@ def update_2fa_config(
         db.commit()
 
         totp_uri = pyotp.totp.TOTP(secret_key).provisioning_uri(
-            name=user.username, issuer_name=user.organization.name
+            name=user.username or user.email, issuer_name=user.organization.name
         )
         return Info2Fa(totp_uri=totp_uri)
 

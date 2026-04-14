@@ -4,49 +4,84 @@ import BackendHostURLState from '../stores/BackendHostURLState.js';
 import useAuthentication from '../api/useAuthentication.js';
 
 /**
- * Hook for managing WebSocket edit sessions for parallel edit detection
+ * WebSocket-backed edit session.
+ *
+ * Emits presence updates (the full list of other editors), plus live events:
+ *   - draft_saved: another user autosaved; payload has the updated draft fields
+ *   - published:   another user promoted the draft to live
+ *   - unpublished: another user toggled published off
+ *
+ * All events are delivered through subscribe callbacks so the caller controls
+ * how state is merged. We don't own the form state here.
  */
 export default function useEditSession(recordType, recordId, contentId = null) {
   const { backendHost } = BackendHostURLState();
   const { user } = useAuthentication();
   const [isConnected, setIsConnected] = useState(false);
-  const [parallelEditWarning, setParallelEditWarning] = useState(null);
+  const [activeEditors, setActiveEditors] = useState([]);
   const [isWebSocketSupported, setIsWebSocketSupported] = useState(true);
+
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
 
+  // Subscription callbacks, registered by consumers
+  const draftSavedHandlerRef = useRef(null);
+  const publishedHandlerRef = useRef(null);
+  const unpublishedHandlerRef = useRef(null);
+
+  const onDraftSaved = (cb) => {
+    draftSavedHandlerRef.current = cb;
+  };
+  const onPublished = (cb) => {
+    publishedHandlerRef.current = cb;
+  };
+  const onUnpublished = (cb) => {
+    unpublishedHandlerRef.current = cb;
+  };
+
   const connect = async () => {
-    if (!recordType || !recordId || !user) return;
-
+    if (!recordType || !recordId || !user) {
+      console.log('[useEditSession] skip connect (missing params)', {
+        recordType,
+        recordId,
+        hasUser: !!user,
+      });
+      return;
+    }
     try {
-      // Get auth token
+      // Auth: the web admin uses httpOnly session cookies which the browser sends
+      // automatically on the WS handshake. Mobile/hybrid clients store a JWT in
+      // Capacitor Preferences; include it in the query if present.
       const tokenResult = await Preferences.get({ key: 'token' });
-      if (!tokenResult?.value) return;
 
-      // Create WebSocket URL
-      const wsHost = backendHost.replace('http://', 'ws://').replace('https://', 'wss://');
+      // backendHost may be absolute ("http://localhost:8000/api/v1") or a same-origin
+      // relative path ("/api/v1"). WebSocket needs an absolute ws:// or wss:// URL,
+      // so resolve relative paths against window.location.
+      let wsHost;
+      if (/^https?:\/\//i.test(backendHost)) {
+        wsHost = backendHost.replace(/^http:\/\//i, 'ws://').replace(/^https:\/\//i, 'wss://');
+      } else {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsHost = `${proto}//${window.location.host}${backendHost || ''}`;
+      }
       const params = new URLSearchParams({
         record_type: recordType,
         record_id: recordId.toString(),
-        token: tokenResult.value,
       });
-
-      if (contentId) {
-        params.append('content_id', contentId.toString());
-      }
+      if (tokenResult?.value) params.append('token', tokenResult.value);
+      if (contentId) params.append('content_id', contentId.toString());
 
       const wsUrl = `${wsHost}/ws/edit-session?${params.toString()}`;
-
-      // Create WebSocket connection
+      console.log('[useEditSession] opening', wsUrl);
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
+        console.log('[useEditSession] connected', { recordType, recordId });
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
 
-        // Send heartbeat every 30 seconds
         const heartbeatInterval = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'heartbeat' }));
@@ -59,38 +94,27 @@ export default function useEditSession(recordType, recordId, contentId = null) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-
-          if (data.type === 'parallel_edit_warning') {
-            setParallelEditWarning({
-              message: data.message,
-              newEditor: data.new_editor,
-              existingEditors: data.existing_editors,
-              allOtherEditors: data.all_other_editors || data.existing_editors,
-              isNewEditor: data.is_new_editor,
-              isFirstUser: data.is_first_user,
-              totalEditors:
-                data.total_editors ||
-                (data.existing_editors ? data.existing_editors.length + 1 : 2),
-            });
-          } else if (data.type === 'user_left') {
-            if (data.clear_warning) {
-              // No other editors remain, clear the warning completely
-              setParallelEditWarning(null);
-            }
+          console.log('[useEditSession] message', data.type, data);
+          if (data.type === 'presence_update') {
+            setActiveEditors(data.editors || []);
+          } else if (data.type === 'draft_saved') {
+            draftSavedHandlerRef.current?.(data);
+          } else if (data.type === 'published') {
+            publishedHandlerRef.current?.(data);
+          } else if (data.type === 'unpublished') {
+            unpublishedHandlerRef.current?.(data);
           }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('WebSocket message parse error:', error);
         }
       };
 
       ws.onclose = (event) => {
+        console.log('[useEditSession] closed', { code: event.code, reason: event.reason });
         setIsConnected(false);
         wsRef.current = null;
-
-        // Attempt to reconnect if not a normal closure
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connect();
@@ -99,7 +123,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
       };
 
       ws.onerror = (error) => {
-        // If we get too many connection errors, disable WebSocket feature
+        console.error('[useEditSession] error', error);
         if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           setIsWebSocketSupported(false);
         }
@@ -107,7 +131,7 @@ export default function useEditSession(recordType, recordId, contentId = null) {
 
       wsRef.current = ws;
     } catch (error) {
-      // Failed to create WebSocket connection
+      console.error('WebSocket connect error:', error);
     }
   };
 
@@ -116,11 +140,8 @@ export default function useEditSession(recordType, recordId, contentId = null) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-
-    // Send explicit leave message before closing WebSocket
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       try {
-        // Send leave message to backend
         wsRef.current.send(
           JSON.stringify({
             type: 'leave_edit_session',
@@ -129,48 +150,33 @@ export default function useEditSession(recordType, recordId, contentId = null) {
             content_id: contentId,
           }),
         );
-
-        // Give a moment for the message to be sent
         await new Promise((resolve) => setTimeout(resolve, 100));
-      } catch (error) {
-        // Failed to send leave message
+      } catch (_err) {
+        /* noop */
       }
-
-      // Check if WebSocket still exists after the timeout
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.close(1000, 'User disconnected');
       }
     }
-
     wsRef.current = null;
     setIsConnected(false);
-    setParallelEditWarning(null);
+    setActiveEditors([]);
   };
 
-  const clearParallelEditWarning = () => {
-    setParallelEditWarning(null);
-  };
-
-  // Connect on mount and when dependencies change
   useEffect(() => {
-    if (isWebSocketSupported) {
-      connect();
-    }
-
-    // Cleanup on unmount
+    if (isWebSocketSupported) connect();
     return () => {
       disconnect();
     };
-  }, [recordType, recordId, contentId, backendHost, user, isWebSocketSupported]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordType, recordId, contentId, backendHost, user?.id, isWebSocketSupported]);
 
-  // Handle page unload/tab close
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Use sendBeacon for reliable message sending on page unload
       if (recordType && recordId && user) {
         try {
           navigator.sendBeacon(
-            `${backendHost}/api/edit-session/leave`,
+            `${backendHost}/edit-session/leave`,
             JSON.stringify({
               record_type: recordType,
               record_id: recordId,
@@ -178,37 +184,27 @@ export default function useEditSession(recordType, recordId, contentId = null) {
               user_id: user.id,
             }),
           );
-        } catch (error) {
-          // Failed to send beacon
+        } catch (_err) {
+          /* noop */
         }
       }
     };
-
-    const handlePageHide = () => {
-      // Also handle page visibility changes (mobile/tab switching)
-      disconnect();
-    };
-
+    const handlePageHide = () => disconnect();
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handlePageHide);
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [recordType, recordId, contentId, user, backendHost]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnect();
-    };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordType, recordId, contentId, user?.id, backendHost]);
 
   return {
     isConnected,
-    parallelEditWarning,
-    clearParallelEditWarning,
+    activeEditors,
+    onDraftSaved,
+    onPublished,
+    onUnpublished,
     reconnect: connect,
     disconnect,
   };

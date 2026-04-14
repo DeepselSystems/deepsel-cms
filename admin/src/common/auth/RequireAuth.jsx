@@ -6,13 +6,8 @@ import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import UserState from '../stores/UserState.js';
 
-/**
- * Check if user is a real authenticated user (not the public guest).
- * The public guest user has string_id="public_user" and is returned
- * by the backend when no valid session or token exists.
- */
 function isAuthenticated(user) {
-  return user && user.string_id !== 'public_user';
+  return !!user;
 }
 
 function RequireAuth() {
@@ -65,8 +60,6 @@ function RequireAuth() {
             return navigate(rejectLink);
           }
 
-          // fetchUser succeeded but check if the returned user is actually authenticated
-          // (not just the public guest user). We need to re-check after fetchUser updates the store.
           const updatedUser = UserState.getState().user;
           if (!isAuthenticated(updatedUser)) {
             return navigate(rejectLink);

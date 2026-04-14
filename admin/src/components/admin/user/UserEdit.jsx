@@ -58,7 +58,7 @@ export default function UserEdit() {
 
   const canEditRolesAndOrgs =
     currentUser.roles.find((role) => ['admin_role', 'super_admin_role'].includes(role.string_id)) ||
-    !['admin_user', 'super_user', 'public_user'].includes(record?.string_id);
+    !['admin_user'].includes(record?.string_id);
 
   async function handleChangePasswordSubmit(e) {
     e.preventDefault();

@@ -18,13 +18,13 @@ import ShowSiteSelectorState from '../stores/ShowSiteSelectorState.js';
 import GoToSiteLinkState from '../stores/GoToSiteLinkState.js';
 import HideHeaderItemsState from '../stores/HideHeaderItemsState.js';
 import useBack from '../hooks/useBack.js';
-import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
 import { useEffect, useMemo } from 'react';
 import LangSwitcher from '../ui/AppLayout/LangSwitcher.jsx';
 import SiteSelector from '../ui/SiteSelector.jsx';
 import OrganizationIdState from '../stores/OrganizationIdState.js';
+import NavigationConfirmationState from '../stores/NavigationConfirmationState.js';
 import VisibilityControl from '../auth/VisibilityControl.jsx';
 import { useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconArrowUpRight, IconUsers } from '@tabler/icons-react';
@@ -204,7 +204,12 @@ export default function AppLayout(props) {
               )}
               {/*endregion site selector*/}
               {!hideGoToSite && (
-                <a href={goToSiteLink} target="_blank" className="block my-2 w-8 h-8">
+                <a
+                  href={goToSiteLink}
+                  target="_blank"
+                  className="block my-2 w-8 h-8"
+                  rel="noreferrer"
+                >
                   <IconArrowUpRight
                     size={16}
                     className="w-full h-full text-xl text-white bg-black rounded p-1 hover:translate-y-0.5 transition-all"

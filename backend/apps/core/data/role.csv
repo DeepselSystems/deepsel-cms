@@ -29,7 +29,6 @@ user_role,User,"[
     ""attachment:*:own"",
     ""activity:*:own""
 ]",true
-public_role,Public User,[],true
 locales_public_role,Locales Public Role,"[
     ""currency:read:org"",
     ""country:read:org"",

@@ -439,7 +439,7 @@ def import_backup(
                                 if "owner_id" not in fieldnames:
                                     fieldnames.append("owner_id")
 
-                                # Add user/owner_id to fieldnames (empty) to prevent orm.py from defaulting to super_user
+                                # Add user/owner_id to fieldnames (empty) to prevent orm.py from defaulting to system user
                                 # The OR condition in orm.py requires BOTH user/owner_id AND owner_id to be present
                                 if "user/owner_id" not in fieldnames:
                                     fieldnames.append("user/owner_id")
@@ -454,7 +454,7 @@ def import_backup(
                                 for row in rows:
                                     row["organization_id"] = org_id
                                     row["owner_id"] = user.id
-                                    # Set user/owner_id to empty string (presence in fieldnames prevents super_user default)
+                                    # Set user/owner_id to empty string (presence in fieldnames prevents system user default)
                                     row["user/owner_id"] = ""
 
                                     if filename == "blog_post.csv":

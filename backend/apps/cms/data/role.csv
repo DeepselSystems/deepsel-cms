@@ -1,30 +1,4 @@
 string_id,name,permissions,system,description
-cms_manager_role,CMS Manager,"[
-    ""blog_post:*:*"",
-    ""blog_post_content:*:*"",
-    ""page_content:*:*"",
-    ""page:*:*"",
-    ""blog_post_content_revision:*:*"",
-    ""page_content_revision:*:*"",
-    ""template:*:*"",
-    ""template_content:*:*"",
-    ""menu:*:*"",
-    ""openrouter_model:*:*"",
-    ""locale:*:*""
-]",true,""
-cms_public_role,CMS Public Role,"[
-    ""blog_post:read:org"",
-    ""blog_post_content:read:org"",
-    ""page_content:read:org"",
-    ""page:read:org"",
-    ""blog_post_content_revision:read:org"",
-    ""page_content_revision:read:org"",
-    ""template:read:org"",
-    ""template_content:read:org"",
-    ""menu:read:org"",
-    ""openrouter_model:read:org"",
-    ""locale:read:org""
-]",true,""
 website_admin_role,Website Administrator,"[
     ""template_content:*:*"",
     ""template:*:*"",

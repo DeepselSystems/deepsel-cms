@@ -17,56 +17,54 @@ import json
 import logging
 from typing import Optional
 from deepsel.utils.api_router import create_api_router
+from settings import SESSION_COOKIE_NAME
 
 logger = logging.getLogger(__name__)
 router = create_api_router(tags=["WebSocket APIs"])
 
 
 async def get_current_user_websocket(
-    token: str, db: Session = Depends(get_db)
+    websocket: WebSocket, token: Optional[str], db: Session
 ) -> UserModel:
-    """Get current user for WebSocket connections using token from query params."""
-    try:
+    """Resolve the user for a WebSocket.
+
+    Prefer the session cookie (browser admin uses cookie auth); fall back to the
+    JWT token in the query string (mobile/hybrid clients store tokens in
+    Capacitor Preferences).
+    """
+    from fastapi import status
+
+    # 1. Session cookie — this is what the web admin uses.
+    session_id = websocket.cookies.get(SESSION_COOKIE_NAME)
+    session_store = getattr(websocket.app.state, "session_store", None)
+    if session_id and session_store:
+        session_data = session_store.get(session_id)
+        if session_data is not None:
+            user = db.query(UserModel).get(session_data.user_id)
+            if user:
+                return user
+
+    # 2. JWT token query param — hybrid/mobile clients.
+    if token:
         import jwt
         from jwt import PyJWTError
-        from fastapi import status
         from settings import APP_SECRET, AUTH_ALGORITHM
 
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token required"
-            )
-
-        # Remove 'Bearer ' prefix if present
         if token.startswith("Bearer "):
             token = token[7:]
-
         try:
             payload = jwt.decode(token, APP_SECRET, algorithms=[AUTH_ALGORITHM])
             user_id = payload.get("uid")
-            if not user_id:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid token payload",
-                )
+            if user_id:
+                user = db.query(UserModel).filter(UserModel.id == user_id).first()
+                if user:
+                    return user
         except PyJWTError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-            )
+            pass
 
-        user = db.query(UserModel).filter(UserModel.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
-            )
-        return user
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"WebSocket auth error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication"
-        )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+    )
 
 
 @router.websocket("/ws/edit-session")
@@ -79,14 +77,15 @@ async def edit_session_websocket(
     content_id: Optional[int] = Query(
         None, description="ID of the specific content being edited"
     ),
-    token: str = Query(..., description="Authentication token"),
+    token: Optional[str] = Query(None, description="Optional JWT token (cookie preferred)"),
     db: Session = Depends(get_db),
 ):
     """WebSocket endpoint for managing edit sessions and parallel edit detection."""
 
+    user = None
     try:
-        # Authenticate user
-        user = await get_current_user_websocket(token, db)
+        # Authenticate user — session cookie first, then token fallback.
+        user = await get_current_user_websocket(websocket, token, db)
 
         # Accept WebSocket connection
         await websocket.accept()
@@ -98,6 +97,7 @@ async def edit_session_websocket(
             or user.username
             or user.email
         )
+        image_name = getattr(getattr(user, "image", None), "name", None)
         session = EditSession(
             user_id=user.id,
             username=user.username or user.email,
@@ -107,6 +107,7 @@ async def edit_session_websocket(
             record_type=record_type,
             record_id=record_id,
             content_id=content_id,
+            image_name=image_name,
         )
 
         # Start edit session and check for conflicts
@@ -165,13 +166,14 @@ async def edit_session_websocket(
         await websocket.close(code=1011, reason="Internal server error")
         return
     finally:
-        # Clean up edit session
-        try:
-            await edit_session_manager.end_edit_session(
-                user.id, record_type, record_id, content_id
-            )
-        except Exception as e:
-            logger.warning(f"Failed to end edit session for user {user.id}: {e}")
+        # Clean up edit session — skip if auth failed before user was bound.
+        if user is not None:
+            try:
+                await edit_session_manager.end_edit_session(
+                    user.id, record_type, record_id, content_id
+                )
+            except Exception as e:
+                logger.warning(f"Failed to end edit session for user {user.id}: {e}")
 
 
 class LeaveEditSessionRequest(BaseModel):

@@ -36,7 +36,7 @@ class UserRead(BaseModel):
 
     id: int
     string_id: Optional[str] = None
-    username: str
+    username: Optional[str] = None
     email: str
 
     # profile
@@ -87,8 +87,9 @@ class UserSearch(BaseModel):
 
 
 class UserCreate(BaseModel):
-    username: str
+    username: Optional[str] = None
     email: str
+    password: Optional[str] = None
     name: Optional[str] = None
     last_name: Optional[str] = None
     first_name: Optional[str] = None

@@ -141,20 +141,6 @@ export default function TemplateEdit({ onSuccess }) {
       : [],
   });
 
-  // Function to confirm navigation with unsaved changes
-  const confirmNavigation = (callback) => {
-    if (hasUnsavedChanges && !isSaving) {
-      modals.openConfirmModal({
-        title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
-        children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
-        labels: { confirm: t('Leave'), cancel: t('Stay') },
-        onConfirm: callback,
-      });
-    } else {
-      callback();
-    }
-  };
-
   // Capture initial sidebar state and auto-collapse on mount
   useEffect(() => {
     if (!sidebarInitializedRef.current) {
@@ -176,6 +162,20 @@ export default function TemplateEdit({ onSuccess }) {
       clearTemporaryOverride();
     };
   }, [clearTemporaryOverride]);
+
+  // Function to confirm navigation with unsaved changes
+  const confirmNavigation = (callback) => {
+    if (hasUnsavedChanges && !isSaving) {
+      modals.openConfirmModal({
+        title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
+        children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
+        labels: { confirm: t('Leave'), cancel: t('Stay') },
+        onConfirm: callback,
+      });
+    } else {
+      callback();
+    }
+  };
 
   // Enable back button on mount and disable on unmount
   useEffect(() => {

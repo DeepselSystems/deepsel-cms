@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
-import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
@@ -12,7 +11,6 @@ import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsSt
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
 import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
-import NavigationConfirmationState from '../../../common/stores/NavigationConfirmationState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
@@ -24,19 +22,19 @@ import Button from '../../../common/ui/Button.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
-import { buildFullUrl } from '../../../utils/domainUtils.js';
+import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
+import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
 import useBackWithRedirect from '../../../common/hooks/useBackWithRedirect.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
 
-import { mergeContentsWithServerData } from '../../../common/utils/index.js';
 import useEditSession from '../../../common/hooks/useEditSession.js';
+import useDraftAutosave from '../../../common/hooks/useDraftAutosave.js';
 import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
-import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
-import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
 import {
   IconAi,
-  IconCheck,
+  IconCloudCheck,
+  IconCloudUpload,
   IconDeviceDesktop,
   IconDeviceMobile,
   IconDeviceTablet,
@@ -46,6 +44,31 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
+
+const PAGE_DRAFT_FIELDS = [
+  'title',
+  'content',
+  'seo_metadata_title',
+  'seo_metadata_description',
+  'seo_metadata_featured_image_id',
+  'seo_metadata_allow_indexing',
+  'custom_code',
+];
+
+function applyDraftOverlayToContents(contents) {
+  if (!contents?.length) return contents;
+  return contents.map((c) => {
+    if (!c.has_draft) return c;
+    const merged = { ...c };
+    for (const field of PAGE_DRAFT_FIELDS) {
+      const draftVal = c[`draft_${field}`];
+      if (draftVal !== null && draftVal !== undefined) merged[field] = draftVal;
+    }
+    if (c.draft_seo_metadata_featured_image)
+      merged.seo_metadata_featured_image = c.draft_seo_metadata_featured_image;
+    return merged;
+  });
+}
 
 export default function PageEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -59,7 +82,6 @@ export default function PageEdit({ onSuccess }) {
   const { setHideSiteSelector } = ShowSiteSelectorState();
   const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
   const backWithRedirect = useBackWithRedirect();
-  const { setNavigationConfirmation, clearNavigationConfirmation } = NavigationConfirmationState();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
   const { user } = useAuthentication();
 
@@ -158,116 +180,10 @@ export default function PageEdit({ onSuccess }) {
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
 
-  // Edit session management for parallel edit detection
-  // Note: Using null for contentId to track page level editing (not individual content items)
-  const { parallelEditWarning, clearParallelEditWarning } = useEditSession(
-    'page',
-    id,
-    null, // Track at page level, not per-content-item
-  );
+  // Presence + live draft sync
+  const { activeEditors, onDraftSaved, onPublished } = useEditSession('page', id, null);
 
-  // Simple conflict resolution state
-  const [conflictData, setConflictData] = useState(null);
-  const [isResolvingConflict, setIsResolvingConflict] = useState(false);
-  const [editStartTimestamp, setEditStartTimestamp] = useState(null);
-  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
-  const [isResolvingConflictLoading, setIsResolvingConflictLoading] = useState(false);
-
-  // Conflict check API
-  const { post: checkConflictAPI, loading: checkingConflict } = useFetch(
-    'conflict_resolution/check-conflict',
-    {
-      autoFetch: false,
-    },
-  );
-
-  // Simple conflict resolution functions
-  const startEditSession = () => {
-    setEditStartTimestamp(new Date().toISOString());
-    setConflictData(null);
-    setIsResolvingConflict(false);
-  };
-
-  // Helper function for re-checking conflicts without updating modal state
-  const recheckConflicts = async (recordType, recordId, userContents = null) => {
-    if (!editStartTimestamp) {
-      throw new Error('Edit session not started. Call startEditSession() first.');
-    }
-
-    try {
-      const requestData = {
-        record_type: recordType,
-        record_id: recordId,
-        edit_start_timestamp: editStartTimestamp,
-        user_contents: userContents,
-      };
-
-      const response = await checkConflictAPI(requestData);
-
-      if (response.has_conflict) {
-        return {
-          hasConflict: true,
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation,
-        };
-      }
-
-      return { hasConflict: false };
-    } catch (error) {
-      console.error('Error re-checking for conflicts:', error);
-      throw error;
-    }
-  };
-
-  const checkForConflicts = async (recordType, recordId, userContents = null) => {
-    if (!editStartTimestamp) {
-      throw new Error('Edit session not started. Call startEditSession() first.');
-    }
-
-    try {
-      setIsCheckingConflicts(true);
-
-      const requestData = {
-        record_type: recordType,
-        record_id: recordId,
-        edit_start_timestamp: editStartTimestamp,
-        user_contents: userContents, // Send user's current contents for AI explanation
-      };
-
-      const response = await checkConflictAPI(requestData);
-
-      if (response.has_conflict) {
-        setConflictData({
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation, // AI explanation
-        });
-        setIsResolvingConflict(true);
-        return {
-          hasConflict: true,
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation,
-        };
-      }
-
-      return { hasConflict: false };
-    } catch (error) {
-      console.error('Error checking for conflicts:', error);
-      throw error;
-    } finally {
-      setIsCheckingConflicts(false);
-    }
-  };
-
-  const cancelConflictResolution = () => {
-    setConflictData(null);
-    setIsResolvingConflict(false);
-  };
+  const draftOverlayAppliedForIdRef = useRef(null);
 
   // State to trigger preview updates when content changes
   const [previewTrigger, setPreviewTrigger] = useState(0);
@@ -299,20 +215,6 @@ export default function PageEdit({ onSuccess }) {
     } catch (error) {
       console.error('Error rendering content:', error);
       return contentStr;
-    }
-  };
-
-  // Function to confirm navigation with unsaved changes
-  const confirmNavigation = (callback) => {
-    if (hasUnsavedChanges && !isSaving) {
-      modals.openConfirmModal({
-        title: <div className="text-lg font-semibold">{t('Unsaved Changes')}</div>,
-        children: t('You have unsaved changes. Are you sure you want to leave without saving?'),
-        labels: { confirm: t('Leave'), cancel: t('Stay') },
-        onConfirm: callback,
-      });
-    } else {
-      callback();
     }
   };
 
@@ -401,7 +303,6 @@ export default function PageEdit({ onSuccess }) {
       setHideNotifications(false);
       setHideProfileDropdown(false);
       setHideGoToSite(false);
-      clearNavigationConfirmation();
     };
   }, [
     setShowBackButton,
@@ -409,17 +310,7 @@ export default function PageEdit({ onSuccess }) {
     setHideNotifications,
     setHideProfileDropdown,
     setHideGoToSite,
-    clearNavigationConfirmation,
   ]);
-
-  // Set/clear navigation confirmation based on unsaved changes
-  useEffect(() => {
-    if (hasUnsavedChanges && !isSaving) {
-      setNavigationConfirmation(confirmNavigation);
-    } else {
-      clearNavigationConfirmation();
-    }
-  }, [hasUnsavedChanges, isSaving, setNavigationConfirmation, clearNavigationConfirmation]);
 
   const currentContent = useMemo(() => {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
@@ -601,12 +492,72 @@ export default function PageEdit({ onSuccess }) {
     }
   }, [previewData, previewUrl, isIframeReady]);
 
-  // Start edit session when record is loaded
+  // Overlay draft_* onto live fields once per loaded record. Bump editorKey
+  // so RichTextInput (TipTap) remounts with the draft content.
   useEffect(() => {
-    if (record && !editStartTimestamp) {
-      startEditSession();
+    if (isCreateMode || !record?.id) return;
+    if (draftOverlayAppliedForIdRef.current === record.id) return;
+    draftOverlayAppliedForIdRef.current = record.id;
+    const overlaid = applyDraftOverlayToContents(record.contents);
+    if (overlaid !== record.contents) {
+      setRecord({ ...record, contents: overlaid });
+      setEditorKey((k) => k + 1);
     }
-  }, [record?.id, editStartTimestamp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record?.id, isCreateMode]);
+
+  const buildContentsPayload = useCallback(() => {
+    return (record?.contents || [])
+      .filter((c) => c.id != null)
+      .map((c) => ({
+        content_id: c.id,
+        title: c.title,
+        content: c.content,
+        seo_metadata_title: c.seo_metadata_title,
+        seo_metadata_description: c.seo_metadata_description,
+        seo_metadata_featured_image_id: c.seo_metadata_featured_image_id,
+        seo_metadata_allow_indexing: c.seo_metadata_allow_indexing,
+        custom_code: c.custom_code,
+      }));
+  }, [record?.contents]);
+
+  const autosave = useDraftAutosave({
+    recordType: 'page',
+    recordId: isCreateMode ? null : id,
+    enabled: !isCreateMode && !!record?.id,
+    buildContentsPayload,
+  });
+
+  useEffect(() => {
+    onDraftSaved((data) => {
+      if (!data?.contents?.length) return;
+      autosave.suppressNext();
+      setRecord((prev) => {
+        if (!prev?.contents) return prev;
+        return {
+          ...prev,
+          contents: prev.contents.map((c) => {
+            const incoming = data.contents.find((ic) => ic.content_id === c.id);
+            if (!incoming) return c;
+            const merged = { ...c, has_draft: true };
+            for (const field of PAGE_DRAFT_FIELDS) {
+              const v = incoming[`draft_${field}`];
+              if (v !== null && v !== undefined) merged[field] = v;
+            }
+            return merged;
+          }),
+        };
+      });
+      setEditorKey((k) => k + 1);
+    });
+    onPublished(async () => {
+      if (!isCreateMode) {
+        draftOverlayAppliedForIdRef.current = null;
+        await query.getOne(id);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Track changes to detect unsaved modifications
   useEffect(() => {
@@ -623,19 +574,6 @@ export default function PageEdit({ onSuccess }) {
       }
     }
   }, [record]);
-
-  // Prevent navigation with unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (hasUnsavedChanges && !isSaving) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, isSaving]);
 
   // Reset unsaved changes flag after successful save
   const resetUnsavedChanges = useCallback(() => {
@@ -675,12 +613,12 @@ export default function PageEdit({ onSuccess }) {
     [setRecord],
   );
 
-  const handleSubmit = useCallback(
+  // Create mode still uses the regular CRUD POST; draft autosave only runs in edit mode.
+  const handleCreateSubmit = useCallback(
     async (e) => {
       e.preventDefault();
       setIsSaving(true);
       try {
-        // Process contents using the hook's helper
         let processedContents = processContentsForSubmit(record.contents);
         if (record.is_homepage) {
           processedContents = processedContents.map((content) => ({
@@ -691,56 +629,20 @@ export default function PageEdit({ onSuccess }) {
 
         const updatedRecord = {
           ...record,
+          published: false,
           contents: processedContents.map((content) => ({
             ...content,
             seo_metadata_title: content.seo_metadata_title || content.title,
           })),
         };
+        updatedRecord.slug = updatedRecord.slug || '/';
 
-        // For create mode, set default slug if needed
-        if (isCreateMode) {
-          updatedRecord.slug = updatedRecord.slug || '/';
-        }
-
-        // Validate contents using the hook's helper
         validateContents(processedContents);
 
-        // Check for conflicts before saving (only in edit mode), send processed contents for AI explanation
-        if (!isCreateMode) {
-          const conflictResult = await checkForConflicts('page', record.id, processedContents);
-
-          if (conflictResult.hasConflict) {
-            // Conflict detected - modal will open automatically
-            setIsSaving(false);
-            return;
-          }
-        }
-
-        if (isCreateMode) {
-          // Add organization_id for new pages
-          const recordWithOrganization = {
-            ...updatedRecord,
-            organization_id: organizationId,
-          };
-          const created = await create(recordWithOrganization);
-          resetUnsavedChanges();
-          notify({ message: t('Page created successfully!'), type: 'success' });
-          if (onSuccess) onSuccess(created);
-        } else {
-          await update(updatedRecord);
-          resetUnsavedChanges();
-
-          // Signal that page was updated
-          sessionStorage.setItem(
-            'pageUpdated',
-            JSON.stringify({
-              pageId: id,
-              timestamp: Date.now(),
-            }),
-          );
-
-          notify({ message: t('Page updated successfully!'), type: 'success' });
-        }
+        const created = await create({ ...updatedRecord, organization_id: organizationId });
+        resetUnsavedChanges();
+        notify({ message: t('Draft saved!'), type: 'success' });
+        if (onSuccess) onSuccess(created);
       } catch (error) {
         console.error(error);
         notify({ message: error.message, type: 'error' });
@@ -749,104 +651,35 @@ export default function PageEdit({ onSuccess }) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      record,
-      processContentsForSubmit,
-      validateContents,
-      isCreateMode,
-      activeContent,
-      checkForConflicts,
-      create,
-      update,
-      resetUnsavedChanges,
-      notify,
-      t,
-      onSuccess,
-      navigate,
-      id,
-    ],
+    [record, processContentsForSubmit, validateContents, create, organizationId, onSuccess],
   );
 
-  const handleConflictResolution = async (resolvedData) => {
-    try {
-      setIsResolvingConflictLoading(true);
-      const processedContents = processContentsForSubmit(resolvedData.contents);
+  const flushDraftBeforePublish = async () => {
+    const contents = buildContentsPayload();
+    if (contents.length) await autosave.flushNow?.(contents);
+  };
 
-      // Re-check for conflicts before saving to ensure we have the latest server data
-      const conflictResult = await recheckConflicts('page', record.id, processedContents);
+  const refetchAfterChange = async () => {
+    draftOverlayAppliedForIdRef.current = null;
+    await query.getOne(id);
+  };
 
-      if (conflictResult.hasConflict) {
-        // Check if the server data has changed since the modal was opened
-        const currentServerTimestamp = new Date(conflictResult.lastModifiedAt).getTime();
-        const modalServerTimestamp = new Date(conflictData?.lastModifiedAt).getTime();
-
-        if (currentServerTimestamp > modalServerTimestamp) {
-          // Server data has changed - update modal with new data
-          setConflictData((prev) => ({
-            ...prev,
-            serverRecord: conflictResult.serverRecord,
-            lastModifiedBy: conflictResult.lastModifiedBy,
-            lastModifiedAt: conflictResult.lastModifiedAt,
-            conflictExplanation: conflictResult.conflictExplanation,
-          }));
-
-          notify({
-            message: t(
-              'Server data has been updated by another user. Please review the new changes.',
-            ),
-            type: 'warning',
-          });
-          setIsResolvingConflictLoading(false);
-          return; // Stay in conflict modal with updated data
-        }
-      }
-
-      // No new conflicts or same timestamp - proceed with save
-      // Use server record from conflict data as base and merge with resolved contents
-      // This ensures we build on top of the latest server state that caused the conflict
-      const serverRecord = conflictData?.serverRecord;
-      const recordToSave = serverRecord
-        ? {
-            ...serverRecord,
-            contents: mergeContentsWithServerData(serverRecord.contents, processedContents),
-          }
-        : { ...record, contents: processedContents };
-
-      await update(recordToSave);
-
-      resetUnsavedChanges();
-      notify({
-        message: t('Conflict resolved and page updated successfully!'),
-        type: 'success',
+  const autosaveLabel = (() => {
+    if (isCreateMode) return null;
+    if (autosave.status === 'saving') return t('Saving…');
+    if (autosave.status === 'error') return t('Save failed');
+    if (autosave.status === 'saved' && autosave.savedAt) {
+      return t('Saved {{time}}', {
+        time: autosave.savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       });
-
-      // Close conflict modal
-      setConflictData(null);
-      setIsResolvingConflict(false);
-
-      // Refresh the record to get the latest data
-      await query.getOne(id);
-      backWithRedirect();
-    } catch (error) {
-      console.error(error);
-      notify({ message: error.message, type: 'error' });
-    } finally {
-      setIsResolvingConflictLoading(false);
     }
-  };
-
-  const handleGoBack = () => {
-    confirmNavigation(() => backWithRedirect());
-  };
-
-  const handleContinueEditing = () => {
-    clearParallelEditWarning();
-  };
+    return null;
+  })();
 
   return (!loading && record) || isCreateMode ? (
     <>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={isCreateMode ? handleCreateSubmit : (e) => e.preventDefault()}
         className="w-full flex flex-col overflow-hidden"
         style={{ height: 'calc(100dvh - 70px)' }}
       >
@@ -855,11 +688,7 @@ export default function PageEdit({ onSuccess }) {
           <Menu shadow="md" width={180} position="bottom-end" withArrow radius="md">
             <Menu.Target>
               <Tooltip label={t('Preview')}>
-                <Button
-                  variant={previewVisible ? 'filled' : 'subtle'}
-                  size="md"
-                  className="px-2"
-                >
+                <Button variant={previewVisible ? 'filled' : 'subtle'} size="md" className="px-2">
                   <IconDeviceDesktop size={20} />
                 </Button>
               </Tooltip>
@@ -951,27 +780,56 @@ export default function PageEdit({ onSuccess }) {
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
-          <Switch
-            checked={record.published}
-            onLabel={t('Published')}
-            offLabel={t('Unpublished')}
-            size="xl"
-            classNames={{
-              track: 'px-2',
+          <ActiveEditorsAvatars editors={activeEditors} />
+          {autosaveLabel && (
+            <span className="text-xs text-gray-500 inline-flex items-center gap-1 mr-1">
+              {autosave.status === 'saving' ? (
+                <IconCloudUpload size={14} />
+              ) : (
+                <IconCloudCheck size={14} />
+              )}
+              {autosaveLabel}
+            </span>
+          )}
+          <PublishStatusMenu
+            recordType="page"
+            record={record}
+            isCreateMode={isCreateMode}
+            activeContent={currentContent}
+            siteSettings={siteSettings}
+            typeLabel={t('Page')}
+            parentFields={{
+              slug: record?.slug,
+              is_homepage: record?.is_homepage,
+              require_login: record?.require_login,
             }}
-            onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
+            flushDraft={flushDraftBeforePublish}
+            onAfterPublish={async () => {
+              await refetchAfterChange();
+              resetUnsavedChanges();
+              sessionStorage.setItem(
+                'pageUpdated',
+                JSON.stringify({ pageId: id, timestamp: Date.now() }),
+              );
+            }}
+            onAfterUnpublish={refetchAfterChange}
+            onAfterRevert={async () => {
+              await refetchAfterChange();
+              resetUnsavedChanges();
+            }}
           />
-          <Button
-            className="text-[14px] font-[600]"
-            disabled={loading || isCheckingConflicts}
-            loading={loading || isCheckingConflicts}
-            variant="subtle"
-            type="submit"
-            color="green"
-          >
-            <IconCheck size={16} className="mr-1" />
-            {t('Save')}
-          </Button>
+          {isCreateMode && (
+            <Button
+              className="text-[14px] font-[600]"
+              disabled={loading || isSaving}
+              loading={loading || isSaving}
+              variant="filled"
+              type="submit"
+              color="blue"
+            >
+              {t('Save draft')}
+            </Button>
+          )}
           <Tooltip label={t('Settings')}>
             <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
               <IconSettings size={20} />
@@ -989,185 +847,175 @@ export default function PageEdit({ onSuccess }) {
             }
             style={previewVisible ? { width: `${width}px`, flexShrink: 0 } : undefined}
           >
-          {/* Parallel Edit Warning */}
-          <ParallelEditWarning
-            warning={parallelEditWarning}
-            onDismiss={clearParallelEditWarning}
-            onGoBack={handleGoBack}
-            onContinueEditing={handleContinueEditing}
-          />
+            {/* Content Editing Section */}
+            <div>
+              <LoadingOverlay
+                visible={loading}
+                zIndex={1000}
+                overlayProps={{ radius: 'sm', blur: 2 }}
+                loaderProps={{ type: 'bars' }}
+              />
 
-          {/* Content Editing Section */}
-          <div>
-            <LoadingOverlay
-              visible={loading}
-              zIndex={1000}
-              overlayProps={{ radius: 'sm', blur: 2 }}
-              loaderProps={{ type: 'bars' }}
-            />
+              <Tabs
+                value={activeContentTab}
+                onChange={setActiveContentTab}
+                variant="pills"
+                radius="lg"
+              >
+                <Tabs.List className="mb-2 flex-wrap">
+                  {record?.contents?.map((content) => (
+                    <div key={content.id} className="relative group">
+                      <Menu
+                        shadow="md"
+                        width={150}
+                        position="bottom-end"
+                        withArrow
+                        radius="md"
+                        trigger="hover"
+                        openDelay={100}
+                        closeDelay={400}
+                      >
+                        <Menu.Target>
+                          <Tabs.Tab value={String(content.id)}>
+                            <span className="mr-1">{content.locale?.emoji_flag}</span>
+                            {content.locale?.name}
+                          </Tabs.Tab>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            color="red"
+                            leftSection={<IconTrash size={16} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteContent(content.id);
+                            }}
+                          >
+                            {t('Remove')}
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </div>
+                  ))}
 
-            <Tabs
-              value={activeContentTab}
-              onChange={setActiveContentTab}
-              variant="pills"
-              radius="lg"
-            >
-              <Tabs.List className="mb-2 flex-wrap">
-                {record?.contents?.map((content) => (
-                  <div key={content.id} className="relative group">
-                    <Menu
-                      shadow="md"
-                      width={150}
-                      position="bottom-end"
-                      withArrow
-                      radius="md"
-                      trigger="hover"
-                      openDelay={100}
-                      closeDelay={400}
+                  <Tooltip label={t('Add Language')}>
+                    <button
+                      type="button"
+                      onClick={handleAddContent}
+                      className="border border-dashed px-2 rounded-xl border-gray-300 hover:bg-gray-200"
                     >
-                      <Menu.Target>
-                        <Tabs.Tab value={String(content.id)}>
-                          <span className="mr-1">{content.locale?.emoji_flag}</span>
-                          {content.locale?.name}
-                        </Tabs.Tab>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item
-                          color="red"
-                          leftSection={<IconTrash size={16} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteContent(content.id);
-                          }}
-                        >
-                          {t('Remove')}
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </div>
-                ))}
+                      <IconPlus size={16} />
+                    </button>
+                  </Tooltip>
+                </Tabs.List>
 
-                <Tooltip label={t('Add Language')}>
-                  <button
-                    type="button"
-                    onClick={handleAddContent}
-                    className="border border-dashed px-2 rounded-xl border-gray-300 hover:bg-gray-200"
-                  >
-                    <IconPlus size={16} />
-                  </button>
-                </Tooltip>
-              </Tabs.List>
-
-              {record?.contents?.length > 0 ? (
-                record.contents.map((content) => (
-                  <Tabs.Panel key={content.id} value={String(content.id)}>
-                    <div className="flex gap-4 my-2">
-                      <div className="flex flex-col grow gap-2"></div>
-                    </div>
-
-                    {/* Title */}
-                    <TextInput
-                      className="w-full"
-                      classNames={{ input: 'font-bold text-[42px]' }}
-                      placeholder={t('Enter a title...')}
-                      size="xl"
-                      variant="unstyled"
-                      required
-                      value={content.title || ''}
-                      onChange={(e) => {
-                        updateContentField(content.id, 'title', e.target.value);
-                      }}
-                    />
-
-                    {/* Content Editor */}
-                    <div className="my-4 pl-1">
-                      <RichTextInput
-                        key={`editor-${content.id}-${editorKey}`}
-                        variant="subtle"
-                        content={content.content || ''}
-                        currentLocaleId={content.locale_id}
-                        onChange={(value) => {
-                          updateContentField(content.id, 'content', value);
-                        }}
-                        classNames={{
-                          root: 'border-none',
-                          content: 'min-h-[1000px]',
-                        }}
-                        autoComplete={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                      />
-                    </div>
-                  </Tabs.Panel>
-                ))
-              ) : (
-                <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
-              )}
-            </Tabs>
-          </div>
-        </div>
-
-        {previewVisible && (
-          <>
-            {/* Resize Handle */}
-            <div
-              className="hover:bg-blue-200 cursor-col-resize transition-colors"
-              onMouseDown={handleMouseDown}
-              style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
-              title="Drag to resize"
-            />
-
-            {/* Preview Panel - Right Side */}
-            <div className="flex-1 relative flex flex-col" style={{ minWidth: 0 }}>
-              {/* Preview Content */}
-              <div className="flex-1 relative">
-                {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
-                {isResizing && (
-                  <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
-                )}
-                <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
-                  <div
-                    className="bg-white shadow-lg transition-all duration-300"
-                    style={{
-                      width:
-                        previewDevice === 'desktop'
-                          ? '100%'
-                          : previewDevice === 'tablet'
-                            ? '1024px'
-                            : '393px',
-                      height:
-                        previewDevice === 'desktop'
-                          ? 'calc(100% - 0px)'
-                          : previewDevice === 'tablet'
-                            ? '852px'
-                            : '852px',
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    {previewUrl ? (
-                      <iframe
-                        ref={iframeRef}
-                        className="w-full h-full border border-gray-300 !shadow"
-                        style={{ borderRadius: '8px' }}
-                        title={`Preview`}
-                        sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        <div className="text-center">
-                          <p>{t('No content selected')}</p>
-                          <p className="text-sm mt-1">
-                            {t('Select a language tab to preview')}
-                          </p>
-                        </div>
+                {record?.contents?.length > 0 ? (
+                  record.contents.map((content) => (
+                    <Tabs.Panel key={content.id} value={String(content.id)}>
+                      <div className="flex gap-4 my-2">
+                        <div className="flex flex-col grow gap-2"></div>
                       </div>
-                    )}
+
+                      {/* Title */}
+                      <TextInput
+                        className="w-full"
+                        classNames={{ input: 'font-bold text-[42px]' }}
+                        placeholder={t('Enter a title...')}
+                        size="xl"
+                        variant="unstyled"
+                        required
+                        value={content.title || ''}
+                        onChange={(e) => {
+                          updateContentField(content.id, 'title', e.target.value);
+                        }}
+                      />
+
+                      {/* Content Editor */}
+                      <div className="my-4 pl-1">
+                        <RichTextInput
+                          key={`editor-${content.id}-${editorKey}`}
+                          variant="subtle"
+                          content={content.content || ''}
+                          currentLocaleId={content.locale_id}
+                          onChange={(value) => {
+                            updateContentField(content.id, 'content', value);
+                          }}
+                          classNames={{
+                            root: 'border-none',
+                            content: 'min-h-[1000px]',
+                          }}
+                          autoComplete={aiAutocompleteEnabled && aiAutoCompleteAvailable}
+                        />
+                      </div>
+                    </Tabs.Panel>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-gray-500">{t('Nothing here yet.')}</div>
+                )}
+              </Tabs>
+            </div>
+          </div>
+
+          {previewVisible && (
+            <>
+              {/* Resize Handle */}
+              <div
+                className="hover:bg-blue-200 cursor-col-resize transition-colors"
+                onMouseDown={handleMouseDown}
+                style={{ cursor: 'col-resize', flexShrink: 0, width: '4px' }}
+                title="Drag to resize"
+              />
+
+              {/* Preview Panel - Right Side */}
+              <div className="flex-1 relative flex flex-col" style={{ minWidth: 0 }}>
+                {/* Preview Content */}
+                <div className="flex-1 relative">
+                  {/* Conditional overlay during resize to prevent iframe from capturing mouse events */}
+                  {isResizing && (
+                    <div className="absolute inset-0 z-10 bg-transparent cursor-col-resize" />
+                  )}
+                  <div className="h-full flex items-center justify-center bg-gray-100 rounded-lg">
+                    <div
+                      className="bg-white shadow-lg transition-all duration-300"
+                      style={{
+                        width:
+                          previewDevice === 'desktop'
+                            ? '100%'
+                            : previewDevice === 'tablet'
+                              ? '1024px'
+                              : '393px',
+                        height:
+                          previewDevice === 'desktop'
+                            ? 'calc(100% - 0px)'
+                            : previewDevice === 'tablet'
+                              ? '852px'
+                              : '852px',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      {previewUrl ? (
+                        <iframe
+                          ref={iframeRef}
+                          className="w-full h-full border border-gray-300 !shadow"
+                          style={{ borderRadius: '8px' }}
+                          title={`Preview`}
+                          sandbox="allow-same-origin allow-scripts allow-forms allow-link allow-presentation"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                          <div className="text-center">
+                            <p>{t('No content selected')}</p>
+                            <p className="text-sm mt-1">{t('Select a language tab to preview')}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
         </div>
         <AIWriterSidebar
           opened={aiWriterSidebarOpened}
@@ -1249,19 +1097,6 @@ export default function PageEdit({ onSuccess }) {
           themeName={siteSettings?.selected_theme}
         />
       )}
-
-      {/* Conflict Resolution Modal */}
-      <ConflictResolutionModal
-        isOpen={isResolvingConflict}
-        onClose={cancelConflictResolution}
-        userRecord={{ contents: record?.contents || [] }}
-        serverRecord={conflictData?.serverRecord}
-        lastModifiedBy={conflictData?.lastModifiedBy}
-        lastModifiedAt={conflictData?.lastModifiedAt}
-        conflictExplanation={conflictData?.conflictExplanation}
-        onResolveConflict={handleConflictResolution}
-        isLoading={isResolvingConflictLoading}
-      />
     </>
   ) : (
     <FormViewSkeleton />

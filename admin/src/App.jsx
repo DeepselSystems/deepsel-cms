@@ -17,6 +17,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/admin/auth/Login.jsx';
 import ResetPasswordConfirmation from './components/admin/auth/ResetPasswordConfirmation.jsx';
 import UserList from './components/admin/user/UserList.jsx';
+import ManageUsersList from './components/admin/user/ManageUsersList.jsx';
 import UserEdit from './components/admin/user/UserEdit.jsx';
 import UserView from './components/admin/user/UserView.jsx';
 import UserCreate from './components/admin/user/UserCreate.jsx';
@@ -275,7 +276,7 @@ export default function App(props) {
                     <Route path="/pages/:id/edit" element={<PageEdit />} />
                     <Route path="/pages/:id" element={<Navigate to="edit" replace />} />
                     <Route path="/menus" element={<MenuTree />} />
-                    <Route path="/manage-users" element={<UserList />} />
+                    <Route path="/manage-users" element={<ManageUsersList />} />
                     <Route path="/manage-users/:id/edit" element={<UserEdit />} />
                     <Route path="/manage-users/:id" element={<UserView />} />
                     <Route path="/manage-users/create" element={<UserCreate />} />

@@ -34,7 +34,6 @@ export * from './Masonry';
 export * from './MultiSelect';
 export * from './NumberFormatter';
 export * from './NumberInput';
-export * from './ParallelEditWarning';
 export * from './PasswordInput';
 export * from './Radio';
 export * from './RadioGroup';

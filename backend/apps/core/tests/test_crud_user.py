@@ -13,14 +13,12 @@ def test_create_user(db: Session):
     assert user.id is not None  # nosec B101
 
 
-def test_create_user_with_missing_username(db: Session):
+def test_create_user_without_username(db: Session):
     user = UserModel(email="missingusername@test.com")
     db.add(user)
-    try:
-        db.commit()
-        assert False, "Commit should have failed due to missing username"  # nosec B101
-    except Exception:
-        db.rollback()
+    db.commit()
+    assert user.id is not None  # nosec B101
+    assert user.username is None  # nosec B101
 
 
 def test_create_user_with_missing_email(db: Session):

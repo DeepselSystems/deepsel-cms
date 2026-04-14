@@ -6,7 +6,10 @@ from sqlalchemy.orm import Session
 from settings import UPLOAD_SIZE_LIMIT
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
-from apps.core.utils.get_current_user import get_current_user
+from apps.core.utils.get_current_user import (
+    get_current_user,
+    get_current_user_optional,
+)
 from apps.core.utils.models_pool import models_pool
 from apps.core.schemas.attachment import (
     AttachmentRead,
@@ -25,7 +28,6 @@ router = CRUDRouter(
     search_schema=AttachmentSearch,
     update_schema=AttachmentUpdate,
     table_name=table_name,
-    dependencies=[Depends(get_current_user)],
     create_route=False,
 )
 
@@ -75,7 +77,7 @@ def upload_files(
 def serve_file(
     file_name: str,
     response: Response,
-    user: UserModel = Depends(get_current_user),
+    user: UserModel = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     instance = Model.get_by_name(db, file_name)

@@ -141,3 +141,32 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     @classmethod
     def _get_admin_role_string_ids(cls):
         return ["admin_role", "super_admin_role", "website_admin_role"]
+
+    @classmethod
+    def create(
+        cls, db, user, values, commit=True, bypass_permission=False, *args, **kwargs
+    ):
+        instance = super().create(
+            db,
+            user,
+            values,
+            commit=commit,
+            bypass_permission=bypass_permission,
+            *args,
+            **kwargs,
+        )
+        if user and getattr(user, "id", None):
+            from apps.core.models.user_organization import UserOrganizationModel
+
+            existing = (
+                db.query(UserOrganizationModel)
+                .filter_by(user_id=user.id, organization_id=instance.id)
+                .first()
+            )
+            if not existing:
+                db.add(
+                    UserOrganizationModel(user_id=user.id, organization_id=instance.id)
+                )
+                if commit:
+                    db.commit()
+        return instance

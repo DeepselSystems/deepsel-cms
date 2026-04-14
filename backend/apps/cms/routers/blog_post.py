@@ -29,7 +29,6 @@ router = CRUDRouter(
     create_schema=BlogPostCreate,
     update_schema=BlogPostUpdate,
     table_name=table_name,
-    dependencies=[Depends(get_current_user)],
 )
 
 

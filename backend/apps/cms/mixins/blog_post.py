@@ -10,14 +10,12 @@ from deepsel.orm import (
 
 
 class BlogPostMixin:
-    """Business logic for blog posts: public user filtering on get_one and search."""
+    """Business logic for blog posts: published-only filtering for anonymous callers."""
 
     @classmethod
     def get_one(cls, db: Session, user, item_id: int, *args, **kwargs):
         res = db.query(cls).get(item_id)
-        # check if user is public user
-        # if yes filter by published=True
-        if user.is_public_user():
+        if user is None or not user.signed_up:
             if not res.published:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -36,9 +34,7 @@ class BlogPostMixin:
         *args,
         **kwargs,
     ):
-        # check if user is public user
-        # if yes filter by published=True
-        if user.is_public_user():
+        if user is None or not user.signed_up:
             search = search or SearchQuery()
             if search.AND is None:
                 search.AND = []

@@ -79,22 +79,11 @@ def get_current_user(
 
     # 2. Fall back to Bearer token (API clients, backward compat)
     if token is None:
-        # public user with string_id = 'public_user'
-        user = (
-            db.query(UserModel)
-            .filter_by(
-                string_id="public_user",
-                organization_id=DEFAULT_ORG_ID,
-            )
-            .first()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="No default user for empty credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return user
 
     try:
         payload = jwt.decode(token, APP_SECRET, algorithms=[AUTH_ALGORITHM])

@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useEffect, useRef, useState } from 'react';
 import { LoadingOverlay, Modal, Tabs, Tooltip, Menu, Drawer, Accordion } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
 import { useDisclosure } from '@mantine/hooks';
@@ -20,7 +20,7 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import { getAttachmentUrl, mergeContentsWithServerData } from '../../../common/utils/index.js';
+import { getAttachmentUrl } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
@@ -34,15 +34,15 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism.css';
 import H2 from '../../../common/ui/H2.jsx';
 import useEditSession from '../../../common/hooks/useEditSession.js';
-import useFetch from '../../../common/api/useFetch.js';
-import { useState } from 'react';
-import ParallelEditWarning from '../../../common/ui/ParallelEditWarning.jsx';
-import ConflictResolutionModal from '../../../common/ui/ConflictResolutionModal.jsx';
+import useDraftAutosave from '../../../common/hooks/useDraftAutosave.js';
+import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
+import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
 import {
   IconAi,
-  IconCheck,
+  IconCloudCheck,
+  IconCloudUpload,
   IconPencil,
   IconPhotoPlus,
   IconPlus,
@@ -51,6 +51,39 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
+
+const BLOG_POST_DRAFT_FIELDS = [
+  'title',
+  'subtitle',
+  'content',
+  'reading_length',
+  'featured_image_id',
+  'seo_metadata_title',
+  'seo_metadata_description',
+  'seo_metadata_featured_image_id',
+  'seo_metadata_allow_indexing',
+  'custom_code',
+];
+
+/**
+ * Overlay draft_* values onto the live fields so the editor always renders the
+ * "working copy". Runs once per loaded record (keyed by id).
+ */
+function applyDraftOverlayToContents(contents) {
+  if (!contents?.length) return contents;
+  return contents.map((c) => {
+    if (!c.has_draft) return c;
+    const merged = { ...c };
+    for (const field of BLOG_POST_DRAFT_FIELDS) {
+      const draftVal = c[`draft_${field}`];
+      if (draftVal !== null && draftVal !== undefined) merged[field] = draftVal;
+    }
+    if (c.draft_featured_image) merged.featured_image = c.draft_featured_image;
+    if (c.draft_seo_metadata_featured_image)
+      merged.seo_metadata_featured_image = c.draft_seo_metadata_featured_image;
+    return merged;
+  });
+}
 
 export default function BlogPostEdit() {
   const { t } = useTranslation();
@@ -135,19 +168,14 @@ export default function BlogPostEdit() {
     [activeContentTab, record?.contents],
   );
 
-  // Edit session management for parallel edit detection (edit mode only)
-  const { parallelEditWarning, clearParallelEditWarning } = useEditSession(
+  // Presence + live draft sync
+  const { activeEditors, onDraftSaved, onPublished } = useEditSession(
     'blog_post',
     isCreateMode ? null : id,
     null,
   );
 
-  // Simple conflict resolution state
-  const [conflictData, setConflictData] = useState(null);
-  const [isResolvingConflict, setIsResolvingConflict] = useState(false);
-  const [editStartTimestamp, setEditStartTimestamp] = useState(null);
-  const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
-  const [isResolvingConflictLoading, setIsResolvingConflictLoading] = useState(false);
+  const draftOverlayAppliedForIdRef = useRef(null);
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
@@ -163,105 +191,79 @@ export default function BlogPostEdit() {
     'Please specify an API key and autocomplete model in Site Settings to use this feature.',
   );
 
-  // Conflict check API
-  const { post: checkConflictAPI } = useFetch('conflict_resolution/check-conflict', {
-    autoFetch: false,
+  // Overlay draft_* onto live fields once per loaded record so the editor shows the working copy.
+  // We must bump editorKey so RichTextInput (TipTap) remounts with the draft content —
+  // it only reads its `content` prop on mount.
+  useEffect(() => {
+    if (isCreateMode || !record?.id) return;
+    if (draftOverlayAppliedForIdRef.current === record.id) return;
+    draftOverlayAppliedForIdRef.current = record.id;
+    const overlaid = applyDraftOverlayToContents(record.contents);
+    if (overlaid !== record.contents) {
+      setRecord({ ...record, contents: overlaid });
+      setEditorKey((k) => k + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record?.id, isCreateMode]);
+
+  const buildContentsPayload = useCallback(() => {
+    return (record?.contents || [])
+      .filter((c) => c.id != null)
+      .map((c) => ({
+        content_id: c.id,
+        title: c.title,
+        subtitle: c.subtitle,
+        content: c.content,
+        reading_length: c.reading_length,
+        featured_image_id: c.featured_image_id,
+        seo_metadata_title: c.seo_metadata_title,
+        seo_metadata_description: c.seo_metadata_description,
+        seo_metadata_featured_image_id: c.seo_metadata_featured_image_id,
+        seo_metadata_allow_indexing: c.seo_metadata_allow_indexing,
+        custom_code: c.custom_code,
+      }));
+  }, [record?.contents]);
+
+  const autosave = useDraftAutosave({
+    recordType: 'blog_post',
+    recordId: isCreateMode ? null : id,
+    enabled: !isCreateMode && !!record?.id,
+    buildContentsPayload,
   });
 
-  // Simple conflict resolution functions
-  const startEditSession = () => {
-    setEditStartTimestamp(new Date().toISOString());
-    setConflictData(null);
-    setIsResolvingConflict(false);
-  };
-
-  // Helper function for re-checking conflicts without updating modal state
-  const recheckConflicts = async (recordType, recordId, userContents = null) => {
-    if (!editStartTimestamp) {
-      throw new Error('Edit session not started. Call startEditSession() first.');
-    }
-
-    try {
-      const requestData = {
-        record_type: recordType,
-        record_id: recordId,
-        edit_start_timestamp: editStartTimestamp,
-        user_contents: userContents,
-      };
-
-      const response = await checkConflictAPI(requestData);
-
-      if (response.has_conflict) {
-        return {
-          hasConflict: true,
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation,
-        };
-      }
-
-      return { hasConflict: false };
-    } catch (error) {
-      console.error('Error re-checking for conflicts:', error);
-      throw error;
-    }
-  };
-
-  const checkForConflicts = async (recordType, recordId, userContents = null) => {
-    if (!editStartTimestamp) {
-      throw new Error('Edit session not started. Call startEditSession() first.');
-    }
-
-    try {
-      setIsCheckingConflicts(true);
-
-      const requestData = {
-        record_type: recordType,
-        record_id: recordId,
-        edit_start_timestamp: editStartTimestamp,
-        user_contents: userContents, // Send user's current contents for AI explanation
-      };
-
-      const response = await checkConflictAPI(requestData);
-
-      if (response.has_conflict) {
-        setConflictData({
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation, // AI explanation
-        });
-        setIsResolvingConflict(true);
-        return {
-          hasConflict: true,
-          serverRecord: response.newer_record,
-          lastModifiedBy: response.last_modified_by,
-          lastModifiedAt: response.last_modified_at,
-          conflictExplanation: response.conflict_explanation,
-        };
-      }
-
-      return { hasConflict: false };
-    } catch (error) {
-      console.error('Error checking for conflicts:', error);
-      throw error;
-    } finally {
-      setIsCheckingConflicts(false);
-    }
-  };
-
-  const cancelConflictResolution = () => {
-    setConflictData(null);
-    setIsResolvingConflict(false);
-  };
-
-  // Start edit session only once when record is first loaded (edit mode only)
+  // Merge incoming peer drafts into local state; guard against echo saves.
   useEffect(() => {
-    if (!isCreateMode && record && !editStartTimestamp) {
-      startEditSession();
-    }
-  }, [record?.id, editStartTimestamp, isCreateMode]);
+    onDraftSaved((data) => {
+      if (!data?.contents?.length) return;
+      autosave.suppressNext();
+      setRecord((prev) => {
+        if (!prev?.contents) return prev;
+        return {
+          ...prev,
+          contents: prev.contents.map((c) => {
+            const incoming = data.contents.find((ic) => ic.content_id === c.id);
+            if (!incoming) return c;
+            const merged = { ...c, has_draft: true };
+            for (const field of BLOG_POST_DRAFT_FIELDS) {
+              const v = incoming[`draft_${field}`];
+              if (v !== null && v !== undefined) merged[field] = v;
+            }
+            return merged;
+          }),
+        };
+      });
+      // Remount RichTextInput so it shows the peer's updated content.
+      setEditorKey((k) => k + 1);
+    });
+    onPublished(async () => {
+      // Someone else just published — reload to get the fresh live fields.
+      if (!isCreateMode) {
+        draftOverlayAppliedForIdRef.current = null;
+        await getOne(id);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-collapse sidebar on mount
   useEffect(() => {
@@ -315,151 +317,70 @@ export default function BlogPostEdit() {
     return slug.startsWith('/') ? slug : `/${slug}`;
   };
 
-  const handleSubmit = async (e) => {
+  // Create mode still uses the full POST; draft autosave only runs in edit mode.
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Use hook's helper to process contents for submission
       const processedContents = processContentsForSubmit(record.contents);
-
-      // Validate contents using hook's helper
       validateContents(processedContents);
 
-      // Create the complete record that we're trying to save (with processed contents)
       const recordToSave = {
         ...record,
+        published: false,
         contents: processedContents.map((content) => ({
           ...content,
           seo_metadata_title: content.seo_metadata_title || content.title,
         })),
       };
 
-      if (isCreateMode) {
-        // Generate slug if empty
-        if (!recordToSave.slug && recordToSave.contents.length > 0) {
-          const firstContent = recordToSave.contents[0];
-          if (firstContent.title) {
-            recordToSave.slug = generateSlug(firstContent.title);
-          }
-        }
-        // Ensure slug starts with a forward slash
-        if (recordToSave.slug && !recordToSave.slug.startsWith('/')) {
-          recordToSave.slug = `/${recordToSave.slug}`;
-        } else if (!recordToSave.slug) {
-          recordToSave.slug = '/';
-        }
-
-        await create({ ...recordToSave, organization_id: organizationId });
-        notify({ message: t('Blog Post created successfully!'), type: 'success' });
-        navigate(-1);
-      } else {
-        // Check for conflicts before saving, send processed contents for AI explanation
-        const conflictResult = await checkForConflicts('blog_post', record.id, processedContents);
-
-        if (conflictResult.hasConflict) {
-          setConflictData((prev) => ({
-            ...prev,
-            userRecordToSave: recordToSave,
-          }));
-          return;
-        }
-
-        await update(recordToSave);
-        notify({ message: t('Blog Post updated successfully!'), type: 'success' });
-        navigate(-1);
+      if (!recordToSave.slug && recordToSave.contents.length > 0) {
+        const firstContent = recordToSave.contents[0];
+        if (firstContent.title) recordToSave.slug = generateSlug(firstContent.title);
       }
-    } catch (error) {
-      console.error(error);
-      notify({ message: error.message, type: 'error' });
-    }
-  };
-
-  const handleConflictResolution = async (resolvedData) => {
-    try {
-      setIsResolvingConflictLoading(true);
-      const processedContents = processContentsForSubmit(resolvedData.contents);
-
-      // Re-check for conflicts before saving to ensure we have the latest server data
-      const conflictResult = await recheckConflicts('blog_post', record.id, processedContents);
-
-      if (conflictResult.hasConflict) {
-        // Check if the server data has changed since the modal was opened
-        const currentServerTimestamp = new Date(conflictResult.lastModifiedAt).getTime();
-        const modalServerTimestamp = new Date(conflictData?.lastModifiedAt).getTime();
-
-        if (currentServerTimestamp > modalServerTimestamp) {
-          // Server data has changed - update modal with new data
-          setConflictData((prev) => ({
-            ...prev,
-            serverRecord: conflictResult.serverRecord,
-            lastModifiedBy: conflictResult.lastModifiedBy,
-            lastModifiedAt: conflictResult.lastModifiedAt,
-            conflictExplanation: conflictResult.conflictExplanation,
-          }));
-
-          notify({
-            message: t(
-              'Server data has been updated by another user. Please review the new changes.',
-            ),
-            type: 'warning',
-          });
-          setIsResolvingConflictLoading(false);
-          return; // Stay in conflict modal with updated data
-        }
+      if (recordToSave.slug && !recordToSave.slug.startsWith('/')) {
+        recordToSave.slug = `/${recordToSave.slug}`;
+      } else if (!recordToSave.slug) {
+        recordToSave.slug = '/';
       }
 
-      // No new conflicts or same timestamp - proceed with save
-      // Use server record from conflict data as base and merge with resolved contents
-      // This ensures we build on top of the latest server state that caused the conflict
-      const serverRecord = conflictData?.serverRecord;
-      const recordToSave = serverRecord
-        ? {
-            ...serverRecord,
-            contents: mergeContentsWithServerData(serverRecord.contents, processedContents),
-          }
-        : { ...record, contents: processedContents };
-
-      await update(recordToSave);
-
-      notify({
-        message: t('Conflict resolved and blog post updated successfully!'),
-        type: 'success',
-      });
-
-      // Close conflict modal
-      setConflictData(null);
-      setIsResolvingConflict(false);
-
-      // Refresh the record to get the latest data
-      await query.getOne(id);
+      await create({ ...recordToSave, organization_id: organizationId });
+      notify({ message: t('Draft saved!'), type: 'success' });
       navigate(-1);
     } catch (error) {
       console.error(error);
       notify({ message: error.message, type: 'error' });
-    } finally {
-      setIsResolvingConflictLoading(false);
     }
   };
 
-  const handleGoBack = () => {
-    navigate(-1);
+  const flushDraftBeforePublish = async () => {
+    const contents = buildContentsPayload();
+    if (contents.length) await autosave.flushNow?.(contents);
   };
 
-  const handleContinueEditing = () => {
-    clearParallelEditWarning();
+  const refetchAfterChange = async () => {
+    draftOverlayAppliedForIdRef.current = null;
+    await getOne(id);
   };
+
+  const autosaveLabel = (() => {
+    if (isCreateMode) return null;
+    if (autosave.status === 'saving') return t('Saving…');
+    if (autosave.status === 'error') return t('Save failed');
+    if (autosave.status === 'saved' && autosave.savedAt) {
+      return t('Saved {{time}}', {
+        time: autosave.savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      });
+    }
+    return null;
+  })();
 
   return isCreateMode || (!loading && record) ? (
     <>
       <div className="w-full flex overflow-y-auto" style={{ height: 'calc(100dvh - 70px)' }}>
-        <form className={`flex-1 max-w-screen-xl m-auto px-[24px]`} onSubmit={handleSubmit}>
-          {/* Parallel Edit Warning */}
-          <ParallelEditWarning
-            warning={parallelEditWarning}
-            onDismiss={clearParallelEditWarning}
-            onGoBack={handleGoBack}
-            onContinueEditing={handleContinueEditing}
-          />
-
+        <form
+          className={`flex-1 max-w-screen-xl m-auto px-[24px]`}
+          onSubmit={isCreateMode ? handleCreateSubmit : (e) => e.preventDefault()}
+        >
           <div className="mt-4">
             <LoadingOverlay
               visible={loading}
@@ -521,6 +442,37 @@ export default function BlogPostEdit() {
                   </Tooltip>
                 </Tabs.List>
                 <div className="flex items-center gap-2">
+                  <ActiveEditorsAvatars editors={activeEditors} />
+                  {autosaveLabel && (
+                    <span className="text-xs text-gray-500 inline-flex items-center gap-1 mr-1">
+                      {autosave.status === 'saving' ? (
+                        <IconCloudUpload size={14} />
+                      ) : (
+                        <IconCloudCheck size={14} />
+                      )}
+                      {autosaveLabel}
+                    </span>
+                  )}
+                  <PublishStatusMenu
+                    recordType="blog_post"
+                    record={record}
+                    isCreateMode={isCreateMode}
+                    activeContent={activeContent}
+                    siteSettings={siteSettings}
+                    typeLabel={t('Blog post')}
+                    publicUrlPrefix="/blog"
+                    parentFields={{
+                      slug: record?.slug,
+                      publish_date: record?.publish_date,
+                      author_id: record?.author_id,
+                      require_login: record?.require_login,
+                      blog_post_custom_code: record?.blog_post_custom_code,
+                    }}
+                    flushDraft={flushDraftBeforePublish}
+                    onAfterPublish={refetchAfterChange}
+                    onAfterUnpublish={refetchAfterChange}
+                    onAfterRevert={refetchAfterChange}
+                  />
                   <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
                     <Menu.Target>
                       <Button variant="subtle" size="md" className="px-2">
@@ -571,27 +523,18 @@ export default function BlogPostEdit() {
                       </Menu.Item>
                     </Menu.Dropdown>
                   </Menu>
-                  <Switch
-                    checked={record.published}
-                    onLabel={t('Published')}
-                    offLabel={t('Unpublished')}
-                    size="xl"
-                    classNames={{
-                      track: 'px-2',
-                    }}
-                    onChange={(e) => setRecord({ ...record, published: e.currentTarget.checked })}
-                  />
-                  <Button
-                    className="text-[14px] font-[600]"
-                    disabled={loading || isCheckingConflicts}
-                    loading={loading || isCheckingConflicts}
-                    variant="subtle"
-                    type="submit"
-                    color="green"
-                  >
-                    <IconCheck size={16} className="mr-1" />
-                    {t('Save')}
-                  </Button>
+                  {isCreateMode && (
+                    <Button
+                      className="text-[14px] font-[600]"
+                      disabled={loading}
+                      loading={loading}
+                      variant="filled"
+                      type="submit"
+                      color="blue"
+                    >
+                      {t('Save draft')}
+                    </Button>
+                  )}
                   <Tooltip label={t('Settings')}>
                     <Button
                       variant="subtle"
@@ -906,22 +849,6 @@ export default function BlogPostEdit() {
           )}
         </Accordion>
       </Drawer>
-
-      {/* Conflict Resolution Modal */}
-      <ConflictResolutionModal
-        isOpen={isResolvingConflict}
-        onClose={cancelConflictResolution}
-        userRecord={{
-          ...record,
-          contents: record?.contents || [],
-        }}
-        serverRecord={conflictData?.serverRecord}
-        lastModifiedBy={conflictData?.lastModifiedBy}
-        lastModifiedAt={conflictData?.lastModifiedAt}
-        conflictExplanation={conflictData?.conflictExplanation}
-        onResolveConflict={handleConflictResolution}
-        isLoading={isResolvingConflictLoading}
-      />
 
       <ChooseAttachmentModal
         isOpen={featuredImageModalOpened}
