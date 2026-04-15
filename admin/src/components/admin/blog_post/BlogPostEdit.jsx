@@ -357,8 +357,16 @@ export default function BlogPostEdit() {
   };
 
   const refetchAfterChange = async () => {
-    draftOverlayAppliedForIdRef.current = null;
-    await getOne(id);
+    // The overlay useEffect is keyed on record.id and won't re-run for a refetch
+    // of the same record, so we apply it manually here to keep any still-pending
+    // per-language drafts visible (e.g. after reverting only the active language).
+    const fresh = await getOne(id);
+    if (fresh?.contents) {
+      const overlaid = applyDraftOverlayToContents(fresh.contents);
+      setRecord({ ...fresh, contents: overlaid });
+      setEditorKey((k) => k + 1);
+      draftOverlayAppliedForIdRef.current = fresh.id;
+    }
   };
 
   // Snapshot parent-level settings when the drawer opens so we can detect on close

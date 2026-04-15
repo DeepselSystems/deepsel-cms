@@ -34,11 +34,12 @@ export default function PublishStatusMenu({
   const { post: unpublishAPI } = useFetch('draft/unpublish', { autoFetch: false });
   const { post: revertAPI } = useFetch('draft/revert', { autoFetch: false });
 
-  const hasDraft = !isCreateMode && (record?.contents || []).some((c) => c.has_draft);
+  const activeHasDraft = !!activeContent?.has_draft;
+  const languageName = activeContent?.locale?.name || activeContent?.locale?.iso_code || '';
   const statusLabel = isCreateMode
     ? t('New draft')
     : record?.published
-      ? hasDraft
+      ? activeHasDraft
         ? t('Published · Draft pending')
         : t('Published')
       : t('Draft');
@@ -59,6 +60,7 @@ export default function PublishStatusMenu({
         record_type: recordType,
         record_id: record.id,
         parent_fields: parentFields,
+        content_id: activeContent?.id,
       });
       notify({ message: t('{{type}} published.', { type: typeLabel }), type: 'success' });
       await onAfterPublish?.();
@@ -78,7 +80,10 @@ export default function PublishStatusMenu({
         </div>
       ),
       children: (
-        <Text size="sm">{t('Your changes will become visible to the public immediately.')}</Text>
+        <Text size="sm">
+          {t('Your')} <strong>{languageName}</strong>{' '}
+          {t('changes will become visible to the public immediately.')}
+        </Text>
       ),
       labels: { confirm: t('Publish'), cancel: t('Cancel') },
       confirmProps: { color: 'green' },
@@ -88,7 +93,11 @@ export default function PublishStatusMenu({
 
   const runRevert = async () => {
     try {
-      await revertAPI({ record_type: recordType, record_id: record.id });
+      await revertAPI({
+        record_type: recordType,
+        record_id: record.id,
+        content_id: activeContent?.id,
+      });
       notify({ message: t('Changes reverted.'), type: 'info' });
       await onAfterRevert?.();
     } catch (error) {
@@ -102,7 +111,7 @@ export default function PublishStatusMenu({
       title: <div className="font-semibold">{t('Revert changes?')}</div>,
       children: (
         <Text size="sm">
-          {t('This will discard the current draft')} <strong>{t('for all languages')}</strong>{' '}
+          {t('This will discard the current draft for')} <strong>{languageName}</strong>{' '}
           {t('and restore the published version.')}
         </Text>
       ),
@@ -124,9 +133,10 @@ export default function PublishStatusMenu({
   };
 
   const lang = activeContent?.locale?.iso_code || siteSettings?.default_language?.iso_code || '';
-  const slug = activeContent?.slug || '';
-  const cleanSlug = slug.startsWith('/') ? slug : `/${slug}`;
-  const publicHref = `${publicUrlPrefix}/${lang}${cleanSlug}`;
+  // Page slugs live per-language on the content row; blog post slugs live on the parent record.
+  const rawSlug = activeContent?.slug || record?.slug || '';
+  const slugPath = rawSlug ? (rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`) : '';
+  const publicHref = `/${lang}${publicUrlPrefix}${slugPath}`;
 
   return (
     <Menu shadow="md" position="bottom-end">
@@ -143,7 +153,7 @@ export default function PublishStatusMenu({
         </button>
       </Menu.Target>
       <Menu.Dropdown>
-        {(!record?.published || hasDraft) && (
+        {(!record?.published || activeHasDraft) && (
           <Menu.Item
             leftSection={<IconWorldUpload size={16} />}
             onClick={confirmAndPublish}
@@ -152,7 +162,7 @@ export default function PublishStatusMenu({
             {t('Publish changes')}
           </Menu.Item>
         )}
-        {record?.published && hasDraft && (
+        {record?.published && activeHasDraft && (
           <Menu.Item leftSection={<IconArrowBackUp size={16} />} onClick={confirmAndRevert}>
             {t('Revert changes')}
           </Menu.Item>
