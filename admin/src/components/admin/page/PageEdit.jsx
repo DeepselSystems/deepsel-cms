@@ -661,6 +661,44 @@ export default function PageEdit({ onSuccess }) {
     await query.getOne(id);
   };
 
+  // Snapshot parent-level settings when the drawer opens so we can detect on close
+  // whether anything changed. Content-level fields (slug, SEO, per-lang custom_code)
+  // flow through autosave already; parent fields have no draft column, so we persist
+  // them directly via update() if dirty.
+  const settingsSnapshotRef = useRef(null);
+  const snapshotSettings = () =>
+    JSON.stringify({
+      is_homepage: record?.is_homepage ?? false,
+      require_login: record?.require_login ?? false,
+      page_custom_code: record?.page_custom_code ?? '',
+    });
+
+  const handleOpenSettingsDrawer = () => {
+    settingsSnapshotRef.current = snapshotSettings();
+    openSettingsDrawer();
+  };
+
+  const handleCloseSettingsDrawer = async () => {
+    closeSettingsDrawer();
+    if (isCreateMode || !record?.id) return;
+
+    const pendingContents = buildContentsPayload();
+    if (pendingContents.length) await autosave.flushNow?.(pendingContents);
+
+    if (snapshotSettings() === settingsSnapshotRef.current) return;
+    try {
+      await update({
+        id: record.id,
+        is_homepage: record.is_homepage,
+        require_login: record.require_login,
+        page_custom_code: record.page_custom_code,
+      });
+    } catch (error) {
+      console.error(error);
+      notify({ message: error.message, type: 'error' });
+    }
+  };
+
   const autosaveLabel = (() => {
     if (isCreateMode) return null;
     if (autosave.status === 'saving') return t('Saving…');
@@ -850,7 +888,7 @@ export default function PageEdit({ onSuccess }) {
             </Button>
           )}
           <Tooltip label={t('Settings')}>
-            <Button variant="subtle" size="md" onClick={openSettingsDrawer} className="px-2">
+            <Button variant="subtle" size="md" onClick={handleOpenSettingsDrawer} className="px-2">
               <IconSettings size={20} />
             </Button>
           </Tooltip>
@@ -1107,7 +1145,7 @@ export default function PageEdit({ onSuccess }) {
       {!!activeContent && (
         <PageContentSettingDrawer
           opened={settingsDrawerOpened}
-          onClose={closeSettingsDrawer}
+          onClose={handleCloseSettingsDrawer}
           pageContent={activeContent}
           updateContentField={updateContentField}
           page={record}

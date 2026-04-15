@@ -166,6 +166,15 @@ export default function BlogPostEdit() {
     [activeContentTab, record?.contents],
   );
 
+  const sortedContents = useMemo(() => {
+    const defaultLangId = siteSettings?.default_language?.id;
+    return [...(record?.contents || [])].sort((a, b) => {
+      if (a.locale_id === defaultLangId && b.locale_id !== defaultLangId) return -1;
+      if (b.locale_id === defaultLangId && a.locale_id !== defaultLangId) return 1;
+      return getLanguageName(a.locale_id).localeCompare(getLanguageName(b.locale_id));
+    });
+  }, [record?.contents, siteSettings?.default_language?.id, getLanguageName]);
+
   // Presence + live draft sync
   const { activeEditors, onDraftSaved, onPublished } = useEditSession(
     'blog_post',
@@ -352,6 +361,48 @@ export default function BlogPostEdit() {
     await getOne(id);
   };
 
+  // Snapshot parent-level settings when the drawer opens so we can detect on close
+  // whether anything changed. Content-level fields (SEO, per-lang custom_code) flow
+  // through autosave already; parent fields have no draft column, so we persist
+  // them directly via update() if dirty.
+  const settingsSnapshotRef = useRef(null);
+  const snapshotSettings = () =>
+    JSON.stringify({
+      author_id: record?.author_id ?? null,
+      publish_date: record?.publish_date ?? null,
+      slug: record?.slug ?? '',
+      require_login: record?.require_login ?? false,
+      blog_post_custom_code: record?.blog_post_custom_code ?? '',
+    });
+
+  const handleOpenSettingsDrawer = () => {
+    settingsSnapshotRef.current = snapshotSettings();
+    openSettingsDrawer();
+  };
+
+  const handleCloseSettingsDrawer = async () => {
+    closeSettingsDrawer();
+    if (isCreateMode || !record?.id) return;
+
+    const pendingContents = buildContentsPayload();
+    if (pendingContents.length) await autosave.flushNow?.(pendingContents);
+
+    if (snapshotSettings() === settingsSnapshotRef.current) return;
+    try {
+      await update({
+        id: record.id,
+        author_id: record.author_id,
+        publish_date: record.publish_date,
+        slug: record.slug,
+        require_login: record.require_login,
+        blog_post_custom_code: record.blog_post_custom_code,
+      });
+    } catch (error) {
+      console.error(error);
+      notify({ message: error.message, type: 'error' });
+    }
+  };
+
   const autosaveLabel = (() => {
     if (isCreateMode) return null;
     if (autosave.status === 'saving') return t('Saving…');
@@ -387,7 +438,7 @@ export default function BlogPostEdit() {
             >
               <div className="flex justify-between items-center mb-2">
                 <Tabs.List className="flex-wrap">
-                  {record?.contents?.map((content) => (
+                  {sortedContents.map((content) => (
                     <div key={content.id} className="relative group">
                       <Menu
                         shadow="md"
@@ -529,7 +580,7 @@ export default function BlogPostEdit() {
                     <Button
                       variant="subtle"
                       size="md"
-                      onClick={openSettingsDrawer}
+                      onClick={handleOpenSettingsDrawer}
                       className="px-2"
                     >
                       <IconSettings size={20} />
@@ -678,7 +729,7 @@ export default function BlogPostEdit() {
       {/* Settings Drawer */}
       <Drawer
         opened={settingsDrawerOpened}
-        onClose={closeSettingsDrawer}
+        onClose={handleCloseSettingsDrawer}
         size="md"
         position="right"
         transitionProps={{ transition: 'slide-left', duration: 200 }}
