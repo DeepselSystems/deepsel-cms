@@ -85,7 +85,9 @@ export default function OpenRouterCallback() {
               <IconX size={24} className="text-red-600" />
             </div>
             <p className="text-red-700 font-semibold">{t('Connection failed')}</p>
-            <p className="text-gray-500 text-sm mt-1">{t('Please close this window and try again.')}</p>
+            <p className="text-gray-500 text-sm mt-1">
+              {t('Please close this window and try again.')}
+            </p>
           </>
         )}
       </div>

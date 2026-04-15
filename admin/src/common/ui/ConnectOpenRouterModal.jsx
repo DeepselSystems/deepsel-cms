@@ -48,10 +48,9 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
         const { backendHost } = BackendHostURLState.getState();
         const { organizationId } = OrganizationIdState.getState();
 
-        const settingsRes = await fetch(
-          `${backendHost}/util/public_settings/${organizationId}`,
-          { credentials: 'include' },
-        );
+        const settingsRes = await fetch(`${backendHost}/util/public_settings/${organizationId}`, {
+          credentials: 'include',
+        });
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           SitePublicSettingsState.getState().setSettings(data);
