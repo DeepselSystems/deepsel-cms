@@ -1,4 +1,6 @@
 import Notification from './common/notification/Notification.jsx';
+import OpenRouterCallback from './components/admin/auth/OpenRouterCallback.jsx';
+import { AIProviderConfigProvider } from './common/AIProviderConfigContext.js';
 import TemplateEdit from './components/admin/template/TemplateEdit.jsx';
 import TemplateList from './components/admin/template/TemplateList.jsx';
 import ThemeList from './components/admin/theme/ThemeList.jsx';
@@ -80,7 +82,8 @@ import { BasenameProvider } from './common/BasenameContext.js';
 
 export default function App(props) {
   console.log('APP', { props });
-  const { siteSettings, basename = '/admin', backendHost: backendHostProp } = props;
+  const { siteSettings, basename = '/admin', backendHost: backendHostProp, aiProviderConfig } = props;
+  const aiConfig = aiProviderConfig || { mode: 'api_key', provider: 'openrouter', oauthCallbackPath: '/openrouter-callback' };
   const { i18n } = useTranslation();
   const { setSettings } = SitePublicSettingsState();
   const browserLanguages = useBrowserLanguages();
@@ -242,6 +245,7 @@ export default function App(props) {
   }, [backendHostProp]);
 
   return (
+    <AIProviderConfigProvider value={aiConfig}>
     <BasenameProvider value={basename}>
       <MantineProvider theme={mantineTheme}>
         <ModalsProvider>
@@ -249,6 +253,7 @@ export default function App(props) {
             <BrowserRouter basename={basename}>
               <Notification />
               <Routes>
+                <Route path="/openrouter-callback" element={<OpenRouterCallback />} />
                 <Route element={<PublicAuth />}>
                   <Route path="/google-authenticated" element={<GoogleAuth />} />
                   <Route path="/saml-authenticated" element={<SamlAuth />} />
@@ -313,5 +318,6 @@ export default function App(props) {
         </ModalsProvider>
       </MantineProvider>
     </BasenameProvider>
+    </AIProviderConfigProvider>
   );
 }
