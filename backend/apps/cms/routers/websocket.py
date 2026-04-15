@@ -96,13 +96,13 @@ async def edit_session_websocket(
         display_name = (
             user.name
             or f"{user.first_name} {user.last_name}".strip()
-            or user.username
             or user.email
+            or user.username
         )
         image_name = getattr(getattr(user, "image", None), "name", None)
         session = EditSession(
             user_id=user.id,
-            username=user.username or user.email,
+            username=user.email or user.username,
             display_name=display_name,
             websocket=websocket,
             started_at=datetime.utcnow(),
@@ -117,7 +117,12 @@ async def edit_session_websocket(
 
         try:
             while True:
-                # Keep connection alive and handle messages
+                # Bail out if the socket was closed from elsewhere (e.g. a second
+                # tab replacing this session). Otherwise receive_text() raises a
+                # generic RuntimeError that would spin the loop.
+                if websocket.client_state.name != "CONNECTED":
+                    break
+
                 try:
                     data = await websocket.receive_text()
                     message = json.loads(data)
@@ -153,7 +158,7 @@ async def edit_session_websocket(
                     continue
                 except Exception as e:
                     logger.error(f"Error handling WebSocket message: {e}")
-                    continue
+                    break
 
         except WebSocketDisconnect:
             logger.info(f"WebSocket disconnected for user {user.id}")

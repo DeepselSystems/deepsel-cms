@@ -86,8 +86,8 @@ def _user_display_name(user: UserModel) -> str:
     return (
         getattr(user, "name", None)
         or f"{getattr(user, 'first_name', '') or ''} {getattr(user, 'last_name', '') or ''}".strip()
-        or getattr(user, "username", None)
         or getattr(user, "email", None)
+        or getattr(user, "username", None)
         or "system"
     )
 

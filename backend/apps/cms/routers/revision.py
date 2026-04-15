@@ -77,7 +77,7 @@ async def restore_content_revision(
     )
 
     if last_revision:
-        last_revision.name = f"Restored from revision #{revision.revision_number} by {user.username or user.email or 'system'}"
+        last_revision.name = f"Restored from revision #{revision.revision_number} by {user.email or user.username or 'system'}"
         db.commit()
 
     return {"message": "Content restored successfully"}

@@ -376,7 +376,7 @@ def upload_theme(
         with open(dest, "wb") as f:
             f.write(zf.read(name))
 
-    logger.info(f"Theme '{folder_name}' uploaded by {current_user.username}")
+    logger.info(f"Theme '{folder_name}' uploaded by {current_user.email or current_user.username}")
 
     # Trigger theme setup in background
     background_tasks.add_task(trigger_setup_themes)
@@ -440,7 +440,7 @@ def select_theme(
         load_seed_data_for_theme(request.folder_name, db)
 
         logger.info(
-            f"User {current_user.username} selected theme '{request.folder_name}' "
+            f"User {current_user.email or current_user.username} selected theme '{request.folder_name}' "
             f"for organization {organization_id}"
         )
 
@@ -572,7 +572,7 @@ def reset_theme(
         )
 
         logger.info(
-            f"User {current_user.username} reset theme '{request.folder_name}' "
+            f"User {current_user.email or current_user.username} reset theme '{request.folder_name}' "
             f"({deleted} file records deleted)"
         )
 

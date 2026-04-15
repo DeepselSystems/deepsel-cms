@@ -8,6 +8,8 @@ class OpenRouterModelMixin:
     def cron_fetch_openrouter_model(self, db: Session):
         from settings import DEFAULT_ORG_ID
 
+        cls = self if isinstance(self, type) else self.__class__
+
         url = "https://openrouter.ai/api/v1/models"
 
         try:
@@ -15,7 +17,7 @@ class OpenRouterModelMixin:
             data = response.json().get("data", [])
 
             for model_data in data:
-                model = self.__class__(
+                model = cls(
                     string_id=model_data.get("id"),
                     canonical_slug=model_data.get("canonical_slug"),
                     hugging_face_id=model_data.get("hugging_face_id"),
@@ -32,9 +34,7 @@ class OpenRouterModelMixin:
                 )
 
                 existing = (
-                    db.query(self.__class__)
-                    .filter(self.__class__.string_id == model.string_id)
-                    .first()
+                    db.query(cls).filter(cls.string_id == model.string_id).first()
                 )
                 if existing:
                     # Map API data to model fields, handling id -> string_id mapping

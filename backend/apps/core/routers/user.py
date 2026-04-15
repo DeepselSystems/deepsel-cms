@@ -112,7 +112,7 @@ def update_2fa_config(
         db.commit()
 
         totp_uri = pyotp.totp.TOTP(secret_key).provisioning_uri(
-            name=user.username or user.email, issuer_name=user.organization.name
+            name=user.email or user.username, issuer_name=user.organization.name
         )
         return Info2Fa(totp_uri=totp_uri)
 

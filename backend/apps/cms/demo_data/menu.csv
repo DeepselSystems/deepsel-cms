@@ -1,5 +1,23 @@
 "string_id","position","json:translations","menu/parent_id","system","organization/organization_id"
-"Welcome","0","{
+"Home","0","{
+    ""en"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""HomePage_en"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    },
+    ""de"": {
+        ""title"": """",
+        ""url"": """",
+        ""page_content/page_content_id"": ""HomePage_de"",
+        ""use_page_title"": true,
+        ""use_custom_url"": false,
+        ""open_in_new_tab"": false
+    }
+}",,"false","1"
+"Welcome","1","{
     ""en"": {
         ""title"": """",
         ""url"": """",
@@ -17,7 +35,7 @@
         ""open_in_new_tab"": false
     }
 }",,"false","1"
-"Blog","1","{
+"Blog","2","{
     ""en"": {
         ""title"": ""Blog"",
         ""url"": ""/blog"",

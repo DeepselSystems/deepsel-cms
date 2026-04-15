@@ -10,7 +10,7 @@ class AuthorData(BaseModel):
 
     id: int
     display_name: Optional[str]
-    username: str
+    username: Optional[str] = None
     image: Optional[str]
 
 

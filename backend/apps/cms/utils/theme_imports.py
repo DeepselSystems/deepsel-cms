@@ -333,7 +333,7 @@ def generate_tailwind_config(data_dir_path: str, selected_theme: str | None = No
             and os.path.isfile(os.path.join(themes_dir, d, "tailwind.config.js"))
         )
 
-        # Filter to selected theme only
+        # Collect all themes actively used by any organization
         active_themes = get_all_active_themes_from_db()
         if selected_theme:
             active_themes.add(selected_theme)
