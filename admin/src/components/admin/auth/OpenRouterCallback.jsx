@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconCheck, IconX } from '@tabler/icons-react';
+import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
+import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 
 /**
- * OpenRouter OAuth callback page.
- *
- * Runs inside the popup window opened by ConnectOpenRouterModal.
- * Sends the auth code back to the opener window via postMessage,
- * then closes itself.
+ * OpenRouter OAuth callback page — runs inside popup.
+ * Exchanges the auth code for an API key, notifies parent window, then closes.
  */
 export default function OpenRouterCallback() {
   const { t } = useTranslation();
@@ -22,19 +21,44 @@ export default function OpenRouterCallback() {
       return;
     }
 
-    // Send code to the opener window (the admin page that opened the popup)
-    if (window.opener) {
-      window.opener.postMessage(
-        { type: 'OPENROUTER_AUTH_CODE', code },
-        window.location.origin,
-      );
-      setStatus('success');
-      // Close popup after short delay so user sees success
-      setTimeout(() => window.close(), 1500);
-    } else {
-      // Fallback: if no opener (e.g. opened directly), show manual instructions
-      setStatus('no-opener');
-    }
+    const codeVerifier = sessionStorage.getItem('openrouter_code_verifier');
+    sessionStorage.removeItem('openrouter_code_verifier');
+
+    const exchangeCode = async () => {
+      try {
+        const { backendHost } = BackendHostURLState.getState();
+        const { organizationId } = OrganizationIdState.getState();
+
+        const response = await fetch(`${backendHost}/openrouter/exchange-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            code,
+            organization_id: organizationId,
+            code_verifier: codeVerifier || undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Exchange failed');
+        }
+
+        // Notify parent window via BroadcastChannel
+        const channel = new BroadcastChannel('openrouter-oauth');
+        channel.postMessage({ type: 'OPENROUTER_CONNECTED' });
+        channel.close();
+
+        setStatus('success');
+        setTimeout(() => window.close(), 1500);
+      } catch (err) {
+        console.error('OpenRouter exchange failed:', err);
+        setStatus('error');
+      }
+    };
+
+    exchangeCode();
   }, []);
 
   return (
@@ -60,17 +84,8 @@ export default function OpenRouterCallback() {
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <IconX size={24} className="text-red-600" />
             </div>
-            <p className="text-red-700 font-semibold">{t('Authorization failed')}</p>
-            <p className="text-gray-500 text-sm mt-1">{t('No authorization code received. Please try again.')}</p>
-          </>
-        )}
-        {status === 'no-opener' && (
-          <>
-            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <IconCheck size={24} className="text-yellow-600" />
-            </div>
-            <p className="text-gray-700 font-semibold">{t('Authorization received')}</p>
-            <p className="text-gray-500 text-sm mt-1">{t('Please close this window and return to the admin panel.')}</p>
+            <p className="text-red-700 font-semibold">{t('Connection failed')}</p>
+            <p className="text-gray-500 text-sm mt-1">{t('Please close this window and try again.')}</p>
           </>
         )}
       </div>

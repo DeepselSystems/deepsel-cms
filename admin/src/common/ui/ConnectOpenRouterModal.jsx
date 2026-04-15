@@ -36,38 +36,18 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
   const basename = useBasename();
   const [connecting, setConnecting] = useState(false);
 
-  // Listen for auth code from popup callback page
+  // Listen for success signal from popup via BroadcastChannel
   useEffect(() => {
-    const handleMessage = async (event) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== 'OPENROUTER_AUTH_CODE') return;
+    const channel = new BroadcastChannel('openrouter-oauth');
+    channel.onmessage = async (event) => {
+      if (event.data?.type !== 'OPENROUTER_CONNECTED') return;
 
-      const code = event.data.code;
-      const codeVerifier = sessionStorage.getItem('openrouter_code_verifier');
-      sessionStorage.removeItem('openrouter_code_verifier');
-
+      // Popup already exchanged the code — just refresh settings
       setConnecting(true);
       try {
         const { backendHost } = BackendHostURLState.getState();
         const { organizationId } = OrganizationIdState.getState();
 
-        const response = await fetch(`${backendHost}/openrouter/exchange-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            code,
-            organization_id: organizationId,
-            code_verifier: codeVerifier || undefined,
-          }),
-        });
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.detail || 'Exchange failed');
-        }
-
-        // Refresh site settings
         const settingsRes = await fetch(
           `${backendHost}/util/public_settings/${organizationId}`,
           { credentials: 'include' },
@@ -83,18 +63,12 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
         });
         onClose();
       } catch (err) {
-        console.error('OpenRouter exchange failed:', err);
-        NotificationState.getState().notify({
-          message: err.message || t('Failed to connect OpenRouter'),
-          type: 'error',
-        });
+        console.error('Failed to refresh settings:', err);
       } finally {
         setConnecting(false);
       }
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    return () => channel.close();
   }, [onClose, t]);
 
   const handleConnect = async () => {
