@@ -30,6 +30,9 @@ import useEditSession from '../../../common/hooks/useEditSession.js';
 import useDraftAutosave from '../../../common/hooks/useDraftAutosave.js';
 import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
+import { useAIProviderConfig } from '../../../common/AIProviderConfigContext.js';
+import ConnectOpenRouterModal from '../../../common/ui/ConnectOpenRouterModal.jsx';
+import { buildFullUrl } from '../../../utils/domainUtils.js';
 import {
   IconAi,
   IconCloudCheck,
@@ -173,6 +176,10 @@ export default function PageEdit({ onSuccess }) {
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
   const aiWritingAvailable =
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
+  const aiProviderConfig = useAIProviderConfig();
+  const [connectModalOpened, setConnectModalOpened] = useState(false);
+  const isOAuthMode = aiProviderConfig.mode === 'oauth';
+  const needsConnect = isOAuthMode && !siteSettings?.has_openrouter_api_key;
 
   // AI Writer state
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
@@ -724,12 +731,10 @@ export default function PageEdit({ onSuccess }) {
             <Menu.Dropdown>
               <Menu.Item closeMenuOnClick={false}>
                 <Tooltip
-                  label={t(
-                    'Please specify an API key and writing model in Site Settings to use this feature.',
-                  )}
+                  label={needsConnect ? t('Connect OpenRouter to use this feature') : t('Please specify an API key and writing model in Site Settings to use this feature.')}
                   disabled={aiWritingAvailable}
                 >
-                  <div className="inline-flex items-center">
+                  <div className="inline-flex items-center" onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}>
                     <Switch
                       label={
                         <span className="inline-flex items-center gap-1">
@@ -738,8 +743,8 @@ export default function PageEdit({ onSuccess }) {
                         </span>
                       }
                       checked={aiWriterSidebarOpened}
-                      onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
-                      disabled={!aiWritingAvailable}
+                      onChange={(e) => needsConnect ? setConnectModalOpened(true) : setAiWriterSidebarOpened(e.currentTarget.checked)}
+                      disabled={!aiWritingAvailable && !needsConnect}
                       size="md"
                     />
                   </div>
@@ -747,12 +752,10 @@ export default function PageEdit({ onSuccess }) {
               </Menu.Item>
               <Menu.Item closeMenuOnClick={false}>
                 <Tooltip
-                  label={t(
-                    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
-                  )}
+                  label={needsConnect ? t('Connect OpenRouter to use this feature') : t('Please specify an API key and autocomplete model in Site Settings to use this feature.')}
                   disabled={aiAutoCompleteAvailable}
                 >
-                  <div className="inline-flex items-center">
+                  <div className="inline-flex items-center" onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}>
                     <Switch
                       label={
                         <span className="inline-flex items-center gap-1">
@@ -761,8 +764,8 @@ export default function PageEdit({ onSuccess }) {
                         </span>
                       }
                       checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                      onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                      disabled={!aiAutoCompleteAvailable}
+                      onChange={(e) => needsConnect ? setConnectModalOpened(true) : setAiAutocompleteEnabled(e.currentTarget.checked)}
+                      disabled={!aiAutoCompleteAvailable && !needsConnect}
                       size="md"
                     />
                   </div>
@@ -1087,6 +1090,10 @@ export default function PageEdit({ onSuccess }) {
           themeName={siteSettings?.selected_theme}
         />
       )}
+      <ConnectOpenRouterModal
+        opened={connectModalOpened}
+        onClose={() => setConnectModalOpened(false)}
+      />
     </>
   ) : (
     <FormViewSkeleton />

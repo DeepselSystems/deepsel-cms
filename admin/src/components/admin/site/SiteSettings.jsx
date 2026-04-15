@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { useAIProviderConfig } from '../../../common/AIProviderConfigContext.js';
+import ConnectOpenRouterModal from '../../../common/ui/ConnectOpenRouterModal.jsx';
 import Card from '../../../common/ui/Card.jsx';
 import H1 from '../../../common/ui/H1.jsx';
 import H2 from '../../../common/ui/H2.jsx';
@@ -17,6 +19,7 @@ import TextInput from '../../../common/ui/TextInput.jsx';
 import NumberInput from '../../../common/ui/NumberInput.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
+import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import SecretInput from '../../../common/ui/SecretInput.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
@@ -30,6 +33,8 @@ import {
   IconDatabase,
   IconDownload,
   IconKey,
+  IconPlugConnected,
+  IconPlugConnectedX,
   IconLanguage,
   IconNews,
   IconRobot,
@@ -180,6 +185,8 @@ export default function SiteSettings() {
 
   // Secret keys editing state values
   const [openrouterApiKeyEditing, setOpenrouterApiKeyEditing] = useState('');
+  const aiProviderConfig = useAIProviderConfig();
+  const [connectModalOpened, setConnectModalOpened] = useState(false);
 
   // Fetch locales
   const { data: locales, loading: localesLoading } = useModel('locale', {
@@ -458,22 +465,82 @@ export default function SiteSettings() {
 
             <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <IconKey size={16} className="text-gray-500" />
-                  <Text size="sm" weight={500}>
-                    {t('API Keys')}
-                  </Text>
-                </div>
+                {aiProviderConfig.mode === 'oauth' ? (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <IconPlugConnected size={16} className="text-gray-500" />
+                      <Text size="sm" weight={500}>
+                        {t('AI Provider')}
+                      </Text>
+                    </div>
+                    {record.openrouter_api_key_truncated ? (
+                      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <IconPlugConnected size={20} className="text-green-600" />
+                        <div className="flex-1">
+                          <Text size="sm" weight={600} className="text-green-700">{t('OpenRouter Connected')}</Text>
+                          <Text size="xs" c="dimmed">{record.openrouter_api_key_truncated}</Text>
+                        </div>
+                        <Button
+                          variant="subtle"
+                          color="red"
+                          size="xs"
+                          leftSection={<IconPlugConnectedX size={14} />}
+                          onClick={async () => {
+                            const { backendHost } = BackendHostURLState.getState();
+                            await fetch(`${backendHost}/openrouter/disconnect`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({ organization_id: organizationId }),
+                            });
+                            // Refresh settings
+                            const res = await fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' });
+                            if (res.ok) {
+                              const data = await res.json();
+                              SitePublicSettingsState.getState().setSettings(data);
+                              setRecord({ ...record, openrouter_api_key_truncated: null });
+                            }
+                            notify({ message: t('OpenRouter disconnected'), type: 'success' });
+                          }}
+                        >
+                          {t('Disconnect')}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        leftSection={<IconPlugConnected size={16} />}
+                        onClick={() => setConnectModalOpened(true)}
+                        fullWidth
+                      >
+                        {t('Connect OpenRouter Account')}
+                      </Button>
+                    )}
+                    <ConnectOpenRouterModal
+                      opened={connectModalOpened}
+                      onClose={() => setConnectModalOpened(false)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-2">
+                      <IconKey size={16} className="text-gray-500" />
+                      <Text size="sm" weight={500}>
+                        {t('API Keys')}
+                      </Text>
+                    </div>
 
-                <SecretInput
-                  label={t('OpenRouter API Key')}
-                  description={t(
-                    'API key for AI-powered translation and content generation features',
-                  )}
-                  truncateSecret={record.openrouter_api_key_truncated}
-                  editingValue={openrouterApiKeyEditing}
-                  setEditingValue={(value) => setOpenrouterApiKeyEditing(value)}
-                />
+                    <SecretInput
+                      label={t('OpenRouter API Key')}
+                      description={t(
+                        'API key for AI-powered translation and content generation features',
+                      )}
+                      truncateSecret={record.openrouter_api_key_truncated}
+                      editingValue={openrouterApiKeyEditing}
+                      setEditingValue={(value) => setOpenrouterApiKeyEditing(value)}
+                    />
+                  </>
+                )}
 
                 <RecordSelect
                   model="openrouter_model"
