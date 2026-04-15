@@ -42,14 +42,10 @@ export default function useMultiLangContent({
 
   // Initialize with default content using the site's default language
   useEffect(() => {
-    if (locales?.length > 0 && initialRecord?.contents?.length === 0 && siteSettings) {
-      // Get the default language ID from site settings
-      const defaultLanguageId = siteSettings.default_language_id;
-
-      // Find the locale that matches the default language ID
-      const defaultLocale = defaultLanguageId
-        ? locales.find((locale) => locale.id === defaultLanguageId)
-        : locales.find((locale) => locale.iso_code.toLowerCase() === 'en'); // Fallback to en if no default is set
+    if (initialRecord?.contents?.length === 0 && siteSettings) {
+      const defaultLocale =
+        siteSettings.default_language ||
+        locales?.find((locale) => locale.iso_code.toLowerCase() === 'en');
 
       if (defaultLocale) {
         const newId = 1;
@@ -78,11 +74,18 @@ export default function useMultiLangContent({
   // Set initial active tab if contents exist
   useEffect(() => {
     if (initialRecord?.contents?.length > 0 && !activeContentTab) {
-      // Sort contents by ID (oldest first) and select the first one
-      const sortedContents = [...initialRecord.contents].sort((a, b) => a.id - b.id);
-      setActiveContentTab(String(sortedContents[0].id));
+      const defaultLangId = siteSettings?.default_language?.id;
+      const defaultContent = initialRecord.contents.find(
+        (c) => c.locale_id === defaultLangId,
+      );
+      if (defaultContent) {
+        setActiveContentTab(String(defaultContent.id));
+      } else {
+        const sortedContents = [...initialRecord.contents].sort((a, b) => a.id - b.id);
+        setActiveContentTab(String(sortedContents[0].id));
+      }
     }
-  }, [initialRecord?.contents, activeContentTab]);
+  }, [initialRecord?.contents, activeContentTab, siteSettings?.default_language?.id]);
 
   /**
    * Get the name of a language by its locale ID
