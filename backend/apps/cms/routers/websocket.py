@@ -93,16 +93,12 @@ async def edit_session_websocket(
         await websocket.accept()
 
         # Create edit session
-        display_name = (
-            user.name
-            or f"{user.first_name} {user.last_name}".strip()
-            or user.email
-            or user.username
-        )
+        full_name = " ".join(p for p in (user.first_name, user.last_name) if p).strip()
+        display_name = user.name or full_name or user.username or user.email
         image_name = getattr(getattr(user, "image", None), "name", None)
         session = EditSession(
             user_id=user.id,
-            username=user.email or user.username,
+            username=user.username or user.email,
             display_name=display_name,
             websocket=websocket,
             started_at=datetime.utcnow(),

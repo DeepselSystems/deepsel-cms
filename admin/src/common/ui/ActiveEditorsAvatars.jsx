@@ -18,8 +18,8 @@ export default function ActiveEditorsAvatars({ editors }) {
         display_name:
           user.display_name ||
           [user.first_name, user.last_name].filter(Boolean).join(' ') ||
-          user.email ||
-          user.username,
+          user.username ||
+          user.email,
         username: user.username,
         image: user.image,
         self: true,
