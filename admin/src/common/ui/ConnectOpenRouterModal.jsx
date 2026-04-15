@@ -30,7 +30,7 @@ async function generatePKCE() {
   return { codeVerifier, codeChallenge };
 }
 
-export default function ConnectOpenRouterModal({ opened, onClose }) {
+export default function ConnectOpenRouterModal({ opened, onClose, onConnected }) {
   const { t } = useTranslation();
   const { oauthCallbackPath } = useAIProviderConfig();
   const basename = useBasename();
@@ -60,6 +60,7 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
           message: t('OpenRouter connected successfully!'),
           type: 'success',
         });
+        if (onConnected) onConnected();
         onClose();
       } catch (err) {
         console.error('Failed to refresh settings:', err);
@@ -79,6 +80,8 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
       callback_url: callbackUrl,
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
+      site_url: window.location.origin,
+      site_name: document.title || 'CMS Admin',
     });
     window.open(
       `https://openrouter.ai/auth?${params.toString()}`,
