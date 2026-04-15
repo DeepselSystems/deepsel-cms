@@ -40,8 +40,6 @@ class PageUpdate(BaseModel):
     page_custom_code: Optional[str] = None
     contents: Optional[list[PageContentCreateNested]] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class PageSearch(BaseModel):

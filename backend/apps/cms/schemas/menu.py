@@ -63,8 +63,6 @@ class MenuUpdate(BaseModel):
     parent_id: Optional[int] = None
     children: Optional[list[MenuChildCreateNested]] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class MenuSearch(BaseModel):

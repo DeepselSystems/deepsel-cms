@@ -93,8 +93,6 @@ class PageContentUpdate(BaseModel):
     last_modified_at: Optional[datetime] = None
     updated_by_id: Optional[int] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class PageContentSearch(BaseModel):

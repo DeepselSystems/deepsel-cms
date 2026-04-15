@@ -41,8 +41,6 @@ class TemplateContentUpdate(BaseModel):
     content: Optional[str] = None
     locale_id: Optional[int] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class TemplateContentSearch(BaseModel):

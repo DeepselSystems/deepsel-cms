@@ -13,6 +13,32 @@ class BlogPostMixin:
     """Business logic for blog posts: published-only filtering for anonymous callers."""
 
     @classmethod
+    def create(cls, db: Session, user, values: dict, *args, **kwargs):
+        if values.get("slug"):
+            values["slug"] = cls._normalize_slug(values["slug"])
+        return super().create(db, user, values, *args, **kwargs)
+
+    def update(
+        self,
+        db: Session,
+        user,
+        values: dict,
+        commit: Optional[bool] = True,
+        *args,
+        **kwargs,
+    ):
+        if values.get("slug"):
+            values["slug"] = self._normalize_slug(values["slug"])
+        return super().update(db, user, values, commit, *args, **kwargs)
+
+    @staticmethod
+    def _normalize_slug(slug: str) -> str:
+        """Ensure blog post slug is stored with a leading forward slash (matches page pattern)."""
+        if not slug:
+            return slug
+        return slug if slug.startswith("/") else f"/{slug}"
+
+    @classmethod
     def get_one(cls, db: Session, user, item_id: int, *args, **kwargs):
         res = db.query(cls).get(item_id)
         if user is None or not user.signed_up:

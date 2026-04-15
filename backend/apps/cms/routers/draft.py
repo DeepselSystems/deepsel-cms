@@ -127,6 +127,9 @@ class PublishRequest(BaseModel):
     # Optional overrides applied at publish time (e.g. publish_date, slug, author_id).
     # If omitted, the current parent values are used.
     parent_fields: Optional[dict[str, Any]] = None
+    # When set, only promote the draft of that one content row (single language).
+    # When omitted, promote drafts on every content row (all languages).
+    content_id: Optional[int] = None
 
 
 class UnpublishRequest(BaseModel):
@@ -137,6 +140,9 @@ class UnpublishRequest(BaseModel):
 class RevertRequest(BaseModel):
     record_type: RecordType
     record_id: int
+    # When set, only discard the draft of that one content row (single language).
+    # When omitted, discard drafts on every content row (all languages).
+    content_id: Optional[int] = None
 
 
 def _serialize_draft(content) -> dict[str, Any]:
@@ -263,7 +269,13 @@ async def publish(
 
     fields = _field_list(request.record_type)
 
-    for content in main.contents:
+    contents_to_publish = main.contents
+    if request.content_id is not None:
+        contents_to_publish = [c for c in main.contents if c.id == request.content_id]
+        if not contents_to_publish:
+            raise HTTPException(status_code=404, detail="Content not found on record")
+
+    for content in contents_to_publish:
         if not content.has_draft:
             continue
 
@@ -372,7 +384,7 @@ async def revert(
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user),
 ):
-    """Discard all draft_* fields for every content of the record, across all languages."""
+    """Discard draft_* fields. Scoped to a single content when content_id is set, otherwise all languages."""
     MainModel, _, _, _ = _resolve_models(request.record_type)
 
     main = db.query(MainModel).filter(MainModel.id == request.record_id).first()
@@ -385,7 +397,13 @@ async def revert(
 
     fields = _field_list(request.record_type)
 
-    for content in main.contents:
+    contents_to_revert = main.contents
+    if request.content_id is not None:
+        contents_to_revert = [c for c in main.contents if c.id == request.content_id]
+        if not contents_to_revert:
+            raise HTTPException(status_code=404, detail="Content not found on record")
+
+    for content in contents_to_revert:
         if not content.has_draft:
             continue
         for field in fields:

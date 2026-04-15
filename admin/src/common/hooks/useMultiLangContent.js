@@ -75,9 +75,7 @@ export default function useMultiLangContent({
   useEffect(() => {
     if (initialRecord?.contents?.length > 0 && !activeContentTab) {
       const defaultLangId = siteSettings?.default_language?.id;
-      const defaultContent = initialRecord.contents.find(
-        (c) => c.locale_id === defaultLangId,
-      );
+      const defaultContent = initialRecord.contents.find((c) => c.locale_id === defaultLangId);
       if (defaultContent) {
         setActiveContentTab(String(defaultContent.id));
       } else {

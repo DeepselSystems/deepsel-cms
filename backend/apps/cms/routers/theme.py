@@ -376,7 +376,9 @@ def upload_theme(
         with open(dest, "wb") as f:
             f.write(zf.read(name))
 
-    logger.info(f"Theme '{folder_name}' uploaded by {current_user.email or current_user.username}")
+    logger.info(
+        f"Theme '{folder_name}' uploaded by {current_user.email or current_user.username}"
+    )
 
     # Trigger theme setup in background
     background_tasks.add_task(trigger_setup_themes)

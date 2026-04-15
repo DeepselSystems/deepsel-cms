@@ -51,8 +51,6 @@ class BlogPostUpdate(BaseModel):
     blog_post_custom_code: Optional[str] = None
     contents: Optional[list[BlogPostContentCreateNested]] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class BlogPostSearch(BaseModel):

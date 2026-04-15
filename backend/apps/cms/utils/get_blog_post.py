@@ -45,7 +45,7 @@ def get_blog_post(
     Args:
         request: FastAPI request object for domain detection
         target_lang: Resolved language ISO code (already determined by parent)
-        post_slug: Blog post slug (without /blog prefix)
+        post_slug: Blog post slug (without /blog prefix); accepts with or without leading "/"
         db: Database session
         current_user: Optional authenticated user
 
@@ -62,8 +62,12 @@ def get_blog_post(
     if target_lang == "default":
         target_lang = org_settings.default_language.iso_code
 
-    # Strip any leading slashes (database stores slugs without leading slash)
-    post_slug = post_slug.lstrip("/")
+    # DB stores slugs with a leading "/" (matches page pattern). Public URLs like
+    # /blog/my-post strip "/blog/" upstream, so we normalize the incoming slug to
+    # always start with "/" before querying. This keeps legacy bookmarked URLs
+    # working after the slug-storage migration.
+    if post_slug and not post_slug.startswith("/"):
+        post_slug = f"/{post_slug}"
 
     # Find the blog post with matching slug and organization
     blog_post = (
@@ -139,7 +143,7 @@ def get_blog_post(
     # Build language alternatives
     language_alternatives = [
         LanguageAlternative(
-            slug=f"/blog/{blog_post.slug}",
+            slug=f"/blog{blog_post.slug}",
             locale=LocaleData(
                 id=content.locale.id,
                 name=content.locale.name,

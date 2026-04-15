@@ -34,8 +34,6 @@ class TemplateUpdate(BaseModel):
     name: Optional[str] = None
     contents: Optional[list[TemplateContentCreateNested]] = None
     string_id: Optional[str] = None
-    active: Optional[bool] = None
-    system: Optional[bool] = None
 
 
 class TemplateSearch(BaseModel):
