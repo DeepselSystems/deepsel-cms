@@ -41,7 +41,7 @@ function RequireAuth() {
         if (isAuthlessMode) {
           if (!isAuthenticated(currentUser)) {
             try {
-              await login({ username: 'authless', password: 'authless' });
+              await login({ identifier: 'authless', password: 'authless' });
             } catch (e) {
               console.error('Authless login failed', e);
             }

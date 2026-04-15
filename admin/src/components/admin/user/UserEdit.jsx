@@ -179,7 +179,7 @@ export default function UserEdit() {
                 }}
                 type="image"
               />
-              <H1>{record.username}</H1>
+              <H1>{record.email || record.username}</H1>
             </div>
 
             {currentUser.id === record.id && (
@@ -200,9 +200,8 @@ export default function UserEdit() {
             <TextInput
               className={`grow`}
               label={t('Username')}
-              description={t('Unique identifier for your user')}
+              description={t('Optional unique identifier')}
               placeholder={t(`john.doe`)}
-              required
               value={record.username}
               onChange={(e) =>
                 setRecord({

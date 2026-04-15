@@ -16,8 +16,10 @@ import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 export default function TemplateList() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { user } = useAuthentication();
   const { organizationId } = OrganizationIdState();

@@ -58,5 +58,5 @@ const navbarLinks = [
 ];
 
 export default function CMSLayout() {
-  return <AppLayout navbarLinks={navbarLinks} showSiteSelector={true} />;
+  return <AppLayout navbarLinks={navbarLinks} />;
 }

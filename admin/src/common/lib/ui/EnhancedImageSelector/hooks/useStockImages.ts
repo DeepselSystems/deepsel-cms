@@ -12,11 +12,21 @@ import { STOCK_IMAGE_PROVIDERS } from '../constants/stockImages';
 export interface StockImage {
   _id: string;
   _attachment?: AttachmentFile;
+  provider_image_id: string;
   title: string;
   description?: string;
   src: string;
   preview_src: string;
   provider: string;
+  photographer_name?: string;
+  photographer_url?: string;
+  download_location?: string;
+}
+
+interface StockImageSearchResponse {
+  success: boolean;
+  message: string;
+  data: StockImage[];
 }
 
 /**
@@ -28,12 +38,11 @@ export interface UseStockImagesConfig {
 }
 
 /**
- * Custom hook for searching and paginating stock images from external providers
+ * Custom hook for searching and paginating stock images from Unsplash
  */
 export function useStockImages(config: UseStockImagesConfig) {
   const { backendHost, setUser } = config;
 
-  // Initialize states
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [images, setImages] = useState<StockImage[]>([]);
@@ -41,38 +50,44 @@ export function useStockImages(config: UseStockImagesConfig) {
   const [error, setError] = useState<string | null>(null);
   const [isOutOfData, setIsOutOfData] = useState(false);
 
-  // Previous search string reference to detect query changes
   const prevSearchStrRef = useRef(searchQuery);
 
-  // Stock image search query
-  const { post: fetchPexelsImages } = useFetch<unknown, { data: StockImage[] }>(
+  const { post: fetchStockImages } = useFetch<unknown, StockImageSearchResponse>(
     'stock-image/search',
     { backendHost, setUser },
     { autoFetch: false },
   );
 
-  /**
-   * Search for images using the Pexels provider
-   * @param pageNum - Page number to fetch (defaults to 1)
-   */
+  const { post: postTrackDownload } = useFetch<unknown, { success: boolean }>(
+    'stock-image/track-download',
+    { backendHost, setUser },
+    { autoFetch: false },
+  );
+
   const searchImages = useCallback(
-    (pageNum: number | null = null) => {
-      if (prevSearchStrRef.current !== searchQuery) {
-        prevSearchStrRef.current = searchQuery;
+    (pageNum: number | null = null, queryOverride?: string) => {
+      const effectiveQuery = queryOverride !== undefined ? queryOverride : searchQuery;
+      if (prevSearchStrRef.current !== effectiveQuery) {
+        prevSearchStrRef.current = effectiveQuery;
         setImages([]);
         setPage(1);
         setIsOutOfData(false);
       }
       setLoading(true);
-      void fetchPexelsImages({
+      setError(null);
+      void fetchStockImages({
         page: pageNum || 1,
-        query_str: searchQuery,
-        provider: STOCK_IMAGE_PROVIDERS.PEXELS,
+        query_str: effectiveQuery,
+        provider: STOCK_IMAGE_PROVIDERS.UNSPLASH,
       })
         .then((result) => {
           if (!result) return;
+          if (result.success === false) {
+            setError(result.message || 'Stock image search failed');
+            return;
+          }
           const { data } = result;
-          if (data.length) {
+          if (data?.length) {
             setImages((prevState) => {
               const mappedData = data.map((item) => ({
                 ...item,
@@ -80,31 +95,37 @@ export function useStockImages(config: UseStockImagesConfig) {
               }));
               if (!pageNum || pageNum === 1) {
                 return mappedData;
-              } else {
-                return [...(prevState || []), ...mappedData];
               }
+              return [...(prevState || []), ...mappedData];
             });
           } else {
             setIsOutOfData(true);
           }
         })
-        .catch((error) => {
-          setError((error as Error).message ?? String(error));
+        .catch((err) => {
+          setError((err as Error).message ?? String(err));
         })
         .finally(() => {
           setLoading(false);
         });
     },
-    [fetchPexelsImages, searchQuery],
+    [fetchStockImages, searchQuery],
   );
 
-  /**
-   * Load the next page of stock images
-   */
   const loadMore = useCallback(() => {
     setPage((prev) => prev + 1);
-    searchImages(page + 1);
+    searchImages(page + 1, prevSearchStrRef.current);
   }, [page, searchImages]);
+
+  const trackDownload = useCallback(
+    (downloadLocation?: string) => {
+      if (!downloadLocation) return;
+      void postTrackDownload({ download_location: downloadLocation }).catch((err) => {
+        console.warn('Unsplash download tracking failed:', err);
+      });
+    },
+    [postTrackDownload],
+  );
 
   return {
     prevSearchStrRef,
@@ -117,5 +138,6 @@ export function useStockImages(config: UseStockImagesConfig) {
     searchImages,
     loadMore,
     isOutOfData,
+    trackDownload,
   };
 }

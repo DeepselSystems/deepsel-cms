@@ -2,9 +2,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Avatar } from '@mantine/core';
-import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
+import { Alert, Avatar, ActionIcon, Tooltip } from '@mantine/core';
+import { IconAlertTriangle, IconPlus, IconTrash } from '@tabler/icons-react';
 import useModel from '../../../common/api/useModel.jsx';
+import useAuthentication from '../../../common/api/useAuthentication.js';
 import H1 from '../../../common/ui/H1.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import Select from '../../../common/ui/Select.jsx';
@@ -16,14 +17,17 @@ import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import { getAttachmentUrl } from '../../../common/utils/index.js';
 import CreateUserModal from './CreateUserModal.jsx';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 const CMS_ROLE_IDS = ['website_admin_role', 'website_editor_role', 'website_author_role'];
 
 export default function ManageUsersList() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { organizationId } = OrganizationIdState();
   const { backendHost } = BackendHostURLState();
   const { notify } = NotificationState();
+  const { user: currentUser } = useAuthentication();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const filterByOrganization = useCallback(
@@ -43,7 +47,15 @@ export default function ManageUsersList() {
     syncPagingParamsWithURL: true,
     filterAfterLoad: organizationId ? filterByOrganization : null,
   });
-  const { data: users, setData: setUsers, loading, error, update, get: refetchUsers } = usersQuery;
+  const {
+    data: users,
+    setData: setUsers,
+    loading,
+    error,
+    update,
+    deleteWithConfirm,
+    get: refetchUsers,
+  } = usersQuery;
 
   const rolesQuery = useModel('role', {
     autoFetch: true,
@@ -64,6 +76,19 @@ export default function ManageUsersList() {
     const role = user.roles?.find((r) => CMS_ROLE_IDS.includes(r.string_id));
     return role ? String(role.id) : null;
   };
+
+  function handleDelete(user) {
+    deleteWithConfirm(
+      [user.id],
+      () => {
+        notify({ type: 'success', message: t('User deleted') });
+        refetchUsers();
+      },
+      (e) => {
+        notify({ type: 'error', message: e?.message || t('An error occurred') });
+      },
+    );
+  }
 
   async function handleRoleChange(user, newRoleIdStr) {
     const newRole = newRoleIdStr ? roles.find((r) => String(r.id) === newRoleIdStr) : null;
@@ -120,6 +145,7 @@ export default function ManageUsersList() {
                 <tr>
                   <th className="py-3 px-2 font-medium">{t('User')}</th>
                   <th className="py-3 px-2 font-medium w-64">{t('Role')}</th>
+                  <th className="py-3 px-2 font-medium w-12" />
                 </tr>
               </thead>
               <tbody>
@@ -131,7 +157,7 @@ export default function ManageUsersList() {
                         className="flex items-center gap-3 text-inherit"
                       >
                         <Avatar
-                          name={user.name || user.username || ''}
+                          name={user.name || user.email || user.username || ''}
                           color="initials"
                           src={
                             user?.image?.name
@@ -141,7 +167,9 @@ export default function ManageUsersList() {
                           size="md"
                         />
                         <div className="flex flex-col">
-                          <span className="font-semibold">{user.name || user.username}</span>
+                          <span className="font-semibold">
+                            {user.name || user.email || user.username}
+                          </span>
                           {user.name && user.username && user.username !== user.name && (
                             <span className="text-xs text-gray-500">@{user.username}</span>
                           )}
@@ -158,11 +186,31 @@ export default function ManageUsersList() {
                         size="sm"
                       />
                     </td>
+                    <td className="py-2 px-2 text-right">
+                      <Tooltip
+                        label={
+                          currentUser?.id === user.id
+                            ? t('You cannot delete yourself')
+                            : t('Delete user')
+                        }
+                        withArrow
+                      >
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          disabled={currentUser?.id === user.id}
+                          onClick={() => handleDelete(user)}
+                          aria-label={t('Delete user')}
+                        >
+                          <IconTrash size={18} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </td>
                   </tr>
                 ))}
                 {!users.length && !loading && (
                   <tr>
-                    <td colSpan={2} className="text-center py-8 text-gray-500">
+                    <td colSpan={3} className="text-center py-8 text-gray-500">
                       {t('Nothing here yet.')}
                     </td>
                   </tr>

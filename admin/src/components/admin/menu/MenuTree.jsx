@@ -18,9 +18,11 @@ import { buildMenuTree, isValidUrl } from './utils/menuUtils.js';
 
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconPlus } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 // Main Menu Tree Component
 export default function MenuTree() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { organizationId } = OrganizationIdState();
   const { notify } = NotificationState();

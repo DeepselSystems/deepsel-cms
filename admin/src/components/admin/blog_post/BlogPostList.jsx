@@ -18,6 +18,7 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPhoto, IconPlus } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 const renderCell = (params) => (
   <LinkedCell params={params} to={`${params.row.id}/edit`}>
@@ -26,6 +27,7 @@ const renderCell = (params) => (
 );
 
 export default function BlogPostList() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { user } = useAuthentication();
   const { organizationId } = OrganizationIdState();

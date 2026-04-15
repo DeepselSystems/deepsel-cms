@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
 const ShowSiteSelectorState = create((set) => ({
-  hideSiteSelector: false,
-  setHideSiteSelector: (hide) => set({ hideSiteSelector: hide }),
+  showSiteSelector: false,
+  setShowSiteSelector: (show) => set({ showSiteSelector: show }),
 }));
 
 export default ShowSiteSelectorState;

@@ -21,8 +21,10 @@ import {
   IconRotate2,
   IconUpload,
 } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 export default function ThemeList() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { backendHost } = BackendHostURLState();

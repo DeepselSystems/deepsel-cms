@@ -20,6 +20,7 @@ import {
   IconServer,
   IconTrash,
 } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 /**
  * @type {string[]}
@@ -204,6 +205,7 @@ function FileCard({ file, onDelete, selected, onToggleSelect, selectionMode }) {
 }
 
 export default function Media() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { user } = useAuthentication();
   const { notify } = NotificationState((state) => state);

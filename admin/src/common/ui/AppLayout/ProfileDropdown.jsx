@@ -19,13 +19,13 @@ const ProfileDropdown = () => {
       <Menu.Target>
         <div className="flex gap-2 items-center cursor-pointer font-[500] text-[13px]">
           <Avatar
-            name={user.name || user.username || ''}
+            name={user.name || user.email || user.username || ''}
             color="initials"
             src={user?.image?.name ? getAttachmentUrl(backendHost, user.image.name) : null}
             size="md"
           />
           <div className="text-primary-main text-md font-semibold">
-            {user.name || user.username || ''}
+            {user.name || user.email || user.username || ''}
           </div>
         </div>
       </Menu.Target>

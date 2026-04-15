@@ -55,7 +55,7 @@ export function getActivityUserName(user, external_user_data = null) {
   if (external_user_data?.name) {
     return external_user_data.name;
   }
-  return user.name || user.username || user.email;
+  return user.name || user.email || user.username;
 }
 
 export function capitalizeFirstLetter(str) {

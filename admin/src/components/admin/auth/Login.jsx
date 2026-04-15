@@ -18,10 +18,10 @@ export default function Login() {
   const { t } = useTranslation();
   const basename = useBasename();
   const { backendHost } = BackendHostURLState((state) => state);
-  const [loginUsername, setLoginUsername] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
-  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupPasswordConfirm, setSignupPasswordConfirm] = useState('');
   const { notify } = NotificationState((state) => state);
@@ -71,7 +71,7 @@ export default function Login() {
       e.preventDefault();
       setLoading(true);
       const result = await login({
-        username: loginUsername,
+        identifier: loginEmail,
         password: loginPassword,
         otp: loginOtp,
       });
@@ -119,7 +119,7 @@ export default function Login() {
       setLoading(true);
       await signup(
         {
-          username: signupUsername,
+          email: signupEmail,
           password: signupPassword,
         },
         true,
@@ -253,11 +253,11 @@ export default function Login() {
         <Tabs.Panel value="login">
           <form className={`flex flex-col gap-2 pt-2`} onSubmit={handleLogin}>
             <TextInput
-              label={t(`Username`)}
+              label={t(`Email or Username`)}
               type="text"
               required
-              value={loginUsername}
-              onChange={(e) => setLoginUsername(e.target.value)}
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
             />
             <TextInput
               label={t(`Password`)}
@@ -333,11 +333,11 @@ export default function Login() {
           <Tabs.Panel value="signup">
             <form className={`flex flex-col gap-2 pt-2`} onSubmit={handleSignup}>
               <TextInput
-                label={t(`Username`)}
-                type="text"
+                label={t(`Email`)}
+                type="email"
                 required
-                value={signupUsername}
-                onChange={(e) => setSignupUsername(e.target.value)}
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
               />
               <TextInput
                 label={t(`Password`)}

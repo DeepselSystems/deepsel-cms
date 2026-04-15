@@ -10,13 +10,13 @@ import type { User } from '../types';
 export type { User };
 
 export interface LoginCredentials {
-  username: string;
+  identifier: string;
   password: string;
   otp?: string;
 }
 
 export interface SignupCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -127,14 +127,14 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
   ): Promise<User | { is_require_user_config_2fa: boolean }> {
     try {
       setLoading(true);
-      const { username, password, otp = '' } = credentials;
-      const encodedUsername = encodeURIComponent(username);
+      const { identifier, password, otp = '' } = credentials;
+      const encodedIdentifier = encodeURIComponent(identifier);
       const encodedPassword = encodeURIComponent(password);
       const response = await fetch(`${backendHost}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         credentials: 'include',
-        body: `username=${encodedUsername}&password=${encodedPassword}&otp=${otp}`,
+        body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}`,
       });
 
       if (!response.ok) {
@@ -181,13 +181,13 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
   async function signup(credentials: SignupCredentials, autoLogin = true): Promise<unknown> {
     try {
       setLoading(true);
-      const { username, password } = credentials;
+      const { email, password } = credentials;
       const response = await fetch(`${backendHost}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          email: username,
+          email,
           password,
           organization_id: user?.organization_id || organizationId,
         }),
@@ -209,7 +209,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       }
 
       if (autoLogin) {
-        return login({ username, password });
+        return login({ identifier: email, password });
       } else {
         return response.json();
       }

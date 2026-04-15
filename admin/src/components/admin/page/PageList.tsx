@@ -23,6 +23,7 @@ import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { Preferences } from '@capacitor/preferences';
 import { IconAlertTriangle, IconExternalLink, IconPalette, IconPlus } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 type PageLocale = {
   iso_code?: string;
@@ -68,6 +69,7 @@ const slugToTitle = (slug: string): string => {
 };
 
 export default function PageList() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { user } = useAuthentication();
   const { organizationId } = OrganizationIdState();

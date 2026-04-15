@@ -77,7 +77,9 @@ async def edit_session_websocket(
     content_id: Optional[int] = Query(
         None, description="ID of the specific content being edited"
     ),
-    token: Optional[str] = Query(None, description="Optional JWT token (cookie preferred)"),
+    token: Optional[str] = Query(
+        None, description="Optional JWT token (cookie preferred)"
+    ),
     db: Session = Depends(get_db),
 ):
     """WebSocket endpoint for managing edit sessions and parallel edit detection."""

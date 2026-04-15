@@ -38,7 +38,6 @@ export default function AppLayout(props) {
     headerHeight = 50,
     breakpoint = 'sm',
     showApps = true,
-    showSiteSelector = false,
   } = props;
   const [opened, { toggle }] = useDisclosure();
   const { user } = useAuthentication();
@@ -52,7 +51,7 @@ export default function AppLayout(props) {
     temporaryToggle,
   } = SidebarState();
   const { showBackButton } = ShowHeaderBackButtonState();
-  const { hideSiteSelector } = ShowSiteSelectorState();
+  const { showSiteSelector } = ShowSiteSelectorState();
   const { goToSiteLink } = GoToSiteLinkState();
   const { hideNotifications, hideProfileDropdown, hideGoToSite } = HideHeaderItemsState();
   const { back } = useBack();
@@ -235,7 +234,7 @@ export default function AppLayout(props) {
               )}
 
               {/*region site selector*/}
-              {showSiteSelector && !hideSiteSelector && (
+              {showSiteSelector && (
                 <VisibilityControl
                   roleIds={[
                     'super_admin_role',

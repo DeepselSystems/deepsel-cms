@@ -38,7 +38,7 @@ export default function UserView() {
 
       {record ? (
         <Card>
-          <H1>{record.username}</H1>
+          <H1>{record.email || record.username}</H1>
           <div className={`flex gap-4 my-2`}>
             <ReadOnlyField>
               <FileDisplay type="image" src={record.image?.name} />

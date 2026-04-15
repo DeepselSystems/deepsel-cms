@@ -10,7 +10,6 @@ import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
-import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import UserState from '../../../common/stores/UserState.js';
@@ -93,7 +92,6 @@ export default function BlogPostEdit() {
   const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
   const { setShowBackButton } = ShowHeaderBackButtonState();
-  const { setHideSiteSelector } = ShowSiteSelectorState();
   const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
   const { organizationId } = OrganizationIdState();
   const { user } = UserState();
@@ -286,24 +284,16 @@ export default function BlogPostEdit() {
   // Enable back button and hide header items on mount, restore on unmount
   useEffect(() => {
     setShowBackButton(true);
-    setHideSiteSelector(true);
     setHideNotifications(true);
     setHideProfileDropdown(true);
     setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
-      setHideSiteSelector(false);
       setHideNotifications(false);
       setHideProfileDropdown(false);
       setHideGoToSite(false);
     };
-  }, [
-    setShowBackButton,
-    setHideSiteSelector,
-    setHideNotifications,
-    setHideProfileDropdown,
-    setHideGoToSite,
-  ]);
+  }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
 
   // Function to generate slug from title (used in create mode)
   const generateSlug = (title) => {

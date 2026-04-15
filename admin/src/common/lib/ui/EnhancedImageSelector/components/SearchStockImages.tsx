@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -23,6 +23,7 @@ import { Masonry } from '../../Masonry';
 import { TextInput } from '../../TextInput';
 import { useStockImages } from '../hooks/useStockImages';
 import type { StockImage } from '../hooks/useStockImages';
+import { UNSPLASH_UTM } from '../constants/stockImages';
 import { StockImageItem } from './StockImageItem';
 import { IconDeviceFloppy, IconInfoCircle, IconPhotoPlus, IconSearch } from '@tabler/icons-react';
 
@@ -76,6 +77,7 @@ export function SearchStockImages({
     searchImages,
     loadMore,
     isOutOfData,
+    trackDownload,
   } = useStockImages({ backendHost, setUser });
 
   // Selected image for preview modal
@@ -87,6 +89,14 @@ export function SearchStockImages({
 
   // Attachment query
   const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
+
+  // Trigger a default search once on mount so the panel isn't empty.
+  const didInitialSearchRef = useRef(false);
+  useEffect(() => {
+    if (didInitialSearchRef.current) return;
+    didInitialSearchRef.current = true;
+    searchImages(1, 'nature');
+  }, [searchImages]);
 
   /**
    * Download image from URL, upload to the library, and notify parent
@@ -143,6 +153,9 @@ export function SearchStockImages({
         const attachment = ((attachmentResult as AttachmentFile[])[0] ??
           null) as AttachmentFile | null;
         if (!attachment) return;
+
+        trackDownload(image.download_location);
+
         onNewAttachment?.(attachment);
         setSelectedImage(null);
         setImages((prevState) => {
@@ -172,7 +185,7 @@ export function SearchStockImages({
         setIsCloningStockImage(false);
       }
     },
-    [notify, onNewAttachment, setImages, t, uploadFileModel],
+    [notify, onNewAttachment, setImages, t, trackDownload, uploadFileModel],
   );
 
   /**
@@ -343,28 +356,54 @@ export function SearchStockImages({
             )}
           </Box>
 
-          <Box className="-mt-20 text-end space-x-2">
-            <Button
-              disabled={!selectedImage || !loaded}
-              variant="outline"
-              onClick={() => {
-                downloadFromAttachUrl(selectedImage!.src);
-              }}
-            >
-              {t('Download')}
-            </Button>
-            {!selectedImage?._attachment && (
+          <Box className="-mt-20 flex justify-between items-center">
+            {selectedImage?.photographer_name ? (
+              <Box className="text-xs text-gray-pale-sky">
+                {t('Photo by')}{' '}
+                <a
+                  href={`${selectedImage.photographer_url ?? ''}${UNSPLASH_UTM}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {selectedImage.photographer_name}
+                </a>{' '}
+                {t('on')}{' '}
+                <a
+                  href={`https://unsplash.com/${UNSPLASH_UTM}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Unsplash
+                </a>
+              </Box>
+            ) : (
+              <Box />
+            )}
+            <Box className="space-x-2">
               <Button
                 disabled={!selectedImage || !loaded}
                 variant="outline"
                 onClick={() => {
-                  void handleCloneImage(selectedImage!);
+                  downloadFromAttachUrl(selectedImage!.src);
                 }}
-                loading={isCloningStockImage}
               >
-                {t('Add to library and select it')}
+                {t('Download')}
               </Button>
-            )}
+              {!selectedImage?._attachment && (
+                <Button
+                  disabled={!selectedImage || !loaded}
+                  variant="outline"
+                  onClick={() => {
+                    void handleCloneImage(selectedImage!);
+                  }}
+                  loading={isCloningStockImage}
+                >
+                  {t('Add to library and select it')}
+                </Button>
+              )}
+            </Box>
           </Box>
         </Box>
       </Modal>

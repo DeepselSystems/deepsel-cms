@@ -9,7 +9,6 @@ import useSidebar from '../../../common/hooks/useSidebar.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
-import ShowSiteSelectorState from '../../../common/stores/ShowSiteSelectorState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
@@ -79,7 +78,6 @@ export default function PageEdit({ onSuccess }) {
   const { organizationId } = OrganizationIdState();
   const { organizations } = OrganizationState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
-  const { setHideSiteSelector } = ShowSiteSelectorState();
   const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
   const backWithRedirect = useBackWithRedirect();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
@@ -293,24 +291,16 @@ export default function PageEdit({ onSuccess }) {
   // Enable back button and hide header items on mount, restore on unmount
   useEffect(() => {
     setShowBackButton(true);
-    setHideSiteSelector(true);
     setHideNotifications(true);
     setHideProfileDropdown(true);
     setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
-      setHideSiteSelector(false);
       setHideNotifications(false);
       setHideProfileDropdown(false);
       setHideGoToSite(false);
     };
-  }, [
-    setShowBackButton,
-    setHideSiteSelector,
-    setHideNotifications,
-    setHideProfileDropdown,
-    setHideGoToSite,
-  ]);
+  }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
 
   const currentContent = useMemo(() => {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);

@@ -36,8 +36,10 @@ import {
   IconUpload,
   IconWorld,
 } from '@tabler/icons-react';
+import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 
 export default function SiteSettings() {
+  useShowSiteSelector();
   const { t } = useTranslation();
   const { user } = useAuthentication();
   const { organizationId } = OrganizationIdState();
