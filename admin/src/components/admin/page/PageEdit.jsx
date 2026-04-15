@@ -731,10 +731,19 @@ export default function PageEdit({ onSuccess }) {
             <Menu.Dropdown>
               <Menu.Item closeMenuOnClick={false}>
                 <Tooltip
-                  label={needsConnect ? t('Connect OpenRouter to use this feature') : t('Please specify an API key and writing model in Site Settings to use this feature.')}
+                  label={
+                    needsConnect
+                      ? t('Connect OpenRouter to use this feature')
+                      : t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )
+                  }
                   disabled={aiWritingAvailable}
                 >
-                  <div className="inline-flex items-center" onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}>
+                  <div
+                    className="inline-flex items-center"
+                    onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}
+                  >
                     <Switch
                       label={
                         <span className="inline-flex items-center gap-1">
@@ -743,7 +752,11 @@ export default function PageEdit({ onSuccess }) {
                         </span>
                       }
                       checked={aiWriterSidebarOpened}
-                      onChange={(e) => needsConnect ? setConnectModalOpened(true) : setAiWriterSidebarOpened(e.currentTarget.checked)}
+                      onChange={(e) =>
+                        needsConnect
+                          ? setConnectModalOpened(true)
+                          : setAiWriterSidebarOpened(e.currentTarget.checked)
+                      }
                       disabled={!aiWritingAvailable && !needsConnect}
                       size="md"
                     />
@@ -752,10 +765,19 @@ export default function PageEdit({ onSuccess }) {
               </Menu.Item>
               <Menu.Item closeMenuOnClick={false}>
                 <Tooltip
-                  label={needsConnect ? t('Connect OpenRouter to use this feature') : t('Please specify an API key and autocomplete model in Site Settings to use this feature.')}
+                  label={
+                    needsConnect
+                      ? t('Connect OpenRouter to use this feature')
+                      : t(
+                          'Please specify an API key and autocomplete model in Site Settings to use this feature.',
+                        )
+                  }
                   disabled={aiAutoCompleteAvailable}
                 >
-                  <div className="inline-flex items-center" onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}>
+                  <div
+                    className="inline-flex items-center"
+                    onClick={needsConnect ? () => setConnectModalOpened(true) : undefined}
+                  >
                     <Switch
                       label={
                         <span className="inline-flex items-center gap-1">
@@ -764,7 +786,11 @@ export default function PageEdit({ onSuccess }) {
                         </span>
                       }
                       checked={aiAutocompleteEnabled && aiAutoCompleteAvailable}
-                      onChange={(e) => needsConnect ? setConnectModalOpened(true) : setAiAutocompleteEnabled(e.currentTarget.checked)}
+                      onChange={(e) =>
+                        needsConnect
+                          ? setConnectModalOpened(true)
+                          : setAiAutocompleteEnabled(e.currentTarget.checked)
+                      }
                       disabled={!aiAutoCompleteAvailable && !needsConnect}
                       size="md"
                     />

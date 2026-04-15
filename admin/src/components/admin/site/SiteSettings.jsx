@@ -477,8 +477,12 @@ export default function SiteSettings() {
                       <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <IconPlugConnected size={20} className="text-green-600" />
                         <div className="flex-1">
-                          <Text size="sm" weight={600} className="text-green-700">{t('OpenRouter Connected')}</Text>
-                          <Text size="xs" c="dimmed">{record.openrouter_api_key_truncated}</Text>
+                          <Text size="sm" weight={600} className="text-green-700">
+                            {t('OpenRouter Connected')}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {record.openrouter_api_key_truncated}
+                          </Text>
                         </div>
                         <Button
                           variant="subtle"
@@ -494,7 +498,10 @@ export default function SiteSettings() {
                               body: JSON.stringify({ organization_id: organizationId }),
                             });
                             // Refresh settings
-                            const res = await fetch(`${backendHost}/util/public_settings/${organizationId}`, { credentials: 'include' });
+                            const res = await fetch(
+                              `${backendHost}/util/public_settings/${organizationId}`,
+                              { credentials: 'include' },
+                            );
                             if (res.ok) {
                               const data = await res.json();
                               SitePublicSettingsState.getState().setSettings(data);

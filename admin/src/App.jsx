@@ -82,8 +82,17 @@ import { BasenameProvider } from './common/BasenameContext.js';
 
 export default function App(props) {
   console.log('APP', { props });
-  const { siteSettings, basename = '/admin', backendHost: backendHostProp, aiProviderConfig } = props;
-  const aiConfig = aiProviderConfig || { mode: 'api_key', provider: 'openrouter', oauthCallbackPath: '/openrouter-callback' };
+  const {
+    siteSettings,
+    basename = '/admin',
+    backendHost: backendHostProp,
+    aiProviderConfig,
+  } = props;
+  const aiConfig = aiProviderConfig || {
+    mode: 'api_key',
+    provider: 'openrouter',
+    oauthCallbackPath: '/openrouter-callback',
+  };
   const { i18n } = useTranslation();
   const { setSettings } = SitePublicSettingsState();
   const browserLanguages = useBrowserLanguages();
@@ -246,78 +255,78 @@ export default function App(props) {
 
   return (
     <AIProviderConfigProvider value={aiConfig}>
-    <BasenameProvider value={basename}>
-      <MantineProvider theme={mantineTheme}>
-        <ModalsProvider>
-          <MuiThemeProvider theme={muiTheme}>
-            <BrowserRouter basename={basename}>
-              <Notification />
-              <Routes>
-                <Route path="/openrouter-callback" element={<OpenRouterCallback />} />
-                <Route element={<PublicAuth />}>
-                  <Route path="/google-authenticated" element={<GoogleAuth />} />
-                  <Route path="/saml-authenticated" element={<SamlAuth />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route
-                    path="/reset-password-confirmation/:token"
-                    element={<ResetPasswordConfirmation />}
-                  />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                </Route>
-
-                <Route element={<RequireAuth />}>
-                  <Route element={<CMSLayout />}>
-                    <Route path="/templates" element={<TemplateList />} />
-                    <Route path="/templates/create" element={<TemplateEdit />} />
-                    <Route path="/templates/:id/edit" element={<TemplateEdit />} />
-                    <Route path="/themes" element={<ThemeList />} />
-                    <Route path="/themes/edit/:themeName" element={<ThemeFileEdit />} />
-
-                    <Route path="/blog_posts" element={<BlogPostList />} />
-                    <Route path="/blog_posts/create" element={<BlogPostEdit />} />
-                    <Route path="/blog_posts/:id/edit" element={<BlogPostEdit />} />
-                    <Route path="/pages" element={<PageList />} />
-                    <Route path="/pages/create" element={<PageEdit />} />
-                    <Route path="/pages/:id/edit" element={<PageEdit />} />
-                    <Route path="/pages/:id" element={<Navigate to="edit" replace />} />
-                    <Route path="/menus" element={<MenuTree />} />
-                    <Route path="/manage-users" element={<ManageUsersList />} />
-                    <Route path="/manage-users/:id/edit" element={<UserEdit />} />
-                    <Route path="/manage-users/:id" element={<UserView />} />
-                    <Route path="/manage-users/create" element={<UserCreate />} />
-                    <Route path="/site-settings" element={<SiteSettings />} />
-                    <Route path="/sites/new" element={<SiteCreate />} />
-                    <Route path="/media" element={<Media />} />
+      <BasenameProvider value={basename}>
+        <MantineProvider theme={mantineTheme}>
+          <ModalsProvider>
+            <MuiThemeProvider theme={muiTheme}>
+              <BrowserRouter basename={basename}>
+                <Notification />
+                <Routes>
+                  <Route path="/openrouter-callback" element={<OpenRouterCallback />} />
+                  <Route element={<PublicAuth />}>
+                    <Route path="/google-authenticated" element={<GoogleAuth />} />
+                    <Route path="/saml-authenticated" element={<SamlAuth />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route
+                      path="/reset-password-confirmation/:token"
+                      element={<ResetPasswordConfirmation />}
+                    />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                   </Route>
 
-                  <Route element={<OrganizationLayout />}>
-                    <Route path="/profile/:id/edit" element={<UserEdit />} />
-                    <Route path="/users" element={<UserList />} />
-                    <Route path="/users/:id/edit" element={<UserEdit />} />
-                    <Route path="/users/:id" element={<UserView />} />
-                    <Route path="/users/create" element={<UserCreate />} />
-                    <Route path="/roles" element={<RoleList />} />
-                    <Route path="/roles/:id/edit" element={<RoleEdit />} />
-                    <Route path="/roles/:id" element={<RoleView />} />
-                    <Route path="/roles/create" element={<RoleCreate />} />
+                  <Route element={<RequireAuth />}>
+                    <Route element={<CMSLayout />}>
+                      <Route path="/templates" element={<TemplateList />} />
+                      <Route path="/templates/create" element={<TemplateEdit />} />
+                      <Route path="/templates/:id/edit" element={<TemplateEdit />} />
+                      <Route path="/themes" element={<ThemeList />} />
+                      <Route path="/themes/edit/:themeName" element={<ThemeFileEdit />} />
 
-                    <Route path="/organization-settings" element={<OrganizationSettings />} />
-                    <Route path="/crons" element={<CronList />} />
-                    <Route path="/crons/create" element={<CronCreate />} />
-                    <Route path="/crons/:id/edit" element={<CronEdit />} />
-                    <Route path="/crons/:id" element={<CronView />} />
-                    <Route path="/google-sign-in-settings" element={<GoogleSignInSetting />} />
-                    <Route path="/saml-settings" element={<SamlSetting />} />
+                      <Route path="/blog_posts" element={<BlogPostList />} />
+                      <Route path="/blog_posts/create" element={<BlogPostEdit />} />
+                      <Route path="/blog_posts/:id/edit" element={<BlogPostEdit />} />
+                      <Route path="/pages" element={<PageList />} />
+                      <Route path="/pages/create" element={<PageEdit />} />
+                      <Route path="/pages/:id/edit" element={<PageEdit />} />
+                      <Route path="/pages/:id" element={<Navigate to="edit" replace />} />
+                      <Route path="/menus" element={<MenuTree />} />
+                      <Route path="/manage-users" element={<ManageUsersList />} />
+                      <Route path="/manage-users/:id/edit" element={<UserEdit />} />
+                      <Route path="/manage-users/:id" element={<UserView />} />
+                      <Route path="/manage-users/create" element={<UserCreate />} />
+                      <Route path="/site-settings" element={<SiteSettings />} />
+                      <Route path="/sites/new" element={<SiteCreate />} />
+                      <Route path="/media" element={<Media />} />
+                    </Route>
+
+                    <Route element={<OrganizationLayout />}>
+                      <Route path="/profile/:id/edit" element={<UserEdit />} />
+                      <Route path="/users" element={<UserList />} />
+                      <Route path="/users/:id/edit" element={<UserEdit />} />
+                      <Route path="/users/:id" element={<UserView />} />
+                      <Route path="/users/create" element={<UserCreate />} />
+                      <Route path="/roles" element={<RoleList />} />
+                      <Route path="/roles/:id/edit" element={<RoleEdit />} />
+                      <Route path="/roles/:id" element={<RoleView />} />
+                      <Route path="/roles/create" element={<RoleCreate />} />
+
+                      <Route path="/organization-settings" element={<OrganizationSettings />} />
+                      <Route path="/crons" element={<CronList />} />
+                      <Route path="/crons/create" element={<CronCreate />} />
+                      <Route path="/crons/:id/edit" element={<CronEdit />} />
+                      <Route path="/crons/:id" element={<CronView />} />
+                      <Route path="/google-sign-in-settings" element={<GoogleSignInSetting />} />
+                      <Route path="/saml-settings" element={<SamlSetting />} />
+                    </Route>
                   </Route>
-                </Route>
 
-                <Route path="*" element={<Navigate to="/pages" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </MuiThemeProvider>
-        </ModalsProvider>
-      </MantineProvider>
-    </BasenameProvider>
+                  <Route path="*" element={<Navigate to="/pages" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </MuiThemeProvider>
+          </ModalsProvider>
+        </MantineProvider>
+      </BasenameProvider>
     </AIProviderConfigProvider>
   );
 }

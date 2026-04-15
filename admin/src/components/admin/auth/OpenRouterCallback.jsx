@@ -45,10 +45,9 @@ export default function OpenRouterCallback() {
         }
 
         // Refresh site settings
-        const settingsRes = await fetch(
-          `${backendHost}/util/public_settings/${organizationId}`,
-          { credentials: 'include' },
-        );
+        const settingsRes = await fetch(`${backendHost}/util/public_settings/${organizationId}`, {
+          credentials: 'include',
+        });
         if (settingsRes.ok) {
           const data = await settingsRes.json();
           SitePublicSettingsState.getState().setSettings(data);
@@ -87,9 +86,7 @@ export default function OpenRouterCallback() {
         {status === 'error' && (
           <p className="text-red-600">{t('Failed to connect. Redirecting...')}</p>
         )}
-        {status === 'success' && (
-          <p className="text-green-600">{t('Connected! Redirecting...')}</p>
-        )}
+        {status === 'success' && <p className="text-green-600">{t('Connected! Redirecting...')}</p>}
       </div>
     </div>
   );

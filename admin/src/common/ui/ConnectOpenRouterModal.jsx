@@ -61,7 +61,9 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
       <div className="py-4 text-center">
         <IconPlugConnected size={48} className="mx-auto mb-4 text-blue-500" />
         <p className="text-gray-700 mb-6">
-          {t('Connect your OpenRouter account to use AI-powered features like autocomplete, content generation, and translation.')}
+          {t(
+            'Connect your OpenRouter account to use AI-powered features like autocomplete, content generation, and translation.',
+          )}
         </p>
         <Button onClick={handleConnect} className="w-full" size="lg">
           <IconPlugConnected size={18} className="mr-2" />
