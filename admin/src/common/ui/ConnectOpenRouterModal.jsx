@@ -1,9 +1,14 @@
+import { useEffect, useState } from 'react';
 import { Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import Button from './Button.jsx';
 import { IconPlugConnected } from '@tabler/icons-react';
 import { useAIProviderConfig } from '../AIProviderConfigContext.js';
 import { useBasename } from '../BasenameContext.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
+import OrganizationIdState from '../stores/OrganizationIdState.js';
+import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
+import NotificationState from '../stores/NotificationState.js';
 
 // PKCE helpers
 async function generatePKCE() {
@@ -29,11 +34,71 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
   const { t } = useTranslation();
   const { oauthCallbackPath } = useAIProviderConfig();
   const basename = useBasename();
+  const [connecting, setConnecting] = useState(false);
+
+  // Listen for auth code from popup callback page
+  useEffect(() => {
+    const handleMessage = async (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== 'OPENROUTER_AUTH_CODE') return;
+
+      const code = event.data.code;
+      const codeVerifier = sessionStorage.getItem('openrouter_code_verifier');
+      sessionStorage.removeItem('openrouter_code_verifier');
+
+      setConnecting(true);
+      try {
+        const { backendHost } = BackendHostURLState.getState();
+        const { organizationId } = OrganizationIdState.getState();
+
+        const response = await fetch(`${backendHost}/openrouter/exchange-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            code,
+            organization_id: organizationId,
+            code_verifier: codeVerifier || undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Exchange failed');
+        }
+
+        // Refresh site settings
+        const settingsRes = await fetch(
+          `${backendHost}/util/public_settings/${organizationId}`,
+          { credentials: 'include' },
+        );
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          SitePublicSettingsState.getState().setSettings(data);
+        }
+
+        NotificationState.getState().notify({
+          message: t('OpenRouter connected successfully!'),
+          type: 'success',
+        });
+        onClose();
+      } catch (err) {
+        console.error('OpenRouter exchange failed:', err);
+        NotificationState.getState().notify({
+          message: err.message || t('Failed to connect OpenRouter'),
+          type: 'error',
+        });
+      } finally {
+        setConnecting(false);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onClose, t]);
 
   const handleConnect = async () => {
     const { codeVerifier, codeChallenge } = await generatePKCE();
-
-    // Store verifier for the callback page to use
     sessionStorage.setItem('openrouter_code_verifier', codeVerifier);
 
     const callbackUrl = `${window.location.origin}${basename}${oauthCallbackPath}`;
@@ -44,10 +109,9 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
     });
     window.open(
       `https://openrouter.ai/auth?${params.toString()}`,
-      '_blank',
+      'openrouter-auth',
       'width=600,height=700',
     );
-    onClose();
   };
 
   return (
@@ -65,9 +129,15 @@ export default function ConnectOpenRouterModal({ opened, onClose }) {
             'Connect your OpenRouter account to use AI-powered features like autocomplete, content generation, and translation.',
           )}
         </p>
-        <Button onClick={handleConnect} className="w-full" size="lg">
+        <Button
+          onClick={handleConnect}
+          className="w-full"
+          size="lg"
+          loading={connecting}
+          disabled={connecting}
+        >
           <IconPlugConnected size={18} className="mr-2" />
-          {t('Connect OpenRouter')}
+          {connecting ? t('Connecting...') : t('Connect OpenRouter')}
         </Button>
       </div>
     </Modal>
