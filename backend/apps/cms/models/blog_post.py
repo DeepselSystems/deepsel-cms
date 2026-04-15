@@ -32,4 +32,8 @@ class BlogPostModel(Base, ActivityMixin, BlogPostMixin, BaseModel):
     # Custom code field for all languages
     blog_post_custom_code = Column(Text, nullable=True)
 
-    contents = relationship("BlogPostContentModel", back_populates="post")
+    contents = relationship(
+        "BlogPostContentModel",
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )

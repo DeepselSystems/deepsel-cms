@@ -14,7 +14,9 @@ class BlogPostContentRevisionModel(Base, BaseModel):
     )  # Sequential number for this content
 
     blog_post_content_id = Column(
-        Integer, ForeignKey("blog_post_content.id"), nullable=True
+        Integer,
+        ForeignKey("blog_post_content.id", ondelete="CASCADE"),
+        nullable=False,
     )
     blog_post_content = relationship(
         "BlogPostContentModel", foreign_keys=[blog_post_content_id]

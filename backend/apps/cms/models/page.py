@@ -27,4 +27,8 @@ class PageModel(Base, ActivityMixin, PageMixin, BaseModel):
     # Custom code field for all languages
     page_custom_code = Column(Text, nullable=True)
 
-    contents = relationship("PageContentModel", back_populates="page")
+    contents = relationship(
+        "PageContentModel",
+        back_populates="page",
+        cascade="all, delete-orphan",
+    )

@@ -13,7 +13,11 @@ class PageContentRevisionModel(Base, BaseModel):
         Integer, nullable=True
     )  # Sequential number for this content
 
-    page_content_id = Column(Integer, ForeignKey("page_content.id"), nullable=True)
+    page_content_id = Column(
+        Integer,
+        ForeignKey("page_content.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     page_content = relationship("PageContentModel", foreign_keys=[page_content_id])
 
     old_content = Column(String)
