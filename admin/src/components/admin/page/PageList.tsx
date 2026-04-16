@@ -415,6 +415,7 @@ export default function PageList() {
               'admin_role',
               'website_admin_role',
               'website_editor_role',
+              'website_author_role',
             ]}
             render={false}
           >
