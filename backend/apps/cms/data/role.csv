@@ -40,8 +40,8 @@ website_editor_role,Website Editor,"[
 website_author_role,Website Author,"[
     ""blog_post:*:own"",
     ""blog_post_content:*:own"",
-    ""page_content:read:*"",
-    ""page:read:*"",
+    ""page:*:own"",
+    ""page_content:*:own"",
     ""blog_post_content_revision:*:*"",
     ""page_content_revision:*:*"",
     ""template:read:*"",
@@ -50,4 +50,4 @@ website_author_role,Website Author,"[
     ""openrouter_model:read:*"",
     ""locale:read:*"",
     ""organization:read:*""
-]",true,"Can create, edit, delete own blog posts on this website."
+]",true,"Can create, edit, delete own blog posts and pages on this website."

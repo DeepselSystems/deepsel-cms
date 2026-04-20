@@ -53,7 +53,7 @@ export default function SiteSettings() {
     id: organizationId, // Use the selected organization ID without fallback
     autoFetch: !!organizationId, // Only auto-fetch if organizationId exists
   });
-  const { record, setRecord, update, loading: orgLoading } = query;
+  const { record, setRecord, update, loading: orgLoading, getOne: refetchOrg } = query;
   const { notify } = NotificationState((state) => state);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -526,6 +526,7 @@ export default function SiteSettings() {
                     <ConnectOpenRouterModal
                       opened={connectModalOpened}
                       onClose={() => setConnectModalOpened(false)}
+                      onConnected={() => refetchOrg(organizationId)}
                     />
                   </div>
                 ) : (
