@@ -53,7 +53,8 @@ export default function AppLayout(props) {
   } = SidebarState();
   const { showBackButton } = ShowHeaderBackButtonState();
   const { showSiteSelector: showSiteSelectorStore } = ShowSiteSelectorState();
-  const showSiteSelector = showSiteSelectorProp !== undefined ? showSiteSelectorProp : showSiteSelectorStore;
+  const showSiteSelector =
+    showSiteSelectorProp !== undefined ? showSiteSelectorProp : showSiteSelectorStore;
   const { goToSiteLink } = GoToSiteLinkState();
   const { hideNotifications, hideProfileDropdown, hideGoToSite } = HideHeaderItemsState();
   const { back } = useBack();
