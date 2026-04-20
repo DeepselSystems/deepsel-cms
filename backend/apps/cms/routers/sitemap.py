@@ -72,7 +72,7 @@ async def get_sitemap_data(
                 .join(LocaleModel, PageContentModel.locale_id == LocaleModel.id)
                 .filter(
                     PageModel.organization_id == org_settings.id,
-                    PageModel.published == True,
+                    PageContentModel.published == True,
                     PageContentModel.seo_metadata_allow_indexing == True,
                 )
                 .all()
@@ -113,7 +113,7 @@ async def get_sitemap_data(
                 .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
                 .filter(
                     BlogPostModel.organization_id == org_settings.id,
-                    BlogPostModel.published == True,
+                    BlogPostContentModel.published == True,
                     BlogPostContentModel.seo_metadata_allow_indexing == True,
                 )
                 .all()

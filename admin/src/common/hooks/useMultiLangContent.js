@@ -129,8 +129,7 @@ export default function useMultiLangContent({
    */
   const inheritSlugFromContents = (contents) => {
     if (!contents?.length) return '';
-    const defaultLangId =
-      siteSettings?.default_language_id || siteSettings?.default_language?.id;
+    const defaultLangId = siteSettings?.default_language_id || siteSettings?.default_language?.id;
     const defaultContent = defaultLangId
       ? contents.find((c) => c.locale_id === defaultLangId && c.slug)
       : null;
@@ -151,18 +150,16 @@ export default function useMultiLangContent({
 
       const updatedContents = [...prevState.contents];
       const oldValue = updatedContents[contentIndex][field];
+      if (oldValue === value) return prevState;
 
-      if (field === 'content') {
-        updatedContents[contentIndex] = {
-          ...updatedContents[contentIndex],
-          content: value,
-        };
-      } else {
-        updatedContents[contentIndex] = {
-          ...updatedContents[contentIndex],
-          [field]: value,
-        };
-      }
+      // Mark as having a pending draft so the status pill flips to
+      // "Published · Draft pending" immediately instead of waiting for the
+      // autosave round-trip.
+      updatedContents[contentIndex] = {
+        ...updatedContents[contentIndex],
+        [field]: value,
+        has_draft: true,
+      };
 
       const newState = {
         ...prevState,
@@ -452,6 +449,7 @@ export default function useMultiLangContent({
           revisions,
           last_modified_at,
           updated_by_id,
+          published,
           ...newContentData
         } = rest;
 

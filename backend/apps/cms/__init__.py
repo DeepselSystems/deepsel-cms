@@ -303,6 +303,39 @@ def _migrate_encrypt_org_secrets(db, *args, **kwargs):
         raise
 
 
+@migration_task("Backfill per-content published flag from parent", "1.0.9")
+def _migrate_backfill_content_published(db, *args, **kwargs):
+    """Copy parent.published onto each content row.
+
+    Publish state moved from parent to content. For existing data, mirror
+    whatever the parent had. Fresh installs seed content.published directly.
+    """
+    _logger = logging.getLogger(
+        f"{__name__}:{_migrate_backfill_content_published.__name__}"
+    )
+    try:
+        db.execute(sa_text("""
+                UPDATE page_content
+                SET published = page.published
+                FROM page
+                WHERE page_content.page_id = page.id
+                  AND page_content.published IS DISTINCT FROM page.published
+            """))
+        db.execute(sa_text("""
+                UPDATE blog_post_content
+                SET published = blog_post.published
+                FROM blog_post
+                WHERE blog_post_content.post_id = blog_post.id
+                  AND blog_post_content.published IS DISTINCT FROM blog_post.published
+            """))
+        db.commit()
+        _logger.info("Per-content published backfill completed.")
+    except Exception as e:
+        _logger.error(f"Per-content published backfill failed: {e}")
+        db.rollback()
+        raise
+
+
 def upgrade(db, from_version, to_version):
     """Upgrade app from current version in db to version in file settings.py"""
     logger.info(f"Start upgrade from version {from_version} to {to_version}")
@@ -315,6 +348,9 @@ def upgrade(db, from_version, to_version):
 
     # Full-text search vectors
     _migrate_add_search_vectors(db, __name__, from_version, to_version)
+
+    # Per-content published backfill (publish state moved from parent to content)
+    _migrate_backfill_content_published(db, __name__, from_version, to_version)
 
     # Ensure a theme is selected BEFORE generating imports
     set_default_theme_if_empty(db)

@@ -87,9 +87,10 @@ def get_page_content(
             PageModel.organization_id == org_settings.id,
         ]
 
-        # Only filter by published status if not in preview mode or not authenticated
+        # Only filter by published status if not in preview mode or not authenticated.
+        # Publish state lives per-language on the content row.
         if not preview or not current_user:
-            query_filters.append(PageModel.published == True)
+            query_filters.append(PageContentModel.published == True)
 
         # Try to find content with matching language-specific slug
         matching_content = (
@@ -110,7 +111,7 @@ def get_page_content(
 
             # Only filter by published status if not in preview mode or not authenticated
             if not preview or not current_user:
-                default_query_filters.append(PageModel.published == True)
+                default_query_filters.append(PageContentModel.published == True)
 
             matching_content = (
                 db.query(PageContentModel)
@@ -181,6 +182,7 @@ def get_page_content(
                         },
                     }
                     for content in page.contents
+                    if content.published or (preview and current_user)
                 ],
             }
 

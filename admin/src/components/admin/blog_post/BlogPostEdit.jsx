@@ -281,6 +281,7 @@ export default function BlogPostEdit() {
               return {
                 ...rest,
                 id: created.id,
+                published: false,
                 last_modified_at: null,
                 has_draft: false,
               };
@@ -408,9 +409,7 @@ export default function BlogPostEdit() {
         recordToSave.slug = `/${recordToSave.slug}`;
       }
       if (!recordToSave.slug) {
-        throw new Error(
-          t('Please enter a title or slug for this blog post before saving.'),
-        );
+        throw new Error(t('Please enter a title or slug for this blog post before saving.'));
       }
 
       await create({ ...recordToSave, organization_id: organizationId });

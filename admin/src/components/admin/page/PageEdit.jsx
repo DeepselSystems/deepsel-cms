@@ -552,12 +552,12 @@ export default function PageEdit({ onSuccess }) {
     // one yet, so we don't silently persist '/' and collide with the homepage.
     const siblingSlug = (() => {
       if (newContent.slug) return newContent.slug;
-      const defaultLangId =
-        siteSettings?.default_language_id || siteSettings?.default_language?.id;
+      const defaultLangId = siteSettings?.default_language_id || siteSettings?.default_language?.id;
       const defaultSibling = defaultLangId
         ? record.contents?.find((c) => c.locale_id === defaultLangId && c.slug)
         : null;
-      const source = defaultSibling || record.contents?.find((c) => c.id !== newContent.id && c.slug);
+      const source =
+        defaultSibling || record.contents?.find((c) => c.id !== newContent.id && c.slug);
       return source?.slug || '';
     })();
 
@@ -582,6 +582,7 @@ export default function PageEdit({ onSuccess }) {
               return {
                 ...rest,
                 id: created.id,
+                published: false,
                 last_modified_at: null,
                 has_draft: false,
               };

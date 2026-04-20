@@ -13,7 +13,7 @@ installed_apps = [
     "cms",
 ]
 
-version = "1.0.6"
+version = "1.0.9"
 
 API_VERSION = "v1"
 API_PREFIX = f"/api/{API_VERSION}"

@@ -69,12 +69,13 @@ def get_blog_post(
     if post_slug and not post_slug.startswith("/"):
         post_slug = f"/{post_slug}"
 
-    # Find the blog post with matching slug and organization
+    # Find the blog post with matching slug and organization. Publish state is
+    # per-language now, so we filter on content.published when picking the
+    # specific language row below.
     blog_post = (
         db.query(BlogPostModel)
         .filter(
             BlogPostModel.slug == post_slug,
-            BlogPostModel.published == True,
             BlogPostModel.organization_id == org_settings.id,
         )
         .first()
@@ -99,9 +100,15 @@ def get_blog_post(
             status_code=status.HTTP_404_NOT_FOUND, detail="Blog post not found"
         )
 
-    # Find matching content for the requested language
+    # Find matching content for the requested language (only published ones are
+    # publicly visible).
     matching_content = next(
-        (c for c in blog_post.contents if c.locale.iso_code == target_lang), None
+        (
+            c
+            for c in blog_post.contents
+            if c.locale.iso_code == target_lang and c.published
+        ),
+        None,
     )
 
     if not matching_content:
@@ -151,7 +158,8 @@ def get_blog_post(
             ),
         )
         for content in blog_post.contents
-        if content.locale.iso_code != matching_content.locale.iso_code
+        if content.published
+        and content.locale.iso_code != matching_content.locale.iso_code
     ]
 
     # Return blog post data

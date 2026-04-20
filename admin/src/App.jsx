@@ -40,6 +40,11 @@ import SamlAuth from './common/auth/SamlAuth.jsx';
 import GoogleSignInSetting from './components/admin/organization/GoogleSignInSetting.jsx';
 import SamlSetting from './components/admin/organization/SamlSetting.jsx';
 import SiteSettings from './components/admin/site/SiteSettings.jsx';
+import SiteSettingsGeneral from './components/admin/site/settings/SiteSettingsGeneral.jsx';
+import SiteSettingsAI from './components/admin/site/settings/SiteSettingsAI.jsx';
+import SiteSettingsBlog from './components/admin/site/settings/SiteSettingsBlog.jsx';
+import SiteSettingsCustomCode from './components/admin/site/settings/SiteSettingsCustomCode.jsx';
+import SiteSettingsBackup from './components/admin/site/settings/SiteSettingsBackup.jsx';
 import SiteCreate from './components/admin/site/SiteCreate.jsx';
 import Media from './components/admin/attachment/Media.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
@@ -295,6 +300,15 @@ export default function App(props) {
                       <Route path="/manage-users/:id" element={<UserView />} />
                       <Route path="/manage-users/create" element={<UserCreate />} />
                       <Route path="/site-settings" element={<SiteSettings />} />
+                      <Route path="/site-settings/general" element={<SiteSettingsGeneral />} />
+                      <Route path="/site-settings/ai" element={<SiteSettingsAI />} />
+                      <Route path="/site-settings/blog" element={<SiteSettingsBlog />} />
+                      <Route
+                        path="/site-settings/custom-code"
+                        element={<SiteSettingsCustomCode />}
+                      />
+                      <Route path="/site-settings/backup" element={<SiteSettingsBackup />} />
+                      <Route path="/smtp-settings" element={<SMTPSettings />} />
                       <Route path="/sites/new" element={<SiteCreate />} />
                       <Route path="/media" element={<Media />} />
                     </Route>

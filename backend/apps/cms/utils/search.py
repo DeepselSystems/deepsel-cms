@@ -132,7 +132,7 @@ async def search_pages_and_posts(
             .join(LocaleModel, LocaleModel.id == PageContentModel.locale_id)
             .filter(
                 PageModel.organization_id == org_id,
-                PageModel.published.is_(True),
+                PageContentModel.published.is_(True),
                 LocaleModel.iso_code == lang,
                 PageContentModel.search_vector.op("@@")(search_query),
             )
@@ -182,7 +182,7 @@ async def search_pages_and_posts(
             .join(LocaleModel, LocaleModel.id == BlogPostContentModel.locale_id)
             .filter(
                 BlogPostModel.organization_id == org_id,
-                BlogPostModel.published.is_(True),
+                BlogPostContentModel.published.is_(True),
                 LocaleModel.iso_code == lang,
                 BlogPostContentModel.search_vector.op("@@")(search_query),
             )
@@ -228,7 +228,7 @@ async def search_pages_and_posts(
                         JOIN page p ON p.id = pc.page_id
                         JOIN locale l ON l.id = pc.locale_id
                         WHERE p.organization_id = :org_id
-                          AND p.published = true
+                          AND pc.published = true
                           AND l.iso_code = :lang
                         UNION
                         SELECT unnest(string_to_array(lower(bpc.title), ' ')) AS word
@@ -236,7 +236,7 @@ async def search_pages_and_posts(
                         JOIN blog_post bp ON bp.id = bpc.post_id
                         JOIN locale l ON l.id = bpc.locale_id
                         WHERE bp.organization_id = :org_id
-                          AND bp.published = true
+                          AND bpc.published = true
                           AND l.iso_code = :lang
                     ) words
                     WHERE length(word) > 2

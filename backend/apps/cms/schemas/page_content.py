@@ -27,6 +27,7 @@ class PageContentRead(BaseModel):
     seo_metadata_featured_image: Optional[AttachmentNested] = None
     seo_metadata_allow_indexing: Optional[bool] = True
     custom_code: Optional[str] = None
+    published: Optional[bool] = False
     last_modified_at: Optional[datetime] = None
     updated_by_id: Optional[int] = None
     updated_by: Optional[UserNested] = None

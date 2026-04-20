@@ -43,7 +43,7 @@ export function EditFormActionBar({ loading, slot, showBack = true }: EditFormAc
       <div>
         {slot?.prependButton && slot.prependButton}
         <Button
-          className="shadow text-[14px] font-[600] bg-primary-main text-primary-contrastText ml-2"
+          className="shadow text-[14px] font-[600] bg-green-500 text-white ml-2"
           disabled={loading}
           loading={loading}
           variant="filled"

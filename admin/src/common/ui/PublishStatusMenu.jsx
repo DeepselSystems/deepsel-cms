@@ -35,10 +35,8 @@ export default function PublishStatusMenu({
   const { post: revertAPI } = useFetch('draft/revert', { autoFetch: false });
 
   const activeHasDraft = !!activeContent?.has_draft;
-  // Per-language publish state. `last_modified_at` is set in /draft/publish, so it
-  // doubles as "this language has been published at least once". The whole-record
-  // `record.published` flag still gates public visibility (and the Unpublish action).
-  const langPublished = !isCreateMode && !!activeContent?.last_modified_at;
+  // Per-language publish state lives on the content row.
+  const langPublished = !isCreateMode && !!activeContent?.published;
   const languageName = activeContent?.locale?.name || activeContent?.locale?.iso_code || '';
   const statusLabel = isCreateMode
     ? t('New draft')
@@ -48,9 +46,12 @@ export default function PublishStatusMenu({
         : t('Published')
       : t('Draft');
 
-  const baseClass = `text-xs px-2 py-1 rounded ${
-    langPublished ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-  }`;
+  const statusColors = (() => {
+    if (!langPublished) return { base: 'bg-gray-100 text-gray-700', hover: 'hover:bg-gray-200' };
+    if (activeHasDraft) return { base: 'bg-blue-100 text-blue-700', hover: 'hover:bg-blue-200' };
+    return { base: 'bg-green-100 text-green-700', hover: 'hover:bg-green-200' };
+  })();
+  const baseClass = `text-xs px-2 py-1 rounded ${statusColors.base}`;
 
   if (isCreateMode) {
     return <span className={baseClass}>{statusLabel}</span>;
@@ -127,7 +128,11 @@ export default function PublishStatusMenu({
 
   const runUnpublish = async () => {
     try {
-      await unpublishAPI({ record_type: recordType, record_id: record.id });
+      await unpublishAPI({
+        record_type: recordType,
+        record_id: record.id,
+        content_id: activeContent?.id,
+      });
       notify({ message: t('{{type}} unpublished.', { type: typeLabel }), type: 'info' });
       await onAfterUnpublish?.();
     } catch (error) {
@@ -148,9 +153,7 @@ export default function PublishStatusMenu({
         <button
           type="button"
           disabled={isPublishing}
-          className={`${baseClass} cursor-pointer inline-flex items-center gap-1 ${
-            record?.published ? 'hover:bg-green-200' : 'hover:bg-gray-200'
-          }`}
+          className={`${baseClass} cursor-pointer inline-flex items-center gap-1 ${statusColors.hover}`}
         >
           {statusLabel}
           <IconChevronDown size={12} />
@@ -171,12 +174,12 @@ export default function PublishStatusMenu({
             {t('Revert changes')}
           </Menu.Item>
         )}
-        {record?.published && (
+        {langPublished && (
           <Menu.Item color="red" leftSection={<IconWorldOff size={16} />} onClick={runUnpublish}>
             {t('Unpublish')}
           </Menu.Item>
         )}
-        {record?.published && langPublished && (
+        {langPublished && (
           <Menu.Item
             leftSection={<IconExternalLink size={16} />}
             component="a"

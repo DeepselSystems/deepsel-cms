@@ -9,7 +9,6 @@ from sqlalchemy import (
     DateTime,
 )
 from apps.cms.utils.tsvector import TSVector
-from datetime import datetime, timezone
 from db import Base
 from apps.core.mixins.base_model import BaseModel
 from apps.cms.mixins.page_content import PageContentMixin
@@ -55,11 +54,11 @@ class PageContentModel(Base, PageContentMixin, BaseModel):
     # Custom code field
     custom_code = Column(Text, nullable=True)  # Language-specific custom code
 
-    last_modified_at = Column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
+    # Per-language publish state. Each content row has its own live flag so
+    # languages can be published/unpublished independently. The parent
+    # page.published flag is derived from this (any True -> parent True).
+    published = Column(Boolean, default=False, nullable=False)
+    last_modified_at = Column(DateTime, nullable=True)
     updated_by_id = Column(Integer, ForeignKey("user.id"), nullable=True)
     updated_by = relationship("UserModel", foreign_keys=[updated_by_id])
 

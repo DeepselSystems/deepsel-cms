@@ -135,6 +135,9 @@ class PublishRequest(BaseModel):
 class UnpublishRequest(BaseModel):
     record_type: RecordType
     record_id: int
+    # When set, only unpublish that one content row (single language).
+    # When omitted, unpublish every content row (all languages).
+    content_id: Optional[int] = None
 
 
 class RevertRequest(BaseModel):
@@ -276,52 +279,55 @@ async def publish(
             raise HTTPException(status_code=404, detail="Content not found on record")
 
     for content in contents_to_publish:
-        if not content.has_draft:
-            continue
+        # Promote the draft if there is one; otherwise we're just re-flipping
+        # published back on for this language with its existing live fields.
+        if content.has_draft:
+            old_content_text = content.content
 
-        old_content_text = content.content
+            for field in fields:
+                draft_attr = f"draft_{field}"
+                if hasattr(content, draft_attr):
+                    new_val = getattr(content, draft_attr)
+                    # Only copy fields that were actually set in the draft. We use
+                    # has_draft as the gate for the record as a whole; for individual
+                    # fields, a null draft value means "unchanged" not "clear".
+                    if new_val is not None:
+                        setattr(content, field, new_val)
+                    setattr(content, draft_attr, None)
 
-        for field in fields:
-            draft_attr = f"draft_{field}"
-            if hasattr(content, draft_attr):
-                new_val = getattr(content, draft_attr)
-                # Only copy fields that were actually set in the draft. We use
-                # has_draft as the gate for the record as a whole; for individual
-                # fields, a null draft value means "unchanged" not "clear".
-                if new_val is not None:
-                    setattr(content, field, new_val)
-                setattr(content, draft_attr, None)
+            content.has_draft = False
+            content.draft_last_modified_at = None
+            content.draft_updated_by_id = None
+            content.last_modified_at = datetime.now(timezone.utc)
+            content.updated_by_id = user.id
 
-        content.has_draft = False
-        content.draft_last_modified_at = None
-        content.draft_updated_by_id = None
-        content.last_modified_at = datetime.now(timezone.utc)
-        content.updated_by_id = user.id
+            # Revision records the live-content transition for this publish event.
+            revision_count = (
+                db.query(RevisionModel)
+                .filter(getattr(RevisionModel, rev_fk) == content.id)
+                .count()
+            )
+            RevisionModel.create(
+                db,
+                user,
+                {
+                    rev_fk: content.id,
+                    "old_content": old_content_text,
+                    "new_content": content.content,
+                    "name": f"Published by {_user_display_name(user)}",
+                    "revision_number": revision_count + 1,
+                },
+            )
 
-        # Revision records the live-content transition for this publish event.
-        revision_count = (
-            db.query(RevisionModel)
-            .filter(getattr(RevisionModel, rev_fk) == content.id)
-            .count()
-        )
-        RevisionModel.create(
-            db,
-            user,
-            {
-                rev_fk: content.id,
-                "old_content": old_content_text,
-                "new_content": content.content,
-                "name": f"Published by {_user_display_name(user)}",
-                "revision_number": revision_count + 1,
-            },
-        )
+        content.published = True
 
     if request.parent_fields:
         for k, v in request.parent_fields.items():
             if hasattr(main, k):
                 setattr(main, k, v)
 
-    main.published = True
+    # Parent published flag is derived: true if any language is live.
+    main.published = any(c.published for c in main.contents)
     db.commit()
     db.refresh(main)
 
@@ -350,8 +356,12 @@ async def unpublish(
     db: Session = Depends(get_db),
     user: UserModel = Depends(get_current_user),
 ):
-    """Flip published=False. Draft and live fields are left intact."""
-    MainModel, _, _, _ = _resolve_models(request.record_type)
+    """Flip published=False. Draft and live fields are left intact.
+
+    Scoped to a single content when content_id is set, otherwise unpublishes all
+    languages. The parent published flag is derived from the contents.
+    """
+    MainModel, ContentModel, _, _ = _resolve_models(request.record_type)
 
     main = db.query(MainModel).filter(MainModel.id == request.record_id).first()
     if not main:
@@ -361,7 +371,16 @@ async def unpublish(
     if not allowed:
         raise HTTPException(status_code=403, detail="Permission denied")
 
-    main.published = False
+    contents_to_unpublish = main.contents
+    if request.content_id is not None:
+        contents_to_unpublish = [c for c in main.contents if c.id == request.content_id]
+        if not contents_to_unpublish:
+            raise HTTPException(status_code=404, detail="Content not found on record")
+
+    for content in contents_to_unpublish:
+        content.published = False
+
+    main.published = any(c.published for c in main.contents)
     db.commit()
 
     await edit_session_manager.broadcast_to_editors(
@@ -375,7 +394,7 @@ async def unpublish(
         },
     )
 
-    return {"status": "ok", "published": False}
+    return {"status": "ok", "published": main.published}
 
 
 @router.post("/revert")

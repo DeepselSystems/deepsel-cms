@@ -67,7 +67,7 @@ def get_blog_list(
             )
             .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
             .filter(
-                BlogPostModel.published == True,
+                BlogPostContentModel.published == True,
                 LocaleModel.iso_code == target_lang_iso_code,
                 BlogPostModel.organization_id == org_settings.id,
             )
@@ -87,7 +87,7 @@ def get_blog_list(
             )
             .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
             .filter(
-                BlogPostModel.published == True,
+                BlogPostContentModel.published == True,
                 LocaleModel.iso_code == target_lang_iso_code,
                 BlogPostModel.organization_id == org_settings.id,
             )

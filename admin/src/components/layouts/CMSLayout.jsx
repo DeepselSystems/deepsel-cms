@@ -1,10 +1,14 @@
 import AppLayout from '../../common/layouts/AppLayout.jsx';
 import {
+  IconAdjustments,
   IconCode,
+  IconDatabase,
+  IconMail,
   IconMenu2,
   IconNews,
   IconPalette,
   IconPhoto,
+  IconRobot,
   IconSettings,
   IconUser,
   IconWorld,
@@ -51,9 +55,46 @@ const navbarLinks = [
   },
   {
     label: 'Site Settings',
-    to: '/site-settings',
     icon: IconSettings,
     roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+    children: [
+      {
+        label: 'General',
+        to: '/site-settings/general',
+        icon: IconAdjustments,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'AI',
+        to: '/site-settings/ai',
+        icon: IconRobot,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'Blog Settings',
+        to: '/site-settings/blog',
+        icon: IconNews,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'Custom Code',
+        to: '/site-settings/custom-code',
+        icon: IconCode,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'Email Settings',
+        to: '/smtp-settings',
+        icon: IconMail,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'Backup & Restore',
+        to: '/site-settings/backup',
+        icon: IconDatabase,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+    ],
   },
 ];
 

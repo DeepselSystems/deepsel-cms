@@ -119,7 +119,8 @@ def search_website_content(
         .join(PageModel, PageContentModel.page_id == PageModel.id)
         .join(LocaleModel, PageContentModel.locale_id == LocaleModel.id)
         .filter(
-            PageModel.published == True, PageModel.organization_id == organization_id
+            PageContentModel.published == True,
+            PageModel.organization_id == organization_id,
         )
         .all()
     )
@@ -167,7 +168,7 @@ def search_website_content(
         .join(BlogPostModel, BlogPostContentModel.post_id == BlogPostModel.id)
         .join(LocaleModel, BlogPostContentModel.locale_id == LocaleModel.id)
         .filter(
-            BlogPostModel.published == True,
+            BlogPostContentModel.published == True,
             BlogPostModel.organization_id == organization_id,
         )
         .all()
