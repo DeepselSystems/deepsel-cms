@@ -103,10 +103,12 @@ export default function useMultiLangContent({
   };
 
   /**
-   * Generate a slug from a title
+   * Generate a slug from a title. Returns '' when the title yields no usable
+   * characters — callers decide the fallback (e.g. inherit from another locale)
+   * instead of silently defaulting to '/' and colliding with the homepage.
    */
   const generateSlug = (title) => {
-    if (!title) return '/';
+    if (!title) return '';
     const slug = title
       .normalize('NFD') // Decompose accented characters (ợ → o + combining mark)
       .replace(/[\u0300-\u036f]/g, '') // Strip combining diacritical marks → pure ASCII for Latin scripts
@@ -116,8 +118,24 @@ export default function useMultiLangContent({
       .replace(/-+/g, '-') // Collapse multiple hyphens
       .replace(/^-|-$/g, ''); // Trim leading/trailing hyphens
 
-    // Ensure slug starts with a forward slash
+    if (!slug) return '';
     return slug.startsWith('/') ? slug : `/${slug}`;
+  };
+
+  /**
+   * Pick a slug to inherit from sibling locale contents when adding a new
+   * language. Prefers the default site language, then any existing content
+   * with a slug. Returns '' when nothing usable is available.
+   */
+  const inheritSlugFromContents = (contents) => {
+    if (!contents?.length) return '';
+    const defaultLangId =
+      siteSettings?.default_language_id || siteSettings?.default_language?.id;
+    const defaultContent = defaultLangId
+      ? contents.find((c) => c.locale_id === defaultLangId && c.slug)
+      : null;
+    const source = defaultContent || contents.find((c) => c.slug);
+    return source?.slug || '';
   };
 
   /**
@@ -260,11 +278,11 @@ export default function useMultiLangContent({
           ? Math.max(...initialRecord.contents.map((t) => t.id)) + 1
           : 1;
 
-      // Default empty content
+      // Default empty content. Slug is left unset here so the final value can
+      // be inherited from sibling locales below (see newContent construction).
       let newContentData = {
         title: '',
         content: '',
-        slug: '/',
       };
 
       // Check if auto-translate is enabled
@@ -357,6 +375,11 @@ export default function useMultiLangContent({
       }
 
       const locale = locales.find((locale) => locale.id === selectedLocaleId);
+      // Slugs typically match across locales (only the lang URL prefix differs),
+      // so inherit from an existing locale first. Fall back to generating from
+      // the (possibly translated) title, and lastly to empty so the user can
+      // set it manually — never default to '/'.
+      const inheritedSlug = inheritSlugFromContents(initialRecord.contents);
       const newContent = {
         _addNew: true,
         id: newId,
@@ -364,7 +387,7 @@ export default function useMultiLangContent({
         content: newContentData.content,
         locale_id: selectedLocaleId,
         locale,
-        slug: generateSlug(newContentData.title),
+        slug: inheritedSlug || generateSlug(newContentData.title) || '',
         seo_metadata_allow_indexing: true,
       };
 
@@ -395,6 +418,12 @@ export default function useMultiLangContent({
    * Process contents before submission
    */
   const processContentsForSubmit = (contents) => {
+    const inheritedSlug = inheritSlugFromContents(contents);
+    const resolveSlug = (slug, title) => {
+      if (slug) return slug.startsWith('/') ? slug : `/${slug}`;
+      return generateSlug(title) || inheritedSlug || '';
+    };
+
     return contents.map(({ _addNew, ...rest }) => {
       // Check if this is truly a new content item or has a temporary ID
       const isNewContent =
@@ -426,29 +455,11 @@ export default function useMultiLangContent({
           ...newContentData
         } = rest;
 
-        // Generate slug only if it doesn't exist (null/undefined) and we have a title
-        if (
-          (newContentData.slug === null || newContentData.slug === undefined) &&
-          newContentData.title
-        ) {
-          newContentData.slug = generateSlug(newContentData.title);
-        } else if (newContentData.slug === null || newContentData.slug === undefined) {
-          newContentData.slug = '/';
-        } else if (newContentData.slug && !newContentData.slug.startsWith('/')) {
-          newContentData.slug = `/${newContentData.slug}`;
-        }
-
+        newContentData.slug = resolveSlug(newContentData.slug, newContentData.title);
         return newContentData;
       }
 
-      // For existing contents, generate slug only if it doesn't exist (null/undefined)
-      if ((rest.slug === null || rest.slug === undefined) && rest.title) {
-        rest.slug = generateSlug(rest.title);
-      } else if (rest.slug === null || rest.slug === undefined) {
-        rest.slug = '/';
-      } else if (rest.slug && !rest.slug.startsWith('/')) {
-        rest.slug = `/${rest.slug}`;
-      }
+      rest.slug = resolveSlug(rest.slug, rest.title);
       return rest;
     });
   };

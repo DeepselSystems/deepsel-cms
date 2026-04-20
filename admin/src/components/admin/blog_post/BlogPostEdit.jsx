@@ -363,15 +363,18 @@ export default function BlogPostEdit() {
     };
   }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
 
-  // Function to generate slug from title (used in create mode)
+  // Generate a slug from a title (used in create mode). Returns '' when the
+  // title yields no usable characters so callers decide the fallback instead
+  // of silently producing '/' and colliding with the homepage.
   const generateSlug = (title) => {
-    if (!title) return '/';
+    if (!title) return '';
     const slug = title
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
+    if (!slug) return '';
     return slug.startsWith('/') ? slug : `/${slug}`;
   };
 
@@ -392,13 +395,22 @@ export default function BlogPostEdit() {
       };
 
       if (!recordToSave.slug && recordToSave.contents.length > 0) {
-        const firstContent = recordToSave.contents[0];
-        if (firstContent.title) recordToSave.slug = generateSlug(firstContent.title);
+        // Derive from the first locale content that has a title.
+        for (const c of recordToSave.contents) {
+          const candidate = generateSlug(c.title);
+          if (candidate) {
+            recordToSave.slug = candidate;
+            break;
+          }
+        }
       }
       if (recordToSave.slug && !recordToSave.slug.startsWith('/')) {
         recordToSave.slug = `/${recordToSave.slug}`;
-      } else if (!recordToSave.slug) {
-        recordToSave.slug = '/';
+      }
+      if (!recordToSave.slug) {
+        throw new Error(
+          t('Please enter a title or slug for this blog post before saving.'),
+        );
       }
 
       await create({ ...recordToSave, organization_id: organizationId });

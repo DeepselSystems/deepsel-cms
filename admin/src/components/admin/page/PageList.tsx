@@ -11,7 +11,7 @@ import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import OrganizationState from '../../../common/stores/OrganizationState.js';
 import { buildPageUrlWithDomain, buildPagePath, buildFullUrl } from '../../../utils/domainUtils.js';
-import { Alert, Badge } from '@mantine/core';
+import { Alert, Badge, Tooltip } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
@@ -144,10 +144,12 @@ export default function PageList() {
 
     const themeSlugsSet = new Set(themeSlugs);
 
-    // Remove DB pages whose slug matches a theme page
+    // Hide only when every locale slug is shadowed — a page with any
+    // non-shadowed locale is still reachable at that locale's URL.
     const filteredItems = items.filter((item) => {
       const slugs = (item.contents ?? []).map((c) => c.slug).filter(Boolean);
-      return !slugs.some((slug) => themeSlugsSet.has(slug!));
+      if (!slugs.length) return true;
+      return !slugs.every((slug) => themeSlugsSet.has(slug!));
     });
 
     const themeRows: ThemePageRow[] = themeSlugs.map((slug) => {
@@ -244,9 +246,50 @@ export default function PageList() {
         }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
+        const themeSlugsSet = new Set(themeSlugs);
+        const conflicts = (params.row.contents ?? [])
+          .filter((c: PageContent) => c.slug && themeSlugsSet.has(c.slug))
+          .map((c: PageContent) => ({
+            lang: c.locale?.name || c.locale?.iso_code || t('Unknown'),
+            slug: c.slug!,
+            themeTitle: slugToTitle(c.slug!),
+          }));
         return (
           <LinkedCell params={params} to={themeLink || `/pages/${params.row.id}/edit`}>
-            {params.value}
+            <span className="flex items-center gap-2">
+              {params.value}
+              {conflicts.length > 0 && (
+                <Tooltip
+                  multiline
+                  w={320}
+                  withArrow
+                  label={
+                    <div>
+                      {conflicts.map((c) => (
+                        <div key={`${c.lang}-${c.slug}`}>
+                          {t('{{lang}} uses "{{slug}}" — same slug as theme page "{{title}}"', {
+                            lang: c.lang,
+                            slug: c.slug,
+                            title: c.themeTitle,
+                          })}
+                        </div>
+                      ))}
+                      <div className="mt-2 opacity-80">
+                        {t(
+                          'Visitors at these URLs will see the theme page instead. Change the slug here to show this content on your site.',
+                        )}
+                      </div>
+                    </div>
+                  }
+                >
+                  <IconAlertTriangle
+                    size={16}
+                    className="text-yellow-600 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Tooltip>
+              )}
+            </span>
           </LinkedCell>
         );
       },

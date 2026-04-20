@@ -548,13 +548,26 @@ export default function PageEdit({ onSuccess }) {
     if (!newContent) return;
     persistingNewContentRef.current.add(newContent.id);
 
+    // Inherit slug from a sibling locale when the new content doesn't have
+    // one yet, so we don't silently persist '/' and collide with the homepage.
+    const siblingSlug = (() => {
+      if (newContent.slug) return newContent.slug;
+      const defaultLangId =
+        siteSettings?.default_language_id || siteSettings?.default_language?.id;
+      const defaultSibling = defaultLangId
+        ? record.contents?.find((c) => c.locale_id === defaultLangId && c.slug)
+        : null;
+      const source = defaultSibling || record.contents?.find((c) => c.id !== newContent.id && c.slug);
+      return source?.slug || '';
+    })();
+
     (async () => {
       try {
         const created = await pageContentModel.create({
           page_id: record.id,
           locale_id: newContent.locale_id,
           title: '',
-          slug: newContent.slug || '/',
+          slug: siblingSlug,
           organization_id: organizationId,
         });
         if (!created?.id) return;
