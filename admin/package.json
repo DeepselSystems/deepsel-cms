@@ -1,7 +1,7 @@
 {
   "name": "@deepsel/admin",
   "private": false,
-  "version": "1.8.1",
+  "version": "1.8.2",
   "type": "module",
   "repository": {
     "type": "git",
@@ -15,8 +15,8 @@
   "module": "dist/index.js",
   "exports": {
     ".": {
-      "source": "./src/index.js",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./style.css": "./dist/index.css"
   },

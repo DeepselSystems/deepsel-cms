@@ -9,16 +9,26 @@ export const isActiveMenu = (menuItem: MenuItem, websiteData: WebsiteData) => {
   }
 
   const currentLang = websiteData.data.lang;
-  let result;
-  if (menuItem.url === '/') {
-    result = pathname === '/' || pathname === `/${currentLang}` || pathname === `/${currentLang}/`;
-  } else if (menuItem.url) {
+  const isMatch = (url: string) => {
+    const p = pathname.replace(/\/$/, '') || '/';
+    const u = url.replace(/\/$/, '') || '/';
+    return p === u || p.startsWith(u + '/');
+  };
+
+  let result = false;
+  if (menuItem.url) {
     result =
-      pathname === menuItem.url ||
-      pathname === `/${currentLang}${menuItem.url}` ||
-      pathname === `/${currentLang}${menuItem.url}/` ||
-      pathname.startsWith(menuItem.url + '/') ||
-      pathname.startsWith(`/${currentLang}${menuItem.url}/`);
+      isMatch(menuItem.url) ||
+      isMatch(`/${currentLang}${menuItem.url}`);
   }
-  return result ?? false;
+
+  // Also mark parent active if any child matches
+  if (!result && menuItem.children?.length) {
+    result = menuItem.children.some((child) => {
+      if (!child.url) return false;
+      return isMatch(child.url) || isMatch(`/${currentLang}${child.url}`);
+    });
+  }
+
+  return result;
 };
