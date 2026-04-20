@@ -23,6 +23,7 @@ export default function useMultiLangContent({
   locales,
   autoTranslate = false,
   contentType = 'page',
+  onBeforeDelete,
 }) {
   const { t } = useTranslation();
   const { notify } = NotificationState();
@@ -196,7 +197,20 @@ export default function useMultiLangContent({
   /**
    * Confirm deletion of a content language
    */
-  const confirmDeleteContent = (contentId) => {
+  const confirmDeleteContent = async (contentId) => {
+    const contentToDelete = initialRecord?.contents?.find((c) => c.id === contentId);
+    if (onBeforeDelete) {
+      try {
+        await onBeforeDelete(contentToDelete);
+      } catch (err) {
+        notify({
+          message: t('Error deleting content: ') + (err?.message || err),
+          type: 'error',
+        });
+        return;
+      }
+    }
+
     setRecord((prevState) => ({
       ...prevState,
       contents: prevState.contents.filter((content) => content.id !== contentId),

@@ -35,17 +35,21 @@ export default function PublishStatusMenu({
   const { post: revertAPI } = useFetch('draft/revert', { autoFetch: false });
 
   const activeHasDraft = !!activeContent?.has_draft;
+  // Per-language publish state. `last_modified_at` is set in /draft/publish, so it
+  // doubles as "this language has been published at least once". The whole-record
+  // `record.published` flag still gates public visibility (and the Unpublish action).
+  const langPublished = !isCreateMode && !!activeContent?.last_modified_at;
   const languageName = activeContent?.locale?.name || activeContent?.locale?.iso_code || '';
   const statusLabel = isCreateMode
     ? t('New draft')
-    : record?.published
+    : langPublished
       ? activeHasDraft
         ? t('Published · Draft pending')
         : t('Published')
       : t('Draft');
 
   const baseClass = `text-xs px-2 py-1 rounded ${
-    record?.published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+    langPublished ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
   }`;
 
   if (isCreateMode) {
@@ -153,7 +157,7 @@ export default function PublishStatusMenu({
         </button>
       </Menu.Target>
       <Menu.Dropdown>
-        {(!record?.published || activeHasDraft) && (
+        {(!langPublished || activeHasDraft) && (
           <Menu.Item
             leftSection={<IconWorldUpload size={16} />}
             onClick={confirmAndPublish}
@@ -162,26 +166,26 @@ export default function PublishStatusMenu({
             {t('Publish changes')}
           </Menu.Item>
         )}
-        {record?.published && activeHasDraft && (
+        {langPublished && activeHasDraft && (
           <Menu.Item leftSection={<IconArrowBackUp size={16} />} onClick={confirmAndRevert}>
             {t('Revert changes')}
           </Menu.Item>
         )}
         {record?.published && (
-          <>
-            <Menu.Item color="red" leftSection={<IconWorldOff size={16} />} onClick={runUnpublish}>
-              {t('Unpublish')}
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<IconExternalLink size={16} />}
-              component="a"
-              href={publicHref}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t('Show public version')}
-            </Menu.Item>
-          </>
+          <Menu.Item color="red" leftSection={<IconWorldOff size={16} />} onClick={runUnpublish}>
+            {t('Unpublish')}
+          </Menu.Item>
+        )}
+        {record?.published && langPublished && (
+          <Menu.Item
+            leftSection={<IconExternalLink size={16} />}
+            component="a"
+            href={publicHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('Show public version')}
+          </Menu.Item>
         )}
       </Menu.Dropdown>
     </Menu>

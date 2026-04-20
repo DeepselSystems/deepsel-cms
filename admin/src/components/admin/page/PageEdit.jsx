@@ -112,6 +112,9 @@ export default function PageEdit({ onSuccess }) {
     pageSize: null,
   });
 
+  // Used to persist newly added language contents in edit mode (see effect below).
+  const pageContentModel = useModel('page_content', { autoFetch: false });
+
   // Use the multi-language content hook
   const {
     // State
@@ -144,6 +147,12 @@ export default function PageEdit({ onSuccess }) {
     siteSettings,
     autoTranslate: true,
     contentType: 'page',
+    onBeforeDelete: async (content) => {
+      // Skip DB delete for frontend-only rows (not yet persisted). Otherwise
+      // delete the real PageContent row so it doesn't linger server-side.
+      if (isCreateMode || !content?.id || content._addNew) return;
+      await pageContentModel.del(content.id);
+    },
   });
 
   /**
@@ -505,7 +514,7 @@ export default function PageEdit({ onSuccess }) {
 
   const buildContentsPayload = useCallback(() => {
     return (record?.contents || [])
-      .filter((c) => c.id != null)
+      .filter((c) => c.id != null && !c._addNew)
       .map((c) => ({
         content_id: c.id,
         title: c.title,
@@ -524,6 +533,57 @@ export default function PageEdit({ onSuccess }) {
     enabled: !isCreateMode && !!record?.id,
     buildContentsPayload,
   });
+
+  // When a new language is added to an existing page, the hook only tracks it in
+  // local state with a frontend-only id. We need a real PageContent row so
+  // autosave/publish can target it. Create with empty live fields — anything the
+  // user typed (or the auto-translation) flows into draft_* via the autosave once
+  // the real id replaces the fake one.
+  const persistingNewContentRef = useRef(new Set());
+  useEffect(() => {
+    if (isCreateMode || !record?.id) return;
+    const newContent = record.contents?.find(
+      (c) => c._addNew && !persistingNewContentRef.current.has(c.id),
+    );
+    if (!newContent) return;
+    persistingNewContentRef.current.add(newContent.id);
+
+    (async () => {
+      try {
+        const created = await pageContentModel.create({
+          page_id: record.id,
+          locale_id: newContent.locale_id,
+          title: '',
+          slug: newContent.slug || '/',
+          organization_id: organizationId,
+        });
+        if (!created?.id) return;
+        setRecord((prev) => {
+          if (!prev?.contents) return prev;
+          return {
+            ...prev,
+            contents: prev.contents.map((c) => {
+              if (c.id !== newContent.id) return c;
+              // eslint-disable-next-line no-unused-vars
+              const { _addNew, ...rest } = c;
+              return {
+                ...rest,
+                id: created.id,
+                last_modified_at: null,
+                has_draft: false,
+              };
+            }),
+          };
+        });
+        setActiveContentTab((cur) => (cur === String(newContent.id) ? String(created.id) : cur));
+      } catch (err) {
+        console.error('Failed to persist new language content:', err);
+        notify({ message: err.message, type: 'error' });
+        persistingNewContentRef.current.delete(newContent.id);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [record?.contents, isCreateMode, record?.id]);
 
   useEffect(() => {
     onDraftSaved((data) => {
@@ -890,7 +950,7 @@ export default function PageEdit({ onSuccess }) {
               loading={loading || isSaving}
               variant="filled"
               type="submit"
-              color="blue"
+              color="green"
             >
               {t('Save draft')}
             </Button>
