@@ -17,9 +17,7 @@ export const isActiveMenu = (menuItem: MenuItem, websiteData: WebsiteData) => {
 
   let result = false;
   if (menuItem.url) {
-    result =
-      isMatch(menuItem.url) ||
-      isMatch(`/${currentLang}${menuItem.url}`);
+    result = isMatch(menuItem.url) || isMatch(`/${currentLang}${menuItem.url}`);
   }
 
   // Also mark parent active if any child matches
