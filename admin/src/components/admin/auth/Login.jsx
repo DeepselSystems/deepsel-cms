@@ -290,6 +290,20 @@ export default function Login() {
                 <div className="ml-4">{t('Login with Google')}</div>
               </Button>
             )}
+            {orgPublicSettings?.is_enabled_keycloak && (
+              <Button
+                className="flex items-center"
+                variant="light"
+                onClick={() => {
+                  window.location.href = `${backendHost}/login/keycloak?organization_id=${organizationId}`;
+                }}
+              >
+                <div className="flex items-center justify-center w-5 h-5 bg-gray-700 text-white rounded text-xs font-bold">
+                  K
+                </div>
+                <div className="ml-4">{t('Login with Keycloak')}</div>
+              </Button>
+            )}
             {orgPublicSettings?.is_enabled_saml && (
               <Button
                 className="flex items-center"

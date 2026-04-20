@@ -37,8 +37,10 @@ import EmailTemplateEdit from './components/admin/email_template/EmailTemplateEd
 import SMTPSettings from './components/admin/organization/SMTPSettings.jsx';
 import GoogleAuth from './common/auth/GoogleAuth.jsx';
 import SamlAuth from './common/auth/SamlAuth.jsx';
+import KeycloakAuth from './common/auth/KeycloakAuth.jsx';
 import GoogleSignInSetting from './components/admin/organization/GoogleSignInSetting.jsx';
 import SamlSetting from './components/admin/organization/SamlSetting.jsx';
+import KeycloakAuthSetting from './components/admin/organization/KeycloakAuthSetting.jsx';
 import SiteSettings from './components/admin/site/SiteSettings.jsx';
 import SiteSettingsGeneral from './components/admin/site/settings/SiteSettingsGeneral.jsx';
 import SiteSettingsAI from './components/admin/site/settings/SiteSettingsAI.jsx';
@@ -271,6 +273,7 @@ export default function App(props) {
                   <Route element={<PublicAuth />}>
                     <Route path="/google-authenticated" element={<GoogleAuth />} />
                     <Route path="/saml-authenticated" element={<SamlAuth />} />
+                    <Route path="/keycloak-callback" element={<KeycloakAuth />} />
                     <Route path="/login" element={<Login />} />
                     <Route
                       path="/reset-password-confirmation/:token"
@@ -331,6 +334,7 @@ export default function App(props) {
                       <Route path="/crons/:id" element={<CronView />} />
                       <Route path="/google-sign-in-settings" element={<GoogleSignInSetting />} />
                       <Route path="/saml-settings" element={<SamlSetting />} />
+                      <Route path="/keycloak-settings" element={<KeycloakAuthSetting />} />
                     </Route>
                   </Route>
 
