@@ -293,7 +293,9 @@ function AIBody({
           <div>
             <Switch
               label={t('Enabled')}
-              description={t('Show AI assistant chat widget on website pages')}
+              description={t(
+                'Show AI assistant chat widget on website pages. Only visible if your theme supports it.',
+              )}
               checked={record.show_chatbox || false}
               onChange={(event) =>
                 setRecord({

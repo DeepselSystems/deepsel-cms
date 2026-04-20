@@ -44,9 +44,8 @@ import KeycloakAuthSetting from './components/admin/organization/KeycloakAuthSet
 import SiteSettings from './components/admin/site/SiteSettings.jsx';
 import SiteSettingsGeneral from './components/admin/site/settings/SiteSettingsGeneral.jsx';
 import SiteSettingsAI from './components/admin/site/settings/SiteSettingsAI.jsx';
-import SiteSettingsBlog from './components/admin/site/settings/SiteSettingsBlog.jsx';
-import SiteSettingsCustomCode from './components/admin/site/settings/SiteSettingsCustomCode.jsx';
 import SiteSettingsBackup from './components/admin/site/settings/SiteSettingsBackup.jsx';
+import SiteSettingsAuthentication from './components/admin/site/settings/SiteSettingsAuthentication.jsx';
 import SiteCreate from './components/admin/site/SiteCreate.jsx';
 import Media from './components/admin/attachment/Media.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
@@ -305,12 +304,11 @@ export default function App(props) {
                       <Route path="/site-settings" element={<SiteSettings />} />
                       <Route path="/site-settings/general" element={<SiteSettingsGeneral />} />
                       <Route path="/site-settings/ai" element={<SiteSettingsAI />} />
-                      <Route path="/site-settings/blog" element={<SiteSettingsBlog />} />
-                      <Route
-                        path="/site-settings/custom-code"
-                        element={<SiteSettingsCustomCode />}
-                      />
                       <Route path="/site-settings/backup" element={<SiteSettingsBackup />} />
+                      <Route
+                        path="/site-settings/authentication"
+                        element={<SiteSettingsAuthentication />}
+                      />
                       <Route path="/smtp-settings" element={<SMTPSettings />} />
                       <Route path="/sites/new" element={<SiteCreate />} />
                       <Route path="/media" element={<Media />} />

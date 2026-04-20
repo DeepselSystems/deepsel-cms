@@ -34,7 +34,7 @@ export default function SiteSettingsSection({
       setSubmitting(true);
       await onSubmit({ record, setRecord, update, refetchOrg });
       notify({
-        message: t('Site Settings updated successfully!'),
+        message: t('Saved!'),
         type: 'success',
       });
     } catch (error) {

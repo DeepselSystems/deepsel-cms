@@ -184,7 +184,7 @@ export default function OrganizationSettings() {
                 })
               }
             />
-            <Link to="/google-sign-in-settings" className="flex items-center gap-2 my-3">
+            <Link to="/site-settings/authentication" className="flex items-center gap-2 my-3">
               <div
                 className="cursor-pointer underline"
                 style={{

@@ -1,9 +1,7 @@
 import AppLayout from '../../common/layouts/AppLayout.jsx';
 import {
   IconAdjustments,
-  IconBrandGoogle,
   IconClock,
-  IconKey,
   IconSettings,
   IconUser,
   IconUsersGroup,
@@ -38,24 +36,6 @@ const navbarLinks = [
         label: 'Scheduled Actions',
         to: '/crons',
         icon: IconClock,
-        roleIds: ['super_admin_role', 'admin_role'],
-      },
-      {
-        label: 'Google Sign-In',
-        to: '/google-sign-in-settings',
-        icon: IconBrandGoogle,
-        roleIds: ['super_admin_role', 'admin_role'],
-      },
-      {
-        label: 'SAML SSO',
-        to: '/saml-settings',
-        icon: IconUsersGroup,
-        roleIds: ['super_admin_role', 'admin_role'],
-      },
-      {
-        label: 'Keycloak SSO',
-        to: '/keycloak-settings',
-        icon: IconKey,
         roleIds: ['super_admin_role', 'admin_role'],
       },
     ],

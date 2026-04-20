@@ -1,20 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDebouncedCallback } from '@mantine/hooks';
-import { Text } from '@mantine/core';
-import { IconCloudCheck, IconCloudUpload } from '@tabler/icons-react';
 import Card from '../../../common/ui/Card.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import H1 from '../../../common/ui/H1.jsx';
+import EditFormActionBar from '../../../common/ui/EditFormActionBar.jsx';
+import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import PasswordInput from '../../../common/ui/PasswordInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
-
-const AUTOSAVE_DEBOUNCE_MS = 1000;
 
 export default function SMTPSettings() {
   useShowSiteSelector();
@@ -24,48 +20,30 @@ export default function SMTPSettings() {
     id: organizationId,
     autoFetch: !!organizationId,
   });
-  const { record, setRecord, update } = query;
+  const { record, setRecord, update, loading: orgLoading } = query;
   const { notify } = NotificationState();
 
-  const [autosaveStatus, setAutosaveStatus] = useState('idle');
-  const [savedAt, setSavedAt] = useState(null);
-  const lastSavedSnapshotRef = useRef(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const doSave = useDebouncedCallback(async (payload) => {
-    setAutosaveStatus('saving');
+  async function handleSubmit(e) {
     try {
-      const updated = await update(payload);
-      lastSavedSnapshotRef.current = JSON.stringify(updated ?? payload);
-      setAutosaveStatus('saved');
-      setSavedAt(new Date());
+      e.preventDefault();
+      setSubmitting(true);
+      await update(record);
+      notify({
+        message: t('Saved!'),
+        type: 'success',
+      });
     } catch (error) {
       console.error(error);
-      setAutosaveStatus('error');
-      notify({ message: error.message, type: 'error' });
-    }
-  }, AUTOSAVE_DEBOUNCE_MS);
-
-  useEffect(() => {
-    if (!record) return;
-    const serialized = JSON.stringify(record);
-    if (lastSavedSnapshotRef.current === null) {
-      lastSavedSnapshotRef.current = serialized;
-      return;
-    }
-    if (serialized === lastSavedSnapshotRef.current) return;
-    doSave(record);
-  }, [record]);
-
-  const autosaveLabel = (() => {
-    if (autosaveStatus === 'saving') return t('Saving…');
-    if (autosaveStatus === 'error') return t('Save failed');
-    if (autosaveStatus === 'saved' && savedAt) {
-      return t('Saved {{time}}', {
-        time: savedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      notify({
+        message: error.message,
+        type: 'error',
       });
+    } finally {
+      setSubmitting(false);
     }
-    return null;
-  })();
+  }
 
   if (!organizationId) {
     return (
@@ -81,32 +59,17 @@ export default function SMTPSettings() {
   }
 
   return (
-    <div className={`max-w-screen-xl m-auto my-[20px] px-[24px]`}>
+    <form className={`max-w-screen-xl m-auto my-[20px] px-[24px]`} onSubmit={handleSubmit}>
+      <EditFormActionBar loading={submitting || orgLoading} />
+
       {record ? (
         <Card className={`shadow-none border-none`}>
-          <div className="flex items-center justify-between">
-            <H1>{t('Email Settings')}</H1>
-            {autosaveLabel && (
-              <span className="text-xs text-gray-500 inline-flex items-center gap-1">
-                {autosaveStatus === 'saving' ? (
-                  <IconCloudUpload size={14} />
-                ) : (
-                  <IconCloudCheck size={14} />
-                )}
-                {autosaveLabel}
-              </span>
-            )}
-          </div>
+          <H1>{t('Email Settings')}</H1>
           {/*Main content with left and right sections*/}
           <div className={`flex gap-16 my-2 mt-10`}>
             {/* Left section - SMTP Settings */}
             <div className={`flex gap-2 flex-col max-w-[300px]`}>
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">{t('SMTP Settings')}</h3>
-              <Text c="dimmed" size="sm" className="mb-4">
-                {t(
-                  'Configure the outbound SMTP server used to send transactional emails (account confirmations, password resets, notifications) from your site.',
-                )}
-              </Text>
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('SMTP Settings')}</h3>
               <TextInput
                 label={t('SMTP Server')}
                 value={record.mail_server || ''}
@@ -237,6 +200,6 @@ export default function SMTPSettings() {
       ) : (
         <FormViewSkeleton />
       )}
-    </div>
+    </form>
   );
 }

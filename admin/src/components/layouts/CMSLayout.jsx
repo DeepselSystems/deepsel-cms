@@ -3,6 +3,7 @@ import {
   IconAdjustments,
   IconCode,
   IconDatabase,
+  IconLock,
   IconMail,
   IconMenu2,
   IconNews,
@@ -65,27 +66,21 @@ const navbarLinks = [
         roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
       },
       {
-        label: 'AI',
+        label: 'AI Settings',
         to: '/site-settings/ai',
         icon: IconRobot,
-        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-      },
-      {
-        label: 'Blog Settings',
-        to: '/site-settings/blog',
-        icon: IconNews,
-        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
-      },
-      {
-        label: 'Custom Code',
-        to: '/site-settings/custom-code',
-        icon: IconCode,
         roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
       },
       {
         label: 'Email Settings',
         to: '/smtp-settings',
         icon: IconMail,
+        roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
+      },
+      {
+        label: 'Authentication',
+        to: '/site-settings/authentication',
+        icon: IconLock,
         roleIds: ['super_admin_role', 'admin_role', 'website_admin_role'],
       },
       {

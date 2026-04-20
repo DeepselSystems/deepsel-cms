@@ -1,8 +1,17 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LoadingOverlay, MultiSelect, Select, TagsInput } from '@mantine/core';
-import { IconLanguage, IconWorld } from '@tabler/icons-react';
+import { LoadingOverlay, MultiSelect, Select, TagsInput, Text } from '@mantine/core';
+import { IconCode, IconLanguage, IconNews, IconWorld } from '@tabler/icons-react';
+import Editor from 'react-simple-code-editor';
+import { highlight, languages as prismLanguages } from 'prismjs/components/prism-core';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/themes/prism.css';
 import H2 from '../../../../common/ui/H2.jsx';
+import NumberInput from '../../../../common/ui/NumberInput.jsx';
+import Switch from '../../../../common/ui/Switch.jsx';
 import TextInput from '../../../../common/ui/TextInput.jsx';
 import useModel from '../../../../common/api/useModel.jsx';
 import SiteSettingsSection from './SiteSettingsSection.jsx';
@@ -111,7 +120,9 @@ export default function SiteSettingsGeneral() {
 
               <MultiSelect
                 label={t('Available Languages')}
-                description={t('Select languages that will be available on your site')}
+                description={t(
+                  'Select languages that will be available on your site. A language switcher is only visible if your theme supports it.',
+                )}
                 placeholder={t('Select languages')}
                 data={localeOptions}
                 value={record?.available_languages?.map((lang) => lang.id.toString()) || []}
@@ -161,6 +172,90 @@ export default function SiteSettingsGeneral() {
                 clearable
                 size="md"
                 radius="md"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <IconNews size={16} className="text-gray-600" />
+              <H2>{t('Blog Settings')}</H2>
+            </div>
+
+            <NumberInput
+              label={t('Posts per page')}
+              description={t(
+                'Number of blog posts to display per page. Only applied if your theme supports pagination.',
+              )}
+              value={record.blog_posts_per_page || 6}
+              onChange={(value) =>
+                setRecord({
+                  ...record,
+                  blog_posts_per_page: value,
+                })
+              }
+              className="mb-2 max-w-[300px]"
+            />
+            <Switch
+              label={t('Show Author on Posts')}
+              description={t(
+                'Display the author name on blog posts. Only visible if your theme supports it.',
+              )}
+              checked={record.show_post_author || false}
+              onChange={(event) =>
+                setRecord({
+                  ...record,
+                  show_post_author: event.currentTarget.checked,
+                })
+              }
+              className="mb-2"
+            />
+            <Switch
+              label={t('Show Published Date')}
+              description={t(
+                'Display the publication date on blog posts. Only visible if your theme supports it.',
+              )}
+              checked={record.show_post_date || false}
+              onChange={(event) =>
+                setRecord({
+                  ...record,
+                  show_post_date: event.currentTarget.checked,
+                })
+              }
+              className="mb-2"
+            />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <IconCode size={16} className="text-gray-600" />
+              <H2>{t('Custom Code')}</H2>
+            </div>
+
+            <Text c="dimmed" size="sm">
+              {t(
+                'Inject custom code (HTML, CSS, or JavaScript) on every page, inserted before the closing </body> tag. Only applied if your theme supports it.',
+              )}
+            </Text>
+
+            <div className="border border-gray-300 rounded" style={{ height: '200px' }}>
+              <Editor
+                className="w-full h-full rounded shadow"
+                value={record.website_custom_code || ''}
+                onValueChange={(code) =>
+                  setRecord({
+                    ...record,
+                    website_custom_code: code,
+                  })
+                }
+                highlight={(code) => highlight(code, prismLanguages.markup, 'html')}
+                padding={10}
+                style={{
+                  fontSize: 12,
+                  backgroundColor: '#f6f8fa',
+                  minHeight: '200px',
+                }}
+                placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
               />
             </div>
           </div>
