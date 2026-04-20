@@ -1,6 +1,7 @@
 import { Menu } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { IconGridDots } from '@tabler/icons-react';
 import H3 from '../H3.jsx';
 import useAuthentication from '../../api/useAuthentication.js';
 
@@ -13,8 +14,8 @@ const AppsDropdown = ({ apps, showApps }) => {
   return (
     <Menu shadow="md" width={220}>
       <Menu.Target>
-        <button className="max-w-full cursor-pointer">
-          <img src="/images/grid.svg" alt="" className="max-w-[20px]" />
+        <button className="max-w-full cursor-pointer flex items-center justify-center">
+          <IconGridDots size={20} />
         </button>
       </Menu.Target>
 

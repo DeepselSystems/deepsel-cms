@@ -38,6 +38,7 @@ export default function AppLayout(props) {
     headerHeight = 50,
     breakpoint = 'sm',
     showApps = true,
+    showSiteSelector: showSiteSelectorProp,
   } = props;
   const [opened, { toggle }] = useDisclosure();
   const { user } = useAuthentication();
@@ -51,7 +52,8 @@ export default function AppLayout(props) {
     temporaryToggle,
   } = SidebarState();
   const { showBackButton } = ShowHeaderBackButtonState();
-  const { showSiteSelector } = ShowSiteSelectorState();
+  const { showSiteSelector: showSiteSelectorStore } = ShowSiteSelectorState();
+  const showSiteSelector = showSiteSelectorProp !== undefined ? showSiteSelectorProp : showSiteSelectorStore;
   const { goToSiteLink } = GoToSiteLinkState();
   const { hideNotifications, hideProfileDropdown, hideGoToSite } = HideHeaderItemsState();
   const { back } = useBack();
@@ -256,7 +258,7 @@ export default function AppLayout(props) {
                 </VisibilityControl>
               )}
               {/*endregion site selector*/}
-              {!hideGoToSite && (
+              {showSiteSelector && !hideGoToSite && (
                 <a
                   href={goToSiteLink}
                   target="_blank"

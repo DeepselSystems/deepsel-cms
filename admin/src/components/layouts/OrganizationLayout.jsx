@@ -1,9 +1,9 @@
-import { useTranslation } from 'react-i18next';
 import AppLayout from '../../common/layouts/AppLayout.jsx';
 import {
   IconAdjustments,
   IconBrandGoogle,
   IconClock,
+  IconKey,
   IconSettings,
   IconUser,
   IconUsersGroup,
@@ -52,10 +52,15 @@ const navbarLinks = [
         icon: IconUsersGroup,
         roleIds: ['super_admin_role', 'admin_role'],
       },
+      {
+        label: 'Keycloak SSO',
+        to: '/keycloak-settings',
+        icon: IconKey,
+        roleIds: ['super_admin_role', 'admin_role'],
+      },
     ],
   },
 ];
 export default function OrganizationLayout() {
-  const { t } = useTranslation();
-  return <AppLayout navbarLinks={navbarLinks} />;
+  return <AppLayout navbarLinks={navbarLinks} showSiteSelector={false} />;
 }
