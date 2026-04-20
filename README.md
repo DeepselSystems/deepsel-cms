@@ -16,6 +16,25 @@ Deepsel CMS is a monorepo containing all layers of a modern CMS:
 | `packages/cms-utils` | Shared utilities (`@deepsel/cms-utils`) |
 | `mcp/` | MCP server — exposes CMS operations to AI clients |
 
+## Quick Start
+
+Get the full stack (backend + admin + client) running on a fresh machine in under 10 minutes.
+
+**Prerequisites**
+
+- Python 3.12+
+- Node.js 22.22.1+
+- Docker (with `docker compose`)
+- git
+
+**Run:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeepselSystems/deepsel-cms/main/scripts/quickstart.sh | bash
+```
+
+When it's up: open <http://localhost:4321/admin> and log in as `admin` / `1234`.
+
 ## Development
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup instructions, dev workflow, and downstream project development.
