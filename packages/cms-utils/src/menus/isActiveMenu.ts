@@ -20,12 +20,9 @@ export const isActiveMenu = (menuItem: MenuItem, websiteData: WebsiteData) => {
     result = isMatch(menuItem.url) || isMatch(`/${currentLang}${menuItem.url}`);
   }
 
-  // Also mark parent active if any child matches
+  // Also mark parent active if any descendant matches (recursive)
   if (!result && menuItem.children?.length) {
-    result = menuItem.children.some((child) => {
-      if (!child.url) return false;
-      return isMatch(child.url) || isMatch(`/${currentLang}${child.url}`);
-    });
+    result = menuItem.children.some((child) => isActiveMenu(child, websiteData));
   }
 
   return result;
