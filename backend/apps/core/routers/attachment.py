@@ -22,6 +22,8 @@ from apps.core.schemas.attachment import (
 table_name = "attachment"
 Model = models_pool[table_name]
 UserModel = models_pool["user"]
+AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
+CMSSettingsModel = models_pool["organization"]
 
 router = CRUDRouter(
     read_schema=AttachmentRead,
@@ -39,7 +41,7 @@ def get_upload_size_limit():
 
 @router.get("/storage/info", response_model=StorageInfoResponse)
 def get_storage_info(db: Session = Depends(get_db)):
-    info = Model.check_storage_quota(db)
+    info = AttachmentLocaleVersionModel.check_storage_quota(db)
     return StorageInfoResponse(
         used_storage=info["used_mb"], max_storage=info["max_mb"], unit="MB"
     )
@@ -60,7 +62,10 @@ def upload_files(
         total_new_bytes += file.file.tell()
         file.file.seek(0)
 
-    Model.check_storage_quota(db, total_new_bytes)
+    AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
+
+    org_settings = db.query(CMSSettingsModel).get(user.organization_id)
+    default_locale_id = org_settings.default_language_id if org_settings else None
 
     instances = []
     for file in files:
@@ -68,7 +73,20 @@ def upload_files(
         if alt_text:
             kwargs["alt_text"] = alt_text
 
-        instance = Model().create(db=db, user=user, file=file, **kwargs)
+        instance = Model().create(db=db, user=user, **kwargs)
+
+        # Create a locale version for the default language automatically on upload.
+        if default_locale_id:
+            file.file.seek(0)
+            AttachmentLocaleVersionModel().create(
+                db=db,
+                user=user,
+                file=file,
+                attachment_id=instance.id,
+                locale_id=default_locale_id,
+                **kwargs,
+            )
+
         instances.append(instance)
     return instances
 
@@ -80,7 +98,7 @@ def serve_file(
     user: UserModel = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
-    instance = Model.get_by_name(db, file_name)
+    instance = AttachmentLocaleVersionModel.get_by_name(db, file_name)
     if not instance:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="File not found"

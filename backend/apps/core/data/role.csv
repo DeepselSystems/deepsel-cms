@@ -6,6 +6,7 @@ super_admin_role,Super Admin,"[
     ""user_role:*:*"",
     ""organization:*:*"",
     ""attachment:*:*"",
+    ""attachment_locale_version:*:*"",
     ""activity:*:*"",
     ""email_template:*:*"",
     ""cron:*:*""
@@ -17,6 +18,7 @@ admin_role,Admin,"[
     ""user_role:*:org"",
     ""organization:*:org"",
     ""attachment:*:org"",
+    ""attachment_locale_version:*:org"",
     ""activity:*:org"",
     ""email_template:*:org"",
     ""cron:*:org""
@@ -27,6 +29,7 @@ user_role,User,"[
     ""implied_role:read:org"",
     ""organization:read:org"",
     ""attachment:*:own"",
+    ""attachment_locale_version:*:own"",
     ""activity:*:own""
 ]",true
 locales_public_role,Locales Public Role,"[
