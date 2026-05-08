@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dropzone } from '@mantine/dropzone';
-import { Checkbox, Group, Text } from '@mantine/core';
+import { Checkbox } from '@mantine/core';
 import useModel from '../../../common/api/useModel.jsx';
-import useUpload from '../../../common/api/useUpload.js';
-import { getAttachmentUrl, downloadFromAttachUrl } from '../../../common/utils/index.js';
 import Button from '../../../common/ui/Button.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
@@ -12,197 +9,11 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import H1 from '../../../common/ui/H1.jsx';
 import { Helmet } from 'react-helmet';
-import {
-  IconCloudUpload,
-  IconDownload,
-  IconLink,
-  IconPhoto,
-  IconServer,
-  IconTrash,
-} from '@tabler/icons-react';
+import { IconServer, IconTrash } from '@tabler/icons-react';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
-
-/**
- * @type {string[]}
- */
-const AcceptedFormat = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg'];
-
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function getFileExtension(filename) {
-  return filename.split('.').pop().toLowerCase();
-}
-
-function getFileTypeIcon(filename) {
-  const extension = getFileExtension(filename);
-  const supportedExtensions = [
-    'doc',
-    'docx',
-    'pdf',
-    'ppt',
-    'pptx',
-    'xls',
-    'xlsx',
-    'zip',
-    'rar',
-    'mp4',
-    'mov',
-    'mkv',
-    'webm',
-  ];
-
-  return supportedExtensions.includes(extension)
-    ? `/images/fileTypeIcons/${extension}.png`
-    : '/images/fileTypeIcons/generic.png';
-}
-
-function FileCard({ file, onDelete, selected, onToggleSelect, selectionMode }) {
-  const { t } = useTranslation();
-  const { backendHost } = BackendHostURLState((state) => state);
-  const { notify } = NotificationState((state) => state);
-  const [showOverlay, setShowOverlay] = useState(false);
-
-  const handleCardClick = () => {
-    if (selectionMode) onToggleSelect(file);
-  };
-
-  const handleCheckboxClick = (e) => {
-    e.stopPropagation();
-    onToggleSelect(file);
-  };
-
-  const handleDownload = (e) => {
-    e.stopPropagation();
-    const attachUrl = getAttachmentUrl(backendHost, file.name);
-    downloadFromAttachUrl(attachUrl);
-  };
-
-  const handleCopyLink = async (e) => {
-    e.stopPropagation();
-    const attachUrl = getAttachmentUrl(backendHost, file.name);
-    try {
-      await navigator.clipboard.writeText(attachUrl);
-      notify({
-        title: t('Success'),
-        message: t('Link copied to clipboard'),
-        type: 'success',
-      });
-    } catch (error) {
-      console.error('Failed to copy link:', error);
-      notify({
-        title: t('Error'),
-        message: t('Failed to copy link'),
-        type: 'error',
-      });
-    }
-  };
-
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    onDelete(file);
-  };
-
-  const isImage = file.content_type?.startsWith('image');
-  const fileSize = formatFileSize(file.filesize || 0);
-
-  return (
-    <div
-      className={`relative shadow border rounded-lg overflow-hidden cursor-pointer ${
-        selected ? 'border-primary-main ring-2 ring-primary-main' : 'border-gray-300'
-      }`}
-      onMouseEnter={() => setShowOverlay(true)}
-      onMouseLeave={() => setShowOverlay(false)}
-      onClick={handleCardClick}
-    >
-      <div
-        className={`absolute top-2 left-2 z-10 bg-white rounded p-0.5 shadow ${
-          selected || showOverlay || selectionMode ? 'opacity-100' : 'opacity-0'
-        } transition-opacity`}
-        onClick={handleCheckboxClick}
-      >
-        <Checkbox checked={selected} onChange={() => {}} size="sm" />
-      </div>
-      {isImage ? (
-        <div className="relative">
-          <img
-            src={getAttachmentUrl(backendHost, file.name)}
-            className="h-[150px] w-full object-cover"
-            alt={file.name}
-          />
-          {showOverlay && (
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={18} className="mr-1" />
-                {t('Copy Link')}
-              </Button>
-              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={18} className="mr-1" />
-                {t('Download')}
-              </Button>
-              <Button
-                onClick={handleDelete}
-                size="xs"
-                variant="filled"
-                color="red"
-                className="px-2 py-1"
-              >
-                <IconTrash size={18} className="mr-1" />
-                {t('Delete')}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="relative bg-gray-100">
-          <div
-            className="flex flex-col items-center justify-center h-[150px] p-2"
-            title={file.name}
-          >
-            <img
-              src={getFileTypeIcon(file.name)}
-              alt={getFileExtension(file.name)}
-              className="w-20 h-20 object-contain"
-            />
-          </div>
-          {showOverlay && (
-            <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
-              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={18} className="mr-1" />
-                {t('Copy Link')}
-              </Button>
-              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={18} className="mr-1" />
-                {t('Download')}
-              </Button>
-              <Button
-                onClick={handleDelete}
-                size="xs"
-                variant="filled"
-                color="red"
-                className="px-2 py-1"
-              >
-                <IconTrash size={18} className="mr-1" />
-                {t('Delete')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-      <div className="p-2 text-sm">
-        <div className="font-medium truncate" title={file.name}>
-          {file.name}
-        </div>
-        <div className="text-gray-500">{fileSize}</div>
-      </div>
-    </div>
-  );
-}
+import { MediaDropzone } from './components/MediaDropzone.jsx';
+import { AttachmentCard } from './components/AttachmentCard.jsx';
+import orderBy from 'lodash/orderBy';
 
 export default function Media() {
   useShowSiteSelector();
@@ -222,7 +33,6 @@ export default function Media() {
   const {
     data: files,
     setData: setFiles,
-    get: getFiles,
     deleteWithConfirm,
   } = useModel('attachment', {
     pageSize: null,
@@ -230,7 +40,6 @@ export default function Media() {
     filters,
   });
 
-  const { uploadFileModel } = useUpload();
   const [newUploads, setNewUploads] = useState(new Set());
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [storageInfo, setStorageInfo] = useState({
@@ -239,11 +48,6 @@ export default function Media() {
     unit: 'MB',
   });
   const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch storage information on component mount
-  useEffectOnce(() => {
-    fetchStorageInfo();
-  }, []);
 
   const fetchStorageInfo = async () => {
     try {
@@ -272,35 +76,11 @@ export default function Media() {
     return `${formattedUsedStorage} ${t('of')} ${maxStorage} ${unit} (${percentUsed}%)`;
   };
 
-  const handleFileChange = async (files) => {
-    try {
-      // Call uploadFileModel with all files at once
-      const uploadedFiles = await uploadFileModel('attachment', files);
-      if (uploadedFiles) {
-        // Handle single file or array of files
-        const filesArray = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles];
-
-        filesArray.forEach((uploadedFile) => {
-          setNewUploads((prev) => new Set([...prev, uploadedFile.id]));
-          setFiles((prevFiles) => [...prevFiles, uploadedFile]);
-        });
-
-        notify({
-          title: t('Success'),
-          message: t('Files uploaded successfully'),
-          type: 'success',
-        });
-      }
-      // Refresh storage info after upload
-      fetchStorageInfo();
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      notify({
-        title: t('Error'),
-        message: error.message || t('Failed to upload file'),
-        type: 'error',
-      });
-    }
+  const handleFilesUploaded = (filesArray) => {
+    filesArray.forEach((uploadedFile) => {
+      setNewUploads((prev) => new Set([...prev, uploadedFile.id]));
+      setFiles((prevFiles) => [...prevFiles, uploadedFile]);
+    });
   };
 
   const toggleSelect = (file) => {
@@ -360,38 +140,28 @@ export default function Media() {
     }
   };
 
-  const handleDelete = async (file) => {
+  const handleDelete = async (attachment) => {
     try {
-      // Pass file.id as an array since deleteWithConfirm expects an array of IDs
-      // Use callback for success notification and state updates
       await deleteWithConfirm(
-        [file.id],
-        // Success callback
+        [attachment.id],
         () => {
-          // Update newUploads set if this was a newly uploaded file
-          if (newUploads.has(file.id)) {
+          if (newUploads.has(attachment.id)) {
             setNewUploads((prev) => {
               const updated = new Set(prev);
-              updated.delete(file.id);
+              updated.delete(attachment.id);
               return updated;
             });
           }
-
-          // Update the files list by removing the deleted file
-          setFiles((prevFiles) => prevFiles.filter((f) => f.id !== file.id));
-
+          setFiles((prevAttachments) => prevAttachments.filter((a) => a.id !== attachment.id));
           notify({
             title: t('Success'),
             message: t('File deleted successfully'),
             type: 'success',
           });
-
-          // Refresh storage info after deletion
           fetchStorageInfo();
         },
-        // Error callback
         (error) => {
-          console.error('Error deleting file:', error);
+          console.error('Error deleting attachment:', error);
           notify({
             title: t('Error'),
             message: error.message || t('Failed to delete file'),
@@ -406,12 +176,13 @@ export default function Media() {
 
   function sortFilesWithNewUploadsFirst(files, newUploads) {
     if (!files) return [];
-    return [...files].sort((a, b) => {
-      if (newUploads.has(a.id) && !newUploads.has(b.id)) return -1;
-      if (!newUploads.has(a.id) && newUploads.has(b.id)) return 1;
-      return 0;
-    });
+    return orderBy(files, [(f) => newUploads.has(f.id)], ['desc']);
   }
+
+  // Fetch storage information on component mount
+  useEffectOnce(() => {
+    fetchStorageInfo().then();
+  }, []);
 
   return (
     <>
@@ -427,31 +198,7 @@ export default function Media() {
           </div>
         </div>
 
-        <div className="my-6">
-          <Dropzone
-            onDrop={handleFileChange}
-            // accept={AcceptedFormat.map((format) => ({mime: format}))}
-            className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
-          >
-            <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
-              <Dropzone.Accept>
-                <IconCloudUpload size={16} className="text-3xl text-green-500" />
-              </Dropzone.Accept>
-              <Dropzone.Idle>
-                <IconPhoto size={16} className="text-3xl text-gray-500" />
-              </Dropzone.Idle>
-
-              <div className="text-center">
-                <Text size="xl" inline className="font-medium">
-                  {t('Drag files here or click to select files')}
-                </Text>
-                <Text size="sm" color="dimmed" inline mt={7}>
-                  {t('Upload as many files as you need')}
-                </Text>
-              </div>
-            </Group>
-          </Dropzone>
-        </div>
+        <MediaDropzone onFilesUploaded={handleFilesUploaded} onStorageChange={fetchStorageInfo} />
 
         {sortedFiles.length > 0 && (
           <div className="flex items-center justify-between mb-3 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
@@ -482,12 +229,12 @@ export default function Media() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {sortedFiles.map((file, index) => (
-            <FileCard
-              key={file.id || index}
-              file={file}
+          {sortedFiles.map((attachment, index) => (
+            <AttachmentCard
+              key={attachment.id || index}
+              attachment={attachment}
               onDelete={handleDelete}
-              selected={selectedIds.has(file.id)}
+              selected={selectedIds.has(attachment.id)}
               onToggleSelect={toggleSelect}
               selectionMode={selectedIds.size > 0}
             />
