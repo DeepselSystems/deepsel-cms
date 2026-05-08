@@ -10,7 +10,7 @@ import BackendHostURLState from '../../../../common/stores/BackendHostURLState.j
 import {
   FILE_TYPE_ICONS_BASE_PATH,
   SUPPORTED_FILE_TYPE_ICON_EXTENSIONS,
-} from '../../../../constants/fileTypes.js';
+} from '../../../../constants/attachment.js';
 import { formatFileSize, getFileExtension } from '@deepsel/cms-utils/common/utils';
 
 /**
