@@ -7,8 +7,8 @@ import { LocaleFlag } from './LocaleFlag.jsx';
 /**
  * @typedef VersionFlagBarProps
  * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} versions - Existing locale versions for the attachment
- * @property {number|null} selectedVersionId - ID of the currently active version
- * @property {(version: import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion) => void} onSelectVersion
+ * @property {number|null} selectedLocaleId - Currently active locale id
+ * @property {(localeId: number) => void} onSelectLocale - Called with the locale id when any flag is clicked
  * @property {number|null} defaultLocaleId - Site default locale id; its flag is sorted first
  * @property {import('../../../../typedefs/Organization.js').OrgLanguage[]} availableLanguages - All org-configured languages
  */
@@ -24,21 +24,21 @@ import { LocaleFlag } from './LocaleFlag.jsx';
  * availableLanguages and locale_versions:
  *
  *   - Languages WITH a locale_version → active flag (clickable, switches preview)
- *   - Languages WITHOUT a locale_version → disabled flag (grayed out, tooltip hint)
+ *   - Languages WITHOUT a locale_version → grayed flag (still clickable; card shows placeholder)
  *   - locale_versions whose locale is NOT in availableLanguages → appended at the end
  *
  * When availableLanguages is empty (not yet loaded), falls back to showing only
  * the existing locale_versions.
  *
  * Dimming: the bar is dimmed only when there is exactly 1 active version and no
- * disabled placeholders (nothing to switch to and nothing to signal as missing).
+ * no-file placeholders (nothing to switch to and nothing to signal as missing).
  *
  * @param {VersionFlagBarProps} props
  */
 export function VersionFlagBar({
   versions,
-  selectedVersionId,
-  onSelectVersion,
+  selectedLocaleId,
+  onSelectLocale,
   defaultLocaleId,
   availableLanguages,
 }) {
@@ -90,10 +90,10 @@ export function VersionFlagBar({
   ]);
 
   const activeCount = items.filter(({ version }) => version != null).length;
-  const disabledCount = items.filter(({ version }) => version == null).length;
+  const noFileCount = items.filter(({ version }) => version == null).length;
 
   // Dim only when there is 1 active version and nothing else to communicate
-  const dimBar = activeCount <= 1 && disabledCount === 0;
+  const dimBar = activeCount <= 1 && noFileCount === 0;
 
   return (
     <div
@@ -106,11 +106,11 @@ export function VersionFlagBar({
         <LocaleFlag
           key={lang?.id ?? version?.id}
           locale={lang}
-          selected={version != null && version.id === selectedVersionId}
-          disabled={version == null}
+          selected={lang?.id === selectedLocaleId}
+          noFile={version == null}
           onClick={(e) => {
-            e.stopPropagation(); // Prevent triggering card bulk-select
-            if (version != null && activeCount > 1) onSelectVersion(version);
+            e.stopPropagation();
+            if (lang?.id != null) onSelectLocale(lang.id);
           }}
         />
       ))}

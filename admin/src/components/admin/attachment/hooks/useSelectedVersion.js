@@ -3,20 +3,23 @@ import { pickDefaultVersion } from '../../../../common/utils/versionSelector.js'
 
 /**
  * @typedef UseSelectedVersionResult
- * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion|null} selectedVersion - Currently active locale version
- * @property {(version: import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion) => void} setSelectedVersion
- * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} availableVersions - All locale versions for the attachment
+ * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion|null} selectedVersion - Version for the selected locale; null when locale has no file yet
+ * @property {number|null} selectedLocaleId - Currently selected locale id (resolved)
+ * @property {(localeId: number) => void} setSelectedLocale - Select a locale by id
+ * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} availableVersions - All locale versions for this attachment
  */
 
 /**
- * Manages which locale version is currently displayed on an attachment card.
+ * Manages which locale is currently displayed on an attachment card.
+ *
+ * Tracks selection by locale id (not version id) so that clicking a locale
+ * with no uploaded file is supported — selectedVersion will be null in that case,
+ * and the card shows a placeholder instead of a file preview.
  *
  * Selection logic:
- *   - Defaults to the version matching defaultLocaleId (site default language)
- *   - Falls back to the version with the lowest id when no default match is found
- *   - When the user explicitly selects a version, stores its id so the selection
- *     survives versions-array reference changes (e.g. after a refetch)
- *   - If the stored id no longer exists (e.g. version deleted), auto-picks again
+ *   - Defaults to the locale matching defaultLocaleId (site default language)
+ *   - Falls back to the locale of the version with the lowest id
+ *   - Explicit user selection overrides auto-pick and survives re-renders
  *
  * @param {import('../../../../typedefs/AttachmentFile.js').AttachmentFile} attachment
  * @param {number|null} defaultLocaleId
@@ -26,24 +29,25 @@ export function useSelectedVersion(attachment, defaultLocaleId) {
   /** @type {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} */
   const versions = useMemo(() => attachment?.locale_versions ?? [], [attachment]);
 
-  // null means "auto-pick via pickDefaultVersion"; set to a specific id on user selection
-  const [selectedVersionId, setSelectedVersionId] = useState(null);
+  // null = auto-pick; set to a specific locale id on explicit user selection
+  const [selectedLocaleId, setSelectedLocaleId] = useState(null);
 
-  /** @type {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion|null} */
+  // Resolved locale id: explicit selection or auto-picked default
+  const resolvedLocaleId = useMemo(() => {
+    if (selectedLocaleId !== null) return selectedLocaleId;
+    return pickDefaultVersion(versions, defaultLocaleId)?.locale_id ?? null;
+  }, [selectedLocaleId, versions, defaultLocaleId]);
+
+  // The version for the resolved locale (null if no file uploaded for this locale)
   const selectedVersion = useMemo(() => {
-    if (selectedVersionId !== null) {
-      const found = versions.find((v) => v.id === selectedVersionId);
-      // If the stored id still exists, use it; otherwise fall through to auto-pick
-      if (found) return found;
-    }
-    return pickDefaultVersion(versions, defaultLocaleId);
-  }, [selectedVersionId, versions, defaultLocaleId]);
+    if (resolvedLocaleId == null) return null;
+    return versions.find((v) => v.locale_id === resolvedLocaleId) ?? null;
+  }, [resolvedLocaleId, versions]);
 
-  /**
-   * Explicitly selects a locale version by its id.
-   * @param {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion} version
-   */
-  const setSelectedVersion = (version) => setSelectedVersionId(version.id);
-
-  return { selectedVersion, setSelectedVersion, availableVersions: versions };
+  return {
+    selectedVersion,
+    selectedLocaleId: resolvedLocaleId,
+    setSelectedLocale: setSelectedLocaleId,
+    availableVersions: versions,
+  };
 }

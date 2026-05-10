@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@mantine/core';
-import { IconDownload, IconLink, IconTrash } from '@tabler/icons-react';
+import { IconFileOff } from '@tabler/icons-react';
 import clsx from 'clsx';
-import { getAttachmentUrl, downloadFromAttachUrl } from '../../../../common/utils/index.js';
-import Button from '../../../../common/ui/Button.jsx';
-import NotificationState from '../../../../common/stores/NotificationState.js';
-import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
 import { useSelectedVersion } from '../hooks/useSelectedVersion.js';
+import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
+import { getAttachmentUrl } from '../../../../common/utils/index.js';
+import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import { formatFileSize, getFileExtension } from '@deepsel/cms-utils/common/utils';
 import {
   FILE_TYPE_ICONS_BASE_PATH,
   SUPPORTED_FILE_TYPE_ICON_EXTENSIONS,
 } from '../../../../constants/attachment.js';
 import { VersionFlagBar } from './VersionFlagBar.jsx';
+import { AttachmentCardOverlay } from './AttachmentCardOverlay.jsx';
 
 /**
  * Returns the icon image path for a given filename.
@@ -51,19 +51,25 @@ function getFileTypeIcon(filename) {
 export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect, selectionMode }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
-  const { notify } = NotificationState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
 
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
-  const { selectedVersion, setSelectedVersion, availableVersions } = useSelectedVersion(
-    attachment,
-    defaultLocaleId,
-  );
+  const { selectedVersion, selectedLocaleId, setSelectedLocale, availableVersions } =
+    useSelectedVersion(attachment, defaultLocaleId);
+  const hasVersion = selectedVersion != null;
 
   // Derive display values from the currently selected locale version
   const fileName = selectedVersion?.name ?? null;
   const isImage = selectedVersion?.content_type?.startsWith('image') ?? false;
   const fileSize = formatFileSize(selectedVersion?.filesize ?? 0);
+
+  // Locale name for the no-file placeholder (from availableLanguages or version locale)
+  const selectedLangName =
+    availableLanguages?.find((l) => l.id === selectedLocaleId)?.name ??
+    selectedVersion?.locale?.name ??
+    null;
+
+  const { overlayActions } = useAttachmentCardActions({ fileName, attachment, onDelete, hasVersion });
 
   /** Triggers bulk-select toggle when selection mode is active. @param {React.MouseEvent} _ */
   const handleCardClick = (_) => {
@@ -76,35 +82,8 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
     onToggleSelect(attachment);
   };
 
-  /** Initiates file download for the active locale version. @param {React.MouseEvent} event */
-  const handleDownload = (event) => {
-    event.stopPropagation();
-    if (!fileName) return;
-    downloadFromAttachUrl(getAttachmentUrl(backendHost, fileName));
-  };
-
-  /** Copies the serve URL of the active locale version to the clipboard. @param {React.MouseEvent} e */
-  const handleCopyLink = async (e) => {
-    e.stopPropagation();
-    if (!fileName) return;
-    const attachUrl = getAttachmentUrl(backendHost, fileName);
-    try {
-      await navigator.clipboard.writeText(attachUrl);
-      notify({ title: t('Success'), message: t('Link copied to clipboard'), type: 'success' });
-    } catch (error) {
-      console.error('Failed to copy link:', error);
-      notify({ title: t('Error'), message: t('Failed to copy link'), type: 'error' });
-    }
-  };
-
-  /** Delegates deletion of the whole attachment to the parent. @param {React.MouseEvent} e */
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    onDelete(attachment);
-  };
-
-  // Attachment has no locale versions yet (legacy or upload in progress)
-  if (!selectedVersion) {
+  // Truly empty: no versions uploaded at all (legacy record or mid-upload state)
+  if (availableVersions.length === 0) {
     return (
       <div className="relative shadow border border-gray-200 rounded-lg overflow-hidden opacity-50">
         <div className="flex items-center justify-center h-36 bg-gray-50 text-gray-400 text-xs">
@@ -135,36 +114,27 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
         <Checkbox checked={selected} onChange={() => {}} size="sm" />
       </div>
 
-      {/* Preview area — switches content based on selected locale version */}
-      {isImage ? (
+      {/* Preview area — switches content based on selected locale and whether a file exists */}
+      {!hasVersion ? (
+        <div className="relative bg-gray-50">
+          <div className="flex flex-col items-center justify-center h-36 gap-1.5 text-gray-400">
+            <IconFileOff size={32} />
+            <span className="text-xs text-center px-2">
+              {selectedLangName
+                ? t('No file for {{lang}}', { lang: selectedLangName })
+                : t('No file for this language')}
+            </span>
+          </div>
+          {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
+        </div>
+      ) : isImage ? (
         <div className="relative">
           <img
             src={getAttachmentUrl(backendHost, fileName)}
             className="h-36 w-full object-cover"
             alt={selectedVersion.alt_text ?? fileName}
           />
-          {showOverlay && (
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
-              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={18} className="mr-1" />
-                {t('Copy Link')}
-              </Button>
-              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={18} className="mr-1" />
-                {t('Download')}
-              </Button>
-              <Button
-                onClick={handleDelete}
-                size="xs"
-                variant="filled"
-                color="red"
-                className="px-2 py-1"
-              >
-                <IconTrash size={18} className="mr-1" />
-                {t('Delete')}
-              </Button>
-            </div>
-          )}
+          {showOverlay && <AttachmentCardOverlay actions={overlayActions} blurred />}
         </div>
       ) : (
         <div className="relative bg-gray-100">
@@ -175,47 +145,28 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
               className="w-20 h-20 object-contain"
             />
           </div>
-          {showOverlay && (
-            <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-2">
-              <Button onClick={handleCopyLink} size="xs" variant="filled" className="px-2 py-1">
-                <IconLink size={18} className="mr-1" />
-                {t('Copy Link')}
-              </Button>
-              <Button onClick={handleDownload} size="xs" variant="filled" className="px-2 py-1">
-                <IconDownload size={18} className="mr-1" />
-                {t('Download')}
-              </Button>
-              <Button
-                onClick={handleDelete}
-                size="xs"
-                variant="filled"
-                color="red"
-                className="px-2 py-1"
-              >
-                <IconTrash size={18} className="mr-1" />
-                {t('Delete')}
-              </Button>
-            </div>
-          )}
+          {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
         </div>
       )}
 
-      {/* Locale flag bar — click a flag to switch preview to that language version */}
+      {/* Locale flag bar — click any flag (including no-file ones) to switch locale */}
       <VersionFlagBar
         versions={availableVersions}
-        selectedVersionId={selectedVersion.id}
-        onSelectVersion={setSelectedVersion}
+        selectedLocaleId={selectedLocaleId}
+        onSelectLocale={setSelectedLocale}
         defaultLocaleId={defaultLocaleId}
         availableLanguages={availableLanguages}
       />
 
-      {/* File name and size for the selected locale version */}
-      <div className="p-2 text-sm">
-        <div className="font-medium truncate" title={fileName}>
-          {fileName}
+      {/* File name and size — only shown when a file exists for the selected locale */}
+      {hasVersion && (
+        <div className="p-2 text-sm">
+          <div className="font-medium truncate" title={fileName}>
+            {fileName}
+          </div>
+          <div className="text-gray-500">{fileSize}</div>
         </div>
-        <div className="text-gray-500">{fileSize}</div>
-      </div>
+      )}
     </div>
   );
 }
