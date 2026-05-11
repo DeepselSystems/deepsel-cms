@@ -20,6 +20,8 @@ from settings import (
     SESSION_STORE_BACKEND,
     REDIS_URL,
     SESSION_DIR,
+    CORS_ALLOWED_ORIGINS,
+    CORS_ALLOWED_ORIGIN_REGEX,
 )
 from deepsel.sqlalchemy import DatabaseManager
 from deepsel.utils.install_apps import install_routers, install_seed_data
@@ -132,7 +134,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_origin_regex=CORS_ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
