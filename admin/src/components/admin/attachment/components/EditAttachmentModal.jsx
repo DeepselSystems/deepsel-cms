@@ -107,6 +107,13 @@ function ExistingVersionCard({
 }) {
   const { t } = useTranslation();
 
+  /** Extension of the staged replacement file (or fall back to existing version's ext). */
+  const replacementExt = (() => {
+    const src = stagedFile ? stagedFile.name : version.name;
+    const d = src.lastIndexOf('.');
+    return d > 0 ? src.slice(d + 1) : '';
+  })();
+
   return (
     <Paper withBorder p="md" radius="md">
       <Stack gap="sm">
@@ -156,6 +163,30 @@ function ExistingVersionCard({
           <CompactDropzone onDrop={onReplaceFile} stagedFile={stagedFile} loading={loading} />
         </Stack>
 
+        {/* Name — always editable; extension is read-only suffix */}
+        <TextInput
+          label={t('Name')}
+          description={t(
+            'File name used when serving and downloading. Extension cannot be changed.',
+          )}
+          value={draft.name}
+          onChange={(e) => onDraftChange({ name: e.target.value })}
+          placeholder={(() => {
+            const d = version.name.lastIndexOf('.');
+            return d > 0 ? version.name.slice(0, d) : version.name;
+          })()}
+          rightSection={
+            replacementExt ? (
+              <Text size="xs" c="dimmed" className="pr-1">
+                .{replacementExt}
+              </Text>
+            ) : null
+          }
+          rightSectionWidth={replacementExt ? Math.max(40, (replacementExt.length + 2) * 8) : 0}
+          size="xs"
+          disabled={loading}
+        />
+
         {/* Locale select */}
         <Select
           label={t('Language')}
@@ -202,6 +233,14 @@ function ExistingVersionCard({
 function PendingVersionCard({ pendingVersion, localeOptions, onUpdate, onRemove, loading }) {
   const { t } = useTranslation();
 
+  /** Extension derived from the staged file — displayed as a read-only suffix. */
+  const fileExt = pendingVersion.file
+    ? (() => {
+        const d = pendingVersion.file.name.lastIndexOf('.');
+        return d > 0 ? pendingVersion.file.name.slice(d + 1) : '';
+      })()
+    : null;
+
   return (
     <Paper withBorder p="md" radius="md" className="border-dashed">
       <Stack gap="sm">
@@ -247,13 +286,23 @@ function PendingVersionCard({ pendingVersion, localeOptions, onUpdate, onRemove,
           />
         </Stack>
 
-        {/* Name */}
+        {/* Name — base name only; extension is immutable and shown as suffix */}
         <TextInput
           label={t('Name')}
-          description={t('File name used when serving and downloading this version.')}
+          description={t(
+            'File name used when serving and downloading this version. Extension cannot be changed.',
+          )}
           value={pendingVersion.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          placeholder={pendingVersion.file?.name ?? t('e.g. hero-image.jpg')}
+          placeholder={t('e.g. hero-image')}
+          rightSection={
+            fileExt ? (
+              <Text size="xs" c="dimmed" className="pr-1">
+                .{fileExt}
+              </Text>
+            ) : null
+          }
+          rightSectionWidth={fileExt ? Math.max(40, (fileExt.length + 2) * 8) : 0}
           size="xs"
           disabled={loading}
         />

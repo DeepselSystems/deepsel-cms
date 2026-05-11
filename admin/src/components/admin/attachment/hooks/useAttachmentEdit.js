@@ -14,6 +14,7 @@ const nextTempId = () => `tmp-${++tempIdCounter}`;
  * @typedef LocalVersionDraft
  * @property {string} altText - Draft alt text value
  * @property {number|null} localeId - Draft locale ID assignment
+ * @property {string} name - Draft base name (no extension); empty string = keep existing name
  */
 
 /**
@@ -60,7 +61,19 @@ const nextTempId = () => `tmp-${++tempIdCounter}`;
  */
 function getFileExtension(file) {
   const dotIdx = file.name.lastIndexOf('.');
-  return dotIdx >= 0 ? file.name.slice(dotIdx + 1) : '';
+  return dotIdx > 0 ? file.name.slice(dotIdx + 1) : '';
+}
+
+/**
+ * Strips the file extension from a filename string.
+ * Returns the full string unchanged when there is no extension.
+ *
+ * @param {string} filename
+ * @returns {string}
+ */
+function removeExtension(filename) {
+  const dotIdx = filename.lastIndexOf('.');
+  return dotIdx > 0 ? filename.slice(0, dotIdx) : filename;
 }
 
 /**
@@ -137,6 +150,7 @@ export function useAttachmentEdit({ attachment, onSaved }) {
   const getDraft = (version) => ({
     altText: metaDrafts[version.id]?.altText ?? version.alt_text ?? '',
     localeId: metaDrafts[version.id]?.localeId ?? version.locale_id ?? null,
+    name: metaDrafts[version.id]?.name ?? removeExtension(version.name),
   });
 
   /**
@@ -192,8 +206,8 @@ export function useAttachmentEdit({ attachment, onSaved }) {
           next.previewUrl = patch.file?.type.startsWith('image/')
             ? URL.createObjectURL(patch.file)
             : null;
-          // Auto-fill name from the file when the user hasn't set a custom name yet
-          if (patch.file && !pv.name) next.name = patch.file.name;
+          // Auto-fill base name (no extension) when the user hasn't typed a custom name yet
+          if (patch.file && !pv.name) next.name = removeExtension(patch.file.name);
         }
         return next;
       }),
@@ -283,6 +297,8 @@ export function useAttachmentEdit({ attachment, onSaved }) {
           locale_id: draft.localeId ?? version.locale_id,
         };
         if (draft.altText !== undefined) item.alt_text = draft.altText;
+        // Send base name for rename-in-storage; omit when empty (keep existing name)
+        if (draft.name) item.name = draft.name;
         items.push(item);
       }
 
@@ -304,6 +320,9 @@ export function useAttachmentEdit({ attachment, onSaved }) {
           attachment_locale_version_id: versionId,
           locale_id: effectiveLocaleId,
           alt_text: effectiveAltText,
+          // Only send name when the user explicitly typed one; omitting it tells
+          // the backend to keep the existing version's base name.
+          ...(draft?.name ? { name: draft.name } : {}),
           _file_id: fileId,
         });
       }
@@ -320,7 +339,8 @@ export function useAttachmentEdit({ attachment, onSaved }) {
           attachment_locale_version_id: null,
           locale_id: pv.localeId,
           alt_text: pv.altText || '',
-          name: pv.name || pv.file.name,
+          // Send base name without extension — backend appends the extension from the uploaded file
+          name: pv.name || removeExtension(pv.file.name),
           _file_id: fileId,
         });
       }

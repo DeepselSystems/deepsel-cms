@@ -17,7 +17,7 @@ import { AttachmentCard } from './components/AttachmentCard.jsx';
 import orderBy from 'lodash/orderBy';
 
 /** Fields searched via backend OR query when the user types in the search input. */
-const SEARCH_FIELDS = ['locale_versions.name', 'locale_versions.alt_text'];
+const SEARCH_FIELDS = ['name', 'locale_versions.name', 'locale_versions.alt_text'];
 
 /** Delay in ms before the debounced search term is forwarded to the backend. */
 const SEARCH_DEBOUNCE_MS = 300;

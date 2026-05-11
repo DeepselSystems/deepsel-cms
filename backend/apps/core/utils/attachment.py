@@ -158,10 +158,11 @@ def upsert_locale_versions(
 
                 if item.name:
                     existing_base, existing_ext = os.path.splitext(version.name)
-                    desired_name = item.name + existing_ext
-                    if desired_name != version.name:
-                        # rename_in_storage commits the name change to DB by default
-                        version.rename_in_storage(desired_name, db=db)
+                    # Only rename when the requested base name actually differs from
+                    # the current one. Extension is always preserved from the existing
+                    # file — it cannot be changed without uploading a new file.
+                    if item.name != existing_base:
+                        version.rename_in_storage(item.name + existing_ext, db=db)
 
                 if update_data:
                     version.update(db=db, user=user, values=update_data)
