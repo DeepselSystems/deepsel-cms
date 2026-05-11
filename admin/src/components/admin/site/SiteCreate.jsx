@@ -8,13 +8,7 @@ import useOrganization from '../../../common/hooks/useOrganization.js';
 import { useNavigate } from 'react-router-dom';
 import CreateFormActionBar from '../../../common/ui/CreateFormActionBar.jsx';
 import { useState, useEffect } from 'react';
-import {
-  LoadingOverlay,
-  MultiSelect,
-  TagsInput,
-  Stepper,
-  Group,
-} from '@mantine/core';
+import { LoadingOverlay, MultiSelect, TagsInput, Stepper, Group } from '@mantine/core';
 import Select from '../../../common/ui/Select.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
