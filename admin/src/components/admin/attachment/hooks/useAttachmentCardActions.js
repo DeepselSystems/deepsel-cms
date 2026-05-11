@@ -3,9 +3,11 @@ import { IconDownload, IconLink, IconPencil, IconTrash, IconTrashX } from '@tabl
 import { getAttachmentUrl, downloadFromAttachUrl } from '../../../../common/utils/index.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
+import useModel from '../../../../common/api/useModel.jsx';
 
 /**
  * @typedef UseAttachmentCardActionsParams
+ * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion | null} selectedVersion
  * @property {string|null} fileName - Filename of the currently selected locale version
  * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentFile} attachment - The parent attachment record
  * @property {(attachment: import('../../../../typedefs/AttachmentFile.js').AttachmentFile) => void} onDelete - Delete callback from parent
@@ -31,10 +33,21 @@ import BackendHostURLState from '../../../../common/stores/BackendHostURLState.j
  * @param {UseAttachmentCardActionsParams} params
  * @returns {UseAttachmentCardActionsResult}
  */
-export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVersion, onEdit }) {
+export function useAttachmentCardActions({
+  selectedVersion,
+  fileName,
+  attachment,
+  onDelete,
+  hasVersion,
+  onEdit,
+}) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const { notify } = NotificationState((state) => state);
+  const { deleteWithConfirm: deleteVersion } = useModel(`attachment_locale_version`, {
+    pageSize: null,
+    autoFetch: false,
+  });
 
   /** Copies the serve URL of the active locale version to the clipboard. */
   const handleCopyLink = async (event) => {
@@ -72,7 +85,18 @@ export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVe
   /** Deletes only the currently selected locale version. Placeholder until version delete is implemented. */
   const handleDeleteVersion = (event) => {
     event.stopPropagation();
-    console.log('Delete version', attachment);
+    if (selectedVersion?.id) {
+      deleteVersion(
+        [selectedVersion?.id],
+        () => {
+          notify({ title: t('Success'), message: t('Version deleted'), type: 'success' });
+        },
+        (error) => {
+          console.error('Failed to delete version:', error);
+          notify({ title: t('Error'), message: t('Failed to delete version'), type: 'error' });
+        },
+      );
+    }
   };
 
   /** Full action set when a file exists for the selected locale. */
@@ -80,20 +104,34 @@ export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVe
     { key: 'copy-link', icon: IconLink, label: t('Copy Link'), onClick: handleCopyLink },
     { key: 'download', icon: IconDownload, label: t('Download'), onClick: handleDownload },
     { key: 'edit', icon: IconPencil, label: t('Edit'), onClick: handleEdit },
-    { key: 'delete-version', icon: IconTrashX, label: t('Delete this version'), onClick: handleDeleteVersion, color: 'orange' },
+    {
+      key: 'delete-version',
+      icon: IconTrashX,
+      label: t('Delete this version'),
+      onClick: handleDeleteVersion,
+      color: 'orange',
+    },
     { key: 'delete', icon: IconTrash, label: t('Delete'), onClick: handleDelete, color: 'red' },
   ];
 
   /** Reduced action set when the selected locale has no file yet. */
-  const noFileActions = [
+  const briefActions = [
     { key: 'edit', icon: IconPencil, label: t('Edit'), onClick: handleEdit },
+    { key: 'delete', icon: IconTrash, label: t('Delete'), onClick: handleDelete, color: 'red' },
   ];
 
   /**
    * Actions exposed to the overlay — filtered based on whether a version exists.
    * @type {import('../components/AttachmentCardOverlay.jsx').OverlayAction[]}
    */
-  const overlayActions = hasVersion ? fullActions : noFileActions;
+  const overlayActions = hasVersion ? fullActions : briefActions;
 
-  return { handleCopyLink, handleDownload, handleDelete, handleEdit, handleDeleteVersion, overlayActions };
+  return {
+    handleCopyLink,
+    handleDownload,
+    handleDelete,
+    handleEdit,
+    handleDeleteVersion,
+    overlayActions,
+  };
 }

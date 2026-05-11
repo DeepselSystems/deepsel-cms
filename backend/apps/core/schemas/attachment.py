@@ -55,6 +55,14 @@ class AttachmentRead(BaseModel):
 
 
 class AttachmentLocaleVersionUpdate(BaseModel):
+    pass
+
+
+class AttachmentLocaleVersionUpdateSearch(BaseModel):
+    pass
+
+
+class AttachmentLocaleVersionUpdate(BaseModel):
     """Patchable fields for a single locale version (file not replaced here)."""
 
     alt_text: Optional[str] = None

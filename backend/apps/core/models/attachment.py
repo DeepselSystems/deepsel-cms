@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from deepsel.orm.attachment_mixin import AttachmentTypeOptions
+from deepsel.orm.attachment_mixin import AttachmentMixin, AttachmentTypeOptions
 
 
 class AttachmentModel(Base, BaseModel):

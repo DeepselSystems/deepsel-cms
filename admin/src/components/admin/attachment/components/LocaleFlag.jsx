@@ -26,7 +26,14 @@ import { FLAG_HEIGHT_PX, FALLBACK_FLAG_CODE } from '../../../../constants/attach
  *
  * @param {LocaleFlagProps} props
  */
-export function LocaleFlag({ locale, selected, onClick, size = FLAG_HEIGHT_PX, noFile = false }) {
+export function LocaleFlag({
+  locale,
+  selected,
+  onClick,
+  size = FLAG_HEIGHT_PX,
+  noFile = false,
+  className = '',
+}) {
   // Track whether the flag image failed to load so we can swap to the fallback once
   const [errored, setErrored] = useState(false);
 
@@ -55,6 +62,7 @@ export function LocaleFlag({ locale, selected, onClick, size = FLAG_HEIGHT_PX, n
           selected
             ? 'border-primary-main ring-2 ring-primary-main'
             : 'border-transparent hover:border-gray-300',
+          className,
         )}
       >
         {/* width:auto preserves the flag's natural aspect ratio */}

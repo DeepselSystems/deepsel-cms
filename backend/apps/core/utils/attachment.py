@@ -145,7 +145,7 @@ def upsert_locale_versions(
                 if effective_name != version.name:
                     update_data["name"] = effective_name
                 if update_data:
-                    version.update(db=db, user=user, **update_data)
+                    version.update(db=db, user=user, values=update_data)
 
             results.append(
                 UpsertItemResult(

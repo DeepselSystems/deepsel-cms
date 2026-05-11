@@ -1,35 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox } from '@mantine/core';
+import {Checkbox, Text} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconFileOff } from '@tabler/icons-react';
+import { IconFile, IconFileOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
 import { useSelectedVersion } from '../hooks/useSelectedVersion.js';
 import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
 import { getAttachmentUrl } from '../../../../common/utils/index.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
-import { formatFileSize, getFileExtension } from '@deepsel/cms-utils/common/utils';
-import {
-  FILE_TYPE_ICONS_BASE_PATH,
-  SUPPORTED_FILE_TYPE_ICON_EXTENSIONS,
-} from '../../../../constants/attachment.js';
+import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { VersionFlagBar } from './VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from './AttachmentCardOverlay.jsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
-
-/**
- * Returns the icon image path for a given filename.
- * Falls back to generic.png for unsupported extensions.
- * @param {string} filename
- * @returns {string}
- */
-function getFileTypeIcon(filename) {
-  const extension = getFileExtension(filename);
-  return SUPPORTED_FILE_TYPE_ICON_EXTENSIONS.includes(extension)
-    ? `${FILE_TYPE_ICONS_BASE_PATH}/${extension}.png`
-    : `${FILE_TYPE_ICONS_BASE_PATH}/generic.png`;
-}
 
 /**
  * @typedef AttachmentCardProps
@@ -51,7 +34,14 @@ function getFileTypeIcon(filename) {
  *
  * @param {AttachmentCardProps} props
  */
-export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect, selectionMode, onAttachmentUpdated }) {
+export function AttachmentCard({
+  attachment,
+  onDelete,
+  selected,
+  onToggleSelect,
+  selectionMode,
+  onAttachmentUpdated,
+}) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -74,6 +64,7 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
     null;
 
   const { overlayActions } = useAttachmentCardActions({
+    selectedVersion,
     fileName,
     attachment,
     onDelete,
@@ -98,8 +89,6 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
         'relative shadow border rounded-lg overflow-hidden cursor-pointer',
         selected ? 'border-primary-main ring-2 ring-primary-main' : 'border-gray-300',
       )}
-      onMouseEnter={() => setShowOverlay(true)}
-      onMouseLeave={() => setShowOverlay(false)}
       onClick={handleCardClick}
     >
       {/* Bulk-select checkbox — visible on hover or when selection mode is active */}
@@ -113,40 +102,43 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
         <Checkbox checked={selected} onChange={() => {}} size="sm" />
       </div>
 
-      {/* Preview area — switches content based on selected locale and whether a file exists */}
-      {!hasVersion ? (
-        <div className="relative bg-gray-50">
-          <div className="flex flex-col items-center justify-center h-36 gap-1.5 text-gray-400">
-            <IconFileOff size={32} />
-            <span className="text-xs text-center px-2">
-              {selectedLangName
-                ? t('No file for {{lang}}', { lang: selectedLangName })
-                : t('No file for this language')}
-            </span>
+      <div onMouseEnter={() => setShowOverlay(true)} onMouseLeave={() => setShowOverlay(false)}>
+        {/* Preview area — switches content based on selected locale and whether a file exists */}
+        {!hasVersion ? (
+          <div className="relative bg-gray-50">
+            <div className="flex flex-col items-center justify-center h-36 gap-1.5 text-gray-400">
+              <IconFileOff size={32} />
+              <span className="text-xs text-center px-2">
+                {selectedLangName
+                  ? t('No file for {{lang}}', { lang: selectedLangName })
+                  : t('No file for this language')}
+              </span>
+            </div>
+            {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
           </div>
-          {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
-        </div>
-      ) : isImage ? (
-        <div className="relative">
-          <img
-            src={getAttachmentUrl(backendHost, fileName)}
-            className="h-36 w-full object-cover"
-            alt={selectedVersion.alt_text ?? fileName}
-          />
-          {showOverlay && <AttachmentCardOverlay actions={overlayActions} blurred />}
-        </div>
-      ) : (
-        <div className="relative bg-gray-100">
-          <div className="flex flex-col items-center justify-center h-36 p-2" title={fileName}>
+        ) : isImage ? (
+          <div className="relative">
             <img
-              src={getFileTypeIcon(fileName)}
-              alt={getFileExtension(fileName)}
-              className="w-20 h-20 object-contain"
+              src={getAttachmentUrl(backendHost, fileName)}
+              className="h-36 w-full object-cover"
+              alt={selectedVersion.alt_text ?? fileName}
             />
+            {showOverlay && <AttachmentCardOverlay actions={overlayActions} blurred />}
           </div>
-          {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
-        </div>
-      )}
+        ) : (
+          <div className="relative bg-gray-100">
+            <div className="flex flex-col items-center justify-center h-36 p-2" title={fileName}>
+              <div className="flex flex-col items-center gap-1 text-gray-400">
+                <IconFile size={28} />
+                <Text size="xs" className="text-center px-2 max-w-full">
+                  {fileName}
+                </Text>
+              </div>
+            </div>
+            {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
+          </div>
+        )}
+      </div>
 
       {/* Locale flag bar — click any flag (including no-file ones) to switch locale */}
       <VersionFlagBar
