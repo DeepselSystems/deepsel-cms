@@ -127,7 +127,6 @@ export default function CreateUserModal({ opened, onClose, onCreated }) {
         />
         <PasswordInput
           label={t('Password')}
-          description={t('Optional. Leave blank to email a password setup link to the user.')}
           value={password}
           onChange={(e) => setPassword(e.currentTarget.value)}
           visible={passwordVisible}

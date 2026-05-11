@@ -332,7 +332,7 @@ export default function Login() {
               {t('Reset password')}
             </Button>
 
-            {failCount > 0 && (
+            {failCount > 0 && orgPublicSettings?.is_smtp_configured && (
               <button
                 className={`text-primary-main underline text-sm mt-2`}
                 onClick={openPasswordlessModal}

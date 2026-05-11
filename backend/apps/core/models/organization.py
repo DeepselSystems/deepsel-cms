@@ -107,6 +107,10 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
         else:
             self._google_client_secret = None
 
+    @property
+    def is_smtp_configured(self):
+        return bool(self.mail_server and self.mail_from)
+
     # --- OrganizationMixin settings ---
 
     @classmethod
@@ -132,6 +136,7 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
             "is_enabled_google_sign_in",
             "is_enabled_saml",
             "saml_sp_entity_id",
+            "is_smtp_configured",
         ]
 
     @classmethod
