@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Checkbox } from '@mantine/core';
+import { ActionIcon, Checkbox, Text, TextInput } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import useModel from '../../../common/api/useModel.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
@@ -9,11 +10,17 @@ import useAuthentication from '../../../common/api/useAuthentication.js';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import H1 from '../../../common/ui/H1.jsx';
 import { Helmet } from 'react-helmet';
-import { IconServer, IconTrash } from '@tabler/icons-react';
+import { IconSearch, IconServer, IconTrash, IconX } from '@tabler/icons-react';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 import { MediaDropzone } from './components/MediaDropzone.jsx';
 import { AttachmentCard } from './components/AttachmentCard.jsx';
 import orderBy from 'lodash/orderBy';
+
+/** Fields searched via backend OR query when the user types in the search input. */
+const SEARCH_FIELDS = ['locale_versions.name', 'locale_versions.alt_text'];
+
+/** Delay in ms before the debounced search term is forwarded to the backend. */
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function Media() {
   useShowSiteSelector();
@@ -30,14 +37,19 @@ export default function Media() {
     },
   ];
 
+  const [rawSearch, setRawSearch] = useState('');
+  const [debouncedSearch] = useDebouncedValue(rawSearch, SEARCH_DEBOUNCE_MS);
+
   const {
     data: files,
     setData: setFiles,
     deleteWithConfirm,
+    setSearchTerm,
   } = useModel('attachment', {
     pageSize: null,
     autoFetch: true,
     filters,
+    searchFields: SEARCH_FIELDS,
   });
 
   const [newUploads, setNewUploads] = useState(new Set());
@@ -49,6 +61,7 @@ export default function Media() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch storage info from backend
   const fetchStorageInfo = async () => {
     try {
       setIsLoading(true);
@@ -66,6 +79,7 @@ export default function Media() {
     }
   };
 
+  // Format storage info for display
   const formatStorageInfo = () => {
     const { usedStorage, maxStorage, unit } = storageInfo;
     const formattedUsedStorage = parseFloat(usedStorage).toFixed(2);
@@ -83,6 +97,7 @@ export default function Media() {
     });
   };
 
+  // Toggle file selection
   const toggleSelect = (file) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -178,6 +193,7 @@ export default function Media() {
     }
   };
 
+  // Sort files with new uploads first
   function sortFilesWithNewUploadsFirst(files, newUploads) {
     if (!files) return [];
     return orderBy(files, [(f) => newUploads.has(f.id)], ['desc']);
@@ -187,6 +203,11 @@ export default function Media() {
   useEffectOnce(() => {
     fetchStorageInfo().then();
   }, []);
+
+  // Forward debounced search term to model
+  useEffect(() => {
+    setSearchTerm(debouncedSearch);
+  }, [debouncedSearch, setSearchTerm]);
 
   return (
     <>
@@ -203,6 +224,27 @@ export default function Media() {
         </div>
 
         <MediaDropzone onFilesUploaded={handleFilesUploaded} onStorageChange={fetchStorageInfo} />
+
+        <TextInput
+          placeholder={t('Search by file name or alt text...')}
+          value={rawSearch}
+          onChange={(e) => setRawSearch(e.target.value)}
+          leftSection={<IconSearch size={16} />}
+          rightSection={
+            rawSearch ? (
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={() => setRawSearch('')}
+                aria-label={t('Clear search')}
+              >
+                <IconX size={14} />
+              </ActionIcon>
+            ) : null
+          }
+          className="mb-3"
+        />
 
         {sortedFiles.length > 0 && (
           <div className="flex items-center justify-between mb-3 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
@@ -229,6 +271,16 @@ export default function Media() {
                 </Button>
               </div>
             )}
+          </div>
+        )}
+
+        {sortedFiles.length === 0 && debouncedSearch && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
+            <IconSearch size={36} />
+            <Text size="sm">{t('No files match "{{query}}"', { query: debouncedSearch })}</Text>
+            <Button variant="subtle" size="xs" onClick={() => setRawSearch('')}>
+              {t('Clear search')}
+            </Button>
           </div>
         )}
 
