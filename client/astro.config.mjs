@@ -21,7 +21,7 @@ export default defineConfig({
       },
       proxy: {
         '/api/v1': {
-          target: 'http://localhost:8000',
+          target: process.env.E2E_BACKEND_URL || 'http://localhost:8000',
           changeOrigin: true,
           ws: true,
         },

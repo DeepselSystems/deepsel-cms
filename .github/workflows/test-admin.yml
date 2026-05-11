@@ -1,21 +1,22 @@
-name: Deepsel CMS - Admin CI/CD
+name: Deepsel CMS - Admin Tests
 
 on:
+  workflow_call:
+  pull_request:
+    paths:
+      - 'admin/**'
+      - 'packages/cms-utils/**'
+      - 'packages/cms-react/**'
+      - '.github/workflows/test-admin.yml'
   push:
-    tags:
-      - 'admin-v*'
+    branches:
+      - main
+    paths:
+      - 'admin/**'
 
 jobs:
   test:
-    uses: ./.github/workflows/test-admin.yml
-
-  publish:
-    if: github.repository_owner == 'DeepselSystems'
-    needs: [test]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -24,10 +25,9 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.14.1'
+          node-version: 22.x
           registry-url: https://registry.npmjs.org
-        env:
-          NODE_AUTH_TOKEN: ""
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -42,6 +42,3 @@ jobs:
 
       - name: Build library
         run: npm run build:lib --workspace=admin
-
-      - name: Publish package
-        run: npm publish --provenance --workspace=admin
