@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { IconFileOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
@@ -15,6 +16,7 @@ import {
 } from '../../../../constants/attachment.js';
 import { VersionFlagBar } from './VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from './AttachmentCardOverlay.jsx';
+import { EditAttachmentModal } from './EditAttachmentModal.jsx';
 
 /**
  * Returns the icon image path for a given filename.
@@ -36,6 +38,7 @@ function getFileTypeIcon(filename) {
  * @property {boolean} selected - Whether this card is currently selected in bulk-select mode
  * @property {(attachment: import('../../../../typedefs/AttachmentFile.js').AttachmentFile) => void} onToggleSelect
  * @property {boolean} selectionMode - Whether bulk-select mode is active (shows checkbox)
+ * @property {(updated: import('../../../../typedefs/AttachmentFile.js').AttachmentFile) => void} [onAttachmentUpdated] - Called when the attachment is updated via the edit modal
  */
 
 /**
@@ -48,10 +51,11 @@ function getFileTypeIcon(filename) {
  *
  * @param {AttachmentCardProps} props
  */
-export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect, selectionMode }) {
+export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect, selectionMode, onAttachmentUpdated }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
   const { selectedVersion, selectedLocaleId, setSelectedLocale, availableVersions } =
@@ -69,7 +73,13 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
     selectedVersion?.locale?.name ??
     null;
 
-  const { overlayActions } = useAttachmentCardActions({ fileName, attachment, onDelete, hasVersion });
+  const { overlayActions } = useAttachmentCardActions({
+    fileName,
+    attachment,
+    onDelete,
+    hasVersion,
+    onEdit: openEdit,
+  });
 
   /** Triggers bulk-select toggle when selection mode is active. @param {React.MouseEvent} _ */
   const handleCardClick = (_) => {
@@ -81,17 +91,6 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
     e.stopPropagation();
     onToggleSelect(attachment);
   };
-
-  // Truly empty: no versions uploaded at all (legacy record or mid-upload state)
-  if (availableVersions.length === 0) {
-    return (
-      <div className="relative shadow border border-gray-200 rounded-lg overflow-hidden opacity-50">
-        <div className="flex items-center justify-center h-36 bg-gray-50 text-gray-400 text-xs">
-          {t('No file')}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -167,6 +166,15 @@ export function AttachmentCard({ attachment, onDelete, selected, onToggleSelect,
           <div className="text-gray-500">{fileSize}</div>
         </div>
       )}
+
+      {/* Edit modal — mounted per card so each card manages its own state */}
+      <EditAttachmentModal
+        attachment={attachment}
+        opened={editOpened}
+        onClose={closeEdit}
+        onSaved={onAttachmentUpdated}
+        availableLanguages={availableLanguages}
+      />
     </div>
   );
 }

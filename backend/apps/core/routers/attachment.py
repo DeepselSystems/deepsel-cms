@@ -1,6 +1,7 @@
+import json
 import os
 
-from fastapi import Depends, File, Response, UploadFile, status, HTTPException
+from fastapi import Depends, File, Form, Response, UploadFile, status, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from settings import UPLOAD_SIZE_LIMIT
@@ -11,7 +12,11 @@ from apps.core.utils.get_current_user import (
     get_current_user_optional,
 )
 from apps.core.utils.models_pool import models_pool
+from apps.core.utils.attachment import upsert_locale_versions
 from apps.core.schemas.attachment import (
+    AttachmentLocaleVersionRead,
+    AttachmentLocaleVersionUpdate,
+    AttachmentVersionUpsertItem,
     AttachmentRead,
     AttachmentUpdate,
     AttachmentSearch,
@@ -24,6 +29,7 @@ Model = models_pool[table_name]
 UserModel = models_pool["user"]
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 CMSSettingsModel = models_pool["organization"]
+LocaleModel = models_pool["locale"]
 
 router = CRUDRouter(
     read_schema=AttachmentRead,
@@ -52,6 +58,7 @@ def get_storage_info(db: Session = Depends(get_db)):
 def upload_files(
     files: list[UploadFile] = File(...),
     alt_text: str = None,
+    locale_id: int = None,  # Optional; falls back to org default locale when omitted
     user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -67,6 +74,9 @@ def upload_files(
     org_settings = db.query(CMSSettingsModel).get(user.organization_id)
     default_locale_id = org_settings.default_language_id if org_settings else None
 
+    # Use caller-supplied locale_id when provided; fall back to org default
+    effective_locale_id = locale_id or default_locale_id
+
     instances = []
     for file in files:
         kwargs = {}
@@ -75,20 +85,127 @@ def upload_files(
 
         instance = Model().create(db=db, user=user, **kwargs)
 
-        # Create a locale version for the default language automatically on upload.
-        if default_locale_id:
+        # Create a locale version for the effective language automatically on upload.
+        if effective_locale_id:
             file.file.seek(0)
             AttachmentLocaleVersionModel().create(
                 db=db,
                 user=user,
                 file=file,
                 attachment_id=instance.id,
-                locale_id=default_locale_id,
+                locale_id=effective_locale_id,
                 **kwargs,
             )
 
         instances.append(instance)
     return instances
+
+
+@router.post(
+    "/{attachment_id}/locale_versions/batch_upsert", response_model=AttachmentRead
+)
+def batch_upsert_locale_versions(
+    attachment_id: int,
+    items_json: str = Form(
+        ..., description="JSON-encoded list of AttachmentVersionUpsertItem"
+    ),
+    files: list[UploadFile] = File(
+        default=[], description="Files matched to items by list index"
+    ),
+    user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Batch create-or-update locale versions for a single attachment.
+
+    - attachment_id: path param — the parent attachment (required)
+    - items_json: JSON string representing list[AttachmentVersionUpsertItem]
+    - files: multipart files matched to items by index (only items that carry a file
+      need a corresponding entry; items without file updates are skipped in the files list)
+
+    attachment_locale_version_id=None  →  create new version (file required)
+    attachment_locale_version_id=<id>  →  update existing version (file optional)
+    """
+    raw = json.loads(items_json)
+    items = [AttachmentVersionUpsertItem(**item) for item in raw]
+
+    # Build file map: filename without extension → UploadFile
+    file_map: dict[str, UploadFile] = {
+        os.path.splitext(f.filename)[0]: f for f in files
+    }
+
+    # Map each item to its file and validate _file_id references
+    item_file_map: dict[int, UploadFile] = {}
+    for idx, item in enumerate(items):
+        if item.file_id is not None:
+            if item.file_id not in file_map:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Item at index {idx}: file with _file_id '{item.file_id}' not found in uploaded files",
+                )
+            item_file_map[idx] = file_map[item.file_id]
+
+    # Validate attachment exists and belongs to this organization
+    attachment = (
+        db.query(Model)
+        .filter(
+            Model.id == attachment_id,
+            Model.organization_id == user.organization_id,
+        )
+        .first()
+    )
+    if not attachment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Attachment not found"
+        )
+
+    # Validate each item's locale_id and, when provided, attachment_locale_version_id
+    for item in items:
+        locale = db.query(LocaleModel).filter(LocaleModel.id == item.locale_id).first()
+        if not locale:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Locale {item.locale_id} not found",
+            )
+
+        if item.attachment_locale_version_id is not None:
+            version = (
+                db.query(AttachmentLocaleVersionModel)
+                .filter(
+                    AttachmentLocaleVersionModel.id
+                    == item.attachment_locale_version_id,
+                    AttachmentLocaleVersionModel.attachment_id == attachment_id,
+                )
+                .first()
+            )
+            if not version:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=(
+                        f"Locale version {item.attachment_locale_version_id} not found "
+                        f"or does not belong to attachment {attachment_id}"
+                    ),
+                )
+
+    # Quota check for all incoming files before touching the DB
+    total_new_bytes = 0
+    for f in files:
+        f.file.seek(0, os.SEEK_END)
+        total_new_bytes += f.file.tell()
+        f.file.seek(0)
+    AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
+
+    # Apply batch locale-version updates and inserts for a single attachment.
+    upsert_locale_versions(
+        attachment_id=attachment_id,
+        items=items,
+        item_file_map=item_file_map,
+        db=db,
+        user=user,
+    )
+
+    db.refresh(attachment)
+    return attachment
 
 
 @router.get("/serve/{file_name}")

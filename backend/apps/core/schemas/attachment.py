@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class LocaleRead(BaseModel):
@@ -52,6 +52,59 @@ class AttachmentRead(BaseModel):
     active: Optional[bool] = True
     system: Optional[bool] = False
     locale_versions: list[AttachmentLocaleVersionRead] = []
+
+
+class AttachmentLocaleVersionUpdate(BaseModel):
+    """Patchable fields for a single locale version (file not replaced here)."""
+
+    alt_text: Optional[str] = None
+    locale_id: Optional[int] = None
+
+
+class AttachmentVersionUpsertItem(BaseModel):
+    """
+    One item in a batch upsert request for attachment locale versions.
+
+    Rules:
+    - attachment_locale_version_id=None  →  new version: _file_id, name, alt_text are all required.
+    - attachment_locale_version_id=<id>  →  existing version: all fields optional
+      (only provided fields are updated; _file_id triggers file replacement).
+    - locale_id is always required.
+    - attachment_id is passed as a path param on the endpoint, not per-item.
+
+    File matching:
+    - Each UploadFile in the multipart request must be named "<_file_id>.<ext>".
+    - The endpoint maps files to items by stripping the extension from the filename
+      and matching against _file_id. If _file_id is set but no matching file is found,
+      the request is rejected with 422.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    attachment_locale_version_id: Optional[int] = None
+    locale_id: int
+    alt_text: Optional[str] = None
+    name: Optional[str] = None
+    file_id: Optional[str] = Field(None, alias="_file_id")
+
+    @model_validator(mode="after")
+    def validate_new_version_fields(self) -> "AttachmentVersionUpsertItem":
+        if self.attachment_locale_version_id is None:
+            missing = [
+                field
+                for field, value in [
+                    ("_file_id", self.file_id),
+                    ("name", self.name),
+                    ("alt_text", self.alt_text),
+                ]
+                if value is None
+            ]
+            if missing:
+                raise ValueError(
+                    f"Fields required when creating a new version (attachment_locale_version_id is None): "
+                    f"{', '.join(missing)}"
+                )
+        return self
 
 
 class AttachmentUpdate(BaseModel):

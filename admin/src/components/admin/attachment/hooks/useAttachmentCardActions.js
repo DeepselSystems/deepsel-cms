@@ -10,6 +10,7 @@ import BackendHostURLState from '../../../../common/stores/BackendHostURLState.j
  * @property {import('../../../../typedefs/AttachmentFile.js').AttachmentFile} attachment - The parent attachment record
  * @property {(attachment: import('../../../../typedefs/AttachmentFile.js').AttachmentFile) => void} onDelete - Delete callback from parent
  * @property {boolean} hasVersion - Whether the selected locale has an uploaded file; false = show edit-only actions
+ * @property {() => void} [onEdit] - Opens the edit modal for this attachment
  */
 
 /**
@@ -30,7 +31,7 @@ import BackendHostURLState from '../../../../common/stores/BackendHostURLState.j
  * @param {UseAttachmentCardActionsParams} params
  * @returns {UseAttachmentCardActionsResult}
  */
-export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVersion }) {
+export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVersion, onEdit }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const { notify } = NotificationState((state) => state);
@@ -62,10 +63,10 @@ export function useAttachmentCardActions({ fileName, attachment, onDelete, hasVe
     onDelete(attachment);
   };
 
-  /** Opens the edit form for this attachment. Placeholder until edit modal is implemented. */
+  /** Opens the edit modal for this attachment. */
   const handleEdit = (event) => {
     event.stopPropagation();
-    console.log('Edit attachment', attachment);
+    onEdit?.();
   };
 
   /** Deletes only the currently selected locale version. Placeholder until version delete is implemented. */

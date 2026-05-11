@@ -42,15 +42,16 @@ export function VersionFlagBar({
   defaultLocaleId,
   availableLanguages,
 }) {
-  if (!versions || versions.length === 0) return null;
+  // Nothing to render when neither versions nor available languages are known yet
+  const hasVersions = versions && versions.length > 0;
+  const hasAvailableLanguages = availableLanguages && availableLanguages.length > 0;
+  if (!hasVersions && !hasAvailableLanguages) return null;
 
   // Quick lookup: locale_id → locale_version (for versions that exist)
   const versionByLocaleId = keyBy(
     versions.filter((v) => v.locale_id != null),
     'locale_id',
   );
-
-  const hasAvailableLanguages = availableLanguages && availableLanguages.length > 0;
 
   /** @type {FlagItem[]} */
   let items;
