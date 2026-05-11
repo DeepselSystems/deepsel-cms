@@ -58,6 +58,9 @@ jobs:
       - name: Install Node workspaces
         run: npm ci
 
+      - name: Ensure SWC native binding
+        run: npm install --no-save @swc/core-linux-x64-gnu@1.15.17 || true
+
       - name: Build shared packages
         run: |
           npm run build --workspace=packages/cms-utils
