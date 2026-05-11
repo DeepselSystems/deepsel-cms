@@ -105,6 +105,10 @@ export default function Media() {
     else setSelectedIds(new Set(sortedFiles.map((f) => f.id)));
   };
 
+  const handleAttachmentUpdated = (updated) => {
+    setFiles((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
+  };
+
   const handleBulkDelete = async () => {
     const ids = Array.from(selectedIds);
     if (!ids.length) return;
@@ -237,6 +241,7 @@ export default function Media() {
               selected={selectedIds.has(attachment.id)}
               onToggleSelect={toggleSelect}
               selectionMode={selectedIds.size > 0}
+              onAttachmentUpdated={handleAttachmentUpdated}
             />
           ))}
         </div>

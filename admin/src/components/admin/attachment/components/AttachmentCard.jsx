@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {Checkbox, Text} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -47,9 +47,30 @@ export function AttachmentCard({
   const [showOverlay, setShowOverlay] = useState(false);
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 
+  // Local copy of locale_versions so card state can update without a full page refetch
+  const [localVersions, setLocalVersions] = useState(attachment?.locale_versions ?? []);
+
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
   const { selectedVersion, selectedLocaleId, setSelectedLocale, availableVersions } =
-    useSelectedVersion(attachment, defaultLocaleId);
+    useSelectedVersion(localVersions, defaultLocaleId);
+
+  /**
+   * Called by the edit modal after a successful save.
+   * Replaces localVersions with the freshly returned attachment's versions.
+   */
+  const handleAttachmentSaved = useCallback((updated) => {
+    setLocalVersions(updated?.locale_versions ?? []);
+    onAttachmentUpdated?.(updated);
+  }, [onAttachmentUpdated]);
+
+  /**
+   * Called by the overlay's "Delete this version" action after the API succeeds.
+   * Removes the deleted version from localVersions and resets locale selection to auto-pick.
+   */
+  const handleVersionDeleted = useCallback((versionId) => {
+    setLocalVersions((prev) => prev.filter((v) => v.id !== versionId));
+    setSelectedLocale(null);
+  }, [setSelectedLocale]);
   const hasVersion = selectedVersion != null;
 
   // Derive display values from the currently selected locale version
@@ -70,6 +91,7 @@ export function AttachmentCard({
     onDelete,
     hasVersion,
     onEdit: openEdit,
+    onVersionDeleted: handleVersionDeleted,
   });
 
   /** Triggers bulk-select toggle when selection mode is active. @param {React.MouseEvent} _ */
@@ -164,7 +186,7 @@ export function AttachmentCard({
         attachment={attachment}
         opened={editOpened}
         onClose={closeEdit}
-        onSaved={onAttachmentUpdated}
+        onSaved={handleAttachmentSaved}
         availableLanguages={availableLanguages}
       />
     </div>

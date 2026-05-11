@@ -13,6 +13,7 @@ import useModel from '../../../../common/api/useModel.jsx';
  * @property {(attachment: import('../../../../typedefs/AttachmentFile.js').AttachmentFile) => void} onDelete - Delete callback from parent
  * @property {boolean} hasVersion - Whether the selected locale has an uploaded file; false = show edit-only actions
  * @property {() => void} [onEdit] - Opens the edit modal for this attachment
+ * @property {(versionId: number) => void} [onVersionDeleted] - Called after a locale version is successfully deleted
  */
 
 /**
@@ -40,6 +41,7 @@ export function useAttachmentCardActions({
   onDelete,
   hasVersion,
   onEdit,
+  onVersionDeleted,
 }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
@@ -82,21 +84,22 @@ export function useAttachmentCardActions({
     onEdit?.();
   };
 
-  /** Deletes only the currently selected locale version. Placeholder until version delete is implemented. */
+  /** Deletes only the currently selected locale version and notifies the card to update local state. */
   const handleDeleteVersion = (event) => {
     event.stopPropagation();
-    if (selectedVersion?.id) {
-      deleteVersion(
-        [selectedVersion?.id],
-        () => {
-          notify({ title: t('Success'), message: t('Version deleted'), type: 'success' });
-        },
-        (error) => {
-          console.error('Failed to delete version:', error);
-          notify({ title: t('Error'), message: t('Failed to delete version'), type: 'error' });
-        },
-      );
-    }
+    if (!selectedVersion?.id) return;
+    const deletedId = selectedVersion.id;
+    deleteVersion(
+      [deletedId],
+      () => {
+        notify({ title: t('Success'), message: t('Version deleted'), type: 'success' });
+        onVersionDeleted?.(deletedId);
+      },
+      (error) => {
+        console.error('Failed to delete version:', error);
+        notify({ title: t('Error'), message: t('Failed to delete version'), type: 'error' });
+      },
+    );
   };
 
   /** Full action set when a file exists for the selected locale. */

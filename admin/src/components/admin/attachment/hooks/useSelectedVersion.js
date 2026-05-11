@@ -21,14 +21,11 @@ import { pickDefaultVersion } from '../../../../common/utils/versionSelector.js'
  *   - Falls back to the locale of the version with the lowest id
  *   - Explicit user selection overrides auto-pick and survives re-renders
  *
- * @param {import('../../../../typedefs/AttachmentFile.js').AttachmentFile} attachment
+ * @param {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} versions
  * @param {number|null} defaultLocaleId
  * @returns {UseSelectedVersionResult}
  */
-export function useSelectedVersion(attachment, defaultLocaleId) {
-  /** @type {import('../../../../typedefs/AttachmentFile.js').AttachmentLocaleVersion[]} */
-  const versions = useMemo(() => attachment?.locale_versions ?? [], [attachment]);
-
+export function useSelectedVersion(versions, defaultLocaleId) {
   // null = auto-pick; set to a specific locale id on explicit user selection
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
 
