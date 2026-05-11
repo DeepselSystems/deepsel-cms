@@ -1,4 +1,5 @@
 import logging
+import os
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
@@ -65,8 +66,12 @@ def upsert_locale_versions(
             if existing:
                 existing.delete(db=db, user=user)
 
-            if item.name:
-                file.filename = item.name
+            # Build filename: user-supplied base name + original file extension.
+            # Extension comes from the uploaded file (frontend renames it to
+            # "<_file_id>.<ext>") and must not be altered.
+            _, ext = os.path.splitext(file.filename)
+            base = item.name if item.name else os.path.splitext(file.filename)[0]
+            file.filename = base + ext
 
             kwargs = {}
             if item.alt_text:
@@ -121,12 +126,18 @@ def upsert_locale_versions(
             effective_alt = (
                 item.alt_text if item.alt_text is not None else version.alt_text
             )
-            effective_name = item.name if item.name is not None else version.name
 
             file = item_file_map.get(idx)
             if file is not None:
-                version.delete(db=db, user=user)
+                # File replacement: build filename from user-supplied base name
+                # (item.name, no extension) + the uploaded file's extension.
+                # Extension is immutable — it follows the new file, not the old record.
+                existing_base, _ = os.path.splitext(version.name)
+                effective_base = item.name if item.name is not None else existing_base
+                _, ext = os.path.splitext(file.filename)
+                effective_name = effective_base + ext
 
+                version.delete(db=db, user=user)
                 file.filename = effective_name
                 file.file.seek(0)
                 AttachmentLocaleVersionModel().create(
@@ -135,15 +146,23 @@ def upsert_locale_versions(
                     file=file,
                     attachment_id=attachment_id,
                     locale_id=item.locale_id,
-                    id=item.attachment_locale_version_id,
                     alt_text=effective_alt,
                 )
             else:
+                # Metadata-only update: alt_text and/or file name can change.
+                # Name changes are handled via rename_in_storage() so the storage
+                # object and the DB record stay in sync.
                 update_data = {}
                 if effective_alt != version.alt_text:
                     update_data["alt_text"] = effective_alt
-                if effective_name != version.name:
-                    update_data["name"] = effective_name
+
+                if item.name:
+                    existing_base, existing_ext = os.path.splitext(version.name)
+                    desired_name = item.name + existing_ext
+                    if desired_name != version.name:
+                        # rename_in_storage commits the name change to DB by default
+                        version.rename_in_storage(desired_name, db=db)
+
                 if update_data:
                     version.update(db=db, user=user, values=update_data)
 
