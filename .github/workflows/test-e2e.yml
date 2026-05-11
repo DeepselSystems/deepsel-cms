@@ -25,6 +25,9 @@ on:
       - 'packages/cms-utils/**'
       - 'packages/cms-react/**'
       - 'tests/e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/test-e2e.yml'
 
 jobs:
   e2e:
