@@ -20,6 +20,7 @@ from apps.core.schemas.attachment import (
     AttachmentRead,
     AttachmentUpdate,
     AttachmentSearch,
+    BatchUpsertResponse,
     UploadSizeLimitResponse,
     StorageInfoResponse,
 )
@@ -102,7 +103,7 @@ def upload_files(
 
 
 @router.post(
-    "/{attachment_id}/locale_versions/batch_upsert", response_model=AttachmentRead
+    "/{attachment_id}/locale_versions/batch_upsert", response_model=BatchUpsertResponse
 )
 def batch_upsert_locale_versions(
     attachment_id: int,
@@ -159,6 +160,15 @@ def batch_upsert_locale_versions(
             status_code=status.HTTP_404_NOT_FOUND, detail="Attachment not found"
         )
 
+    # Validate no duplicate locale_id within the batch
+    locale_ids = [item.locale_id for item in items]
+    duplicate_locale_ids = {lid for lid in locale_ids if locale_ids.count(lid) > 1}
+    if duplicate_locale_ids:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Duplicate locale_id(s) in batch: {sorted(duplicate_locale_ids)}",
+        )
+
     # Validate each item's locale_id and, when provided, attachment_locale_version_id
     for item in items:
         locale = db.query(LocaleModel).filter(LocaleModel.id == item.locale_id).first()
@@ -196,7 +206,7 @@ def batch_upsert_locale_versions(
     AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
 
     # Apply batch locale-version updates and inserts for a single attachment.
-    upsert_locale_versions(
+    results = upsert_locale_versions(
         attachment_id=attachment_id,
         items=items,
         item_file_map=item_file_map,
@@ -205,7 +215,11 @@ def batch_upsert_locale_versions(
     )
 
     db.refresh(attachment)
-    return attachment
+    return BatchUpsertResponse(
+        attachment=attachment,
+        results=results,
+        has_errors=any(not r.success for r in results),
+    )
 
 
 @router.get("/serve/{file_name}")

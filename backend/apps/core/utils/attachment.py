@@ -1,8 +1,12 @@
+import logging
+
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
-from apps.core.schemas.attachment import AttachmentVersionUpsertItem
+from apps.core.schemas.attachment import AttachmentVersionUpsertItem, UpsertItemResult
 from apps.core.utils.models_pool import models_pool
+
+logger = logging.getLogger(__name__)
 
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 
@@ -13,9 +17,14 @@ def upsert_locale_versions(
     item_file_map: dict[int, UploadFile],
     db: Session,
     user,
-) -> None:
+) -> list[UpsertItemResult]:
     """
     Apply batch locale-version upserts for a single attachment.
+
+    Each item is processed independently — a failure on one item does not stop
+    the others. The caller receives a per-item result list so it can surface
+    partial failures without relying on transaction rollback (which cannot undo
+    file-storage operations on S3/Azure/local).
 
     Step 1 — new versions (attachment_locale_version_id is None):
         Delete any existing version for the same locale, then create a new one.
@@ -29,67 +38,40 @@ def upsert_locale_versions(
         attachment_id:  ID of the parent attachment record.
         items:          Parsed and validated upsert items.
         item_file_map:  Mapping of item list index → UploadFile for items that carry a file.
-                        Built by the caller from the multipart files and each item's _file_id.
         db:             Active SQLAlchemy session.
         user:           Authenticated user passed to ORM create/update/delete calls.
+
+    Returns:
+        List of UpsertItemResult, one per item, in the same order as items.
     """
+    results: list[UpsertItemResult] = []
+
     # Step 1: create new locale versions (attachment_locale_version_id is None)
     for idx, item in enumerate(items):
         if item.attachment_locale_version_id is not None:
             continue
 
-        file = item_file_map[idx]
+        try:
+            file = item_file_map[idx]
 
-        # Replace semantics: delete existing version for this locale if present
-        existing = (
-            db.query(AttachmentLocaleVersionModel)
-            .filter(
-                AttachmentLocaleVersionModel.attachment_id == attachment_id,
-                AttachmentLocaleVersionModel.locale_id == item.locale_id,
+            existing = (
+                db.query(AttachmentLocaleVersionModel)
+                .filter(
+                    AttachmentLocaleVersionModel.attachment_id == attachment_id,
+                    AttachmentLocaleVersionModel.locale_id == item.locale_id,
+                )
+                .first()
             )
-            .first()
-        )
-        if existing:
-            existing.delete(db=db, user=user)
+            if existing:
+                existing.delete(db=db, user=user)
 
-        if item.name:
-            file.filename = item.name
+            if item.name:
+                file.filename = item.name
 
-        kwargs = {}
-        if item.alt_text:
-            kwargs["alt_text"] = item.alt_text
+            kwargs = {}
+            if item.alt_text:
+                kwargs["alt_text"] = item.alt_text
 
-        file.file.seek(0)
-        AttachmentLocaleVersionModel().create(
-            db=db,
-            user=user,
-            file=file,
-            attachment_id=attachment_id,
-            locale_id=item.locale_id,
-            **kwargs,
-        )
-
-    # Step 2: update existing locale versions (attachment_locale_version_id is not None)
-    for idx, item in enumerate(items):
-        if item.attachment_locale_version_id is None:
-            continue
-
-        version = (
-            db.query(AttachmentLocaleVersionModel)
-            .filter(
-                AttachmentLocaleVersionModel.id == item.attachment_locale_version_id
-            )
-            .first()
-        )  # guaranteed to exist — validated by the caller before this function is invoked
-
-        effective_alt = item.alt_text if item.alt_text is not None else version.alt_text
-        effective_name = item.name if item.name is not None else version.name
-
-        file = item_file_map.get(idx)
-        if file is not None:
-            version.delete(db=db, user=user)
-
-            file.filename = effective_name
             file.file.seek(0)
             AttachmentLocaleVersionModel().create(
                 db=db,
@@ -97,14 +79,97 @@ def upsert_locale_versions(
                 file=file,
                 attachment_id=attachment_id,
                 locale_id=item.locale_id,
-                id=item.attachment_locale_version_id,
-                alt_text=effective_alt,
+                **kwargs,
             )
-        else:
-            update_data = {}
-            if effective_alt != version.alt_text:
-                update_data["alt_text"] = effective_alt
-            if effective_name != version.name:
-                update_data["name"] = effective_name
-            if update_data:
-                version.update(db=db, user=user, **update_data)
+
+            results.append(
+                UpsertItemResult(
+                    index=idx,
+                    locale_id=item.locale_id,
+                    attachment_locale_version_id=None,
+                    success=True,
+                )
+            )
+        except Exception as exc:
+            logger.error(
+                "batch_upsert step1 idx=%d locale_id=%d: %s", idx, item.locale_id, exc
+            )
+            results.append(
+                UpsertItemResult(
+                    index=idx,
+                    locale_id=item.locale_id,
+                    attachment_locale_version_id=None,
+                    success=False,
+                    error=str(exc),
+                )
+            )
+
+    # Step 2: update existing locale versions (attachment_locale_version_id is not None)
+    for idx, item in enumerate(items):
+        if item.attachment_locale_version_id is None:
+            continue
+
+        try:
+            version = (
+                db.query(AttachmentLocaleVersionModel)
+                .filter(
+                    AttachmentLocaleVersionModel.id == item.attachment_locale_version_id
+                )
+                .first()
+            )  # guaranteed to exist — validated by the caller before this function is invoked
+
+            effective_alt = (
+                item.alt_text if item.alt_text is not None else version.alt_text
+            )
+            effective_name = item.name if item.name is not None else version.name
+
+            file = item_file_map.get(idx)
+            if file is not None:
+                version.delete(db=db, user=user)
+
+                file.filename = effective_name
+                file.file.seek(0)
+                AttachmentLocaleVersionModel().create(
+                    db=db,
+                    user=user,
+                    file=file,
+                    attachment_id=attachment_id,
+                    locale_id=item.locale_id,
+                    id=item.attachment_locale_version_id,
+                    alt_text=effective_alt,
+                )
+            else:
+                update_data = {}
+                if effective_alt != version.alt_text:
+                    update_data["alt_text"] = effective_alt
+                if effective_name != version.name:
+                    update_data["name"] = effective_name
+                if update_data:
+                    version.update(db=db, user=user, **update_data)
+
+            results.append(
+                UpsertItemResult(
+                    index=idx,
+                    locale_id=item.locale_id,
+                    attachment_locale_version_id=item.attachment_locale_version_id,
+                    success=True,
+                )
+            )
+        except Exception as exc:
+            logger.error(
+                "batch_upsert step2 idx=%d locale_version_id=%d: %s",
+                idx,
+                item.attachment_locale_version_id,
+                exc,
+            )
+            results.append(
+                UpsertItemResult(
+                    index=idx,
+                    locale_id=item.locale_id,
+                    attachment_locale_version_id=item.attachment_locale_version_id,
+                    success=False,
+                    error=str(exc),
+                )
+            )
+
+    return results

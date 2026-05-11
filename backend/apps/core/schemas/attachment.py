@@ -107,6 +107,24 @@ class AttachmentVersionUpsertItem(BaseModel):
         return self
 
 
+class UpsertItemResult(BaseModel):
+    """Result for a single item in a batch upsert request."""
+
+    index: int
+    locale_id: int
+    attachment_locale_version_id: Optional[int]
+    success: bool
+    error: Optional[str] = None
+
+
+class BatchUpsertResponse(BaseModel):
+    """Response for the batch upsert endpoint."""
+
+    attachment: AttachmentRead
+    results: list[UpsertItemResult]
+    has_errors: bool
+
+
 class AttachmentUpdate(BaseModel):
     alt_text: Optional[str] = None
     string_id: Optional[str] = None
