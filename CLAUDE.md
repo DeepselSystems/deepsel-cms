@@ -103,7 +103,7 @@ Both prepush scripts must pass before committing. Run them from the repo root:
 source .venv/bin/activate && npm run prepush && cd backend && make prepush
 ```
 
-- **`npm run prepush`** (repo root) — runs `prepush` in `packages/cms-utils` (vitest + tsc + eslint + prettier) and `packages/cms-react` (vitest + tsc + eslint + prettier), then builds the admin lib. Run after changes to `packages/` or `admin/`.
+- **`npm run prepush`** (repo root) — runs `prepush` in `packages/cms-utils` (vitest + tsc + eslint + prettier) and `packages/cms-react` (vitest + tsc + eslint + prettier), builds the admin lib, then runs the Playwright e2e suite (`tests/e2e`). Run after changes to `packages/`, `admin/`, or `tests/e2e/`.
 - **`make prepush`** (from `backend/`) — runs flake8 lint, bandit security scan, black format-check, and pytest with coverage. Run after any backend changes.
 
 ## Architecture

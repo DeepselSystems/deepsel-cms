@@ -1,10 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-test('SiteCreate stepper walks Basic Info → Languages → AI → submit', async ({ page }) => {
+test('SiteCreate stepper walks Theme → Basic Info → Languages → AI → submit', async ({ page }) => {
   const siteName = `E2E Site ${Date.now()}`;
 
   await page.goto('/admin/sites/new');
   await expect(page.getByRole('heading', { name: /create new website/i })).toBeVisible();
+
+  // Step 0: Choose Theme — pick the seeded starter_react theme card.
+  const themeCard = page.getByRole('heading', { name: 'Starter React' });
+  await themeCard.waitFor({ state: 'visible' });
+  await themeCard.click();
+  await page.getByRole('button', { name: /next step/i }).click();
 
   await page.getByLabel('Website Name').fill(siteName);
 
