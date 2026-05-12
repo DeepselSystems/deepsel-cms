@@ -490,7 +490,7 @@ def setup_themes(
         raise
 
 
-def load_seed_data_for_theme(theme_name, db):
+def load_seed_data_for_theme(theme_name, db, organization_id):
     """Load CSV seed data and run post_install hook for a single theme.
 
     Called once when a theme is selected (not on every startup).
@@ -516,7 +516,7 @@ def load_seed_data_for_theme(theme_name, db):
         csv_path = os.path.join(data_dir, csv_file)
         if os.path.exists(csv_path):
             try:
-                import_csv_data(csv_path, db)
+                import_csv_data(csv_path, db, organization_id=organization_id)
             except Exception as e:
                 logger.error(f"Failed to load {csv_file} for {theme_name}: {e}")
 
@@ -525,7 +525,7 @@ def load_seed_data_for_theme(theme_name, db):
         post_install = getattr(module, "post_install", None)
         if callable(post_install):
             try:
-                post_install(db)
+                post_install(db, organization_id)
             except Exception as e:
                 logger.error(f"post_install failed for {theme_name}: {e}")
 

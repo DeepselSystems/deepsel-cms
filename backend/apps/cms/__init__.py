@@ -218,7 +218,7 @@ def set_default_theme_if_empty(db):
 
             from .utils.setup_themes import load_seed_data_for_theme
 
-            load_seed_data_for_theme("starter_react", db)
+            load_seed_data_for_theme("starter_react", db, organization_id=1)
             logger.info("Default theme set successfully")
     except Exception as e:
         logger.error(f"Error setting default theme: {e}")

@@ -439,7 +439,9 @@ def select_theme(
         # Load seed data and run post_install for the newly selected theme
         from ..utils.setup_themes import load_seed_data_for_theme
 
-        load_seed_data_for_theme(request.folder_name, db)
+        load_seed_data_for_theme(
+            request.folder_name, db, organization_id=organization_id
+        )
 
         logger.info(
             f"User {current_user.email or current_user.username} selected theme '{request.folder_name}' "
