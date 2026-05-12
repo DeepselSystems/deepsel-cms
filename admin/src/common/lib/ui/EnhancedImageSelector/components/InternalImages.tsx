@@ -1,16 +1,17 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import clsx from 'clsx';
-import { Box, Image, Text, Checkbox, AspectRatio, Group, UnstyledButton } from '@mantine/core';
+import { Box, Text, Checkbox, Group, UnstyledButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 
-import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { useModel } from '../../../hooks';
-import { useUpload } from '../../../hooks/useUpload';
+import { useUpload } from '../../../hooks';
 import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
+import { useDefaultLocale } from '../../../../hooks/useDefaultLocale';
+import { AttachmentCardPreview } from './AttachmentCardPreview';
 import {
   IconChecks,
   IconCloudUpload,
@@ -61,7 +62,9 @@ interface InternalImagesProps {
 }
 
 /**
- * Internal image selector with upload, lazy loading, and edit/delete capabilities
+ * Internal image selector with upload, lazy loading, and edit/delete capabilities.
+ * Supports multi-lang attachments: each card shows a locale flag bar so the user
+ * can switch between per-locale file versions before selecting.
  */
 export function InternalImages({
   multiple = false,
@@ -76,10 +79,10 @@ export function InternalImages({
   setUser,
   notify,
 }: InternalImagesProps) {
-  // Translation
   const { t } = useTranslation();
 
-  // Upload query
+  const { defaultLocaleId, availableLanguages } = useDefaultLocale();
+
   const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
   const { deleteWithConfirm } = useModel<AttachmentFile>(
     'attachment',
@@ -87,25 +90,27 @@ export function InternalImages({
     { pageSize: null },
   );
 
-  // Edit mode
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingImages, setEditingImages] = useState<AttachmentFile[]>([]);
 
-  // Track which images should be loaded
   const [loadedImages, setLoadedImages] = useState(new Set<number | string>());
   const lazyLoadObserverRef = useRef<IntersectionObserver | null>(null);
 
-  // Loading state
   const [isUploading, setIsUploading] = useState(false);
 
-  // Attachment images with mapping style
+  /**
+   * Per-card selected locale ID.
+   * Key: attachment.id, Value: locale_id of the currently previewed version.
+   * Absent = fall back to default locale (resolved inside AttachmentCardPreview).
+   */
+  const [selectedLocaleIds, setSelectedLocaleIds] = useState<Record<string | number, number>>({});
+
   const attachmentImagesMap = useMemo(
     () =>
       fromPairs(attachmentImages.map((o) => [o.id, o])) as Record<string | number, AttachmentFile>,
     [attachmentImages],
   );
 
-  // Checkbox value
   const checkboxValue = useMemo(
     () =>
       isEditMode
@@ -114,24 +119,17 @@ export function InternalImages({
     [editingImages, isEditMode, selectedImages],
   );
 
-  /**
-   * Check if all images are selected for editing
-   */
-  const isSelectedAllEditing = useMemo(() => {
-    return editingImages.length === attachmentImages.length;
-  }, [attachmentImages.length, editingImages.length]);
+  const isSelectedAllEditing = useMemo(
+    () => editingImages.length === attachmentImages.length,
+    [attachmentImages.length, editingImages.length],
+  );
 
-  /**
-   * Handle checkbox group value change for both edit mode and multi-select
-   */
   const handleCheckboxChange = useCallback(
     (values: string[]) => {
       if (isEditMode) {
         setEditingImages(values.map((o) => attachmentImagesMap[Number(o)]));
-      } else {
-        if (multiple) {
-          setSelectedImages?.(values.map((o) => attachmentImagesMap[Number(o)]));
-        }
+      } else if (multiple) {
+        setSelectedImages?.(values.map((o) => attachmentImagesMap[Number(o)]));
       }
     },
     [attachmentImagesMap, isEditMode, multiple, setSelectedImages],
@@ -140,15 +138,18 @@ export function InternalImages({
   /**
    * Ref callback for image containers — registers them with the IntersectionObserver
    */
-  const imageRefCallback = (node: HTMLElement | null, imageId: string | number) => {
-    if (node && lazyLoadObserverRef.current) {
-      node.setAttribute(LAZY_LOAD_ATTRIBUTE, String(imageId));
-      lazyLoadObserverRef.current.observe(node);
-    }
-  };
+  const imageRefCallback = useCallback(
+    (node: HTMLElement | null, imageId: string | number) => {
+      if (node && lazyLoadObserverRef.current) {
+        node.setAttribute(LAZY_LOAD_ATTRIBUTE, String(imageId));
+        lazyLoadObserverRef.current.observe(node);
+      }
+    },
+    [],
+  );
 
   /**
-   * Handles file drops by uploading and prepending to the attachment list
+   * Handle file drop
    */
   const handleDropping = useCallback(
     async (files: File[]) => {
@@ -160,15 +161,9 @@ export function InternalImages({
             files,
           )) as AttachmentFile[];
           setAttachmentImages((prevState) => [...newImageAttachments, ...prevState]);
-          notify?.({
-            message: t('Uploaded successfully'),
-            type: 'success',
-          });
+          notify?.({ message: t('Uploaded successfully'), type: 'success' });
         } catch (err) {
-          notify?.({
-            message: (err as Error).message,
-            type: 'error',
-          });
+          notify?.({ message: (err as Error).message, type: 'error' });
           console.error(err);
         } finally {
           setIsUploading(false);
@@ -179,19 +174,12 @@ export function InternalImages({
   );
 
   /**
-   * Toggle select-all / deselect-all in edit mode
+   * Handle select all checkbox change
    */
   const handleSelectAll = useCallback(() => {
-    if (isSelectedAllEditing) {
-      setEditingImages([]);
-    } else {
-      setEditingImages(attachmentImages);
-    }
+    setEditingImages(isSelectedAllEditing ? [] : attachmentImages);
   }, [attachmentImages, isSelectedAllEditing]);
 
-  /**
-   * Confirm and delete the selected editing images
-   */
   const handleDelete = useCallback(() => {
     const deletingImageIds = editingImages.map((o) => o.id);
     if (deletingImageIds.length) {
@@ -206,7 +194,7 @@ export function InternalImages({
   }, [deleteWithConfirm, editingImages, setAttachmentImages]);
 
   /**
-   * Setup Intersection Observer for lazy loading images
+   * Initialize IntersectionObserver for lazy loading images
    */
   useEffect(() => {
     lazyLoadObserverRef.current = new IntersectionObserver(
@@ -221,10 +209,7 @@ export function InternalImages({
           }
         });
       },
-      {
-        rootMargin: LAZY_LOAD_ROOT_MARGIN,
-        threshold: LAZY_LOAD_THRESHOLD,
-      },
+      { rootMargin: LAZY_LOAD_ROOT_MARGIN, threshold: LAZY_LOAD_THRESHOLD },
     );
 
     return () => {
@@ -233,12 +218,10 @@ export function InternalImages({
   }, []);
 
   /**
-   * Reset editing images when exiting edit mode
+   * Reset editing images when edit mode is disabled
    */
   useEffect(() => {
-    if (!isEditMode) {
-      setEditingImages([]);
-    }
+    if (!isEditMode) setEditingImages([]);
   }, [isEditMode]);
 
   return (
@@ -248,9 +231,7 @@ export function InternalImages({
         <div className="mb-4">
           <Dropzone
             disabled={isImagesLoading || isUploading}
-            onDrop={(files) => {
-              void handleDropping(files);
-            }}
+            onDrop={(files) => void handleDropping(files)}
             accept={IMAGE_MIME_TYPE}
             className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
           >
@@ -298,16 +279,12 @@ export function InternalImages({
               onClick={handleSelectAll}
             >
               <IconChecks size={16} />
-              {isSelectedAllEditing ? (
-                <span>{t('Deselect all')}</span>
-              ) : (
-                <span>{t('Select all')}</span>
-              )}
+              <span>{isSelectedAllEditing ? t('Deselect all') : t('Select all')}</span>
             </UnstyledButton>
           )}
           <UnstyledButton
             className="!text-primary-main font-bold space-x-2"
-            onClick={() => setIsEditMode((prevState) => !prevState)}
+            onClick={() => setIsEditMode((prev) => !prev)}
           >
             <IconEdit size={16} />
             <span>{t('Toggle edit')}</span>
@@ -315,62 +292,50 @@ export function InternalImages({
         </Box>
         {/*endregion edit actions*/}
 
-        {/*region images checkbox*/}
+        {/*region images grid*/}
         <Checkbox.Group value={checkboxValue} onChange={handleCheckboxChange}>
-          <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6  gap-3">
-            {attachmentImages.map((attachmentImage, index) => {
-              const shouldLoad = loadedImages.has(attachmentImage.id);
-
-              return (
-                <Checkbox.Card
-                  key={index}
-                  radius="md"
-                  className="overflow-hidden"
-                  withBorder={false}
-                  value={String(attachmentImage.id)}
-                  onClick={() => !isEditMode && onSelect?.(attachmentImage)}
-                >
+          <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
+            {attachmentImages.map((attachmentImage, index) => (
+              <Checkbox.Card
+                key={index}
+                radius="md"
+                className="overflow-hidden"
+                withBorder={false}
+                value={String(attachmentImage.id)}
+                onClick={() => !isEditMode && onSelect?.(attachmentImage)}
+              >
+                {/* relative wrapper provides positioning context for the checkbox indicator */}
+                <Box className="relative">
                   <Box
-                    className="relative"
-                    ref={(node) => imageRefCallback(node as HTMLElement | null, attachmentImage.id)}
+                    className={clsx(
+                      'absolute top-0 left-0 p-2 z-10',
+                      !multiple && !isEditMode && 'hidden',
+                    )}
                   >
-                    <Box
-                      className={clsx(
-                        'absolute top-0 left-0 p-2',
-                        !multiple && !isEditMode && 'hidden',
-                      )}
-                    >
-                      <Checkbox.Indicator size="md" className="!cursor-pointer" />
-                    </Box>
-                    <AspectRatio
-                      ratio={1}
-                      mx="auto"
-                      className={clsx(
-                        'transition-all duration-200',
-                        checkboxValue.includes(String(attachmentImage.id))
-                          ? 'border-4 border-gray !rounded-xl overflow-hidden'
-                          : 'hover:border-4 border-gray-westar !rounded-xl overflow-hidden',
-                      )}
-                    >
-                      {shouldLoad ? (
-                        <Image
-                          className="!rounded-lg"
-                          alt={attachmentImage.name}
-                          src={getAttachmentUrl(backendHost, attachmentImage.name)}
-                        />
-                      ) : (
-                        <Box className="w-full h-full bg-gray-100 animate-pulse" />
-                      )}
-                    </AspectRatio>
+                    <Checkbox.Indicator size="md" className="!cursor-pointer" />
                   </Box>
-                </Checkbox.Card>
-              );
-            })}
+
+                  <AttachmentCardPreview
+                    attachment={attachmentImage}
+                    backendHost={backendHost}
+                    shouldLoad={loadedImages.has(attachmentImage.id)}
+                    isSelected={checkboxValue.includes(String(attachmentImage.id))}
+                    observerRef={(node) => imageRefCallback(node, attachmentImage.id)}
+                    selectedLocaleId={selectedLocaleIds[attachmentImage.id] ?? null}
+                    onSelectLocale={(localeId) =>
+                      setSelectedLocaleIds((prev) => ({ ...prev, [attachmentImage.id]: localeId }))
+                    }
+                    defaultLocaleId={defaultLocaleId}
+                    availableLanguages={availableLanguages}
+                  />
+                </Box>
+              </Checkbox.Card>
+            ))}
           </Box>
         </Checkbox.Group>
-        {/*endregion images checkbox*/}
+        {/*endregion images grid*/}
 
-        {/*region empty state alert*/}
+        {/*region empty state*/}
         {!isImagesLoading && !attachmentImages.length && (
           <Box className="text-center space-y-3 px-6 py-16">
             <IconPhotoPlus size={16} className="text-gray-pale-sky" />
@@ -379,7 +344,7 @@ export function InternalImages({
             </Text>
           </Box>
         )}
-        {/*endregion empty state alert*/}
+        {/*endregion empty state*/}
       </Box>
     </>
   );

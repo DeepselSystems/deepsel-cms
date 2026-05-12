@@ -7,8 +7,8 @@ import { IconFile, IconPlus, IconTrash } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { getShortUrl, MAX_FILES_COUNT } from '../utils';
 import type { EmbedFileItem } from '../types';
-import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
-import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
+import { ChooseAttachmentModal } from '../../../../../ui';
+import type { AttachmentFile } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
 interface FilesSelectorModalProps {
@@ -119,13 +119,14 @@ const FilesSelectorModal = ({
       return;
     }
 
-    const attachUrl = getAttachmentRelativeUrl(attachment.name);
+    const attachUrl = getAttachmentRelativeUrl(attachment.name ?? '');
+    const attachName = attachment.name ?? '';
 
     const newFiles = [
       ...selectedFiles,
       {
         url: attachUrl,
-        name: attachment.name.split('/').pop() || attachment.name,
+        name: attachName.split('/').pop() || attachName,
       },
     ];
 

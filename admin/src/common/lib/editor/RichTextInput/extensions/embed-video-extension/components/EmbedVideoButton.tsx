@@ -4,7 +4,7 @@ import type { Editor } from '@tiptap/core';
 import { IconVideo } from '@tabler/icons-react';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
+import { ChooseAttachmentModal } from '../../../../../ui';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import type { User } from '../../../../../types';
 
@@ -64,7 +64,7 @@ const EmbedVideoButton = ({
           isOpen={isAttachmentModalOpened}
           close={() => setAttachmentModalOpened(false)}
           onChange={(attachment) => {
-            const attachUrl = getAttachmentRelativeUrl(attachment.name);
+            const attachUrl = getAttachmentRelativeUrl(attachment.name ?? '');
 
             if (editor) {
               editor

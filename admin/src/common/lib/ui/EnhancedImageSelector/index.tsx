@@ -53,7 +53,7 @@ export function EnhancedImageSelector({
       autoFetch: false,
       filters: [
         {
-          field: 'content_type',
+          field: 'locale_versions.content_type',
           operator: 'like',
           value: 'image%',
         },

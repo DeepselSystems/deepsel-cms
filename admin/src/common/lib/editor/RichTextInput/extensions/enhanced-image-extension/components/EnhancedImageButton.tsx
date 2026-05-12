@@ -4,7 +4,7 @@ import { IconPhoto } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelectorModal } from '../../../../../ui/EnhancedImageSelector';
+import { EnhancedImageSelectorModal } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
 interface EnhancedImageButtonProps {
@@ -17,7 +17,7 @@ interface EnhancedImageButtonProps {
 }
 
 interface Attachment {
-  name: string;
+  name: string | null;
 }
 
 /**
@@ -56,7 +56,7 @@ const EnhancedImageButton = ({
         opened={enhanceImageSelectorModalOpened}
         setOpened={setEnhanceImageSelectorModalOpened}
         onSelect={(attachment: Attachment) => {
-          const attachUrl = getAttachmentRelativeUrl(attachment.name);
+          const attachUrl = getAttachmentRelativeUrl(attachment.name ?? '');
 
           onAddImageOverride(attachUrl);
 

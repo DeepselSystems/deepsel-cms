@@ -27,12 +27,45 @@ import {
 const AcceptedFormat: string[] = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg'];
 
 /**
- * Represents a single file attachment record from the backend
+ * Locale metadata attached to an AttachmentLocaleVersion
+ */
+export interface AttachmentLocaleInfo {
+  id: number;
+  name: string;
+  iso_code: string | null;
+  emoji_flag?: string | null;
+}
+
+/**
+ * A single per-locale file version under an AttachmentFile
+ */
+export interface AttachmentLocaleVersion {
+  id: number;
+  name: string;
+  content_type?: string | null;
+  filesize?: number | null;
+  alt_text?: string | null;
+  attachment_id: number;
+  locale_id: number;
+  locale?: AttachmentLocaleInfo | null;
+  string_id?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  active: boolean;
+  system: boolean;
+}
+
+/**
+ * Represents a single file attachment record from the backend.
+ * Multi-lang structure: actual files live in locale_versions[].
  */
 export interface AttachmentFile {
   id: string | number;
-  name: string;
+  /** @deprecated Use locale_versions[*].name instead */
+  name: string | null;
+  /** @deprecated Use locale_versions[*].content_type instead */
   content_type?: string;
+  locale_versions?: AttachmentLocaleVersion[];
   [key: string]: unknown;
 }
 
@@ -98,11 +131,11 @@ function FileImage({
         {file.content_type?.startsWith('image') ? (
           <img
             alt={file.name || ''}
-            src={getAttachmentUrl(backendHost, file.name)}
+            src={getAttachmentUrl(backendHost, file.name ?? '')}
             className="h-[150px] w-full object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-[150px] p-2" title={file.name}>
+          <div className="flex items-center justify-center h-[150px] p-2" title={file.name ?? ''}>
             <IconFileText
               size={16}
               className="text-[24px] sm:text-[36px] text-primary-main absolute top-2 right-2"
@@ -441,7 +474,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     if (onChange) {
       onChange({
         ...file,
-        attachUrl: getAttachmentUrl(backendHost, file.name),
+        attachUrl: getAttachmentUrl(backendHost, file.name ?? ''),
       });
     }
     close();

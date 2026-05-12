@@ -4,8 +4,8 @@ import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { IconVolume } from '@tabler/icons-react';
 import { Box, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
-import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
+import { ChooseAttachmentModal } from '../../../../../ui';
+import type { AttachmentFile } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
 interface EmbedAudioButtonProps {
@@ -63,7 +63,7 @@ const EmbedAudioButton = ({
           isOpen={isAttachmentModalOpened}
           close={() => setAttachmentModalOpened(false)}
           onChange={(attachment: AttachmentFile) => {
-            const attachUrl = getAttachmentRelativeUrl(attachment.name);
+            const attachUrl = getAttachmentRelativeUrl(attachment.name ?? '');
 
             if (editor) {
               editor
