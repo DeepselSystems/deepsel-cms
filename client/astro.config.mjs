@@ -15,6 +15,7 @@ export default defineConfig({
       dedupe: ['react', 'react-dom'],
     },
     server: {
+      allowedHosts: ['.local'],
       fs: {
         // Allow serving files from the admin directory
         allow: ['..'],
