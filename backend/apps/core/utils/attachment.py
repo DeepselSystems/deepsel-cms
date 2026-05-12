@@ -129,9 +129,14 @@ def upsert_locale_versions(
 
             file = item_file_map.get(idx)
             if file is not None:
-                # File replacement: build filename from user-supplied base name
-                # (item.name, no extension) + the uploaded file's extension.
-                # Extension is immutable — it follows the new file, not the old record.
+                # File replacement: delete the old record and create a new one.
+                # The new record gets a new auto-incremented ID — ID is NOT preserved.
+                # FE handles this correctly by consuming the full locale_versions list
+                # returned in BatchUpsertResponse rather than tracking IDs.
+                #
+                # Filename = user-supplied base name (item.name, no extension) +
+                # extension from the uploaded file. Extension is immutable — it
+                # always follows the new file, not the old record.
                 existing_base, _ = os.path.splitext(version.name)
                 effective_base = item.name if item.name is not None else existing_base
                 _, ext = os.path.splitext(file.filename)

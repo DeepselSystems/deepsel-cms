@@ -167,7 +167,7 @@ function ExistingVersionCard({
         <TextInput
           label={t('Name')}
           description={t(
-            'File name used when serving and downloading. Extension cannot be changed.',
+            'SEO tip: use language-specific keywords as the file name for each locale version.',
           )}
           value={draft.name}
           onChange={(e) => onDraftChange({ name: e.target.value })}
@@ -290,7 +290,7 @@ function PendingVersionCard({ pendingVersion, localeOptions, onUpdate, onRemove,
         <TextInput
           label={t('Name')}
           description={t(
-            'File name used when serving and downloading this version. Extension cannot be changed.',
+            'SEO tip: use language-specific keywords as the file name for each locale version.',
           )}
           value={pendingVersion.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
@@ -378,6 +378,7 @@ export function EditAttachmentModal({ attachment, opened, onClose, onSaved, avai
     removePendingVersion,
     pendingNewVersions,
     hasPendingChanges,
+    isSaveEnabled,
     getVersionPreviewUrl,
     isVersionImage,
     saveAll,
@@ -468,7 +469,7 @@ export function EditAttachmentModal({ attachment, opened, onClose, onSaved, avai
         <Button variant="subtle" onClick={onClose} disabled={loading}>
           {t('Cancel')}
         </Button>
-        <Button onClick={handleSave} loading={loading} disabled={!hasPendingChanges}>
+        <Button onClick={handleSave} loading={loading} disabled={!isSaveEnabled}>
           {t('Save Changes')}
         </Button>
       </Group>

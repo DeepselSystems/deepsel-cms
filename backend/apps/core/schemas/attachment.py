@@ -103,7 +103,6 @@ class AttachmentVersionUpsertItem(BaseModel):
                 for field, value in [
                     ("_file_id", self.file_id),
                     ("name", self.name),
-                    ("alt_text", self.alt_text),
                 ]
                 if value is None
             ]

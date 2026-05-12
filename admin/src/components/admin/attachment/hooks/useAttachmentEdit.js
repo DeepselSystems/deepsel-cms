@@ -226,11 +226,29 @@ export function useAttachmentEdit({ attachment, onSaved }) {
     });
   };
 
-  /** True when any staged change has not yet been submitted to the backend. */
+  /**
+   * True when the modal should block accidental close — any incomplete or
+   * complete pending card counts, as does any metadata or file replacement draft.
+   */
   const hasPendingChanges =
     Object.keys(metaDrafts).length > 0 ||
     Object.keys(pendingFileReplacements).length > 0 ||
-    pendingNewVersions.some((pv) => pv.localeId && pv.file);
+    pendingNewVersions.length > 0;
+
+  /**
+   * True when Save Changes should be enabled:
+   *   - At least one change is ready to submit to the backend, AND
+   *   - No pending new version is incomplete (missing localeId or file —
+   *     incomplete cards cannot be saved and must be filled or removed first).
+   */
+  const hasIncompletePendingVersions = pendingNewVersions.some(
+    (pv) => !pv.localeId || !pv.file,
+  );
+  const isSaveEnabled =
+    !hasIncompletePendingVersions &&
+    (Object.keys(metaDrafts).length > 0 ||
+      Object.keys(pendingFileReplacements).length > 0 ||
+      pendingNewVersions.some((pv) => pv.localeId && pv.file));
 
   /**
    * Returns the preview URL for an existing version.
@@ -398,6 +416,7 @@ export function useAttachmentEdit({ attachment, onSaved }) {
     removePendingVersion,
     pendingNewVersions,
     hasPendingChanges,
+    isSaveEnabled,
     getVersionPreviewUrl,
     isVersionImage,
     saveAll,

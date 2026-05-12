@@ -98,6 +98,8 @@ def upload_files(
                 **kwargs,
             )
 
+        # Refresh so locale_versions relationship is populated in the response.
+        db.refresh(instance)
         instances.append(instance)
     return instances
 

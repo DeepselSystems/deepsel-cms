@@ -69,7 +69,8 @@ export function LocaleFlag({
         <img
           src={flagUrl}
           alt={localeName}
-          style={{ height: size, width: 'auto', display: 'block' }}
+          className="block w-auto"
+          style={{ height: size }}
           onError={handleImgError}
         />
       </UnstyledButton>

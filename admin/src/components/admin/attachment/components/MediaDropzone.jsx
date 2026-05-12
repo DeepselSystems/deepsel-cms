@@ -5,7 +5,6 @@ import { IconCloudUpload, IconPhoto } from '@tabler/icons-react';
 import useUpload from '../../../../common/api/useUpload.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
 
-
 /**
  * Dropzone upload area for the Media Library.
  * Handles file selection, upload, and notifies parent of results.
@@ -52,7 +51,7 @@ export function MediaDropzone({ onFilesUploaded, onStorageChange }) {
         onDrop={handleDrop}
         className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
       >
-        <Group justify="center" gap="xl" style={{ minHeight: 100, pointerEvents: 'none' }}>
+        <Group justify="center" gap="xl" className="min-h-24 pointer-events-none">
           <Dropzone.Accept>
             <IconCloudUpload size={16} className="text-3xl text-green-500" />
           </Dropzone.Accept>
