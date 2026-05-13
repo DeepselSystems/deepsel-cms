@@ -16,6 +16,11 @@ export function createApiHeaders(additionalHeaders = {}) {
   // Add hostname for proper domain detection on backend
   if (typeof window !== 'undefined') {
     headers['X-Frontend-Host'] = window.location.hostname;
+
+    const organizationId = parseInt(localStorage.getItem('organizationId'), 10);
+    if (Number.isFinite(organizationId)) {
+      headers['X-Organization-Id'] = organizationId.toString();
+    }
   }
 
   return headers;

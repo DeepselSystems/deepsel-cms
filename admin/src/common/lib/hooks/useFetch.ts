@@ -78,6 +78,13 @@ export function useFetch<T = unknown, R = unknown>(
       let endpoint = `${backendHost}/${path}`;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
+      if (typeof window !== 'undefined') {
+        const organizationId = parseInt(localStorage.getItem('organizationId') || '', 10);
+        if (Number.isFinite(organizationId)) {
+          headers['X-Organization-Id'] = organizationId.toString();
+        }
+      }
+
       const fetchOptions: RequestInit = {
         method,
         headers,
