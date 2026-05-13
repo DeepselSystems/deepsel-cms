@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Tooltip, UnstyledButton } from '@mantine/core';
 import clsx from 'clsx';
-import { getFlagUrlForIsoCode } from '../../../../common/utils/localeFlag.js';
-import { FLAG_HEIGHT_PX, FALLBACK_FLAG_CODE } from '../../../../constants/attachment.js';
+import { getFlagUrlForIsoCode } from '../utils/localeFlag.js';
+import { FALLBACK_FLAG_CODE, FLAG_HEIGHT_PX } from '../../constants/attachment.js';
 
 /**
  * @typedef LocaleFlagProps

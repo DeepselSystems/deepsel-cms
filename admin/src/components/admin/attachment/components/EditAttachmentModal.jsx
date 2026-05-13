@@ -16,7 +16,7 @@ import { Dropzone } from '@mantine/dropzone';
 import { IconCloudUpload, IconFile, IconPhoto, IconPlus, IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
-import { LocaleFlag } from './LocaleFlag.jsx';
+import { LocaleFlag } from '../../../../common/ui/LocaleFlag.jsx';
 import { useAttachmentEdit } from '../hooks/useAttachmentEdit.js';
 import orderBy from 'lodash/orderBy';
 

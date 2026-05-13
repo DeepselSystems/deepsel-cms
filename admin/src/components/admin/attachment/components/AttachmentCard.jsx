@@ -10,7 +10,7 @@ import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
 import { getAttachmentUrl } from '../../../../common/utils/index.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
-import { VersionFlagBar } from './VersionFlagBar.jsx';
+import { VersionFlagBar } from '../../../../common/ui/VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from './AttachmentCardOverlay.jsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
 

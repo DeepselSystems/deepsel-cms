@@ -5,9 +5,7 @@ import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { IconPhotoPlus } from '@tabler/icons-react';
 
 import type { AttachmentFile, AttachmentLocaleVersion } from '../../ChooseAttachmentModal';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — JSX component, types inferred as any
-import { VersionFlagBar } from '../../../../../components/admin/attachment/components/VersionFlagBar';
+import { VersionFlagBar } from '../../../../ui/VersionFlagBar.jsx';
 
 /**
  * Minimal locale language shape required by VersionFlagBar
