@@ -12,7 +12,7 @@ import type { NotifyFn } from '../types';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
 import { useDefaultLocale } from '../../hooks/useDefaultLocale';
-import { VersionFlagBar } from '../../ui/VersionFlagBar.jsx';
+import { VersionFlagBar } from '../../ui/VersionFlagBar';
 import {
   IconChecks,
   IconCloudUpload,

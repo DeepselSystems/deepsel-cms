@@ -5,7 +5,7 @@ import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { IconPhotoPlus } from '@tabler/icons-react';
 
 import type { AttachmentFile, AttachmentLocaleVersion } from '../../ChooseAttachmentModal';
-import { VersionFlagBar } from '../../../../ui/VersionFlagBar.jsx';
+import { VersionFlagBar } from '../../../../ui/VersionFlagBar';
 
 /**
  * Minimal locale language shape required by VersionFlagBar
