@@ -11,8 +11,9 @@ import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import type { EmbedFileItem } from '../types';
 
 /**
- * EditorNodeView component for embed files
- * Displays list of files with download links and delete button on hover
+ * EditorNodeView component for embed files.
+ * Displays the list of file references with edit/delete controls.
+ * hrefs shown here are for editor preview only — the stored HTML uses Jinja syntax.
  */
 const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeViewProps) => {
   /**
@@ -117,20 +118,20 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
         </button>
       </div>
 
-      {/* Files Container */}
+      {/* Files Container — hrefs are editor-preview URLs only */}
       <div className={EMBED_FILES_CLASSES.FILES_CONTAINER}>
         {files.map((file, index) => {
-          const relativeUrl = getAttachmentRelativeUrl(file.name);
+          const previewUrl = getAttachmentRelativeUrl(file.attachmentName);
           return (
             <div key={index} className={clsx(EMBED_FILES_CLASSES.FILE_ITEM)}>
               <a
-                href={relativeUrl}
+                href={previewUrl}
                 download
                 className={EMBED_FILES_CLASSES.FILE_CONTENT}
-                title={file.name}
+                title={file.displayName}
               >
                 <span className={EMBED_FILES_CLASSES.FILE_ICON}>📄</span>
-                <span className={EMBED_FILES_CLASSES.FILE_LINK}>{file.name}</span>
+                <span className={EMBED_FILES_CLASSES.FILE_LINK}>{file.displayName}</span>
               </a>
             </div>
           );

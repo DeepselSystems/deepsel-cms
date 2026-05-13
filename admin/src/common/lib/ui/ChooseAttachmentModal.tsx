@@ -604,6 +604,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
       onClose={close}
       title={<div className={`font-semibold text-lg`}>{t('Select attachment')}</div>}
       size="100%"
+      zIndex={11000}
     >
       <div className="pt-4">
         {/*region files*/}
