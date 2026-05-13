@@ -5,7 +5,6 @@ import { Alert } from '@mantine/core';
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Preferences } from '@capacitor/preferences';
 import { PagingTableParams } from '@deepsel/cms-utils';
 import type { User } from '../types';
 import { H2 } from '../ui';
@@ -31,7 +30,7 @@ export interface OrderBy {
 
 export interface UseModelConfig {
   backendHost: string;
-  /** Authenticated user — token is read from user.token */
+  /** Authenticated user — auth is via httpOnly session cookie */
   user: User | null;
   setUser: (user: User | null) => void;
   organizationId?: number | null;
@@ -264,23 +263,9 @@ export function useModel<T = Record<string, unknown>>(
   // ---------------------------------------------------------------------------
 
   /**
-   * Builds Authorization headers, preferring user.token then Capacitor Preferences
-   */
-  async function buildAuthHeaders(): Promise<Record<string, string>> {
-    const headers: Record<string, string> = {};
-    const token = user?.token || (await Preferences.get({ key: 'token' })).value;
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    return headers;
-  }
-
-  /**
    * Clears stored auth and redirects to login on 401
    */
   async function resetAuth(): Promise<void> {
-    await Promise.all([
-      Preferences.remove({ key: 'token' }),
-      Preferences.remove({ key: 'userData' }),
-    ]);
     setUser(null);
     if (redirectLoginIfUnauthorized) {
       console.error('useModel.resetAuth redirect to login');
@@ -335,12 +320,12 @@ export function useModel<T = Record<string, unknown>>(
       }
 
       const query = queryObject || _buildQueryBody();
-      const authHeaders = await buildAuthHeaders();
 
       const response = await fetch(endpoint, {
         method: 'POST',
         body: JSON.stringify(query),
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         signal: abortControllerRef.current.signal,
       });
 
@@ -386,10 +371,9 @@ export function useModel<T = Record<string, unknown>>(
 
       setLoading(true);
       const endpoint = `${backendHost}/${modelName}/${recordId}`;
-      const authHeaders = await buildAuthHeaders();
 
       const response = await fetch(endpoint, {
-        headers: authHeaders,
+        credentials: 'include',
         signal: abortControllerRef.current.signal,
       });
 
@@ -441,11 +425,11 @@ export function useModel<T = Record<string, unknown>>(
         };
       }
 
-      const authHeaders = await buildAuthHeaders();
       const response = await fetch(endpoint, {
         method: 'POST',
         body: JSON.stringify(query),
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (response.status === 401) {
@@ -475,11 +459,10 @@ export function useModel<T = Record<string, unknown>>(
       formData.append('file', file);
 
       const endpoint = `${backendHost}/${modelName}/import`;
-      const authHeaders = await buildAuthHeaders();
 
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: authHeaders,
+        credentials: 'include',
         body: formData,
       });
 
@@ -511,11 +494,11 @@ export function useModel<T = Record<string, unknown>>(
 
     try {
       const endpoint = `${backendHost}/${modelName}`;
-      const authHeaders = await buildAuthHeaders();
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(newItemCopy),
       });
 
@@ -557,11 +540,11 @@ export function useModel<T = Record<string, unknown>>(
       }
 
       const endpoint = `${backendHost}/${modelName}/${updatedItem.id}`;
-      const authHeaders = await buildAuthHeaders();
 
       const response = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updatedItemCopy),
       });
 
@@ -599,9 +582,7 @@ export function useModel<T = Record<string, unknown>>(
       let endpoint = `${backendHost}/${modelName}/${recordId}`;
       if (force) endpoint += '?force=true';
 
-      const headers: Record<string, string> = {};
-      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
-      const response = await fetch(endpoint, { method: 'DELETE', headers });
+      const response = await fetch(endpoint, { method: 'DELETE', credentials: 'include' });
 
       if (response.status === 401) {
         await resetAuth();
@@ -632,13 +613,10 @@ export function useModel<T = Record<string, unknown>>(
     try {
       setLoading(true);
       const endpoint = `${backendHost}/${modelName}/bulk_delete${force ? '?force=true' : ''}`;
-      const headers = {
-        'Content-Type': 'application/json',
-        ...(user?.token && { Authorization: `Bearer ${user.token}` }),
-      };
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(queryObject),
       });
 
@@ -703,7 +681,7 @@ export function useModel<T = Record<string, unknown>>(
     setLoading(true);
     const res = await fetch(
       `${backendHost}/util/delete_check/${modelName}/${recordIds.join(',')}`,
-      { headers: { Authorization: `Bearer ${user?.token}` } },
+      { credentials: 'include' },
     );
     const response = (await res.json()) as {
       to_delete?: Record<string, string[]>;
@@ -800,7 +778,7 @@ export function useModel<T = Record<string, unknown>>(
 
       const res = await fetch(`${backendHost}/attachment/`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${user?.token}` },
+        credentials: 'include',
         body: formData,
       });
 

@@ -1,16 +1,4 @@
 string_id,name,permissions,system
-super_admin_role,Super Admin,"[
-    ""user:*:*"",
-    ""role:*:*"",
-    ""implied_role:*:*"",
-    ""user_role:*:*"",
-    ""organization:*:*"",
-    ""attachment:*:*"",
-    ""attachment_locale_version:*:*"",
-    ""activity:*:*"",
-    ""email_template:*:*"",
-    ""cron:*:*""
-]",true
 admin_role,Admin,"[
     ""user:*:org"",
     ""role:*:org"",

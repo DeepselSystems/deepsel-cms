@@ -59,7 +59,7 @@ const { data } = Astro.props;
 ---
 
 <!doctype html>
-<html lang={data.lang || "en"}>
+<html lang={data.lang || "en"} data-theme="<theme-name>">
   <head>
     <meta charset="utf-8" />
     <title>{data.seo_metadata?.title || ""}</title>

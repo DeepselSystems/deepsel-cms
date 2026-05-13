@@ -167,6 +167,7 @@ export default function Login() {
         headers,
         body: JSON.stringify({
           mixin_id: email,
+          organization_id: organizationId,
         }),
       });
       if (response.status !== 200) {
@@ -284,7 +285,9 @@ export default function Login() {
               <Button
                 className="flex items-center"
                 variant="light"
-                onClick={() => (window.location.href = `${backendHost}/login/google`)}
+                onClick={() =>
+                  (window.location.href = `${backendHost}/login/google?organization_id=${organizationId}`)
+                }
               >
                 <img src="/images/google-logo.svg" alt="" className="w-5 h-5 object-contain" />
                 <div className="ml-4">{t('Login with Google')}</div>
@@ -310,9 +313,10 @@ export default function Login() {
                 variant="light"
                 onClick={() => {
                   const redirect = new URLSearchParams(location.search).get('redirect');
+                  const baseUrl = `${backendHost}/login/saml?organization_id=${organizationId}`;
                   const samlUrl = redirect
-                    ? `${backendHost}/login/saml?redirect=${encodeURIComponent(redirect)}`
-                    : `${backendHost}/login/saml`;
+                    ? `${baseUrl}&redirect=${encodeURIComponent(redirect)}`
+                    : baseUrl;
                   window.location.href = samlUrl;
                 }}
               >
@@ -332,7 +336,7 @@ export default function Login() {
               {t('Reset password')}
             </Button>
 
-            {failCount > 0 && (
+            {failCount > 0 && orgPublicSettings?.is_smtp_configured && (
               <button
                 className={`text-primary-main underline text-sm mt-2`}
                 onClick={openPasswordlessModal}

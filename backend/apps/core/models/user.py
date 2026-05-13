@@ -39,8 +39,6 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
     company_name = Column(String)
 
     roles = relationship("RoleModel", secondary="user_role")
-    organization_id = Column(Integer, ForeignKey("organization.id"), nullable=True)
-    organization = relationship("OrganizationModel")
     organizations = relationship(
         "OrganizationModel", secondary="user_organization", enable_typechecks=False
     )
@@ -55,6 +53,7 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
     recovery_codes = Column(JSON, nullable=True)
 
     google_id = Column(String)
+    keycloak_id = Column(String)
     saml_nameid = Column(String)
     anonymous_id = Column(UUID(as_uuid=True))
     preferences = Column(JSON, default={})

@@ -37,11 +37,21 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
         formData.append('files', file);
       });
 
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      if (typeof window !== 'undefined') {
+        const organizationId = parseInt(localStorage.getItem('organizationId') || '', 10);
+        if (Number.isFinite(organizationId)) {
+          headers['X-Organization-Id'] = organizationId.toString();
+        }
+      }
+
       const response = await fetch(`${backendHost}/${api}`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
+        credentials: 'include',
         body: formData,
       });
 

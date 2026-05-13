@@ -81,6 +81,15 @@ SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "true").lower() in [
 ]
 SESSION_COOKIE_NAME = "session_id"
 
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
+CORS_ALLOWED_ORIGIN_REGEX = os.getenv(
+    "CORS_ALLOWED_ORIGIN_REGEX",
+    r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+)
+
 # Server flags
 ONLY_MIGRATE = os.getenv("ONLY_MIGRATE", "").lower() in ("true", "1", "yes")
 NO_MIGRATE = os.getenv("NO_MIGRATE", "").lower() in ("true", "1", "yes")

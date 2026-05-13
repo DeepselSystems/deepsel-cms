@@ -125,7 +125,7 @@ const { data } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang={data.lang || 'en'}>
+<html lang={data.lang || 'en'} data-theme="<theme-name>">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -144,6 +144,8 @@ const { data } = Astro.props;
 ```
 
 Use `client:load` on React components that need interactivity (like menus). Static parts like footers can be plain Astro components or HTML.
+
+**The `data-theme="<theme-name>"` attribute on `<html>` is required** — every template (page, index, blog, single-blog, search, 404, and any custom page) must set it. The CMS scopes each theme's CSS under `[data-theme="<theme-name>"]` so multiple themes can coexist without style bleed. Without it, none of the theme's styles will apply. The value must match the theme folder name.
 
 #### Why the island wrapper?
 
@@ -173,15 +175,51 @@ import "./main.css";
 
 Import `@deepsel/cms-utils/styles.css` **before** your theme's own CSS so theme styles can override if needed.
 
+#### Tailwind Setup
+
+Tailwind is dispatched per-theme by `client/postcss.config.js`: it inspects each CSS file's source path, picks the matching theme's `tailwind.config.js` to scan that theme's own files, and scopes the emitted utilities under `[data-theme="<theme-name>"]`. For this to work, the theme needs:
+
+1. **A `tailwind.config.js` at `themes/<theme-name>/tailwind.config.js`** with a `content` glob that covers the theme's own files:
+
+   ```js
+   import { fileURLToPath } from 'node:url';
+   import path from 'node:path';
+
+   const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+   /** @type {import('tailwindcss').Config} */
+   export default {
+     content: [
+       path.join(__dirname, '**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'),
+       `!${path.join(__dirname, 'node_modules/**')}`,
+     ],
+     theme: { extend: {} },
+     plugins: [],
+   };
+   ```
+
+2. **`@tailwind` directives in the theme's CSS entry point** (e.g., `main.css`). Without these, no utility classes are emitted for the theme and pages render unstyled even though class names are present in the DOM:
+
+   ```css
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+
+   /* Your theme's custom CSS below */
+   ```
+
+Do not edit `client/tailwind.config.js` — it is the base config for `client/src/**` only. Each theme owns its own `tailwind.config.js`.
+
 ### Step 4: Theme Registration (Automatic)
 
-`client/src/themes.ts` and `client/tailwind.config.js` are **fully auto-generated** by the backend — do not edit them manually. The backend scans `themes/` on startup and regenerates these files to import only the currently selected theme.
+`client/src/themes.ts` is **auto-generated** by the backend — do not edit it manually. The backend scans `themes/` on startup and regenerates the imports/`themeMap` to include the currently selected theme.
 
 When a theme is selected via the admin or `/theme/select` API:
-- `themes.ts` is regenerated with imports and `themeMap` for just that theme
-- `tailwind.config.js` is regenerated with only that theme's Tailwind preset
+- `themes.ts` is regenerated with imports and `themeMap` for the selected theme
 - In production, the client is rebuilt and restarted automatically
 - In dev mode (`NO_CLIENT=true`), files are regenerated locally and Astro HMR picks up changes
+
+Tailwind config is **not** regenerated — PostCSS dispatches per theme based on source file path (see Step 3).
 
 **No manual registration step is needed** — just create your theme files and select the theme.
 

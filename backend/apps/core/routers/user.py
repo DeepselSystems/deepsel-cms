@@ -111,8 +111,16 @@ def update_2fa_config(
         user.temp_secret_key_2fa = _encrypt(secret_key, APP_SECRET)
         db.commit()
 
+        current_org_id = getattr(user, "current_organization_id", None)
+        if current_org_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="X-Organization-Id header required for 2FA setup",
+            )
+        org = db.query(OrganizationModel).get(current_org_id)
+        issuer_name = org.name if org else ""
         totp_uri = pyotp.totp.TOTP(secret_key).provisioning_uri(
-            name=user.email or user.username, issuer_name=user.organization.name
+            name=user.email or user.username, issuer_name=issuer_name
         )
         return Info2Fa(totp_uri=totp_uri)
 

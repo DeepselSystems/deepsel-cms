@@ -46,7 +46,12 @@ async def translate_content(
         )
 
     # Get organization settings
-    org_id = user.organization_id
+    org_id = getattr(user, "current_organization_id", None)
+    if org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
     OrganizationModel = models_pool["organization"]
     org_settings = db.query(OrganizationModel).get(org_id)
 
@@ -101,7 +106,12 @@ async def ai_writing(
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     # Get organization settings
-    org_id = user.organization_id
+    org_id = getattr(user, "current_organization_id", None)
+    if org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
     OrganizationModel = models_pool["organization"]
     org_settings = db.query(OrganizationModel).get(org_id)
 

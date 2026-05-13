@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select } from '@mantine/core';
-import { IconBrandGoogle, IconCopy, IconKey, IconRotate, IconUsersGroup } from '@tabler/icons-react';
+import {
+  IconBrandGoogle,
+  IconCopy,
+  IconKey,
+  IconRotate,
+  IconUsersGroup,
+} from '@tabler/icons-react';
 import useModel from '../../../../common/api/useModel.jsx';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';

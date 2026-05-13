@@ -15,13 +15,14 @@ export default defineConfig({
       dedupe: ['react', 'react-dom'],
     },
     server: {
+      allowedHosts: ['.local'],
       fs: {
         // Allow serving files from the admin directory
         allow: ['..'],
       },
       proxy: {
         '/api/v1': {
-          target: 'http://localhost:8000',
+          target: process.env.E2E_BACKEND_URL || 'http://localhost:8000',
           changeOrigin: true,
           ws: true,
         },

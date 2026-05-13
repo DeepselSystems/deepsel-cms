@@ -6,7 +6,6 @@ export interface User {
   id: string;
   email: string;
   username?: string;
-  organization_id?: string | number;
   token?: string;
   [key: string]: unknown;
 }

@@ -1,3 +1,3 @@
-name,username,hashed_password,email,organization/organization_id,signed_up,string_id,active
-Admin,admin,$2b$12$DD1Z0g9R4SI08uenHHEGie9aoAhqoDD/IgVy9Tgrkd6L8go.vVEPm,dev@deepsel.com,1,True,admin_user,True
-System,system,,system@deepsel.local,1,True,system,False
+name,username,hashed_password,email,signed_up,string_id,active
+Admin,admin,$2b$12$DD1Z0g9R4SI08uenHHEGie9aoAhqoDD/IgVy9Tgrkd6L8go.vVEPm,dev@deepsel.com,True,admin_user,True
+System,system,,system@deepsel.local,True,system,False

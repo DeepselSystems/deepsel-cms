@@ -96,7 +96,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       credentials: 'include',
       body: JSON.stringify({
         device_info: deviceInfoExtended,
-        organization_id: user?.organization_id || organizationId,
+        organization_id: organizationId,
         anonymous_id: anonymousId,
       }),
     });
@@ -130,11 +130,12 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const { identifier, password, otp = '' } = credentials;
       const encodedIdentifier = encodeURIComponent(identifier);
       const encodedPassword = encodeURIComponent(password);
+      const orgIdForLogin = organizationId;
       const response = await fetch(`${backendHost}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         credentials: 'include',
-        body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}`,
+        body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}&organization_id=${orgIdForLogin}`,
       });
 
       if (!response.ok) {
@@ -154,14 +155,6 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
 
       const responseData: LoginResponse = await response.json();
       const { is_require_user_config_2fa, user: userData } = responseData || {};
-
-      if (
-        userData?.organization_id &&
-        userData.organization_id !== organizationId &&
-        setOrganizationId
-      ) {
-        setOrganizationId(userData.organization_id as number);
-      }
 
       if (is_require_user_config_2fa) {
         return { is_require_user_config_2fa };
@@ -189,7 +182,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         body: JSON.stringify({
           email,
           password,
-          organization_id: user?.organization_id || organizationId,
+          organization_id: organizationId,
         }),
       });
 
