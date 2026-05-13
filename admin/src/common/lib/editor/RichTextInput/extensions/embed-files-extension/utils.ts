@@ -1,7 +1,16 @@
+import { EMBED_MODE } from './types';
+import type { EmbedMode } from './types';
+
 /**
  * Maximum number of files allowed
  */
 export const MAX_FILES_COUNT = 10;
+
+/**
+ * Default embed mode applied when inserting new file blocks.
+ * JINJA is the new default — produces {{ attachment('name') }} syntax for locale-aware rendering.
+ */
+export const DEFAULT_EMBED_MODE: EmbedMode = EMBED_MODE.JINJA;
 
 /**
  * Constants for embed files attributes
@@ -9,7 +18,12 @@ export const MAX_FILES_COUNT = 10;
  */
 export const EMBED_FILES_ATTRIBUTES = {
   CONTAINER: 'data-embed-files',
+  /** Legacy mode: JSON array of { url, name } */
   FILES: 'data-files',
+  /** Discriminator: 'legacy' | 'jinja' */
+  MODE: 'data-embed-mode',
+  /** Jinja mode: JSON array of { attachmentName, displayName } */
+  JINJA_FILES: 'data-jinja-files',
 } as const;
 
 /**
@@ -24,6 +38,15 @@ export const EMBED_FILES_CLASSES = {
   FILE_ICON: 'embed-file-icon',
   FILE_LINK: 'embed-file-link',
 } as const;
+
+/**
+ * Formats an attachment name into Jinja2 template syntax.
+ * The backend resolves this to a locale-appropriate <a> or <img> tag at render time.
+ * @param attachmentName - The attachment.name column value (e.g. "hero-banner")
+ * @returns Jinja2 syntax string e.g. "{{ attachment('hero-banner') }}"
+ */
+export const formatJinjaSyntax = (attachmentName: string): string =>
+  `{{ attachment('${attachmentName}') }}`;
 
 /**
  * Get short URL from full URL (extract filename)
