@@ -122,7 +122,7 @@ const { data } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang={data.lang || 'en'}>
+<html lang={data.lang || 'en'} data-theme="my_theme">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -137,6 +137,24 @@ const { data } = Astro.props;
 ```
 
 Interactive React components must use `client:load` to hydrate on the client side.
+
+The `data-theme="{theme_name}"` attribute on `<html>` is **required**. The CMS scopes each theme's CSS (preflight, utilities, custom rules) under `[data-theme="{theme_name}"]` so multiple themes can coexist without style bleed. Without it, none of the theme's styles will apply. The value must match the theme folder name.
+
+## Styling with Tailwind
+
+The CMS dispatches Tailwind per-theme: each theme's `tailwind.config.js` is used to scan that theme's own files, and the resulting utilities are scoped to `[data-theme="{theme_name}"]`. For this to work, the theme's CSS entry point must contain the `@tailwind` directives.
+
+In `main.css` (or whichever CSS file your templates import):
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your theme's custom CSS below */
+```
+
+Without these directives, no utility classes will be emitted for the theme and pages will render unstyled even though the class names are present in the DOM.
 
 ## Content Styles
 
