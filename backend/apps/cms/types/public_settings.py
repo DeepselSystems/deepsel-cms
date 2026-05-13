@@ -36,4 +36,5 @@ class PublicSettings(BaseModel):
     show_chatbox: bool
     website_custom_code: Optional[str] = None
     selected_theme: Optional[str] = None
+    theme_key: Optional[str] = None
     menus: list[MenuItem]

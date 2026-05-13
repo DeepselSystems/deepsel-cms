@@ -100,6 +100,25 @@ class CMSSettingsMixin(_CMSSettingsEncryptedData):
             menu for menu in build_localized_menus(root_menus, target_lang, db)
         ]
 
+        # Compute theme_key: if this org has any theme_file overlay rows for
+        # selected_theme, point at the per-org themeMap entry; otherwise use
+        # the base theme name. The client falls back gracefully when an
+        # overlay is announced but not yet generated.
+        ThemeFileModel = models_pool.get("theme_file")
+        theme_key = organization.selected_theme
+        if ThemeFileModel is not None and organization.selected_theme:
+            has_overlay = (
+                db.query(ThemeFileModel.id)
+                .filter(
+                    ThemeFileModel.organization_id == organization_id,
+                    ThemeFileModel.theme_name == organization.selected_theme,
+                )
+                .first()
+                is not None
+            )
+            if has_overlay:
+                theme_key = f"{organization.selected_theme}__{organization_id}"
+
         # Add our extended fields to the public settings
         public_settings.update(
             {
@@ -132,6 +151,7 @@ class CMSSettingsMixin(_CMSSettingsEncryptedData):
                 "website_custom_code": organization.website_custom_code,
                 # Theme setting
                 "selected_theme": organization.selected_theme,
+                "theme_key": theme_key,
                 # React components with compiled code for the specified language
                 # Always include menus in public settings (localized by backend)
                 "menus": [menu.model_dump() for menu in localized_menus],

@@ -524,15 +524,25 @@ def reset_theme(
             detail=f"Theme '{request.folder_name}' not found",
         )
 
+    current_org_id = getattr(current_user, "current_organization_id", None)
+    if current_org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
+
     try:
         ThemeFileModel = models_pool.get("theme_file")
         ThemeFileContentModel = models_pool.get("theme_file_content")
 
-        # Get theme file IDs, then delete content first (FK constraint)
+        # Get theme file IDs for THIS org only, then delete content first (FK constraint)
         theme_file_ids = [
             tf.id
             for tf in db.query(ThemeFileModel.id)
-            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .filter(
+                ThemeFileModel.theme_name == request.folder_name,
+                ThemeFileModel.organization_id == current_org_id,
+            )
             .all()
         ]
 
@@ -543,18 +553,37 @@ def reset_theme(
 
         deleted = (
             db.query(ThemeFileModel)
-            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .filter(
+                ThemeFileModel.theme_name == request.folder_name,
+                ThemeFileModel.organization_id == current_org_id,
+            )
             .delete(synchronize_session=False)
         )
         db.commit()
 
-        # Clean up language-variant folders in source themes dir
+        # Clean up THIS org's overlay directory on disk
+        from platformdirs import user_data_dir as _user_data_dir
+
+        overlay_dir = os.path.join(
+            _user_data_dir("deepsel-cms", "deepsel"),
+            "themes",
+            f"org_{current_org_id}",
+            request.folder_name,
+        )
+        if os.path.exists(overlay_dir):
+            shutil.rmtree(overlay_dir, ignore_errors=True)
+            logger.info(f"Removed org overlay directory: {overlay_dir}")
+
+        # Clean up language-variant folders in source themes dir (still global —
+        # language base files are shared, language-specific org overlays live
+        # under themes/org_<id>/<lang>/<theme>/ and are cleared by reconcile)
         source_dir = os.path.normpath(SOURCE_THEMES_DIR)
         if os.path.exists(source_dir):
             for entry in os.listdir(source_dir):
                 lang_theme_path = os.path.join(source_dir, entry, request.folder_name)
                 if (
                     entry != request.folder_name
+                    and not entry.startswith("org_")
                     and os.path.isdir(os.path.join(source_dir, entry))
                     and os.path.isdir(lang_theme_path)
                 ):
@@ -565,13 +594,10 @@ def reset_theme(
 
         # Rebuild in background (pass selected theme for single-theme imports)
         CMSSettingsModel = models_pool.get("organization")
-        current_org_id = getattr(current_user, "current_organization_id", None)
         org = (
             db.query(CMSSettingsModel)
             .filter(CMSSettingsModel.id == current_org_id)
             .first()
-            if current_org_id
-            else None
         )
         current_selected = org.selected_theme if org else None
         background_tasks.add_task(
@@ -666,6 +692,13 @@ def get_theme_file(
     """
     Get a theme file content. Returns both filesystem content and any saved DB versions.
     """
+    current_org_id = getattr(current_user, "current_organization_id", None)
+    if current_org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
+
     try:
         ThemeFileModel = models_pool.get("theme_file")
 
@@ -681,12 +714,13 @@ def get_theme_file(
         with open(full_path, "r", encoding="utf-8") as f:
             default_content = f.read()
 
-        # Check if file has DB records
+        # Check if file has DB records for THIS org
         theme_file = (
             db.query(ThemeFileModel)
             .filter(
                 ThemeFileModel.theme_name == theme_name,
                 ThemeFileModel.file_path == file_path,
+                ThemeFileModel.organization_id == current_org_id,
             )
             .first()
         )
@@ -824,18 +858,20 @@ def save_theme_file(
             theme_name=request.theme_name,
             file_path=request.file_path,
             contents=request.contents,
+            organization_id=current_org_id,
         )
 
         # Phase 2: Build succeeded — apply changes
         ThemeFileModel = models_pool.get("theme_file")
         ThemeFileContentModel = models_pool.get("theme_file_content")
 
-        # Get or create theme file record
+        # Get or create theme file record FOR THIS ORG
         theme_file = (
             db.query(ThemeFileModel)
             .filter(
                 ThemeFileModel.theme_name == request.theme_name,
                 ThemeFileModel.file_path == request.file_path,
+                ThemeFileModel.organization_id == current_org_id,
             )
             .first()
         )

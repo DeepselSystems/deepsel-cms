@@ -42,7 +42,10 @@ if (pathType === WebsiteDataTypes.Home) {
 } else if (pathType === WebsiteDataTypes.Page && isAnyThemeClientPage(path)) {
   // Client-only page — skip backend page fetch, only fetch public settings for theme resolution
   const publicSettings = await fetchPublicSettings(null, Astro.request, lang, backendHost);
-  const selectedTheme = resolveThemeName(publicSettings?.selected_theme);
+  const selectedTheme = resolveThemeName(
+    (publicSettings as { theme_key?: string } | undefined)?.theme_key,
+    publicSettings?.selected_theme,
+  );
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   const clientComponent = getClientPageTheme(path, selectedTheme, lang, defaultLangIsoCode);
   pageData = buildClientPageData(path, publicSettings);
