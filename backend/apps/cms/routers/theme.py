@@ -410,12 +410,14 @@ def select_theme(
                 detail=f"Theme '{request.folder_name}' not found",
             )
 
-        # Get organization from user
-        organization_id = request.organization_id or current_user.organization_id
+        # Use org from request body if provided, fallback to current org context
+        organization_id = request.organization_id or getattr(
+            current_user, "current_organization_id", None
+        )
         if not organization_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User has no organization",
+                detail="X-Organization-Id header or organization_id in body required",
             )
 
         # Get CMSSettingsModel
@@ -563,10 +565,13 @@ def reset_theme(
 
         # Rebuild in background (pass selected theme for single-theme imports)
         CMSSettingsModel = models_pool.get("organization")
+        current_org_id = getattr(current_user, "current_organization_id", None)
         org = (
             db.query(CMSSettingsModel)
-            .filter(CMSSettingsModel.id == current_user.organization_id)
+            .filter(CMSSettingsModel.id == current_org_id)
             .first()
+            if current_org_id
+            else None
         )
         current_selected = org.selected_theme if org else None
         background_tasks.add_task(
@@ -803,6 +808,13 @@ def save_theme_file(
             detail="A theme build is already in progress. Please try again shortly.",
         )
 
+    current_org_id = getattr(current_user, "current_organization_id", None)
+    if current_org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
+
     temp_dir = None
     try:
         # Phase 1: Validate build in isolation (no DB/filesystem changes yet)
@@ -832,7 +844,7 @@ def save_theme_file(
             theme_file = ThemeFileModel(
                 theme_name=request.theme_name,
                 file_path=request.file_path,
-                organization_id=current_user.organization_id,
+                organization_id=current_org_id,
             )
             db.add(theme_file)
             db.flush()
@@ -881,7 +893,7 @@ def save_theme_file(
                     lang_code=lang_code,
                     locale_id=content_data.locale_id,
                     theme_file_id=theme_file.id,
-                    organization_id=current_user.organization_id,
+                    organization_id=current_org_id,
                 )
                 db.add(db_content)
 

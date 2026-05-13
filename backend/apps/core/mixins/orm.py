@@ -52,7 +52,13 @@ class ORMBaseMixin(_ORMBaseMixin):
                 )
             # Set default organization_id if not provided
             if not values.get("organization_id"):
-                values["organization_id"] = user.organization_id
+                current_org_id = getattr(user, "current_organization_id", None)
+                if current_org_id is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=("X-Organization-Id header required to create user"),
+                    )
+                values["organization_id"] = current_org_id
                 logger.info(f"Set user default org to: {values['organization_id']}")
         else:
             # Check if this is a page/blog_post model and user has website roles
@@ -79,7 +85,16 @@ class ORMBaseMixin(_ORMBaseMixin):
             if can_set_organization:
                 # User can set any organization_id, or use their own if none provided
                 if not values.get("organization_id"):
-                    values["organization_id"] = user.organization_id
+                    current_org_id = getattr(user, "current_organization_id", None)
+                    if current_org_id is None:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=(
+                                "X-Organization-Id header required to create "
+                                f"{model.__tablename__}"
+                            ),
+                        )
+                    values["organization_id"] = current_org_id
                     logger.info(
                         f"Authorized user - set default org to: {values['organization_id']}"
                     )
@@ -89,8 +104,17 @@ class ORMBaseMixin(_ORMBaseMixin):
                     )
             else:
                 # Regular users can only create in their own organization
+                current_org_id = getattr(user, "current_organization_id", None)
+                if current_org_id is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=(
+                            "X-Organization-Id header required to create "
+                            f"{model.__tablename__}"
+                        ),
+                    )
                 original_org = values.get("organization_id")
-                values["organization_id"] = user.organization_id
+                values["organization_id"] = current_org_id
                 logger.info(
                     f"Regular user - overrode org from {original_org} to {values['organization_id']}"
                 )

@@ -25,7 +25,7 @@ def get_theme_page_slugs(theme_name: str) -> list[str]:
         logger.warning(f"Theme '{theme_name}' not found")
         return []
 
-    slugs = ["/"]  # index.astro = homepage
+    slugs = []
 
     try:
         for filename in os.listdir(theme_path):
@@ -35,7 +35,10 @@ def get_theme_page_slugs(theme_name: str) -> list[str]:
                 continue
 
             key = filename[:-6].lower()  # remove .astro, lowercase
-            if key not in SYSTEM_KEYS:
+
+            if key == "index":
+                slugs.insert(0, "/")  # index.astro = homepage
+            elif key not in SYSTEM_KEYS:
                 slugs.append(f"/{key}")
     except Exception as e:
         logger.error(f"Error scanning theme pages for '{theme_name}': {e}")

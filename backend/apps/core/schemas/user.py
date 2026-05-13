@@ -69,8 +69,6 @@ class UserRead(BaseModel):
     image: Optional[UserAttachmentRead] = None
     cv_attachment_id: Optional[int] = None
     cv: Optional[UserAttachmentRead] = None
-    organization_id: Optional[int] = None
-    organization: Optional[UserOrganizationRead] = None
     organizations: list[UserOrganizationRead] = []
     roles: list[UserRoleRead] = []
 
@@ -109,7 +107,6 @@ class UserCreate(BaseModel):
     internal: Optional[bool] = True
     image_id: Optional[int] = None
     cv_attachment_id: Optional[int] = None
-    organization_id: Optional[int] = None
     roles: Optional[list] = None
     organizations: Optional[list] = None
     preferences: Optional[Any] = None
@@ -137,7 +134,6 @@ class UserUpdate(BaseModel):
     internal: Optional[bool] = None
     image_id: Optional[int] = None
     cv_attachment_id: Optional[int] = None
-    organization_id: Optional[int] = None
     roles: Optional[list] = None
     organizations: Optional[list] = None
     preferences: Optional[Any] = None

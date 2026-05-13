@@ -55,6 +55,14 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
     _google_client_secret = Column("google_client_secret", String)
     google_redirect_uri = Column(String)
 
+    # Keycloak configuration
+    is_enabled_keycloak = Column(Boolean, default=False)
+    keycloak_server_url = Column(String)
+    keycloak_realm_name = Column(String)
+    keycloak_client_id = Column(String)
+    _keycloak_client_secret = Column("keycloak_client_secret", String)
+    keycloak_default_role = Column(String, default="website_editor_role")
+
     # SAML configuration
     is_enabled_saml = Column(Boolean, default=False)
     saml_idp_entity_id = Column(String)
@@ -108,6 +116,24 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
             self._google_client_secret = None
 
     @property
+    def keycloak_client_secret(self):
+        if self._keycloak_client_secret:
+            try:
+                return _decrypt(self._keycloak_client_secret, APP_SECRET).decode(
+                    "utf-8"
+                )
+            except Exception:
+                return self._keycloak_client_secret  # legacy unencrypted value
+        return None
+
+    @keycloak_client_secret.setter
+    def keycloak_client_secret(self, value):
+        if value:
+            self._keycloak_client_secret = _encrypt(value, APP_SECRET)
+        else:
+            self._keycloak_client_secret = None
+
+    @property
     def is_smtp_configured(self):
         return bool(self.mail_server and self.mail_from)
 
@@ -134,6 +160,7 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
             "require_2fa_all_users",
             "allow_public_signup",
             "is_enabled_google_sign_in",
+            "is_enabled_keycloak",
             "is_enabled_saml",
             "saml_sp_entity_id",
             "is_smtp_configured",
@@ -141,7 +168,7 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
 
     @classmethod
     def _get_protected_api_key_fields(cls):
-        return ["openrouter_api_key"]
+        return ["openrouter_api_key", "keycloak_client_secret"]
 
     @classmethod
     def _get_admin_role_string_ids(cls):

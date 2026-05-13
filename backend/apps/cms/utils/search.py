@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 from fastapi import HTTPException, Request, Query, Path, Depends
-from sqlalchemy import func, literal, text as sa_text, union_all, select
+from sqlalchemy import func, text as sa_text
 from sqlalchemy.orm import Session
 
 from db import get_db
@@ -37,6 +37,93 @@ def extract_page_plain_text(content: str) -> str:
     return strip_html_tags(content)
 
 
+"""
+Number of characters to include on each side of the first keyword match.
+Increase for more context, decrease for tighter excerpts.
+"""
+_SNIPPET_CONTEXT_CHARS = 120
+
+"""
+Maximum total characters in the returned snippet string.
+Prevents very long snippets when keyword is near the start of a large document.
+"""
+_SNIPPET_MAX_CHARS = 350
+
+
+def _generate_snippet(
+    content: str, query_words: List[str], context_chars: int = _SNIPPET_CONTEXT_CHARS
+) -> str:
+    """
+    Build a keyword-highlighted text excerpt from raw HTML content.
+
+    Steps:
+      1. Strip HTML tags → plain text
+      2. Find the first occurrence of any query word (substring, case-insensitive)
+      3. Slice ~context_chars characters either side of that match
+      4. Wrap ALL occurrences of any query word with <mark>…</mark>
+
+    This gives true substring matching: searching 'auth' highlights 'author',
+    'authority', 'authentication', etc.
+    """
+    if not content or not query_words:
+        return ""
+
+    plain = strip_html_tags(content)
+    if not plain:
+        return ""
+
+    # Build a single regex that matches any of the query words as substrings
+    pattern = "|".join(re.escape(w) for w in query_words if w)
+    if not pattern:
+        return plain[:_SNIPPET_MAX_CHARS]
+
+    # Find the first match to centre the excerpt window
+    first_match = re.search(pattern, plain, re.IGNORECASE)
+    if first_match:
+        start = max(0, first_match.start() - context_chars)
+        end = min(len(plain), first_match.end() + context_chars)
+    else:
+        start, end = 0, min(len(plain), _SNIPPET_MAX_CHARS)
+
+    prefix = "… " if start > 0 else ""
+    suffix = " …" if end < len(plain) else ""
+    excerpt = prefix + plain[start:end] + suffix
+
+    # Cap total length
+    if len(excerpt) > _SNIPPET_MAX_CHARS:
+        excerpt = excerpt[:_SNIPPET_MAX_CHARS] + " …"
+
+    # Highlight ALL substring occurrences with <mark>
+    highlighted = re.sub(
+        f"({pattern})",
+        r"<mark>\1</mark>",
+        excerpt,
+        flags=re.IGNORECASE,
+    )
+    return highlighted
+
+
+def _build_prefix_tsquery(q: str):
+    """
+    Build a PostgreSQL prefix tsquery from a user query string.
+
+    Each word in the query gets a ':*' suffix so that it matches any word
+    that STARTS WITH that token — e.g. 'manage' matches 'management', 'manager'.
+
+    Words are sanitised to word-characters only before building the query,
+    preventing tsquery syntax injection.
+
+    Examples:
+        'manage'         → to_tsquery('simple', 'manage:*')
+        'project manage' → to_tsquery('simple', 'project:* & manage:*')
+    """
+    words = re.findall(r"\w+", q.lower().strip())
+    if not words:
+        return func.plainto_tsquery("simple", q.strip())
+    tsquery_str = " & ".join(f"{w}:*" for w in words)
+    return func.to_tsquery("simple", tsquery_str)
+
+
 # ---------------------------------------------------------------------------
 # Response models
 # ---------------------------------------------------------------------------
@@ -51,6 +138,7 @@ class SearchResultItem(BaseModel):
     publishDate: Optional[str] = None
     contentType: str  # "Blog" or "Page"
     relevanceScore: float
+    snippet: Optional[str] = None  # Keyword-highlighted excerpt (contains <mark> tags)
 
 
 class SearchResponse(BaseModel):
@@ -74,11 +162,20 @@ async def search_pages_and_posts(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user_optional),
 ) -> SearchResponse:
-    """Search through published pages and blog posts using PostgreSQL FTS."""
+    """
+    Search published pages and blog posts.
+
+    Matching: PostgreSQL prefix tsquery (word:*) — each query word matches any
+    word that STARTS WITH it, so 'auth' matches 'author', 'authority', etc.
+
+    Snippet: generated in Python with regex substring highlighting — any query
+    word that APPEARS ANYWHERE (as a substring) inside the excerpt is wrapped
+    in <mark>…</mark>, so 'auth' highlights 'auth' inside 'author'.
+    """
     if not q or not q.strip():
         return SearchResponse(results=[], total=0)
 
-    # --- Org detection (unchanged) ---
+    # --- Org detection ---
     domain = detect_domain_from_request(request)
     OrganizationModel = models_pool["organization"]
     org_settings = CMSSettingsModel.find_organization_by_domain(domain, db)
@@ -98,9 +195,7 @@ async def search_pages_and_posts(
         org_settings.default_language.iso_code
         if org_settings.default_language
         else None
-    )
-    if not default_lang:
-        default_lang = lang
+    ) or lang
 
     # --- Models ---
     LocaleModel = models_pool["locale"]
@@ -109,18 +204,20 @@ async def search_pages_and_posts(
     BlogPostModel = models_pool["blog_post"]
     BlogPostContentModel = models_pool["blog_post_content"]
 
-    # --- Build tsquery ---
-    search_query = func.plainto_tsquery("simple", q.strip())
+    # --- Build prefix tsquery and extract query words for snippet ---
+    search_query = _build_prefix_tsquery(q)
+    query_words = re.findall(r"\w+", q.lower().strip())
 
-    # --- Page results ---
     results: List[SearchResultItem] = []
 
+    # --- Page results ---
     try:
         page_q = (
             db.query(
                 PageContentModel.id,
                 PageContentModel.title,
                 PageContentModel.slug,
+                PageContentModel.content,
                 PageModel.updated_at,
                 PageModel.id.label("page_id"),
                 LocaleModel.iso_code,
@@ -156,6 +253,7 @@ async def search_pages_and_posts(
                     ),
                     contentType="Page",
                     relevanceScore=float(row.rank),
+                    snippet=_generate_snippet(row.content, query_words) or None,
                 )
             )
     except Exception as e:
@@ -168,6 +266,7 @@ async def search_pages_and_posts(
                 BlogPostContentModel.id,
                 BlogPostContentModel.title,
                 BlogPostModel.slug,
+                BlogPostContentModel.content,
                 BlogPostModel.publish_date,
                 BlogPostModel.id.label("post_id"),
                 LocaleModel.iso_code,
@@ -175,10 +274,7 @@ async def search_pages_and_posts(
                     "rank"
                 ),
             )
-            .join(
-                BlogPostModel,
-                BlogPostModel.id == BlogPostContentModel.post_id,
-            )
+            .join(BlogPostModel, BlogPostModel.id == BlogPostContentModel.post_id)
             .join(LocaleModel, LocaleModel.id == BlogPostContentModel.locale_id)
             .filter(
                 BlogPostModel.organization_id == org_id,
@@ -193,9 +289,9 @@ async def search_pages_and_posts(
         blog_q = blog_q.order_by(sa_text("rank DESC")).limit(limit)
 
         for row in blog_q.all():
-            url = f"/blog{row.slug}"
+            url = f"/blog/{row.slug}"
             if row.iso_code != default_lang:
-                url = f"/{row.iso_code}/blog{row.slug}"
+                url = f"/{row.iso_code}/blog/{row.slug}"
             results.append(
                 SearchResultItem(
                     id=f"blog-{row.post_id}-{row.iso_code}",
@@ -206,6 +302,7 @@ async def search_pages_and_posts(
                     ),
                     contentType="Blog",
                     relevanceScore=float(row.rank),
+                    snippet=_generate_snippet(row.content, query_words) or None,
                 )
             )
     except Exception as e:

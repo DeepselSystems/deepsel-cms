@@ -1,9 +1,10 @@
 from typing import Optional
 
 import jwt
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from deepsel.utils.api_router import get_api_prefix
+from deepsel.auth.current_org import resolve_current_organization_id
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
@@ -46,10 +47,18 @@ def _resolve_user_from_session(request: Request, db: Session):
     return user
 
 
+def _attach_current_org(user, x_organization_id: Optional[int]) -> None:
+    """Validate and attach the requested current org to the user object."""
+    user.current_organization_id = resolve_current_organization_id(
+        user, x_organization_id
+    )
+
+
 def get_current_user(
     request: Request,
     token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
+    x_organization_id: Optional[int] = Header(default=None, alias="X-Organization-Id"),
 ):
     UserModel = models_pool["user"]
     OrgModel = models_pool["organization"]
@@ -70,11 +79,13 @@ def get_current_user(
                 detail="No admin user found for authless mode",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        _attach_current_org(user, x_organization_id)
         return user
 
     # 1. Try session cookie first (browser requests)
     session_user = _resolve_user_from_session(request, db)
     if session_user is not None:
+        _attach_current_org(session_user, x_organization_id)
         return session_user
 
     # 2. Fall back to Bearer token (API clients, backward compat)
@@ -112,6 +123,11 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credentials are only valid for anonymous users",
         )
+    # If header is absent, fall back to the org encoded in the token.
+    org_id = (
+        x_organization_id if x_organization_id is not None else payload.get("org_id")
+    )
+    _attach_current_org(user, org_id)
     return user
 
 
@@ -119,6 +135,7 @@ def get_current_user_optional(
     request: Request,
     token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
+    x_organization_id: Optional[int] = Header(default=None, alias="X-Organization-Id"),
 ):
     """
     Optional authentication - returns user if authenticated, None if not.
@@ -129,6 +146,7 @@ def get_current_user_optional(
     # 1. Try session cookie
     session_user = _resolve_user_from_session(request, db)
     if session_user is not None:
+        _attach_current_org(session_user, x_organization_id)
         return session_user
 
     # 2. Try Bearer token
@@ -151,4 +169,8 @@ def get_current_user_optional(
     if user.signed_up and anon_only:
         return None
 
+    org_id = (
+        x_organization_id if x_organization_id is not None else payload.get("org_id")
+    )
+    _attach_current_org(user, org_id)
     return user

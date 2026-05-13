@@ -83,6 +83,14 @@ class ReadSchema(CMSSettingsEncryptedDataReadSSchema):
     google_client_secret: Optional[str] = None
     google_redirect_uri: Optional[str] = None
 
+    # Keycloak
+    is_enabled_keycloak: Optional[bool] = None
+    keycloak_server_url: Optional[str] = None
+    keycloak_realm_name: Optional[str] = None
+    keycloak_client_id: Optional[str] = None
+    keycloak_client_secret: Optional[str] = None
+    keycloak_default_role: Optional[str] = None
+
     # SAML
     is_enabled_saml: Optional[bool] = None
     saml_idp_entity_id: Optional[str] = None
@@ -167,6 +175,14 @@ class CreateSchema(BaseModel):
     google_client_secret: Optional[str] = None
     google_redirect_uri: Optional[str] = None
 
+    # Keycloak
+    is_enabled_keycloak: Optional[bool] = None
+    keycloak_server_url: Optional[str] = None
+    keycloak_realm_name: Optional[str] = None
+    keycloak_client_id: Optional[str] = None
+    keycloak_client_secret: Optional[str] = None
+    keycloak_default_role: Optional[str] = None
+
     # SAML
     is_enabled_saml: Optional[bool] = None
     saml_idp_entity_id: Optional[str] = None
@@ -239,6 +255,14 @@ class UpdateSchema(BaseModel):
     google_client_id: Optional[str] = None
     google_client_secret: Optional[str] = None
     google_redirect_uri: Optional[str] = None
+
+    # Keycloak
+    is_enabled_keycloak: Optional[bool] = None
+    keycloak_server_url: Optional[str] = None
+    keycloak_realm_name: Optional[str] = None
+    keycloak_client_id: Optional[str] = None
+    keycloak_client_secret: Optional[str] = None
+    keycloak_default_role: Optional[str] = None
 
     # SAML
     is_enabled_saml: Optional[bool] = None

@@ -47,6 +47,7 @@ class ResetPasswordResponse(BaseModel):
 
 class ResetPasswordRequestSubmission(BaseModel):
     mixin_id: str  # email or username
+    organization_id: int
 
 
 class ResetPasswordSubmission(BaseModel):

@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Optional
 from urllib.parse import quote
@@ -38,6 +39,7 @@ from deepsel.utils.crypto import crypt_context as pwd_context
 from deepsel.utils.api_router import create_api_router
 from deepsel.auth.service import AuthService
 from deepsel.auth.google_oauth import GoogleOAuthService
+from deepsel.auth.keycloak_oauth import KeycloakOAuthService
 from deepsel.auth.saml import SamlService
 
 logger = logging.getLogger(__name__)
@@ -54,6 +56,11 @@ auth_service = AuthService(
     decrypt_fn=lambda text: decrypt(text, APP_SECRET),
 )
 google_service = GoogleOAuthService(APP_SECRET, AUTH_ALGORITHM, PUBLIC_URL)
+keycloak_service = KeycloakOAuthService(
+    app_secret=APP_SECRET,
+    auth_algorithm=AUTH_ALGORITHM,
+    frontend_url=PUBLIC_URL,
+)
 saml_service = SamlService(
     APP_SECRET, AUTH_ALGORITHM, DEFAULT_ORG_ID, PUBLIC_URL, PUBLIC_URL
 )
@@ -99,6 +106,7 @@ def _build_current_user(user):
 def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    organization_id: int = Form(...),
     db: Session = Depends(get_db),
     otp: Optional[str] = Form(None),
 ):
@@ -106,7 +114,9 @@ def login_for_access_token(
     session_store = _get_session_store(request)
     auth_service.session_store = session_store
 
-    result = auth_service.login(db, form_data.username, form_data.password, otp)
+    result = auth_service.login(
+        db, organization_id, form_data.username, form_data.password, otp
+    )
 
     if result.require_2fa_setup:
         return TokenResponse(
@@ -128,12 +138,11 @@ def login_for_access_token(
         media_type="application/json",
     )
     if result.session_id:
-        # Default 24h, can be org-specific
+        OrgModel = models_pool["organization"]
+        org = db.query(OrgModel).get(organization_id)
         max_age = 60 * 60 * 24
-        if result.user and result.user.organization:
-            org_minutes = result.user.organization.access_token_expire_minutes
-            if org_minutes:
-                max_age = int(org_minutes * 60)
+        if org and org.access_token_expire_minutes:
+            max_age = int(org.access_token_expire_minutes * 60)
         _set_session_cookie(response, result.session_id, max_age)
 
     return response
@@ -180,7 +189,9 @@ def create_anonymous_user(init_data: UserInitSubmission, db: Session = Depends(g
 async def reset_password_request(
     input: ResetPasswordRequestSubmission, db: Session = Depends(get_db)
 ):
-    ok = await auth_service.request_password_reset(db, input.mixin_id)
+    ok = await auth_service.request_password_reset(
+        db, input.organization_id, input.mixin_id
+    )
     return {"success": ok}
 
 
@@ -225,8 +236,12 @@ def check_2fa_config(
 
 
 @router.get("/login/google")
-async def login_google(request: Request, db=Depends(get_db)):
-    return await google_service.initiate_login(request, db)
+async def login_google(
+    request: Request,
+    organization_id: int = DEFAULT_ORG_ID,
+    db: Session = Depends(get_db),
+):
+    return await google_service.initiate_login(request, db, organization_id)
 
 
 @router.get("/auth/google")
@@ -241,6 +256,7 @@ async def auth_google(request: Request, db: Session = Depends(get_db)):
         auth_service.session_store = session_store
         session_id = auth_service.create_session(
             result.user,
+            organization_id=result.organization.id,
             db=db,
             ip=request.client.host if request.client else "",
             user_agent=request.headers.get("user-agent", ""),
@@ -257,14 +273,73 @@ async def auth_google(request: Request, db: Session = Depends(get_db)):
     return RedirectResponse(f"{redirect_url}?access_token={result.access_token}")
 
 
+# --- Keycloak ---
+
+
+@router.get("/login/keycloak")
+def login_keycloak(
+    request: Request,
+    organization_id: int = DEFAULT_ORG_ID,
+    db: Session = Depends(get_db),
+):
+    origin = request.headers.get("referer", "")
+    if origin:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(origin)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+    return keycloak_service.initiate_login(db, organization_id, origin=origin)
+
+
+@router.post("/auth/keycloak/exchange")
+def keycloak_exchange(
+    request: Request,
+    code: str = Body(embed=True),
+    state: str = Body(embed=True),
+    db: Session = Depends(get_db),
+):
+    """Exchange Keycloak auth code for session. Called by frontend after callback."""
+    origin = request.headers.get("origin", "")
+    result = keycloak_service.handle_callback(code, state, db, origin=origin)
+
+    # Create session and set cookie
+    session_store = _get_session_store(request)
+    response_data = {"success": True}
+
+    if session_store:
+        auth_service.session_store = session_store
+        session_id = auth_service.create_session(
+            result.user,
+            organization_id=result.organization.id,
+            db=db,
+            ip=request.client.host if request.client else "",
+            user_agent=request.headers.get("user-agent", ""),
+        )
+        if session_id:
+            max_age = 60 * 60 * 24
+            if result.organization and result.organization.access_token_expire_minutes:
+                max_age = int(result.organization.access_token_expire_minutes * 60)
+            response = Response(
+                content=json.dumps(response_data),
+                media_type="application/json",
+            )
+            _set_session_cookie(response, session_id, max_age)
+            return response
+
+    return response_data
+
+
 # --- SAML ---
 
 
 @router.get("/login/saml")
 async def login_saml(
-    request: Request, db: Session = Depends(get_db), redirect: str = None
+    request: Request,
+    organization_id: int = DEFAULT_ORG_ID,
+    db: Session = Depends(get_db),
+    redirect: str = None,
 ):
-    sso_url = await saml_service.initiate_login(request, db, redirect)
+    sso_url = await saml_service.initiate_login(request, db, organization_id, redirect)
     return RedirectResponse(sso_url)
 
 
@@ -282,6 +357,7 @@ async def auth_saml(request: Request, db: Session = Depends(get_db)):
         auth_service.session_store = session_store
         session_id = auth_service.create_session(
             result.user,
+            organization_id=result.organization.id,
             db=db,
             ip=request.client.host if request.client else "",
             user_agent=request.headers.get("user-agent", ""),
