@@ -1,9 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Dropzone } from '@mantine/dropzone';
-import { Group, Text } from '@mantine/core';
-import { IconCloudUpload, IconPhoto } from '@tabler/icons-react';
 import useUpload from '../../../../common/api/useUpload.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
+import { AttachmentDropzone } from '../../../../common/lib/ui/AttachmentDropzone.tsx';
 
 /**
  * Dropzone upload area for the Media Library.
@@ -20,7 +18,7 @@ export function MediaDropzone({ onFilesUploaded, onStorageChange }) {
 
   /**
    * Handles file drop event and uploads files to the server.
-   * @param {FileList} files - The files to upload.
+   * @param {File[]} files - The files to upload.
    */
   const handleDrop = async (files) => {
     try {
@@ -47,28 +45,7 @@ export function MediaDropzone({ onFilesUploaded, onStorageChange }) {
 
   return (
     <div className="my-6">
-      <Dropzone
-        onDrop={handleDrop}
-        className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
-      >
-        <Group justify="center" gap="xl" className="min-h-24 pointer-events-none">
-          <Dropzone.Accept>
-            <IconCloudUpload size={16} className="text-3xl text-green-500" />
-          </Dropzone.Accept>
-          <Dropzone.Idle>
-            <IconPhoto size={16} className="text-3xl text-gray-500" />
-          </Dropzone.Idle>
-
-          <div className="text-center">
-            <Text size="xl" inline className="font-medium">
-              {t('Drag files here or click to select files')}
-            </Text>
-            <Text size="sm" color="dimmed" inline mt={7}>
-              {t('Upload as many files as you need')}
-            </Text>
-          </div>
-        </Group>
-      </Dropzone>
+      <AttachmentDropzone onDrop={handleDrop} />
     </div>
   );
 }

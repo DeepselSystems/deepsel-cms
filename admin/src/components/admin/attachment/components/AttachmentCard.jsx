@@ -1,17 +1,17 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {Checkbox, Text} from '@mantine/core';
+import { Checkbox, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconFile, IconFileOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
-import { useSelectedVersion } from '../hooks/useSelectedVersion.js';
+import { useSelectedVersion } from '../../../../common/hooks/useSelectedVersion.js';
 import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
 import { getAttachmentUrl } from '../../../../common/utils/index.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { VersionFlagBar } from '../../../../common/ui/VersionFlagBar.jsx';
-import { AttachmentCardOverlay } from './AttachmentCardOverlay.jsx';
+import { AttachmentCardOverlay } from '../../../../common/lib/ui/AttachmentCardOverlay.tsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
 
 /**
@@ -58,19 +58,25 @@ export function AttachmentCard({
    * Called by the edit modal after a successful save.
    * Replaces localVersions with the freshly returned attachment's versions.
    */
-  const handleAttachmentSaved = useCallback((updated) => {
-    setLocalVersions(updated?.locale_versions ?? []);
-    onAttachmentUpdated?.(updated);
-  }, [onAttachmentUpdated]);
+  const handleAttachmentSaved = useCallback(
+    (updated) => {
+      setLocalVersions(updated?.locale_versions ?? []);
+      onAttachmentUpdated?.(updated);
+    },
+    [onAttachmentUpdated],
+  );
 
   /**
    * Called by the overlay's "Delete this version" action after the API succeeds.
    * Removes the deleted version from localVersions and resets locale selection to auto-pick.
    */
-  const handleVersionDeleted = useCallback((versionId) => {
-    setLocalVersions((prev) => prev.filter((v) => v.id !== versionId));
-    setSelectedLocale(null);
-  }, [setSelectedLocale]);
+  const handleVersionDeleted = useCallback(
+    (versionId) => {
+      setLocalVersions((prev) => prev.filter((v) => v.id !== versionId));
+      setSelectedLocale(null);
+    },
+    [setSelectedLocale],
+  );
   const hasVersion = selectedVersion != null;
 
   // Derive display values from the currently selected locale version

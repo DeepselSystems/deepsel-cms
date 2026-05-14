@@ -9,7 +9,6 @@ from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
 from apps.core.utils.get_current_user import (
     get_current_user,
-    get_current_user_optional,
 )
 from apps.core.utils.models_pool import models_pool
 from apps.core.utils.attachment import upsert_locale_versions
@@ -150,12 +149,15 @@ def batch_upsert_locale_versions(
                 )
             item_file_map[idx] = file_map[item.file_id]
 
+    # Get current organization ID from user
+    current_organization_id = getattr(user, "current_organization_id", None)
+
     # Validate attachment exists and belongs to this organization
     attachment = (
         db.query(Model)
         .filter(
             Model.id == attachment_id,
-            Model.organization_id == user.organization_id,
+            Model.organization_id == current_organization_id,
         )
         .first()
     )

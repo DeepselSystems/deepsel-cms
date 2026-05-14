@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Group, Text, Modal, Indicator } from '@mantine/core';
-import { Dropzone } from '@mantine/dropzone';
+import { Modal, Indicator } from '@mantine/core';
+
 import { getAttachmentUrl } from '@deepsel/cms-utils';
 import { useModel } from '../hooks';
 import { useUpload } from '../hooks';
@@ -12,16 +12,12 @@ import type { NotifyFn } from '../types';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
 import { useDefaultLocale } from '../../hooks/useDefaultLocale';
+import { useSelectedVersion } from '../../hooks/useSelectedVersion';
 import { VersionFlagBar } from '../../ui/VersionFlagBar';
-import {
-  IconChecks,
-  IconCloudUpload,
-  IconEdit,
-  IconFileText,
-  IconPhoto,
-  IconUpload,
-  IconX,
-} from '@tabler/icons-react';
+import { AttachmentCardOverlay } from './AttachmentCardOverlay';
+import type { OverlayAction } from './AttachmentCardOverlay';
+import { AttachmentDropzone } from './AttachmentDropzone';
+import { IconChecks, IconEdit, IconFileText, IconUpload, IconX } from '@tabler/icons-react';
 
 /**
  * Accepted MIME types for image-only upload mode
@@ -80,23 +76,6 @@ interface OrgLanguage {
   iso_code?: string | null;
 }
 
-/**
- * Returns the locale version to display for a given attachment.
- * Priority: explicitly selected locale → site default locale → first available version.
- */
-function resolvePreviewVersion(
-  file: AttachmentFile,
-  selectedLocaleId: number | null,
-  defaultLocaleId: number | null,
-): AttachmentLocaleVersion | undefined {
-  const versions = file.locale_versions ?? [];
-  if (!versions.length) return undefined;
-  if (selectedLocaleId != null) {
-    return versions.find((v) => v.locale_id === selectedLocaleId) ?? versions[0];
-  }
-  return versions.find((v) => v.locale_id === defaultLocaleId) ?? versions[0];
-}
-
 /** Ref handle exposed by FileAttachmentGroup */
 interface FileAttachmentGroupRef {
   open: (options?: { scrollToBottom?: boolean }) => void;
@@ -107,8 +86,19 @@ interface FileAttachmentGroupRef {
 interface FileImageProps {
   /** The attachment record to display */
   file: AttachmentFile;
-  /** Click handler (select or toggle) */
+  /** Called when the card is clicked in multi-select mode */
   onClick: () => void;
+  /** Called when the "Select" overlay button is clicked */
+  onSelectFile: (file: AttachmentFile) => void;
+  /**
+   * Called when the user picks a file via "Upload for {lang}" to add a locale version
+   * to this existing attachment.
+   */
+  onUploadForLocale?: (
+    attachmentId: string | number,
+    localeId: number,
+    file: File,
+  ) => Promise<void>;
   /** Whether the parent is in multi-select mode */
   isSelectMode: boolean;
   /** Whether this file is currently selected */
@@ -125,12 +115,14 @@ interface FileImageProps {
 
 /**
  * Renders a single file thumbnail inside the attachment grid.
- * Images are displayed as a cover photo with a locale flag bar for version switching.
- * Non-image files show a file icon with the filename.
+ * On hover shows "Select" if the current locale has a version, or
+ * "Upload for {lang}" if no file exists for the selected locale.
  */
 function FileImage({
   file,
   onClick,
+  onSelectFile,
+  onUploadForLocale,
   isSelectMode,
   checked = false,
   isNewUpload = false,
@@ -138,12 +130,53 @@ function FileImage({
   defaultLocaleId,
   availableLanguages,
 }: FileImageProps) {
-  const [selectedLocaleId, setSelectedLocaleId] = useState<number | null>(null);
+  const { t } = useTranslation();
+  const [showOverlay, setShowOverlay] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const activeVersion = resolvePreviewVersion(file, selectedLocaleId, defaultLocaleId);
-  const isImage = activeVersion?.content_type?.startsWith('image') ?? false;
-  const imageSrc = activeVersion ? getAttachmentUrl(backendHost, activeVersion.name) : undefined;
-  const displayName = activeVersion?.name ?? file.name ?? '';
+  const { selectedVersion, selectedLocaleId, setSelectedLocale, availableVersions } =
+    useSelectedVersion(file.locale_versions ?? [], defaultLocaleId);
+
+  const hasVersion = selectedVersion != null;
+  const isImage = selectedVersion?.content_type?.startsWith('image') ?? false;
+  const imageSrc = selectedVersion
+    ? getAttachmentUrl(backendHost, selectedVersion.name)
+    : undefined;
+  const displayName = selectedVersion?.name ?? '';
+
+  const selectedLangName =
+    availableLanguages.find((l) => l.id === selectedLocaleId)?.name ??
+    selectedVersion?.locale?.name ??
+    null;
+
+  /**
+   * Builds overlay actions. Only shown when no file exists for the selected locale.
+   */
+  function buildUploadOverlayActions(): OverlayAction[] {
+    if (!hasVersion && selectedLocaleId != null) {
+      return [
+        {
+          key: 'upload-for-lang',
+          icon: IconUpload,
+          label: selectedLangName
+            ? t('Upload for {{lang}}', { lang: selectedLangName })
+            : t('Upload'),
+          onClick: (e) => {
+            e.stopPropagation();
+            fileInputRef.current?.click();
+          },
+        },
+      ];
+    }
+    return [];
+  }
+
+  function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0];
+    if (!picked || selectedLocaleId == null) return;
+    e.target.value = '';
+    void onUploadForLocale?.(file.id, selectedLocaleId, picked);
+  }
 
   return (
     <Indicator
@@ -158,8 +191,10 @@ function FileImage({
       zIndex={2}
     >
       <div
-        onClick={onClick}
-        className="relative shadow border-gray-300 border rounded-lg overflow-hidden hover:outline cursor-pointer hover:outline-2 bg-gray-200"
+        onClick={() => (isSelectMode ? onClick() : onSelectFile(file))}
+        onMouseEnter={() => setShowOverlay(true)}
+        onMouseLeave={() => setShowOverlay(false)}
+        className="relative shadow border-gray-300 border rounded-lg overflow-hidden cursor-pointer hover:outline hover:outline-2 bg-gray-200"
       >
         {isSelectMode && (
           <Checkbox
@@ -170,9 +205,18 @@ function FileImage({
           />
         )}
 
-        {isImage && imageSrc ? (
+        {!hasVersion ? (
+          <div className="flex flex-col items-center justify-center h-[150px] gap-1.5 text-gray-400">
+            <IconFileText size={32} className="opacity-30" />
+            <span className="text-xs text-center px-2">
+              {selectedLangName
+                ? t('No file for {{lang}}', { lang: selectedLangName })
+                : t('No file for this language')}
+            </span>
+          </div>
+        ) : isImage && imageSrc ? (
           <img
-            alt={activeVersion?.alt_text || displayName}
+            alt={selectedVersion?.alt_text || displayName}
             src={imageSrc}
             className="h-[150px] w-full object-cover"
           />
@@ -188,17 +232,25 @@ function FileImage({
           </div>
         )}
 
+        {/* Hover overlay — only shown when no file for the selected locale */}
+        {showOverlay && !isSelectMode && !hasVersion && (
+          <AttachmentCardOverlay actions={buildUploadOverlayActions()} blurred={false} />
+        )}
+
         {/* Locale flag bar — stop click propagation so toggling locale doesn't select the file */}
         <div onClick={(e) => e.stopPropagation()}>
           <VersionFlagBar
-            versions={file.locale_versions ?? []}
+            versions={availableVersions}
             selectedLocaleId={selectedLocaleId ?? defaultLocaleId ?? null}
-            onSelectLocale={(localeId: number) => setSelectedLocaleId(localeId)}
+            onSelectLocale={(localeId: number) => setSelectedLocale(localeId)}
             defaultLocaleId={defaultLocaleId}
             availableLanguages={availableLanguages}
           />
         </div>
       </div>
+
+      {/* Hidden file input for "Upload for {lang}" */}
+      <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileInputChange} />
     </Indicator>
   );
 }
@@ -214,9 +266,19 @@ interface FileAttachmentGroupProps {
   selectedFiles?: Set<string | number>;
   /** Whether multi-select mode is active */
   isSelectMode?: boolean;
-  /** Called when a file thumbnail is clicked */
+  /** Called when a file thumbnail is clicked in multi-select mode */
   onFileClick?: (file: AttachmentFile) => void;
-  /** Whether the group is expanded by default (unused in current layout but kept for API compat) */
+  /** Called when the "Select" overlay button is clicked */
+  onSelectFile?: (file: AttachmentFile) => void;
+  /**
+   * Called when the user picks a file via "Upload for {lang}" on a card.
+   */
+  onUploadForLocale?: (
+    attachmentId: string | number,
+    localeId: number,
+    file: File,
+  ) => Promise<void>;
+  /** Whether the group is expanded by default */
   isOpenedDefault?: boolean;
   /** Set of IDs for files uploaded in the current session (shown with badge) */
   newUploads?: Set<string | number>;
@@ -240,6 +302,8 @@ const FileAttachmentGroup = React.forwardRef<FileAttachmentGroupRef, FileAttachm
       selectedFiles = new Set(),
       isSelectMode = false,
       onFileClick = () => {},
+      onSelectFile = () => {},
+      onUploadForLocale,
       newUploads = new Set(),
       backendHost,
       defaultLocaleId,
@@ -250,8 +314,7 @@ const FileAttachmentGroup = React.forwardRef<FileAttachmentGroupRef, FileAttachm
     const { t } = useTranslation();
 
     /**
-     * Reference to the invisible sentinel element at the bottom of the grid,
-     * used for programmatic smooth-scroll after uploads.
+     * Sentinel element at the bottom of the grid for programmatic scroll after uploads.
      */
     const bottomEleRef = useRef<HTMLDivElement>(null);
 
@@ -275,19 +338,18 @@ const FileAttachmentGroup = React.forwardRef<FileAttachmentGroupRef, FileAttachm
           <div className="min-w-28 text-start">{title}</div>
         </div>
 
-        {/*region hint for empty data*/}
         {!files.length && (
           <div className="py-3 text-center text-gray-400">{t('Nothing here yet.')}</div>
         )}
-        {/*endregion hint for empty data*/}
 
-        {/*region file grid*/}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 my-2 mx-1">
           {files.map((file, index) => (
             <FileImage
               key={index}
               file={file}
-              onClick={() => onFileClick(file)}
+              onClick={() => isSelectMode && onFileClick(file)}
+              onSelectFile={onSelectFile}
+              onUploadForLocale={onUploadForLocale}
               isSelectMode={isSelectMode}
               checked={selectedFiles.has(file.id)}
               isNewUpload={newUploads.has(file.id)}
@@ -298,7 +360,6 @@ const FileAttachmentGroup = React.forwardRef<FileAttachmentGroupRef, FileAttachm
           ))}
           <div ref={bottomEleRef} className="-translate-y-[300px]"></div>
         </div>
-        {/*endregion file grid*/}
       </div>
     );
   },
@@ -361,42 +422,31 @@ export interface ChooseAttachmentModalProps {
 
   /**
    * Backend host URL (e.g. `https://api.example.com`).
-   * Used to build attachment preview URLs and API request base paths.
-   * Typically sourced from your `BackendHostURLState` store.
    */
   backendHost: string;
 
   /**
    * The currently authenticated user.
-   * Used to scope attachments to the current owner and to authorize API requests.
-   * Typically sourced from your `UserState` store.
    */
   user: User;
 
   /**
    * Setter for the user state — used by underlying hooks to clear session on 401.
-   * Typically sourced from your `UserState` store.
    */
   setUser: (user: User | null) => void;
 
   /**
-   * Callback to display toast/snackbar notifications (upload errors, etc.).
-   * Sourced from the consuming app's notification store
-   * (e.g. `NotificationState.getState().notify`).
+   * Callback to display toast/snackbar notifications.
    */
   notify?: NotifyFn;
 
   /**
    * Current upload size limit fetched from the backend.
-   * Sourced from the consuming app's FileAttachmentState store.
-   * Used downstream for file-size validation.
    */
   uploadSizeLimit?: { max_size: number; unit: string } | null;
 
   /**
    * Callback to trigger fetching the upload size limit from the backend.
-   * Sourced from the consuming app's FileAttachmentState store.
-   * The store debounces and caches this call to avoid duplicate requests.
    */
   onFetchUploadSizeLimit?: (apiFunc: () => Promise<{ max_size: number; unit: string }>) => void;
 }
@@ -404,8 +454,13 @@ export interface ChooseAttachmentModalProps {
 /**
  * Modal for browsing, uploading, and selecting file attachments.
  *
- * Requires `backendHost`, `user`, and `setUser` to be passed as props
- * (sourced from your BackendHostURLState / UserState stores in the consuming app).
+ * Dropzone behavior: uploads with the site default locale, then auto-selects
+ * the uploaded file and closes the modal.
+ *
+ * Card hover behavior:
+ * - If the currently selected locale has a file → "Select" button
+ * - If no file for the selected locale → "Upload for {lang}" button which adds a locale
+ *   version to the existing attachment, then auto-selects and closes.
  */
 export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
   const {
@@ -463,24 +518,17 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     open: () => {},
   });
 
-  /** Track session recent files (setter used to append new uploads; reader unused in JSX) */
   const [, setSessionRecentFiles] = React.useState<AttachmentFile[]>([]);
 
   /** Set of file IDs uploaded in the current session — shown with a badge indicator */
   const [newUploads, setNewUploads] = React.useState<Set<string | number>>(new Set());
 
-  // Initialize upload size limit functions
   const { get: getUploadSizeLimitFunc } = useFetch(
     'attachment/config/upload_size_limit',
     { backendHost, setUser },
     { autoFetch: false },
   );
 
-  /**
-   * Fetch the upload size limit once on mount via the consuming app's
-   * onFetchUploadSizeLimit callback (sourced from FileAttachmentState).
-   * The store debounces and caches the result internally.
-   */
   useEffectOnce(() => {
     if (onFetchUploadSizeLimit) {
       onFetchUploadSizeLimit(
@@ -499,29 +547,113 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     }
   }, [isOpen]);
 
+  /**
+   * Builds the URL query string for uploads, applying any extendData params.
+   */
+  function buildUploadParams(localeId?: number | null): string {
+    const params = new URLSearchParams();
+    if (extendData?.usedFor === 'USER_AVATAR') {
+      params.set('used_for', 'USER_AVATAR');
+    }
+    if (localeId != null) {
+      params.set('locale_id', String(localeId));
+    }
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+  }
+
+  /**
+   * Resolves a file from the in-memory list for use in onChange.
+   * Falls back to building a minimal attachUrl from the first available locale version.
+   */
+  function buildOnChangePayload(file: AttachmentFile): AttachmentFile & { attachUrl: string } {
+    const version = file.locale_versions?.[0];
+    return {
+      ...file,
+      attachUrl: version
+        ? getAttachmentUrl(backendHost, version.name)
+        : getAttachmentUrl(backendHost, file.name ?? ''),
+    };
+  }
+
+  /**
+   * Handles dropzone file drop: uploads with site default locale, appends results
+   * to the grid, and scrolls to the new entries. Modal stays open.
+   */
   async function handleFileChange(filesArray: File[]) {
     try {
-      if (filesArray) {
-        let params = '';
-        if (extendData?.usedFor === 'USER_AVATAR') {
-          params = new URLSearchParams({
-            used_for: 'USER_AVATAR',
-          }).toString();
-        }
-        const newFiles = (await uploadFileModel(
-          `attachment?${params}`,
-          filesArray,
-        )) as AttachmentFile[];
-        const filesUpdated = [...files, ...newFiles];
-        setFiles(filesUpdated as AttachmentFile[]);
-        setSessionRecentFiles((prevState) => [...prevState, ...newFiles]);
+      if (!filesArray.length) return;
+      const qs = buildUploadParams(defaultLocaleId);
+      const newFiles = (await uploadFileModel(`attachment${qs}`, filesArray)) as AttachmentFile[];
 
-        const newUploadsSet = new Set(newUploads);
-        newFiles.forEach((file) => newUploadsSet.add(file.id));
-        setNewUploads(newUploadsSet);
+      setFiles([...files, ...newFiles] as AttachmentFile[]);
+      setSessionRecentFiles((prev) => [...prev, ...newFiles]);
 
-        fileAttachmentGroupRef.current.open({ scrollToBottom: true });
+      const newUploadsSet = new Set(newUploads);
+      newFiles.forEach((f) => newUploadsSet.add(f.id));
+      setNewUploads(newUploadsSet);
+
+      fileAttachmentGroupRef.current.open({ scrollToBottom: true });
+    } catch (err) {
+      notify?.({
+        message: (err as Error).message,
+        type: 'error',
+      });
+      console.error(err);
+    }
+  }
+
+  /**
+   * Uploads a new locale version for an existing attachment, then auto-selects
+   * the attachment and closes the modal.
+   *
+   * Uses the batch_upsert endpoint:
+   *   POST /attachment/{attachmentId}/locale_versions/batch_upsert
+   *
+   * The file is sent as multipart with a fixed _file_id = "upload" so the
+   * backend can match the item to the file by stripping the extension.
+   */
+  async function handleUploadForLocale(
+    attachmentId: string | number,
+    localeId: number,
+    file: File,
+  ) {
+    try {
+      const ext = file.name.includes('.') ? '.' + file.name.split('.').pop()! : '';
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+
+      /** Renamed so the backend file_map key matches _file_id = "upload" */
+      const renamedFile = new File([file], `upload${ext}`, { type: file.type });
+
+      const items = JSON.stringify([
+        {
+          locale_id: localeId,
+          attachment_locale_version_id: null,
+          _file_id: 'upload',
+          name: baseName,
+        },
+      ]);
+
+      const formData = new FormData();
+      formData.append('items_json', items);
+      formData.append('files', renamedFile);
+
+      const headers: Record<string, string> = {};
+      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
+      const orgId = parseInt(localStorage.getItem('organizationId') || '', 10);
+      if (Number.isFinite(orgId)) headers['X-Organization-Id'] = String(orgId);
+
+      const response = await fetch(
+        `${backendHost}/attachment/${attachmentId}/locale_versions/batch_upsert`,
+        { method: 'POST', headers, credentials: 'include', body: formData },
+      );
+
+      if (!response.ok) {
+        const { detail } = (await response.json()) as { detail: string };
+        throw new Error(detail);
       }
+
+      void getFiles();
     } catch (err) {
       notify?.({
         message: (err as Error).message,
@@ -533,8 +665,9 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
 
   function handleSelectFile(file: AttachmentFile) {
     if (onChange) {
-      // Use the default locale version's URL; fall back to an empty string for new multi-lang attachments
-      const defaultVersion = resolvePreviewVersion(file, null, defaultLocaleId);
+      const defaultVersion =
+        file.locale_versions?.find((v) => v.locale_id === defaultLocaleId) ??
+        file.locale_versions?.[0];
       onChange({
         ...file,
         attachUrl: defaultVersion
@@ -584,7 +717,6 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     return [...fileList].sort((a, b) => {
       const aIsNew = uploads.has(a.id);
       const bIsNew = uploads.has(b.id);
-
       if (aIsNew && !bIsNew) return -1;
       if (!aIsNew && bIsNew) return 1;
       return 0;
@@ -602,64 +734,33 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     <Modal
       opened={isOpen}
       onClose={close}
-      title={<div className={`font-semibold text-lg`}>{t('Select attachment')}</div>}
+      title={<div className="font-semibold text-lg">{t('Select attachment')}</div>}
       size="100%"
       zIndex={11000}
     >
       <div className="pt-4">
-        {/*region files*/}
         <div className="space-y-3">
           {/*region dropzone*/}
           <div className="mb-4">
-            <Dropzone
-              onDrop={(files) => {
-                void handleFileChange(files);
-              }}
+            <AttachmentDropzone
+              onDrop={(droppedFiles) => void handleFileChange(droppedFiles)}
               accept={type === 'image' ? AcceptedFormat : undefined}
-              className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
-            >
-              <Group justify="center" gap="xl" className="min-h-24 pointer-events-none">
-                <Dropzone.Accept>
-                  <IconCloudUpload size={16} className="text-3xl text-green-500" />
-                </Dropzone.Accept>
-                <Dropzone.Reject>
-                  <IconX size={16} className="text-3xl text-red-500" />
-                </Dropzone.Reject>
-                <Dropzone.Idle>
-                  {type === 'image' ? (
-                    <IconPhoto size={16} className="text-3xl text-gray-500" />
-                  ) : (
-                    <IconUpload size={16} className="text-3xl text-gray-500" />
-                  )}
-                </Dropzone.Idle>
-
-                <div className="text-center">
-                  <Text size="xl" inline className="font-medium">
-                    {t('Drag files here or click to select files')}
-                  </Text>
-                  <Text size="sm" inline mt={7}>
-                    {t('Upload as many files as you need')}
-                  </Text>
-                </div>
-              </Group>
-            </Dropzone>
+              imageMode={type === 'image'}
+            />
           </div>
           {/*endregion dropzone*/}
 
           {/*region file grid*/}
           <div className="max-h-[500px] overflow-y-auto flex flex-col gap-2 py-1">
-            {/*region display all uploads*/}
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center">
                 <div className="text-sm font-semibold text-primary-main mr-3">
                   {t('All uploads')}
                 </div>
                 {selectedFiles.size > 0 && (
-                  <div className="flex items-center">
-                    <span className="text-xs text-gray-500 mr-2">
-                      {`${selectedFiles.size} ${t('selected')}`}
-                    </span>
-                  </div>
+                  <span className="text-xs text-gray-500 mr-2">
+                    {`${selectedFiles.size} ${t('selected')}`}
+                  </span>
                 )}
               </div>
               <div className="flex items-center space-x-2">
@@ -702,18 +803,16 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
               isSelectMode={isSelectMode}
               selectedFiles={selectedFiles}
               newUploads={newUploads}
-              onFileClick={(file) =>
-                isSelectMode ? handleFileClick(file.id) : handleSelectFile(file)
-              }
+              onFileClick={(file) => handleFileClick(file.id)}
+              onSelectFile={handleSelectFile}
+              onUploadForLocale={handleUploadForLocale}
               backendHost={backendHost}
               defaultLocaleId={defaultLocaleId}
               availableLanguages={availableLanguages}
             />
-            {/*endregion display all uploads*/}
           </div>
           {/*endregion file grid*/}
         </div>
-        {/*endregion files*/}
       </div>
     </Modal>
   );
