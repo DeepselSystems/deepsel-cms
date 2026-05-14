@@ -10,6 +10,37 @@ from apps.core.utils.models_pool import models_pool
 logger = logging.getLogger(__name__)
 
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
+AttachmentModel = models_pool["attachment"]
+
+
+def resolve_unique_attachment_name(filename: str, db: Session) -> str:
+    """
+    Derive a unique AttachmentModel.name from an uploaded filename.
+
+    Uses only the base name (no extension) so the slug stays clean.
+    On conflict appends a numeric suffix: ``report``, ``report-1``, ``report-2``, …
+    """
+    from deepsel.utils.filename import sanitize_filename
+
+    base, _ = os.path.splitext(filename)
+    sanitized = sanitize_filename(base) if base else sanitize_filename(filename)
+    if not sanitized:
+        sanitized = "file"
+
+    candidate = sanitized
+    if not db.query(AttachmentModel).filter(AttachmentModel.name == candidate).first():
+        return candidate
+
+    counter = 1
+    while True:
+        candidate = f"{sanitized}-{counter}"
+        if (
+            not db.query(AttachmentModel)
+            .filter(AttachmentModel.name == candidate)
+            .first()
+        ):
+            return candidate
+        counter += 1
 
 
 def upsert_locale_versions(

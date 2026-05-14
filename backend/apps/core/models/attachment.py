@@ -34,7 +34,11 @@ class AttachmentModel(Base, BaseModel):
         # Overrides BaseModel.create() to be DB-only: no file upload, no storage logic.
         # All file handling (upload, validation, ClamAV scan, S3/Azure/local storage)
         # is delegated to AttachmentLocaleVersionModel, one record per locale per attachment.
-        attachment = AttachmentModel(owner_id=user.id, organization_id=organization_id)
+        attachment = AttachmentModel(
+            owner_id=user.id,
+            organization_id=organization_id,
+            name=kwargs.get("name"),
+        )
         db.add(attachment)
         if commit:
             db.commit()

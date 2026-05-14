@@ -11,7 +11,10 @@ from apps.core.utils.get_current_user import (
     get_current_user,
 )
 from apps.core.utils.models_pool import models_pool
-from apps.core.utils.attachment import upsert_locale_versions
+from apps.core.utils.attachment import (
+    upsert_locale_versions,
+    resolve_unique_attachment_name,
+)
 from apps.core.schemas.attachment import (
     AttachmentLocaleVersionRead,
     AttachmentLocaleVersionUpdate,
@@ -26,6 +29,8 @@ from apps.core.schemas.attachment import (
 
 table_name = "attachment"
 Model = models_pool[table_name]
+
+
 UserModel = models_pool["user"]
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 CMSSettingsModel = models_pool["organization"]
@@ -83,8 +88,13 @@ def upload_files(
         if alt_text:
             kwargs["alt_text"] = alt_text
 
+        attachment_name = resolve_unique_attachment_name(file.filename, db)
         instance = Model().create(
-            db=db, user=user, organization_id=current_organization_id, **kwargs
+            db=db,
+            user=user,
+            organization_id=current_organization_id,
+            name=attachment_name,
+            **kwargs,
         )
 
         # Create a locale version for the effective language automatically on upload.
