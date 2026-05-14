@@ -4,14 +4,9 @@ import type { NodeViewProps } from '@tiptap/react';
 import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { EMBED_VIDEO_ATTRIBUTES, EMBED_VIDEO_CLASSES } from '../utils';
 import clsx from 'clsx';
-
-interface EmbedVideoAttributes {
-  src: string;
-  width: number;
-  height: number;
-}
 
 /**
  * EditorNodeView component for embed video
@@ -19,7 +14,7 @@ interface EmbedVideoAttributes {
  */
 const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
-  const { src, width, height } = node.attrs as EmbedVideoAttributes;
+  const { src } = node.attrs as { src: string };
 
   /**
    * Handle delete button click - removes the node
@@ -44,33 +39,25 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
   return (
     <NodeViewWrapper
       className={clsx(EMBED_VIDEO_CLASSES.WRAPPER, 'relative group my-4')}
-      {...{
-        [EMBED_VIDEO_ATTRIBUTES.CONTAINER]: 'true',
-        [EMBED_VIDEO_ATTRIBUTES.SRC]: src,
-        [EMBED_VIDEO_ATTRIBUTES.WIDTH]: width?.toString(),
-        [EMBED_VIDEO_ATTRIBUTES.HEIGHT]: height?.toString(),
-      }}
+      {...{ [EMBED_VIDEO_ATTRIBUTES.CONTAINER]: 'true' }}
     >
       {/* Hover Overlay */}
       <div
         className={clsx(
-          'absolute w-full h-full top-0 left-0',
-          'bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50',
+          'absolute w-full h-full top-0 left-0 bg-gray-emperor rounded transition opacity-0 group-hover:opacity-50',
         )}
       />
 
       {/* Delete Button */}
       <div
         className={clsx(
-          'transition opacity-0 group-hover:opacity-100',
-          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50',
+          'transition opacity-0 group-hover:opacity-100 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50',
         )}
       >
         <button
           onClick={handleDeleteClick}
           className={clsx(
-            'p-3 rounded bg-red-500 text-white bg-opacity-90',
-            'flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
+            'p-3 rounded bg-red-500 text-white bg-opacity-90 flex items-center justify-center shadow-lg transition-all duration-200 transform hover:scale-110',
           )}
           title={t('Delete Video')}
         >
@@ -78,12 +65,10 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
         </button>
       </div>
 
-      {/* Video Container */}
+      {/* Video Player */}
       <div className={EMBED_VIDEO_CLASSES.VIDEO_CONTAINER}>
         <video
-          src={src}
-          width={width}
-          height={height}
+          src={getAttachmentRelativeUrl(src)}
           controls
           className={EMBED_VIDEO_CLASSES.VIDEO_CONTENT}
         >

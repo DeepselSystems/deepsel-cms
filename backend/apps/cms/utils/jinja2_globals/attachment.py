@@ -22,7 +22,7 @@ class AudioAttrs(TypedDict, total=False):
 
 
 class VideoAttrs(TypedDict, total=False):
-    pass  # TODO: add poster, autoplay, loop, etc.
+    poster: str  # URL of the poster image shown before playback
 
 
 class FileAttrs(TypedDict, total=False):
@@ -126,11 +126,23 @@ def _render_audio(version, attrs: AudioAttrs) -> Markup:
 
 
 def _render_video(version, attrs: VideoAttrs) -> Markup:
-    # TODO: add poster, controls styling, fallback text
+    # Mirrors the HTML produced by embed-video-extension renderHTML().
+    src = f"{_SERVE_URL_PREFIX}/{version.name}"
+    poster = attrs.get("poster", "")
+
     return Markup(
-        f"<video controls>"
-        f'<source src="{_SERVE_URL_PREFIX}/{version.name}" type="{version.content_type}">'
+        f"<div"
+        f' class="embed-video-wrapper"'
+        f' data-embed-video="true"'
+        f">"
+        f'<div class="embed-video-container">'
+        f'<video src="{src}" controls class="embed-video-content" style="width: 100%; height: auto;"'
+        + (f' poster="{poster}"' if poster else "")
+        + f">"
+        f"Your browser does not support the video tag."
         f"</video>"
+        f"</div>"
+        f"</div>"
     )
 
 
