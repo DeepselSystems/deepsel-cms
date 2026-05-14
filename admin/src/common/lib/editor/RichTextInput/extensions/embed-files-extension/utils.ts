@@ -4,13 +4,11 @@
 export const MAX_FILES_COUNT = 10;
 
 /**
- * Attribute name used to identify embed-files nodes in HTML.
- * BE CAREFUL TO EDIT THIS - IT AFFECTS OLDER DATA
+ * Attribute name used to identify embed-files nodes in HTML
  */
 export const EMBED_FILES_ATTRIBUTES = {
   CONTAINER: 'data-embed-files',
-  FILES: 'data-files',
-};
+} as const;
 
 /**
  * CSS classes used by EditorNodeView for in-editor display.

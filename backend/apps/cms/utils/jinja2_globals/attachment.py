@@ -147,11 +147,15 @@ def _render_video(version, attrs: VideoAttrs) -> Markup:
 
 
 def _render_file(version, attrs: FileAttrs) -> Markup:
-    # TODO: add icon, file size display
+    href = f"{_SERVE_URL_PREFIX}/{version.name}"
+    display_name = version.name
     return Markup(
-        f'<a href="{_SERVE_URL_PREFIX}/{version.name}" download>'
-        f"{version.name}"
+        f'<div class="embed-file-item">'
+        f'<a href="{href}" download class="embed-file-content" title="{display_name}">'
+        f'<span class="embed-file-icon">📄</span>'
+        f'<span class="embed-file-link">{display_name}</span>'
         f"</a>"
+        f"</div>"
     )
 
 

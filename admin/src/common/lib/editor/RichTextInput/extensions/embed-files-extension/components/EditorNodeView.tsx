@@ -75,10 +75,7 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
   return (
     <NodeViewWrapper
       className={clsx(EMBED_FILES_CLASSES.WRAPPER, 'relative group my-4')}
-      {...{
-        [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true',
-        [EMBED_FILES_ATTRIBUTES.FILES]: JSON.stringify(files),
-      }}
+      {...{ [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true' }}
     >
       {/* Hover Overlay */}
       <div

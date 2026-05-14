@@ -21,21 +21,7 @@ declare module '@tiptap/core' {
  * Embed Files extension for TipTap.
  * Each file reference is stored as {{ attachment('name') }} Jinja syntax in the rendered HTML.
  * The backend resolves this at page-render time to a locale-appropriate download link.
- *
- * @example
- * ```typescript
- * import { EmbedFiles } from './extensions/embed-files-extension';
- *
- * const editor = useEditor({
- *   extensions: [
- *     EmbedFiles.configure({
- *       backendHost: 'https://api.example.com',
- *       user: user,
- *       setUser: setUser,
- *     }),
- *   ],
- * });
- * ```
+ * backendHost, user, and setUser are read from the pasteHandler extension options at runtime.
  */
 export const EmbedFiles = Node.create({
   name: 'embedFiles',
@@ -43,14 +29,6 @@ export const EmbedFiles = Node.create({
   group: 'block',
 
   atom: true,
-
-  addOptions() {
-    return {
-      backendHost: '',
-      user: null,
-      setUser: () => {},
-    };
-  },
 
   addAttributes() {
     return {
@@ -64,6 +42,17 @@ export const EmbedFiles = Node.create({
     return [
       {
         tag: `div[${EMBED_FILES_ATTRIBUTES.CONTAINER}]`,
+        getAttrs: (element) => {
+          const text = element.textContent?.trim() || '';
+          const attachmentPattern = /\{\{\s*attachment\('([^']+)'\)\s*\}\}/g;
+          const files: EmbedFileItem[] = [];
+          let match: RegExpExecArray | null;
+          while ((match = attachmentPattern.exec(text)) !== null) {
+            files.push({ attachmentName: match[1], displayName: match[1] });
+          }
+          if (files.length === 0) return false;
+          return { files };
+        },
       },
     ];
   },
