@@ -3,7 +3,6 @@ import type { Editor } from '@tiptap/core';
 import { IconPhoto } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { EnhancedImageSelectorModal } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
@@ -56,16 +55,16 @@ const EnhancedImageButton = ({
         opened={enhanceImageSelectorModalOpened}
         setOpened={setEnhanceImageSelectorModalOpened}
         onSelect={(attachment: Attachment) => {
-          const attachUrl = getAttachmentRelativeUrl(attachment.name ?? '');
+          const attachmentName = attachment.name ?? '';
 
-          onAddImageOverride(attachUrl);
+          onAddImageOverride(attachmentName);
 
           if (editor) {
             editor
               .chain()
               .focus()
               .setEnhancedImage({
-                src: attachUrl,
+                src: attachmentName,
               })
               .run();
 

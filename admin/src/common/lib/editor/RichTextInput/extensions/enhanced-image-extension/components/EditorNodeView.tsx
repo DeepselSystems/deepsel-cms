@@ -14,6 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 import DescriptionModal from './DescriptionModal';
 import {
   ENHANCED_IMAGE_ALIGNMENTS,
@@ -157,8 +158,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
       ref={wrapperRef}
       className={clsx(
         ENHANCED_IMAGE_CLASSES.WRAPPER,
-        'relative inline-block max-w-fit',
-        'transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10',
+        'relative inline-block max-w-fit transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10',
       )}
       style={alignmentStyles}
       {...{
@@ -174,8 +174,8 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
     >
       {/* Image */}
       <img
-        src={src}
-        alt={alt || ''}
+        src={getAttachmentByNameRelativeUrl(src)}
+        alt={alt || src || ''}
         title={title || ''}
         width={width}
         height={height}

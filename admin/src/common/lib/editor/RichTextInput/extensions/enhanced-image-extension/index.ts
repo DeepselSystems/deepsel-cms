@@ -1,4 +1,4 @@
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView';
@@ -278,83 +278,24 @@ export const EnhancedImage = Node.create({
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
-    const { description, alignment, rounded, circle, inline } = node.attrs;
+  renderHTML({ node }) {
+    const { src, alignment, rounded, circle, inline, width, height, description } = node.attrs;
 
-    const imgElement = [
-      'img',
-      mergeAttributes(HTMLAttributes, {
-        src: node.attrs.src,
-        alt: node.attrs.alt,
-        title: node.attrs.title,
-        width: node.attrs.width,
-        height: node.attrs.height,
-        style: circle
-          ? 'border-radius: 50%; aspect-ratio: 1; object-fit: cover;'
-          : rounded
-            ? 'border-radius: 6px;'
-            : '',
-      }),
-    ];
-
-    const descriptionElement =
-      description && description.trim()
-        ? [
-            'div',
-            {
-              class: ENHANCED_IMAGE_CLASSES.DESCRIPTION,
-            },
-            description,
-          ]
-        : null;
-
-    let alignmentStyles;
-    if (inline) {
-      alignmentStyles = {
-        [ENHANCED_IMAGE_ALIGNMENTS.LEFT]:
-          'display: inline-block; float: left; margin: 0 1rem 1rem 0; width: fit-content;',
-        [ENHANCED_IMAGE_ALIGNMENTS.RIGHT]:
-          'display: inline-block; float: right; margin: 0 0 1rem 1rem; width: fit-content;',
-        [ENHANCED_IMAGE_ALIGNMENTS.CENTER]:
-          'display: inline-block; float: left; margin: 0 1rem 1rem 0; width: fit-content;',
-      };
-    } else {
-      alignmentStyles = {
-        [ENHANCED_IMAGE_ALIGNMENTS.CENTER]:
-          'display: block; text-align: center; margin: 0 auto; width: fit-content;',
-        [ENHANCED_IMAGE_ALIGNMENTS.LEFT]:
-          'display: block; text-align: left; margin-left: 0; margin-right: auto; width: fit-content;',
-        [ENHANCED_IMAGE_ALIGNMENTS.RIGHT]:
-          'display: block; text-align: right; margin-left: auto; margin-right: 0; width: fit-content;',
-      };
+    if (!src) {
+      return ['div', {}];
     }
 
-    const elements = [imgElement];
-    if (descriptionElement) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      elements.push(descriptionElement);
-    }
+    const attrs = JSON.stringify({
+      alignment: alignment || ENHANCED_IMAGE_ALIGNMENTS.CENTER,
+      rounded: rounded ?? true,
+      circle: circle ?? false,
+      inline: inline ?? false,
+      width: width || IMAGE_WIDTH_DEFAULT,
+      ...(height ? { height } : {}),
+      ...(description ? { description } : {}),
+    });
 
-    return [
-      'div',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      mergeAttributes(this.options.HTMLAttributes, {
-        class: ENHANCED_IMAGE_CLASSES.WRAPPER,
-        [ENHANCED_IMAGE_ATTRIBUTES.CONTAINER]: 'true',
-        [ENHANCED_IMAGE_ATTRIBUTES.ALIGNMENT]: alignment,
-        [ENHANCED_IMAGE_ATTRIBUTES.ROUNDED]: rounded?.toString(),
-        [ENHANCED_IMAGE_ATTRIBUTES.CIRCLE]: circle?.toString(),
-        [ENHANCED_IMAGE_ATTRIBUTES.INLINE]: inline?.toString(),
-        [ENHANCED_IMAGE_ATTRIBUTES.WIDTH]:
-          node.attrs.width?.toString() || IMAGE_WIDTH_DEFAULT.toString(),
-        [ENHANCED_IMAGE_ATTRIBUTES.HEIGHT]: node.attrs.height?.toString() || '',
-        [ENHANCED_IMAGE_ATTRIBUTES.DESCRIPTION]: description || '',
-        style:
-          alignmentStyles[alignment as keyof typeof alignmentStyles] ||
-          alignmentStyles[ENHANCED_IMAGE_ALIGNMENTS.CENTER],
-      }),
-      ...elements,
-    ];
+    return ['div', `{{ attachment('${src}', ${attrs}) }}`];
   },
 
   addNodeView() {
