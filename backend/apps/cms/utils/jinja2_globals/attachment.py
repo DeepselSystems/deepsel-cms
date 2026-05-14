@@ -18,7 +18,7 @@ class ImageAttrs(TypedDict, total=False):
 
 
 class AudioAttrs(TypedDict, total=False):
-    pass  # TODO: add controls, autoplay, loop, etc.
+    width: int  # player width in px; omit for 100% width
 
 
 class VideoAttrs(TypedDict, total=False):
@@ -56,6 +56,8 @@ def _render_image(version, attrs: ImageAttrs) -> Markup:
         img_style += " margin-left: auto;"
     elif alignment == "left":
         img_style += " margin-right: auto;"
+    elif alignment == "center":
+        img_style += " margin: 0 auto;"
 
     if inline:
         wrapper_styles = {
@@ -102,11 +104,24 @@ def _render_image(version, attrs: ImageAttrs) -> Markup:
 
 
 def _render_audio(version, attrs: AudioAttrs) -> Markup:
-    # TODO: add controls styling, fallback text
+    # Mirrors the HTML produced by embed-audio-extension renderHTML().
+    src = f"{_SERVE_URL_PREFIX}/{version.name}"
+    width = attrs.get("width")
+    width_style = f"width: {width}px;" if width else "width: 100%;"
+
     return Markup(
-        f"<audio controls>"
-        f'<source src="{_SERVE_URL_PREFIX}/{version.name}" type="{version.content_type}">'
+        f"<div"
+        f' class="embed-audio-wrapper"'
+        f' data-embed-audio="true"'
+        f' data-audio-src="{src}"'
+        + (f' data-audio-width="{width}"' if width else "")
+        + f">"
+        f'<div class="embed-audio-container" style="{width_style}">'
+        f'<audio src="{src}" controls class="embed-audio-content" style="width: 100%;">'
+        f"Your browser does not support the audio tag."
         f"</audio>"
+        f"</div>"
+        f"</div>"
     )
 
 
