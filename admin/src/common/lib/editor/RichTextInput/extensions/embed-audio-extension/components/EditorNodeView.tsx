@@ -4,6 +4,7 @@ import type { NodeViewProps } from '@tiptap/react';
 import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES } from '../utils';
 import clsx from 'clsx';
 
@@ -13,7 +14,7 @@ import clsx from 'clsx';
  */
 const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
-  const { src, width } = node.attrs as { src: string; width?: number };
+  const { src } = node.attrs as { src: string };
 
   /**
    * Handle delete button click - removes the node
@@ -38,11 +39,7 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
   return (
     <NodeViewWrapper
       className={clsx(EMBED_AUDIO_CLASSES.WRAPPER, 'relative group my-4')}
-      {...{
-        [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true',
-        [EMBED_AUDIO_ATTRIBUTES.SRC]: src,
-        [EMBED_AUDIO_ATTRIBUTES.WIDTH]: width?.toString(),
-      }}
+      {...{ [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true' }}
     >
       {/* Hover Overlay */}
       <div
@@ -71,9 +68,13 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
         </button>
       </div>
 
-      {/* Audio Container */}
+      {/* Audio Player */}
       <div className={EMBED_AUDIO_CLASSES.AUDIO_CONTAINER}>
-        <audio src={src} controls className={EMBED_AUDIO_CLASSES.AUDIO_CONTENT}>
+        <audio
+          src={getAttachmentRelativeUrl(src)}
+          controls
+          className={EMBED_AUDIO_CLASSES.AUDIO_CONTENT}
+        >
           {t('Your browser does not support the audio tag.')}
         </audio>
       </div>

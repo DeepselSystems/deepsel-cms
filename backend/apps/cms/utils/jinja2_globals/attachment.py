@@ -117,7 +117,7 @@ def _render_audio(version, attrs: AudioAttrs) -> Markup:
         + (f' data-audio-width="{width}"' if width else "")
         + f">"
         f'<div class="embed-audio-container" style="{width_style}">'
-        f'<audio src="{src}" controls class="embed-audio-content" style="width: 100%;">'
+        f'<audio src="{src}" controls class="embed-audio-content">'
         f"Your browser does not support the audio tag."
         f"</audio>"
         f"</div>"

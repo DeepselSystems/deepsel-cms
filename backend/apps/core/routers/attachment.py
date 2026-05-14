@@ -72,11 +72,11 @@ def upload_files(
 
     AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
 
-    org_settings = db.query(CMSSettingsModel).get(user.organization_id)
-    default_locale_id = org_settings.default_language_id if org_settings else None
+    # Get current organization ID from user
+    current_organization_id = getattr(user, "current_organization_id", None)
 
     # Use caller-supplied locale_id when provided; fall back to org default
-    effective_locale_id = locale_id or default_locale_id
+    effective_locale_id = locale_id or current_organization_id
 
     instances = []
     for file in files:
@@ -84,7 +84,9 @@ def upload_files(
         if alt_text:
             kwargs["alt_text"] = alt_text
 
-        instance = Model().create(db=db, user=user, **kwargs)
+        instance = Model().create(
+            db=db, user=user, organization_id=current_organization_id, **kwargs
+        )
 
         # Create a locale version for the effective language automatically on upload.
         if effective_locale_id:
