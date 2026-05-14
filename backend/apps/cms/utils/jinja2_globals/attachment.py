@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 
 from apps.core.utils.models_pool import models_pool
 
-# Serve URL prefix — TODO: confirm final URL format
 _SERVE_URL_PREFIX = "/api/v1/attachment/serve"
 
 

@@ -4,10 +4,6 @@ import {
   initializeYouTubeJumpMarks,
 } from '../RichTextInput/extensions/youtube-jumpmarks-extension/utils';
 import {
-  containsEnhancedImages,
-  initializeEnhancedImages,
-} from '../RichTextInput/extensions/enhanced-image-extension/utils';
-import {
   containsEnhancedCodeBlocks,
   initializeEnhancedCodeBlocks,
 } from '../RichTextInput/extensions/enhanced-code-block-extension/utils';
@@ -49,13 +45,6 @@ export function RichTextRenderer({ content, className = '' }: RichTextRendererPr
 
     if (hasYouTubeJumpMarks) {
       initializeYouTubeJumpMarks(containerRef.current);
-    }
-
-    // Initialize enhanced images after content is rendered
-    const hasEnhancedImages = containsEnhancedImages(containerRef.current);
-
-    if (hasEnhancedImages) {
-      initializeEnhancedImages(containerRef.current);
     }
 
     // Initialize enhanced code blocks after content is rendered
