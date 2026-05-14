@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, TypedDict, Union, Dict, Any
 from markupsafe import Markup
 from sqlalchemy.orm import Session
 
@@ -8,14 +8,96 @@ from apps.core.utils.models_pool import models_pool
 _SERVE_URL_PREFIX = "/api/v1/attachment/serve"
 
 
-def _render_image(version) -> Markup:
-    # TODO: add srcset, lazy loading, CSS classes
+class ImageAttrs(TypedDict, total=False):
+    width: int
+    height: int
+    alignment: str  # "left" | "center" | "right"
+    rounded: bool
+    circle: bool
+    inline: bool
+    description: str
+
+
+class AudioAttrs(TypedDict, total=False):
+    pass  # TODO: add controls, autoplay, loop, etc.
+
+
+class VideoAttrs(TypedDict, total=False):
+    pass  # TODO: add poster, autoplay, loop, etc.
+
+
+class FileAttrs(TypedDict, total=False):
+    pass  # TODO: add label, show_size, etc.
+
+
+AttachmentAttrs = Union[ImageAttrs, AudioAttrs, VideoAttrs, FileAttrs, Dict[str, Any]]
+
+
+def _render_image(version, attrs: ImageAttrs) -> Markup:
+    # Mirrors the HTML produced by enhanced-image-extension renderHTML() with default attrs.
+    alignment = attrs.get("alignment", "center")
+    rounded = attrs.get("rounded", True)
+    circle = attrs.get("circle", False)
+    inline = attrs.get("inline", False)
+    width = attrs.get("width", 300)
+    height = attrs.get("height", "")
+    description = attrs.get("description", "")
+
+    src = f"{_SERVE_URL_PREFIX}/{version.name}"
+    alt = version.alt_text or ""
+
+    if circle:
+        img_style = "border-radius: 50%; aspect-ratio: 1; object-fit: cover;"
+    elif rounded:
+        img_style = "border-radius: 6px;"
+    else:
+        img_style = ""
+
+    if inline:
+        wrapper_styles = {
+            "left": "display: inline-block; float: left; margin: 0 1rem 1rem 0; width: fit-content;",
+            "right": "display: inline-block; float: right; margin: 0 0 1rem 1rem; width: fit-content;",
+            "center": "display: inline-block; float: left; margin: 0 1rem 1rem 0; width: fit-content;",
+        }
+    else:
+        wrapper_styles = {
+            "center": "display: block; text-align: center; margin: 0 auto; width: fit-content;",
+            "left": "display: block; text-align: left; margin-left: 0; margin-right: auto; width: fit-content;",
+            "right": "display: block; text-align: right; margin-left: auto; margin-right: 0; width: fit-content;",
+        }
+    wrapper_style = wrapper_styles.get(alignment, wrapper_styles["center"])
+
+    img_tag = (
+        f'<img src="{src}" alt="{alt}"'
+        f' width="{width}"'
+        + (f' height="{height}"' if height else "")
+        + (f' style="{img_style}"' if img_style else "")
+        + ">"
+    )
+
+    description_tag = (
+        f'<div class="enhanced-image-description">{description}</div>'
+        if description and description.strip()
+        else ""
+    )
+
     return Markup(
-        f'<img src="{_SERVE_URL_PREFIX}/{version.name}" alt="{version.alt_text or ""}">'
+        f"<div"
+        f' class="enhanced-image-wrapper"'
+        f' data-enhanced-image="true"'
+        f' data-alignment="{alignment}"'
+        f' data-rounded="{str(rounded).lower()}"'
+        f' data-circle="{str(circle).lower()}"'
+        f' data-inline="{str(inline).lower()}"'
+        f' data-width="{width}"'
+        f' data-height="{height}"'
+        f' data-description="{description}"'
+        f' style="{wrapper_style}"'
+        f">{img_tag}{description_tag}</div>"
     )
 
 
-def _render_audio(version) -> Markup:
+def _render_audio(version, attrs: AudioAttrs) -> Markup:
     # TODO: add controls styling, fallback text
     return Markup(
         f"<audio controls>"
@@ -24,7 +106,7 @@ def _render_audio(version) -> Markup:
     )
 
 
-def _render_video(version) -> Markup:
+def _render_video(version, attrs: VideoAttrs) -> Markup:
     # TODO: add poster, controls styling, fallback text
     return Markup(
         f"<video controls>"
@@ -33,7 +115,7 @@ def _render_video(version) -> Markup:
     )
 
 
-def _render_file(version) -> Markup:
+def _render_file(version, attrs: FileAttrs) -> Markup:
     # TODO: add icon, file size display
     return Markup(
         f'<a href="{_SERVE_URL_PREFIX}/{version.name}" download>'
@@ -42,30 +124,36 @@ def _render_file(version) -> Markup:
     )
 
 
-def _render_version(version) -> Markup:
+def _render_version(version, attrs: AttachmentAttrs) -> Markup:
     """Dispatch to the correct renderer based on content_type."""
     content_type = (version.content_type or "").lower()
     if content_type.startswith("image/"):
-        return _render_image(version)
+        return _render_image(version, attrs)
     if content_type.startswith("audio/"):
-        return _render_audio(version)
+        return _render_audio(version, attrs)
     if content_type.startswith("video/"):
-        return _render_video(version)
-    return _render_file(version)
+        return _render_video(version, attrs)
+    return _render_file(version, attrs)
 
 
 def make_attachment_func(
     db: Session,
     organization_id: int,
     lang: Optional[str],
-) -> Callable[[str], Markup]:
+) -> Callable[..., Markup]:
     """
     Returns a Jinja2 callable that resolves an attachment by name and renders HTML.
 
-    Usage in templates: {{ attachment('my-file-name') }}
+    Usage in templates:
+        {{ attachment('my-image') }}
+        {{ attachment('my-image', {'width': 500, 'alignment': 'left'}) }}
+        {{ attachment('my-file') }}
+
+    Supported attrs vary by content type — see each _render_* function for details.
     """
 
-    def attachment(name: str) -> Markup:
+    def attachment(name: str, attrs: Optional[AttachmentAttrs] = None) -> Markup:
+        attrs = attrs or {}
         AttachmentModel = models_pool.get("attachment")
         if not AttachmentModel:
             return Markup(f"<div>File not found: {name}</div>")
@@ -107,6 +195,6 @@ def make_attachment_func(
         if not resolved_version:
             return Markup("<div>File not available for this locale</div>")
 
-        return _render_version(resolved_version)
+        return _render_version(resolved_version, attrs)
 
     return attachment

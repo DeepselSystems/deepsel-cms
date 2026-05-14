@@ -51,7 +51,7 @@ import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
 import { Menu, Modal, NumberInput, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../ui/Button';
+import { Button } from '../../ui';
 import { YoutubeJumpMarks } from './extensions/youtube-jumpmarks-extension';
 import { EnhancedDetails, DetailsContent, DetailsSummary } from './extensions/details-extension';
 import { AutocompleteExtension } from './extensions/autocomplete-extension';

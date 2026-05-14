@@ -169,6 +169,7 @@ export function EnhancedImageSelectorModal({
         closeOnClickOutside={false}
         onClose={() => setOpened(false)}
         title={t('Select image')}
+        zIndex={11000}
       >
         <EnhancedImageSelector {...props} />
       </Modal>
