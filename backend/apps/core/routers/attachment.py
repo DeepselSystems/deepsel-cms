@@ -227,8 +227,6 @@ def batch_upsert_locale_versions(
 @router.get("/serve/{file_name}")
 def serve_file(
     file_name: str,
-    response: Response,
-    user: UserModel = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
     instance = AttachmentLocaleVersionModel.get_by_name(db, file_name)
@@ -238,6 +236,61 @@ def serve_file(
         )
 
     result = instance.get_serve_result()
+    if result.redirect_url:
+        return RedirectResponse(url=result.redirect_url, status_code=302)
+    return Response(content=result.content, media_type=result.content_type)
+
+
+@router.get("/serve-by-name/{attachment_name:path}")
+def serve_file_by_attachment_name(
+    attachment_name: str,
+    locale: str = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Serve an attachment file by AttachmentModel.name with optional locale resolution.
+
+    Resolves the locale version in this order:
+    1. The requested locale (ISO code, e.g. "en", "fr")
+    2. The organization's default locale
+    3. The first available locale version
+    """
+    attachment = db.query(Model).filter(Model.name == attachment_name).first()
+    if not attachment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Attachment not found"
+        )
+
+    locale_versions = attachment.locale_versions or []
+    if not locale_versions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No locale versions available for this attachment",
+        )
+
+    resolved_version = None
+
+    if locale:
+        locale_record = (
+            db.query(LocaleModel).filter(LocaleModel.iso_code == locale).first()
+        )
+        if locale_record:
+            resolved_version = next(
+                (v for v in locale_versions if v.locale_id == locale_record.id), None
+            )
+
+    if not resolved_version:
+        org_settings = db.query(CMSSettingsModel).get(attachment.organization_id)
+        default_locale_id = org_settings.default_language_id if org_settings else None
+        if default_locale_id:
+            resolved_version = next(
+                (v for v in locale_versions if v.locale_id == default_locale_id), None
+            )
+
+    if not resolved_version:
+        resolved_version = locale_versions[0]
+
+    result = resolved_version.get_serve_result()
     if result.redirect_url:
         return RedirectResponse(url=result.redirect_url, status_code=302)
     return Response(content=result.content, media_type=result.content_type)

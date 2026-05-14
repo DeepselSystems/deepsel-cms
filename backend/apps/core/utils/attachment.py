@@ -20,7 +20,7 @@ def upsert_locale_versions(
     user,
 ) -> list[UpsertItemResult]:
     """
-    Apply batch locale-version upserts for a single attachment.
+    Apply batch locale-version update-inserts for a single attachment.
 
     Each item is processed independently — a failure on one item does not stop
     the others. The caller receives a per-item result list so it can surface

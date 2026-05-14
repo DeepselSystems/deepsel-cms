@@ -53,6 +53,11 @@ def _render_image(version, attrs: ImageAttrs) -> Markup:
     else:
         img_style = ""
 
+    if alignment == "right":
+        img_style += " margin-left: auto;"
+    elif alignment == "left":
+        img_style += " margin-right: auto;"
+
     if inline:
         wrapper_styles = {
             "left": "display: inline-block; float: left; margin: 0 1rem 1rem 0; width: fit-content;",
