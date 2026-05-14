@@ -275,6 +275,33 @@ export const EnhancedImage = Node.create({
           };
         },
       },
+      {
+        tag: `div[${ENHANCED_IMAGE_ATTRIBUTES.CONTAINER}]`,
+        getAttrs: (element) => {
+          const text = element.textContent?.trim() || '';
+          const match = text.match(
+            /^\{\{\s*attachment\('([^']+)'(?:,\s*(\{[\s\S]*\}))?\s*\)\s*\}\}$/,
+          );
+          if (!match) return false;
+
+          const src = match[1];
+          let attrs: Record<string, unknown> = {};
+          try {
+            attrs = JSON.parse(match[2] || '{}');
+          } catch {}
+
+          return {
+            src,
+            alignment: (attrs.alignment as string) || ENHANCED_IMAGE_ALIGNMENTS.CENTER,
+            rounded: attrs.rounded !== undefined ? Boolean(attrs.rounded) : true,
+            circle: Boolean(attrs.circle),
+            inline: Boolean(attrs.inline),
+            width: (attrs.width as number) || IMAGE_WIDTH_DEFAULT,
+            height: (attrs.height as number) || null,
+            description: (attrs.description as string) || '',
+          };
+        },
+      },
     ];
   },
 
@@ -295,7 +322,11 @@ export const EnhancedImage = Node.create({
       ...(description ? { description } : {}),
     });
 
-    return ['div', `{{ attachment('${src}', ${attrs}) }}`];
+    return [
+      'div',
+      { [ENHANCED_IMAGE_ATTRIBUTES.CONTAINER]: 'true' },
+      `{{ attachment('${src}', ${attrs}) }}`,
+    ];
   },
 
   addNodeView() {
