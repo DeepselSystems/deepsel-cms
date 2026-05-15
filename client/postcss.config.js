@@ -71,10 +71,7 @@ function getProcessor(themeKey) {
         baseConfigPath,
       ];
     } else {
-      candidates = [
-        path.join(themesDir, themeKey, 'tailwind.config.js'),
-        baseConfigPath,
-      ];
+      candidates = [path.join(themesDir, themeKey, 'tailwind.config.js'), baseConfigPath];
     }
   }
 

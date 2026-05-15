@@ -338,9 +338,15 @@ def _migrate_reset_theme_file_for_org_scope(db, *args, **kwargs):
         f"{__name__}:{_migrate_reset_theme_file_for_org_scope.__name__}"
     )
     try:
-        db.execute(sa_text("TRUNCATE TABLE theme_file_content, theme_file RESTART IDENTITY CASCADE"))
+        db.execute(
+            sa_text(
+                "TRUNCATE TABLE theme_file_content, theme_file RESTART IDENTITY CASCADE"
+            )
+        )
         db.commit()
-        _logger.info("theme_file and theme_file_content truncated for org-scope migration.")
+        _logger.info(
+            "theme_file and theme_file_content truncated for org-scope migration."
+        )
     except Exception as e:
         _logger.error(f"theme_file reset migration failed: {e}")
         db.rollback()

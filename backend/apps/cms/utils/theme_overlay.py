@@ -28,7 +28,9 @@ def org_overlay_root(data_dir: str, org_id: int) -> str:
     return os.path.join(data_dir, "themes", f"org_{org_id}")
 
 
-def org_theme_dir(data_dir: str, org_id: int, theme_name: str, lang_code: str | None = None) -> str:
+def org_theme_dir(
+    data_dir: str, org_id: int, theme_name: str, lang_code: str | None = None
+) -> str:
     base = org_overlay_root(data_dir, org_id)
     if lang_code:
         return os.path.join(base, lang_code, theme_name)
@@ -77,10 +79,10 @@ def rewrite_data_theme_attribute(file_path: str, theme_name: str, org_id: int) -
         return False
 
     new_value = f"{theme_name}__{org_id}"
-    pattern = re.compile(
-        r'(data-theme\s*=\s*)(["\'])' + re.escape(theme_name) + r'\2'
+    pattern = re.compile(r'(data-theme\s*=\s*)(["\'])' + re.escape(theme_name) + r"\2")
+    updated = pattern.sub(
+        lambda m: f"{m.group(1)}{m.group(2)}{new_value}{m.group(2)}", original
     )
-    updated = pattern.sub(lambda m: f'{m.group(1)}{m.group(2)}{new_value}{m.group(2)}', original)
     if updated == original:
         return False
     with open(file_path, "w", encoding="utf-8") as f:
@@ -113,7 +115,7 @@ def cleanup_stale_org_overlays(data_dir: str, active_org_ids: set[int]) -> None:
         if not entry.startswith("org_"):
             continue
         try:
-            org_id = int(entry[len("org_"):])
+            org_id = int(entry[len("org_") :])
         except ValueError:
             continue
         if org_id not in active_org_ids:
@@ -123,7 +125,10 @@ def cleanup_stale_org_overlays(data_dir: str, active_org_ids: set[int]) -> None:
 
 
 def cleanup_stale_org_themes(
-    data_dir: str, org_id: int, active_themes: set[str], active_langs_per_theme: dict[str, set[str]]
+    data_dir: str,
+    org_id: int,
+    active_themes: set[str],
+    active_langs_per_theme: dict[str, set[str]],
 ) -> None:
     """Remove subdirs of an org's overlay that no longer have any DB rows.
 
@@ -141,7 +146,9 @@ def cleanup_stale_org_themes(
         if entry in active_themes:
             continue
         # If it looks like a language code dir, check whether any active theme uses this lang
-        is_active_lang = any(entry in langs for langs in active_langs_per_theme.values())
+        is_active_lang = any(
+            entry in langs for langs in active_langs_per_theme.values()
+        )
         if is_active_lang:
             # Prune themes inside the lang dir that aren't in active_langs_per_theme[theme]
             for theme_entry in os.listdir(full):
@@ -150,7 +157,9 @@ def cleanup_stale_org_themes(
                     continue
                 if entry not in active_langs_per_theme.get(theme_entry, set()):
                     shutil.rmtree(theme_path, ignore_errors=True)
-                    logger.info(f"Removed stale org overlay: org_{org_id}/{entry}/{theme_entry}")
+                    logger.info(
+                        f"Removed stale org overlay: org_{org_id}/{entry}/{theme_entry}"
+                    )
             continue
         shutil.rmtree(full, ignore_errors=True)
         logger.info(f"Removed stale org overlay: org_{org_id}/{entry}")

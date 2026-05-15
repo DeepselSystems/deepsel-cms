@@ -65,9 +65,11 @@ def get_org_overlay_themes_from_db() -> dict[int, set[str]]:
         if not ThemeFileModel:
             return {}
         with get_db_context() as db:
-            rows = db.query(
-                ThemeFileModel.organization_id, ThemeFileModel.theme_name
-            ).distinct().all()
+            rows = (
+                db.query(ThemeFileModel.organization_id, ThemeFileModel.theme_name)
+                .distinct()
+                .all()
+            )
             result: dict[int, set[str]] = {}
             for org_id, theme_name in rows:
                 if org_id is None or not theme_name:
@@ -273,13 +275,11 @@ def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None
                         import_path = (
                             f"../../themes/org_{org_id}/{entry}/{theme}/{astro_file}"
                         )
-                        imports.append(
-                            f'import {component_name} from "{import_path}";'
-                        )
+                        imports.append(f'import {component_name} from "{import_path}";')
                         system_key = system_key_mapping.get(page_key, page_key)
-                        theme_map_entries[map_key][f"{entry}:{system_key}"] = (
-                            component_name
-                        )
+                        theme_map_entries[map_key][
+                            f"{entry}:{system_key}"
+                        ] = component_name
 
         # Generate theme map code
         theme_map_lines = ["export const themeMap = {"]

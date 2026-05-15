@@ -851,15 +851,21 @@ def save_theme_file(
 
     temp_dir = None
     try:
-        # Phase 1: Validate build in isolation (no DB/filesystem changes yet)
+        # Phase 1: Validate build in isolation (no DB/filesystem changes yet).
+        # In dev mode the data dir isn't populated (no npm workspace, no
+        # node_modules, no package.json) so the temp build can't run — and
+        # it isn't needed either, because Astro dev catches breakage live
+        # through HMR. Skip straight to the DB write.
+        from ..utils.client_process import NO_CLIENT
         from ..utils.setup_themes import validate_theme_build
 
-        temp_dir = validate_theme_build(
-            theme_name=request.theme_name,
-            file_path=request.file_path,
-            contents=request.contents,
-            organization_id=current_org_id,
-        )
+        if not NO_CLIENT:
+            temp_dir = validate_theme_build(
+                theme_name=request.theme_name,
+                file_path=request.file_path,
+                contents=request.contents,
+                organization_id=current_org_id,
+            )
 
         # Phase 2: Build succeeded — apply changes
         ThemeFileModel = models_pool.get("theme_file")
@@ -935,34 +941,56 @@ def save_theme_file(
 
         db.commit()
 
-        # Copy validated build artifacts from temp to real data dir
-        real_dist = os.path.join(DATA_DIR, "client", "dist")
-        temp_dist = os.path.join(temp_dir, "client", "dist")
-        if os.path.exists(temp_dist):
-            if os.path.exists(real_dist):
-                shutil.rmtree(real_dist)
-            shutil.copytree(temp_dist, real_dist)
+        if NO_CLIENT:
+            # Dev mode: no managed Astro client to restart, no data-dir build
+            # artifacts to swap. Reconcile the overlay tree against the repo
+            # so the Astro dev server's HMR picks up the new files, and
+            # regenerate themes.ts so any newly-introduced overlay entries
+            # become importable.
+            from ..utils.setup_themes import reconcile_theme_overlays
+            from ..utils.theme_imports import (
+                generate_theme_imports,
+                generate_tailwind_config,
+            )
 
-        # Run setup_themes in background to update state hashes and sync
-        # (build will be skipped since dist is fresh)
-        if has_deletions:
-            background_tasks.add_task(
-                trigger_setup_themes,
-                force_sync=True,
-                selected_theme=request.theme_name,
+            project_root = os.path.normpath(
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
+            )
+            reconcile_theme_overlays(project_root, force=True)
+            generate_theme_imports(
+                data_dir_path=project_root, selected_theme=request.theme_name
+            )
+            generate_tailwind_config(
+                data_dir_path=project_root, selected_theme=request.theme_name
             )
         else:
-            background_tasks.add_task(
-                trigger_setup_themes, selected_theme=request.theme_name
-            )
+            # Production: copy validated build artifacts into the real data dir
+            # then trigger setup_themes in the background for state-hash bookkeeping.
+            real_dist = os.path.join(DATA_DIR, "client", "dist")
+            temp_dist = os.path.join(temp_dir, "client", "dist")
+            if os.path.exists(temp_dist):
+                if os.path.exists(real_dist):
+                    shutil.rmtree(real_dist)
+                shutil.copytree(temp_dist, real_dist)
 
-        # Restart client to pick up the new build
-        from ..utils.client_process import get_client_manager
+            if has_deletions:
+                background_tasks.add_task(
+                    trigger_setup_themes,
+                    force_sync=True,
+                    selected_theme=request.theme_name,
+                )
+            else:
+                background_tasks.add_task(
+                    trigger_setup_themes, selected_theme=request.theme_name
+                )
 
-        manager = get_client_manager()
-        if manager:
-            logger.info("Restarting Astro client after successful theme build...")
-            manager.restart()
+            # Restart client to pick up the new build
+            from ..utils.client_process import get_client_manager
+
+            manager = get_client_manager()
+            if manager:
+                logger.info("Restarting Astro client after successful theme build...")
+                manager.restart()
 
         logger.info(f"Saved theme file: {request.theme_name}/{request.file_path}")
 
