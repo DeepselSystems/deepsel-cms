@@ -13,6 +13,7 @@ import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { VersionFlagBar } from '../../../../common/ui/VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from '../../../../common/lib/ui/AttachmentCardOverlay.tsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
+import { AttachmentUsageModal } from './AttachmentUsageModal.jsx';
 
 /**
  * @typedef AttachmentCardProps
@@ -46,6 +47,7 @@ export function AttachmentCard({
   const { backendHost } = BackendHostURLState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+  const [usageOpened, { open: openUsage, close: closeUsage }] = useDisclosure(false);
 
   // Local copy of locale_versions so card state can update without a full page refetch
   const [localVersions, setLocalVersions] = useState(attachment?.locale_versions ?? []);
@@ -98,6 +100,7 @@ export function AttachmentCard({
     hasVersion,
     onEdit: openEdit,
     onVersionDeleted: handleVersionDeleted,
+    onFindUsage: openUsage,
   });
 
   /** Triggers bulk-select toggle when selection mode is active. @param {React.MouseEvent} _ */
@@ -194,6 +197,14 @@ export function AttachmentCard({
         onClose={closeEdit}
         onSaved={handleAttachmentSaved}
         availableLanguages={availableLanguages}
+      />
+
+      {/* Usage modal — lists pages/blog posts/templates embedding this attachment */}
+      <AttachmentUsageModal
+        attachment={attachment}
+        opened={usageOpened}
+        onClose={closeUsage}
+        localeId={selectedLocaleId}
       />
     </div>
   );

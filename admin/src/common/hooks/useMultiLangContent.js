@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import NotificationState from '../stores/NotificationState.js';
 import SitePublicSettingsState from '../stores/SitePublicSettingsState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
@@ -29,6 +30,12 @@ export default function useMultiLangContent({
   const { notify } = NotificationState();
   const { backendHost } = BackendHostURLState();
   const { settings: siteSettings } = SitePublicSettingsState();
+  const [searchParams] = useSearchParams();
+
+  /** locale_id from ?locale_id=X — used once to pre-select the tab on load. */
+  const urlLocaleId = searchParams.get('locale_id')
+    ? parseInt(searchParams.get('locale_id'), 10)
+    : null;
 
   const [activeContentTab, setActiveContentTab] = useState(null);
   const [selectedLocaleId, setSelectedLocaleId] = useState(null);
@@ -72,19 +79,29 @@ export default function useMultiLangContent({
     }
   }, [locales, siteSettings, initialRecord, setRecord]);
 
-  // Set initial active tab if contents exist
+  // Set initial active tab if contents exist.
+  // Priority: ?locale_id=X URL param → site default language → first content.
   useEffect(() => {
     if (initialRecord?.contents?.length > 0 && !activeContentTab) {
-      const defaultLangId = siteSettings?.default_language?.id;
-      const defaultContent = initialRecord.contents.find((c) => c.locale_id === defaultLangId);
-      if (defaultContent) {
-        setActiveContentTab(String(defaultContent.id));
-      } else {
-        const sortedContents = [...initialRecord.contents].sort((a, b) => a.id - b.id);
-        setActiveContentTab(String(sortedContents[0].id));
+      let target = null;
+
+      if (urlLocaleId) {
+        target = initialRecord.contents.find((c) => c.locale_id === urlLocaleId) ?? null;
       }
+
+      if (!target) {
+        const defaultLangId = siteSettings?.default_language?.id;
+        target = initialRecord.contents.find((c) => c.locale_id === defaultLangId) ?? null;
+      }
+
+      if (!target) {
+        const sorted = [...initialRecord.contents].sort((a, b) => a.id - b.id);
+        target = sorted[0];
+      }
+
+      if (target) setActiveContentTab(String(target.id));
     }
-  }, [initialRecord?.contents, activeContentTab, siteSettings?.default_language?.id]);
+  }, [initialRecord?.contents, activeContentTab, siteSettings?.default_language?.id, urlLocaleId]);
 
   /**
    * Get the name of a language by its locale ID

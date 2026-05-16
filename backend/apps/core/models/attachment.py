@@ -13,10 +13,10 @@ class AttachmentModel(Base, BaseModel):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=True)
-    type = Column(Enum(AttachmentTypeOptions), nullable=True)
 
     # Deprecated: these single-lang fields are superseded by AttachmentLocaleVersionModel.
     # Retained for data integrity — do not use in new code. Use locale_versions instead.
+    type = Column(Enum(AttachmentTypeOptions), nullable=True)
     content_type = Column(String)
     filesize = Column(Integer, nullable=True)
     alt_text = Column(String, nullable=True)

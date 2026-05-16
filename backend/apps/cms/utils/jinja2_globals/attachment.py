@@ -26,7 +26,7 @@ class VideoAttrs(TypedDict, total=False):
 
 
 class FileAttrs(TypedDict, total=False):
-    pass  # TODO: add label, show_size, etc.
+    pass
 
 
 AttachmentAttrs = Union[ImageAttrs, AudioAttrs, VideoAttrs, FileAttrs, Dict[str, Any]]

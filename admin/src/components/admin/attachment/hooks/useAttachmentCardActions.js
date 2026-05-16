@@ -1,5 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { IconDownload, IconLink, IconPencil, IconTrash, IconTrashX } from '@tabler/icons-react';
+import {
+  IconDownload,
+  IconLink,
+  IconPencil,
+  IconSearch,
+  IconTrash,
+  IconTrashX,
+} from '@tabler/icons-react';
 import { getAttachmentUrl, downloadFromAttachUrl } from '../../../../common/utils/index.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
@@ -14,6 +21,7 @@ import useModel from '../../../../common/api/useModel.jsx';
  * @property {boolean} hasVersion - Whether the selected locale has an uploaded file; false = show edit-only actions
  * @property {() => void} [onEdit] - Opens the edit modal for this attachment
  * @property {(versionId: number) => void} [onVersionDeleted] - Called after a locale version is successfully deleted
+ * @property {() => void} [onFindUsage] - Opens the usage modal for this attachment
  */
 
 /**
@@ -42,6 +50,7 @@ export function useAttachmentCardActions({
   hasVersion,
   onEdit,
   onVersionDeleted,
+  onFindUsage,
 }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
@@ -84,6 +93,12 @@ export function useAttachmentCardActions({
     onEdit?.();
   };
 
+  /** Opens the usage modal for this attachment. */
+  const handleFindUsage = (event) => {
+    event.stopPropagation();
+    onFindUsage?.();
+  };
+
   /** Deletes only the currently selected locale version and notifies the card to update local state. */
   const handleDeleteVersion = (event) => {
     event.stopPropagation();
@@ -107,6 +122,7 @@ export function useAttachmentCardActions({
     { key: 'copy-link', icon: IconLink, label: t('Copy Link'), onClick: handleCopyLink },
     { key: 'download', icon: IconDownload, label: t('Download'), onClick: handleDownload },
     { key: 'edit', icon: IconPencil, label: t('Edit'), onClick: handleEdit },
+    { key: 'find-usage', icon: IconSearch, label: t('Find usage'), onClick: handleFindUsage },
     {
       key: 'delete-version',
       icon: IconTrashX,
@@ -120,6 +136,7 @@ export function useAttachmentCardActions({
   /** Reduced action set when the selected locale has no file yet. */
   const briefActions = [
     { key: 'edit', icon: IconPencil, label: t('Edit'), onClick: handleEdit },
+    { key: 'find-usage', icon: IconSearch, label: t('Find usage'), onClick: handleFindUsage },
     { key: 'delete', icon: IconTrash, label: t('Delete'), onClick: handleDelete, color: 'red' },
   ];
 

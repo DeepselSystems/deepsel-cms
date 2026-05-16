@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActionIcon, Checkbox, Text, TextInput } from '@mantine/core';
+import { ActionIcon, Checkbox, Switch, Text, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import useModel from '../../../common/api/useModel.jsx';
+import useFetch from '../../../common/api/useFetch.js';
 import Button from '../../../common/ui/Button.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
@@ -52,8 +53,16 @@ export default function Media() {
     searchFields: SEARCH_FIELDS,
   });
 
+  const { record: unusedResult, get: fetchUnusedFiles } = useFetch('attachment/unused', {
+    autoFetch: false,
+    params: { page_size: 200 },
+  });
+
+  const unusedFiles = unusedResult?.data ?? null;
+
   const [newUploads, setNewUploads] = useState(new Set());
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showUnused, setShowUnused] = useState(false);
   const [storageInfo, setStorageInfo] = useState({
     usedStorage: 0,
     maxStorage: null,
@@ -90,6 +99,15 @@ export default function Media() {
     return `${formattedUsedStorage} ${t('of')} ${maxStorage} ${unit} (${percentUsed}%)`;
   };
 
+  /** Toggle "Show unused" — fetch on enable, clear on disable. */
+  const handleToggleUnused = (checked) => {
+    setShowUnused(checked);
+    setSelectedIds(new Set());
+    if (checked) {
+      fetchUnusedFiles();
+    }
+  };
+
   const handleFilesUploaded = (filesArray) => {
     filesArray.forEach((uploadedFile) => {
       setNewUploads((prev) => new Set([...prev, uploadedFile.id]));
@@ -110,8 +128,8 @@ export default function Media() {
   const clearSelection = () => setSelectedIds(new Set());
 
   const sortedFiles = useMemo(
-    () => sortFilesWithNewUploadsFirst(files, newUploads),
-    [files, newUploads],
+    () => sortFilesWithNewUploadsFirst(showUnused ? (unusedFiles ?? []) : files, newUploads),
+    [files, unusedFiles, showUnused, newUploads],
   );
 
   const allSelected = sortedFiles.length > 0 && selectedIds.size === sortedFiles.length;
@@ -225,26 +243,35 @@ export default function Media() {
 
         <MediaDropzone onFilesUploaded={handleFilesUploaded} onStorageChange={fetchStorageInfo} />
 
-        <TextInput
-          placeholder={t('Search by file name or alt text...')}
-          value={rawSearch}
-          onChange={(e) => setRawSearch(e.target.value)}
-          leftSection={<IconSearch size={16} />}
-          rightSection={
-            rawSearch ? (
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
-                onClick={() => setRawSearch('')}
-                aria-label={t('Clear search')}
-              >
-                <IconX size={14} />
-              </ActionIcon>
-            ) : null
-          }
-          className="mb-3"
-        />
+        <div className="flex items-center gap-3 mb-3">
+          <TextInput
+            placeholder={t('Search by file name or alt text...')}
+            value={rawSearch}
+            onChange={(e) => setRawSearch(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            rightSection={
+              rawSearch ? (
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  size="sm"
+                  onClick={() => setRawSearch('')}
+                  aria-label={t('Clear search')}
+                >
+                  <IconX size={14} />
+                </ActionIcon>
+              ) : null
+            }
+            className="flex-1"
+            disabled={showUnused}
+          />
+          <Switch
+            label={t('Show unused')}
+            checked={showUnused}
+            onChange={(e) => handleToggleUnused(e.currentTarget.checked)}
+            size="sm"
+          />
+        </div>
 
         {sortedFiles.length > 0 && (
           <div className="flex items-center justify-between mb-3 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
@@ -274,7 +301,14 @@ export default function Media() {
           </div>
         )}
 
-        {sortedFiles.length === 0 && debouncedSearch && (
+        {sortedFiles.length === 0 && showUnused && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
+            <IconSearch size={36} />
+            <Text size="sm">{t('All attachments are in use.')}</Text>
+          </div>
+        )}
+
+        {sortedFiles.length === 0 && !showUnused && debouncedSearch && (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
             <IconSearch size={36} />
             <Text size="sm">{t('No files match "{{query}}"', { query: debouncedSearch })}</Text>
