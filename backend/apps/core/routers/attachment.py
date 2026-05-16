@@ -12,16 +12,16 @@ from apps.core.utils.get_current_user import (
 )
 from apps.core.utils.models_pool import models_pool
 from apps.core.utils.attachment import (
+    find_attachment_usages,
     upsert_locale_versions,
     resolve_unique_attachment_name,
 )
 from apps.core.schemas.attachment import (
-    AttachmentLocaleVersionRead,
-    AttachmentLocaleVersionUpdate,
     AttachmentVersionUpsertItem,
     AttachmentRead,
     AttachmentUpdate,
     AttachmentSearch,
+    AttachmentUsagesResponse,
     BatchUpsertResponse,
     UploadSizeLimitResponse,
     StorageInfoResponse,
@@ -308,3 +308,89 @@ def serve_file_by_attachment_name(
     if result.redirect_url:
         return RedirectResponse(url=result.redirect_url, status_code=302)
     return Response(content=result.content, media_type=result.content_type)
+
+
+@router.get("/unused", response_model=AttachmentSearch)
+def get_unused_attachments(
+    page: int = 1,
+    page_size: int = 20,
+    user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Return attachments that are not referenced by any content record via
+    the Jinja attachment() call. Paginated; uses the same AttachmentSearch
+    shape as the standard list endpoint.
+    """
+    from apps.cms.models.page_content import PageContentModel
+    from apps.cms.models.blog_post_content import BlogPostContentModel
+    from apps.cms.models.template_content import TemplateContentModel
+
+    current_organization_id = getattr(user, "current_organization_id", None)
+
+    all_attachments = (
+        db.query(Model).filter(Model.organization_id == current_organization_id).all()
+    )
+
+    unused = []
+    for attachment in all_attachments:
+        if not attachment.name:
+            unused.append(attachment)
+            continue
+        name = attachment.name
+        pattern = f"%attachment('{name}'%"
+        found = (
+            db.query(PageContentModel)
+            .filter(PageContentModel.content.like(pattern))
+            .first()
+            or db.query(BlogPostContentModel)
+            .filter(BlogPostContentModel.content.like(pattern))
+            .first()
+            or db.query(TemplateContentModel)
+            .filter(TemplateContentModel.content.like(pattern))
+            .first()
+        )
+        if not found:
+            unused.append(attachment)
+
+    total = len(unused)
+    offset = (page - 1) * page_size
+    page_data = unused[offset : offset + page_size]
+    return AttachmentSearch(total=total, data=page_data)
+
+
+@router.get("/{attachment_id}/usages", response_model=AttachmentUsagesResponse)
+def get_attachment_usages(
+    attachment_id: int,
+    locale_id: int = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Return all content records that embed this attachment via {{ attachment('name') }}.
+
+    Optional query param locale_id narrows results to a single locale.
+    """
+
+    attachment = (
+        db.query(Model)
+        .filter(
+            Model.id == attachment_id,
+        )
+        .first()
+    )
+    if not attachment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Attachment not found"
+        )
+
+    usages = find_attachment_usages(
+        attachment_name=attachment.name,
+        db=db,
+        locale_id=locale_id,
+    )
+
+    return AttachmentUsagesResponse(
+        attachment_id=attachment_id,
+        attachment_name=attachment.name,
+        usages=usages,
+    )

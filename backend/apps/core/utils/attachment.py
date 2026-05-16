@@ -1,16 +1,27 @@
 import logging
 import os
+import re
+from typing import Optional
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
-from apps.core.schemas.attachment import AttachmentVersionUpsertItem, UpsertItemResult
+from apps.core.schemas.attachment import (
+    AttachmentUsageItem,
+    AttachmentVersionUpsertItem,
+    UpsertItemResult,
+)
 from apps.core.utils.models_pool import models_pool
 
 logger = logging.getLogger(__name__)
 
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 AttachmentModel = models_pool["attachment"]
+
+# Captures attachment name from both {{ attachment('name') }} and
+# {{ attachment('name', {...}) }}. Stops at the closing single-quote so it
+# works regardless of whether optional attrs are present.
+_ATTACHMENT_JINJA_RE = re.compile(r"\{\{-?\s*attachment\('([^']+)'")
 
 
 def resolve_unique_attachment_name(filename: str, db: Session) -> str:
@@ -229,3 +240,103 @@ def upsert_locale_versions(
             )
 
     return results
+
+
+def find_attachment_usages(
+    attachment_name: str,
+    db: Session,
+    locale_id: Optional[int] = None,
+) -> list[AttachmentUsageItem]:
+    """
+    Search page_content, blog_post_content, and template_content for any
+    Jinja {{ attachment('name') }} call that references attachment_name.
+
+    Args:
+        attachment_name: The AttachmentModel.name slug to search for.
+        locale_id:       When provided, restrict results to that locale.
+
+    Returns:
+        List of AttachmentUsageItem, one per matching content row.
+    """
+    from apps.cms.models.page_content import PageContentModel
+    from apps.cms.models.blog_post_content import BlogPostContentModel
+    from apps.cms.models.template_content import TemplateContentModel
+    from apps.cms.models.template import TemplateModel
+
+    # SQL LIKE pattern — fast pre-filter before Python regex confirms the match.
+    # Ends after the closing quote (no closing paren) so it matches both
+    # attachment('name') and attachment('name', {...attrs...}).
+    like_pattern = f"%attachment('{attachment_name}'%"
+
+    usages: list[AttachmentUsageItem] = []
+
+    # --- page_content ---
+    page_q = db.query(PageContentModel).filter(
+        PageContentModel.content.like(like_pattern)
+    )
+    if locale_id is not None:
+        page_q = page_q.filter(PageContentModel.locale_id == locale_id)
+    for row in page_q.all():
+        if not _ATTACHMENT_JINJA_RE.search(row.content or ""):
+            continue
+        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
+            continue
+        usages.append(
+            AttachmentUsageItem(
+                content_type="page",
+                content_id=row.id,
+                parent_id=row.page_id,
+                locale_id=row.locale_id,
+                locale=row.locale,
+                title=row.title,
+                edit_path=f"/pages/{row.page_id}/edit",
+            )
+        )
+
+    # --- blog_post_content ---
+    blog_q = db.query(BlogPostContentModel).filter(
+        BlogPostContentModel.content.like(like_pattern)
+    )
+    if locale_id is not None:
+        blog_q = blog_q.filter(BlogPostContentModel.locale_id == locale_id)
+    for row in blog_q.all():
+        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
+            continue
+        usages.append(
+            AttachmentUsageItem(
+                content_type="blog_post",
+                content_id=row.id,
+                parent_id=row.post_id,
+                locale_id=row.locale_id,
+                locale=row.locale,
+                title=row.title,
+                edit_path=f"/blog_posts/{row.post_id}/edit",
+            )
+        )
+
+    # --- template_content ---
+    tpl_q = db.query(TemplateContentModel).filter(
+        TemplateContentModel.content.like(like_pattern)
+    )
+    if locale_id is not None:
+        tpl_q = tpl_q.filter(TemplateContentModel.locale_id == locale_id)
+    for row in tpl_q.all():
+        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
+            continue
+        # Fetch template name for the title label
+        template = (
+            db.query(TemplateModel).filter(TemplateModel.id == row.template_id).first()
+        )
+        usages.append(
+            AttachmentUsageItem(
+                content_type="template",
+                content_id=row.id,
+                parent_id=row.template_id,
+                locale_id=row.locale_id,
+                locale=row.locale,
+                title=template.name if template else None,
+                edit_path=f"/templates/{row.template_id}/edit",
+            )
+        )
+
+    return usages

@@ -154,3 +154,21 @@ class StorageInfoResponse(BaseModel):
     used_storage: float  # in MB
     max_storage: float | None  # in MB, None means unlimited
     unit: str
+
+
+class AttachmentUsageItem(BaseModel):
+    """One content record that embeds the attachment via Jinja attachment() call."""
+
+    content_type: str  # "page", "blog_post", or "template"
+    content_id: int  # ID of the content record (page_content / blog_post_content / template_content)
+    parent_id: int  # ID of the parent (page_id / post_id / template_id)
+    locale_id: int
+    locale: Optional[LocaleRead] = None
+    title: Optional[str] = None  # Human-readable label for the content record
+    edit_path: Optional[str] = None  # Admin SPA path, e.g. "/pages/5/edit"
+
+
+class AttachmentUsagesResponse(BaseModel):
+    attachment_id: int
+    attachment_name: Optional[str] = None
+    usages: list[AttachmentUsageItem]
