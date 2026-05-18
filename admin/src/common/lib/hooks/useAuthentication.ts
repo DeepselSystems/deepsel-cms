@@ -130,30 +130,54 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const { identifier, password, otp = '' } = credentials;
       const encodedIdentifier = encodeURIComponent(identifier);
       const encodedPassword = encodeURIComponent(password);
-      const orgIdForLogin = organizationId;
-      const response = await fetch(`${backendHost}/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        credentials: 'include',
-        body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}&organization_id=${orgIdForLogin}`,
-      });
 
-      if (!response.ok) {
-        let message = 'Login failed';
+      const attemptLogin = async (orgId: number | undefined) => {
+        const res = await fetch(`${backendHost}/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          credentials: 'include',
+          body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}&organization_id=${orgId}`,
+        });
+        if (res.ok) {
+          return { ok: true as const, data: (await res.json()) as LoginResponse };
+        }
+        let detail = 'Login failed';
         try {
-          const errorBody = await response.json();
-          message =
+          const errorBody = await res.json();
+          detail =
             typeof errorBody.detail === 'string'
               ? errorBody.detail
               : JSON.stringify(errorBody.detail);
         } catch {
           // response body not parseable
         }
-        setError(message);
-        throw new Error(message);
+        return { ok: false as const, status: res.status, detail };
+      };
+
+      let result = await attemptLogin(organizationId);
+
+      // Stored organizationId can become stale if the org was deleted or the
+      // user was removed from it. Retry once with the default org id 1 before
+      // surfacing the error.
+      if (
+        !result.ok &&
+        result.status === 403 &&
+        result.detail === 'User is not a member of the requested organization' &&
+        organizationId !== 1
+      ) {
+        const retry = await attemptLogin(1);
+        if (retry.ok) {
+          setOrganizationId?.(1);
+          result = retry;
+        }
       }
 
-      const responseData: LoginResponse = await response.json();
+      if (!result.ok) {
+        setError(result.detail);
+        throw new Error(result.detail);
+      }
+
+      const responseData: LoginResponse = result.data;
       const { is_require_user_config_2fa, user: userData } = responseData || {};
 
       if (is_require_user_config_2fa) {
