@@ -48,7 +48,7 @@ Token: gap 32px → Tailwind: gap-8
 Example — if design-tokens.md says:
 ```
 Header: bg white, h-80px, border-bottom 1px #E5E7EB, px-64, max-width 1440px centered
-Logo: "alcoris." text, Inter 20px bold #1A1A2E
+Logo: "My Website" text, Inter 20px bold #1A1A2E
 Menu links: Inter 14px medium #4A4A68, gap 32px, active: #1A1A2E border-b-2
 Button: bg #2563EB, text white 14px medium, px-24 py-10, rounded-6
 ```
@@ -59,7 +59,7 @@ Then code MUST be:
   <div className="max-w-[1440px] mx-auto px-16 h-20 flex items-center justify-between">
     {/* Logo — EXACT match */}
     <a href="/" className="text-xl font-bold text-[#1A1A2E]" style={{ fontFamily: 'Inter' }}>
-      alcoris.
+      My Website
     </a>
 
     {/* Desktop nav */}

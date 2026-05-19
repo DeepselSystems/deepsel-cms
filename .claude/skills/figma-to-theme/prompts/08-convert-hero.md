@@ -57,7 +57,7 @@ Read design-tokens.md for hero text:
 <div className="relative z-10 max-w-[1440px] mx-auto px-16 h-full flex items-center">
   <div className="max-w-[600px]">
     <h1 className="text-[56px] font-bold text-white leading-tight" style={{ fontFamily: 'Inter' }}>
-      Alcoris Treuhand
+       My Website
     </h1>
     <p className="mt-4 text-base text-[#CBD5E1] max-w-[500px]">
       {/* EXACT subtitle text from Figma */}

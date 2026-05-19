@@ -15,20 +15,8 @@ import orderBy from 'lodash/orderBy';
  * @returns {Array<Organization>}
  */
 const getOrganizations = (organizations, user) => {
-  const userRoleIds = user?.all_roles?.map((rec) => rec.string_id) || [];
-  let result = [];
-
-  if (userRoleIds.includes('super_admin_role')) {
-    // Super admin can see all organizations
-    result = organizations;
-  } else if (!user?.organizations || user.organizations.length === 0) {
-    // Users with no assigned organizations can see all organizations
-    result = organizations;
-  } else {
-    // Regular users can only see their assigned organizations
-    const userOrganizationIds = user.organizations.map((o) => o.id);
-    result = organizations.filter((org) => userOrganizationIds.includes(org.id));
-  }
+  const userOrganizationIds = user?.organizations?.map((o) => o.id) || [];
+  const result = organizations.filter((org) => userOrganizationIds.includes(org.id));
   return orderBy(result, (o) => o.id);
 };
 

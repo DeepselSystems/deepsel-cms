@@ -7,6 +7,7 @@ import Button from '../../../common/ui/Button.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import PasswordInput from '../../../common/ui/PasswordInput.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
+import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 
 const CMS_ROLE_IDS = ['website_admin_role', 'website_editor_role', 'website_author_role'];
 
@@ -25,6 +26,7 @@ export default function CreateUserModal({ opened, onClose, onCreated }) {
   const { t } = useTranslation();
   const { notify } = NotificationState((state) => state);
   const { create: createUser, loading } = useModel('user');
+  const { organizationId } = OrganizationIdState();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -92,6 +94,7 @@ export default function CreateUserModal({ opened, onClose, onCreated }) {
     const record = {
       email: email.trim(),
       roles: selectedRole ? [selectedRole] : [],
+      organizations: organizationId ? [{ id: organizationId }] : [],
     };
     if (password) record.password = password;
 
