@@ -248,6 +248,9 @@ export default function PageEdit({ onSuccess }) {
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
+        if (organizationId) {
+          headers['X-Organization-Id'] = String(organizationId);
+        }
 
         const response = await fetch(
           `${backendHost}/theme/page-slugs/${siteSettings.selected_theme}`,

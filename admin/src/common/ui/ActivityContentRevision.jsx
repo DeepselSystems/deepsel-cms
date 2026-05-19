@@ -149,6 +149,11 @@ export default function ActivityContentRevision({
         headers.Authorization = `Bearer ${tokenResult.value}`;
       }
 
+      const orgId = parseInt(localStorage.getItem('organizationId') || '', 10);
+      if (Number.isFinite(orgId)) {
+        headers['X-Organization-Id'] = String(orgId);
+      }
+
       // Make fetch request to restore endpoint
       const response = await fetch(`${backendHost}/revision/restore`, {
         method: 'POST',

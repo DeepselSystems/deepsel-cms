@@ -54,6 +54,7 @@ export default function ThemeList() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
+          ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
         },
         credentials: 'include',
       });
@@ -78,6 +79,7 @@ export default function ThemeList() {
       const response = await fetch(`${backendHost}/theme/download/${folderName}`, {
         headers: {
           Authorization: `Bearer ${user.token}`,
+          ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
         },
         credentials: 'include',
       });
@@ -111,7 +113,10 @@ export default function ThemeList() {
       const interval = setInterval(async () => {
         try {
           const res = await fetch(`${backendHost}/theme/build-status`, {
-            headers: { Authorization: `Bearer ${user.token}` },
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
+            },
             credentials: 'include',
           });
           if (!res.ok) {
@@ -149,6 +154,7 @@ export default function ThemeList() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
         },
         credentials: 'include',
         body: JSON.stringify({ folder_name: folderName, organization_id: organizationId }),
@@ -208,6 +214,7 @@ export default function ThemeList() {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${user.token}`,
+          ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
         },
         credentials: 'include',
         body: formData,
@@ -252,6 +259,7 @@ export default function ThemeList() {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${user.token}`,
+              ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
             },
             credentials: 'include',
             body: JSON.stringify({ folder_name: folderName }),

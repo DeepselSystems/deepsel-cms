@@ -44,6 +44,7 @@ export default function SiteCreate() {
   const { notify } = NotificationState((state) => state);
   const { refresh: refreshOrganizations } = useOrganization();
   const setOrganizationId = OrganizationIdState((state) => state.setOrganizationId);
+  const { organizationId: currentOrganizationId } = OrganizationIdState();
   const { backendHost } = BackendHostURLState();
   const { user } = useAuthentication();
   const basename = useBasename();
@@ -75,6 +76,9 @@ export default function SiteCreate() {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${user.token}`,
+            ...(currentOrganizationId
+              ? { 'X-Organization-Id': String(currentOrganizationId) }
+              : {}),
           },
           credentials: 'include',
         });
@@ -91,14 +95,19 @@ export default function SiteCreate() {
       }
     };
     fetchThemes();
-  }, [backendHost, user.token]);
+  }, [backendHost, user.token, currentOrganizationId]);
 
   const pollBuildStatus = () => {
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
         try {
           const res = await fetch(`${backendHost}/theme/build-status`, {
-            headers: { Authorization: `Bearer ${user.token}` },
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              ...(currentOrganizationId
+                ? { 'X-Organization-Id': String(currentOrganizationId) }
+                : {}),
+            },
             credentials: 'include',
           });
           if (!res.ok) {
@@ -232,7 +241,10 @@ export default function SiteCreate() {
 
       const themeRes = await fetch(`${backendHost}/theme/select`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Organization-Id': String(createdOrganization.id),
+        },
         credentials: 'include',
         body: JSON.stringify({
           folder_name: record.selected_theme,

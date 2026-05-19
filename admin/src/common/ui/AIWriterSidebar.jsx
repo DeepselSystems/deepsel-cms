@@ -5,6 +5,7 @@ import useAuthentication from '../api/useAuthentication.js';
 import useModel from '../api/useModel.jsx';
 import NotificationState from '../stores/NotificationState.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
+import OrganizationIdState from '../stores/OrganizationIdState.js';
 import RecordSelect from './RecordSelect.jsx';
 import Button from './Button.jsx';
 import { IconLoader2, IconSend, IconX } from '@tabler/icons-react';
@@ -21,6 +22,7 @@ export default function AIWriterSidebar({
   const { user } = useAuthentication();
   const { notify } = NotificationState();
   const { backendHost } = BackendHostURLState();
+  const { organizationId } = OrganizationIdState();
   const messagesEndRef = useRef(null);
 
   const { record: orgSettings } = useModel('organization', {
@@ -73,6 +75,7 @@ export default function AIWriterSidebar({
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user.token}`,
+          ...(organizationId ? { 'X-Organization-Id': String(organizationId) } : {}),
         },
         body: JSON.stringify({
           model_id: modelId,

@@ -326,10 +326,14 @@ export default function useMultiLangContent({
               const url = `${backendHost}/${contentType}/translate`;
 
               try {
+                const orgId = parseInt(localStorage.getItem('organizationId') || '', 10);
                 const response = await fetch(url, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
+                    ...(Number.isFinite(orgId)
+                      ? { 'X-Organization-Id': String(orgId) }
+                      : {}),
                   },
                   body: JSON.stringify({
                     content: {

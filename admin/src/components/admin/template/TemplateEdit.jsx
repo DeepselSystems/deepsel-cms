@@ -408,6 +408,9 @@ export default function TemplateEdit({ onSuccess }) {
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
+        if (organizationId) {
+          headers['X-Organization-Id'] = String(organizationId);
+        }
 
         const response = await fetch(`${backendHost}/template_content/render`, {
           method: 'POST',

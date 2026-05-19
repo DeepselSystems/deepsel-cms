@@ -91,6 +91,9 @@ export default function PageList() {
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
+        if (organizationId) {
+          headers['X-Organization-Id'] = String(organizationId);
+        }
         const response = await fetch(`${backendHost}/theme/page-slugs/${selectedTheme}`, {
           headers,
         });
@@ -102,7 +105,7 @@ export default function PageList() {
       }
     };
     fetchThemeSlugs();
-  }, [siteSettings?.selected_theme, backendHost]);
+  }, [siteSettings?.selected_theme, backendHost, organizationId]);
 
   const getThemeEditorLink = (slug: string): string | null => {
     if (!siteSettings?.selected_theme || !themeSlugs.includes(slug)) return null;
