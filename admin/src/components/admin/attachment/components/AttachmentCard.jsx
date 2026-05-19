@@ -180,15 +180,13 @@ export function AttachmentCard({
         availableLanguages={availableLanguages}
       />
 
-      {/* File name and size — only shown when a file exists for the selected locale */}
-      {hasVersion && (
-        <div className="p-2 text-sm">
-          <div className="font-medium truncate" title={fileName}>
-            {fileName}
-          </div>
-          <div className="text-gray-500">{fileSize}</div>
+      {/* Object name (slug) always shown; file size only when a version exists for the selected locale */}
+      <div className="p-2 text-sm">
+        <div className="font-medium break-words" title={attachment.name}>
+          {attachment.name}
         </div>
-      )}
+        {hasVersion && <div className="text-gray-500">{fileSize}</div>}
+      </div>
 
       {/* Edit modal — mounted per card so each card manages its own state */}
       <EditAttachmentModal
