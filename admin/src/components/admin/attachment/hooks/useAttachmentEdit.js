@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
-import UserState from '../../../../common/stores/UserState.js';
 import { getAttachmentUrl } from '../../../../common/utils/index.js';
 import useFetch from '../../../../common/api/useFetch.js';
 
@@ -101,7 +100,6 @@ export function useAttachmentEdit({ attachment, onSaved }) {
   const { t } = useTranslation();
   const { backendHost } = BackendHostURLState((state) => state);
   const { notify } = NotificationState((state) => state);
-  const { user } = UserState((state) => state);
   const { post: upsert } = useFetch(`attachment/${attachment.id}/locale_versions/batch_upsert`);
 
   const [versions, setVersions] = useState(attachment?.locale_versions ?? []);
@@ -126,9 +124,6 @@ export function useAttachmentEdit({ attachment, onSaved }) {
     // Intentionally run only on unmount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /** Authorization headers for fetch calls. */
-  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${user?.token}` }), [user?.token]);
 
   /**
    * Union of existing version locale IDs and pending new version locale IDs.
@@ -241,9 +236,7 @@ export function useAttachmentEdit({ attachment, onSaved }) {
    *   - No pending new version is incomplete (missing localeId or file —
    *     incomplete cards cannot be saved and must be filled or removed first).
    */
-  const hasIncompletePendingVersions = pendingNewVersions.some(
-    (pv) => !pv.localeId || !pv.file,
-  );
+  const hasIncompletePendingVersions = pendingNewVersions.some((pv) => !pv.localeId || !pv.file);
   const isSaveEnabled =
     !hasIncompletePendingVersions &&
     (Object.keys(metaDrafts).length > 0 ||
@@ -369,17 +362,7 @@ export function useAttachmentEdit({ attachment, onSaved }) {
       formData.append('items_json', JSON.stringify(items));
       files.forEach((f) => formData.append('files', f));
 
-      const res = await fetch(
-        `${backendHost}/attachment/${attachment.id}/locale_versions/batch_upsert`,
-        { method: 'POST', headers: authHeaders, body: formData },
-      );
-
-      if (!res.ok) {
-        const { detail } = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(detail);
-      }
-
-      const { attachment: updated, results, has_errors } = await res.json();
+      const { attachment: updated, results, has_errors } = await upsert(formData);
 
       if (has_errors) {
         const errorMessages = results

@@ -529,6 +529,12 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     { autoFetch: false },
   );
 
+  const { post: batchUpsert } = useFetch(
+    'attachment',
+    { backendHost, setUser },
+    { autoFetch: false },
+  );
+
   useEffectOnce(() => {
     if (onFetchUploadSizeLimit) {
       onFetchUploadSizeLimit(
@@ -560,20 +566,6 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     }
     const qs = params.toString();
     return qs ? `?${qs}` : '';
-  }
-
-  /**
-   * Resolves a file from the in-memory list for use in onChange.
-   * Falls back to building a minimal attachUrl from the first available locale version.
-   */
-  function buildOnChangePayload(file: AttachmentFile): AttachmentFile & { attachUrl: string } {
-    const version = file.locale_versions?.[0];
-    return {
-      ...file,
-      attachUrl: version
-        ? getAttachmentUrl(backendHost, version.name)
-        : getAttachmentUrl(backendHost, file.name ?? ''),
-    };
   }
 
   /**
@@ -638,20 +630,9 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
       formData.append('items_json', items);
       formData.append('files', renamedFile);
 
-      const headers: Record<string, string> = {};
-      if (user?.token) headers['Authorization'] = `Bearer ${user.token}`;
-      const orgId = parseInt(localStorage.getItem('organizationId') || '', 10);
-      if (Number.isFinite(orgId)) headers['X-Organization-Id'] = String(orgId);
-
-      const response = await fetch(
-        `${backendHost}/attachment/${attachmentId}/locale_versions/batch_upsert`,
-        { method: 'POST', headers, credentials: 'include', body: formData },
-      );
-
-      if (!response.ok) {
-        const { detail } = (await response.json()) as { detail: string };
-        throw new Error(detail);
-      }
+      await batchUpsert(formData, {
+        path: `attachment/${attachmentId}/locale_versions/batch_upsert`,
+      });
 
       void getFiles();
     } catch (err) {
