@@ -122,6 +122,7 @@ export function AttachmentCard({
       )}
       onClick={handleCardClick}
     >
+      Lorem ipsum dolor sit amet
       {/* Bulk-select checkbox — visible on hover or when selection mode is active */}
       <div
         className={clsx(
