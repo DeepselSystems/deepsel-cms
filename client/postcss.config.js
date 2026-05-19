@@ -22,7 +22,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 // 3. prefixer now runs AFTER tailwind so it scopes everything the theme
 //    emits (utilities, preflight, custom CSS) to [data-theme="<name>"].
 
-// Returns either a plain theme name ("alcoris") or a per-org overlay key
+// Returns either a plain theme name ("starter_react") or a per-org overlay key
 // ("alcoris__1") depending on where the source file lives:
 //   themes/<theme>/...                     -> "<theme>"
 //   themes/<lang>/<theme>/...              -> "<theme>"
