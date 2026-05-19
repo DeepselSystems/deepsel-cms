@@ -31,30 +31,20 @@ def export_backup(
     Export backup for the specified organization.
     Returns a ZIP file containing CSVs for Pages, Blog Posts, Menus, Attachments and the attachment files.
     """
-    # Check permission (admin only)
     if not any(
-        role.string_id in ["admin_role", "super_admin_role"] for role in user.roles
+        role.string_id in ["admin_role", "website_admin_role"] for role in user.roles
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to export backup",
         )
 
-    # Validate organization access
-    allowed_org_ids = user.get_org_ids()
-    if organization_id not in allowed_org_ids:
-        # Check if super admin, they might access any org?
-        # The user request said "also have to check permission for user to this org".
-        # Usually super_admin has access to everything.
-        # Let's check if user has super_admin_role.
-        is_super_admin = any(
-            role.string_id == "super_admin_role" for role in user.roles
+    is_admin = any(role.string_id == "admin_role" for role in user.roles)
+    if not is_admin and organization_id not in user.get_org_ids():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this organization",
         )
-        if not is_super_admin:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this organization",
-            )
 
     org_id = organization_id
 
@@ -361,26 +351,20 @@ def import_backup(
     # Default is 131072 (128KB), which is too small for rich page content
     csv.field_size_limit(10485760)  # 10MB limit
 
-    # Check permission (admin only)
     if not any(
-        role.string_id in ["admin_role", "super_admin_role"] for role in user.roles
+        role.string_id in ["admin_role", "website_admin_role"] for role in user.roles
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to import backup",
         )
 
-    # Validate organization access
-    allowed_org_ids = user.get_org_ids()
-    if organization_id not in allowed_org_ids:
-        is_super_admin = any(
-            role.string_id == "super_admin_role" for role in user.roles
+    is_admin = any(role.string_id == "admin_role" for role in user.roles)
+    if not is_admin and organization_id not in user.get_org_ids():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this organization",
         )
-        if not is_super_admin:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this organization",
-            )
 
     org_id = organization_id
 

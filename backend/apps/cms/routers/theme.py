@@ -86,7 +86,7 @@ def check_website_admin_role(current_user: UserModel = Depends(get_current_user)
     user_roles = current_user.get_user_roles()
 
     has_permission = any(
-        role.string_id in ["admin_role", "super_admin_role", "website_admin_role"]
+        role.string_id in ["admin_role", "website_admin_role"]
         for role in user_roles
     )
 

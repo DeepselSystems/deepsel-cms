@@ -1,14 +1,15 @@
 string_id,name,permissions,system
 admin_role,Admin,"[
-    ""user:*:org"",
-    ""role:*:org"",
-    ""implied_role:*:org"",
-    ""user_role:*:org"",
-    ""organization:*:org"",
-    ""attachment:*:org"",
-    ""activity:*:org"",
-    ""email_template:*:org"",
-    ""cron:*:org""
+    ""user:*:*"",
+    ""user_organization:*:*"",
+    ""user_role:*:*"",
+    ""role:*:*"",
+    ""implied_role:*:*"",
+    ""organization:*:*"",
+    ""attachment:*:*"",
+    ""activity:*:*"",
+    ""email_template:*:*"",
+    ""cron:*:*""
 ]",true
 user_role,User,"[
     ""user:read:own"",

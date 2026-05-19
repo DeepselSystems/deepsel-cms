@@ -172,7 +172,7 @@ class OrganizationModel(Base, OrganizationMixin, ORMBaseMixin):
 
     @classmethod
     def _get_admin_role_string_ids(cls):
-        return ["admin_role", "super_admin_role", "website_admin_role"]
+        return ["admin_role", "website_admin_role"]
 
     @classmethod
     def create(

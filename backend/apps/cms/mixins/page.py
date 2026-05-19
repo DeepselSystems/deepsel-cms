@@ -14,14 +14,15 @@ class PageMixin:
 
     @classmethod
     def get_one(cls, db: Session, user, item_id: int, *args, **kwargs):
-        res = db.query(cls).get(item_id)
         if user is None or not user.signed_up:
-            if not res.published:
+            res = db.query(cls).get(item_id)
+            if res is None or not res.published:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Item not found",
                 )
-        return res
+            return res
+        return super().get_one(db, user, item_id, *args, **kwargs)
 
     @classmethod
     def search(

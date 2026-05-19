@@ -20,7 +20,7 @@ UserModel = models_pool["user"]
 def get_apps(user: UserModel = Depends(get_current_user)):
     # check if user has Admin or Super Admin role
     if not any(
-        role.string_id in ["admin_role", "super_admin_role"] for role in user.roles
+        role.string_id in ["admin_role", "website_admin_role"] for role in user.roles
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -39,9 +39,8 @@ def load_demo_data(
     user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # check if user has Admin or Super Admin role
     if not any(
-        role.string_id in ["admin_role", "super_admin_role"] for role in user.roles
+        role.string_id in ["admin_role", "website_admin_role"] for role in user.roles
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
