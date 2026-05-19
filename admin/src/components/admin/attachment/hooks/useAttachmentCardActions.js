@@ -7,7 +7,11 @@ import {
   IconTrash,
   IconTrashX,
 } from '@tabler/icons-react';
-import { getAttachmentUrl, downloadFromAttachUrl } from '../../../../common/utils/index.js';
+import {
+  getAttachmentUrl,
+  getAttachmentRelativeUrl,
+  downloadFromAttachUrl,
+} from '../../../../common/utils/index.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import useModel from '../../../../common/api/useModel.jsx';
@@ -60,11 +64,11 @@ export function useAttachmentCardActions({
     autoFetch: false,
   });
 
-  /** Copies the serve URL of the active locale version to the clipboard. */
+  /** Copies the frontend-proxied serve URL of the active locale version to the clipboard. */
   const handleCopyLink = async (event) => {
     event.stopPropagation();
     if (!fileName) return;
-    const attachUrl = getAttachmentUrl(backendHost, fileName);
+    const attachUrl = window.location.origin + getAttachmentRelativeUrl(fileName);
     try {
       await navigator.clipboard.writeText(attachUrl);
       notify({ title: t('Success'), message: t('Link copied to clipboard'), type: 'success' });
