@@ -331,9 +331,7 @@ export default function useMultiLangContent({
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    ...(Number.isFinite(orgId)
-                      ? { 'X-Organization-Id': String(orgId) }
-                      : {}),
+                    ...(Number.isFinite(orgId) ? { 'X-Organization-Id': String(orgId) } : {}),
                   },
                   body: JSON.stringify({
                     content: {
