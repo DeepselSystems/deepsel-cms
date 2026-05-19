@@ -199,6 +199,7 @@ export function AttachmentCard({
 
       {/* Usage modal — lists pages/blog posts/templates embedding this attachment */}
       <AttachmentUsageModal
+        key={`attachment-usage-${attachment.id}-${selectedLocaleId}`}
         attachment={attachment}
         opened={usageOpened}
         onClose={closeUsage}

@@ -43,6 +43,7 @@ export function AttachmentUsageModal({ attachment, opened, onClose, localeId }) 
 
   const usages = record?.usages ?? [];
 
+  // Fetch usages when the modal opens
   useEffect(() => {
     if (!opened || !attachment?.id) return;
     setParams(localeId ? { locale_id: localeId } : null);
@@ -68,8 +69,8 @@ export function AttachmentUsageModal({ attachment, opened, onClose, localeId }) 
       opened={opened}
       onClose={onClose}
       title={
-        <Text fw={600}>
-          {t('Usage of')} <span className="text-primary-main">{attachment?.name}</span>
+        <Text>
+          {t('Usage of')} <span className="text-primary-main font-bold">{attachment?.name}</span>
         </Text>
       }
       size="lg"
