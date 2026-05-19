@@ -717,6 +717,10 @@ export default function PageEdit({ onSuccess }) {
         resetUnsavedChanges();
         notify({ message: t('Draft saved!'), type: 'success' });
         if (onSuccess) onSuccess(created);
+        if (created?.id) {
+          navigate(`/pages/${created.id}/edit`, { replace: true });
+          window.location.reload();
+        }
       } catch (error) {
         console.error(error);
         notify({ message: error.message, type: 'error' });
@@ -725,7 +729,15 @@ export default function PageEdit({ onSuccess }) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [record, processContentsForSubmit, validateContents, create, organizationId, onSuccess],
+    [
+      record,
+      processContentsForSubmit,
+      validateContents,
+      create,
+      organizationId,
+      onSuccess,
+      navigate,
+    ],
   );
 
   const flushDraftBeforePublish = async () => {
