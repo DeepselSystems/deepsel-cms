@@ -47,7 +47,7 @@ export function LocaleFlag({
   };
 
   return (
-    <Tooltip label={localeName} withArrow>
+    <Tooltip label={localeName} zIndex={11000} withArrow>
       <UnstyledButton
         type="button"
         aria-label={
