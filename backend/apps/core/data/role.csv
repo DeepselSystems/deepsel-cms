@@ -20,8 +20,8 @@ user_role,User,"[
     ""activity:*:own""
 ]",true
 locales_public_role,Locales Public Role,"[
-    ""currency:read:org"",
-    ""country:read:org"",
-    ""locale:read:org"",
+    ""currency:read:*"",
+    ""country:read:*"",
+    ""locale:read:*"",
     ""form_submission:*:*""
 ]",true

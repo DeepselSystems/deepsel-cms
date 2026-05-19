@@ -14,7 +14,6 @@ website_admin_role,Website Administrator,"[
     ""form_field:*:org"",
     ""form_submission:*:org"",
     ""openrouter_model:*:org"",
-    ""locale:*:org"",
     ""user:*:org"",
     ""user_organization:*:org"",
     ""user_role:*:org"",
