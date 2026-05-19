@@ -234,7 +234,8 @@ export default function Media() {
       </Helmet>
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-4">
-          <H1>{t('Media Library')}</H1>
+          {/*TODD: remove later*/}
+          <H1>{t('Media Library. lorem ipsum dolor')}</H1>
           <div className="flex items-center text-sm bg-gray-100 px-3 py-2 rounded-md">
             <IconServer size={16} className="mr-2 text-primary-main" />
             {isLoading ? t('Loading storage info...') : formatStorageInfo()}
