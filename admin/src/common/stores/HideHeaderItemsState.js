@@ -7,6 +7,8 @@ const HideHeaderItemsState = create((set) => ({
   setHideProfileDropdown: (hide) => set({ hideProfileDropdown: hide }),
   hideGoToSite: false,
   setHideGoToSite: (hide) => set({ hideGoToSite: hide }),
+  hideSiteSelector: false,
+  setHideSiteSelector: (hide) => set({ hideSiteSelector: hide }),
 }));
 
 export default HideHeaderItemsState;

@@ -81,7 +81,7 @@ export default function PageEdit({ onSuccess }) {
   const { organizationId } = OrganizationIdState();
   const { organizations } = OrganizationState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
-  const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
+  const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
   const backWithRedirect = useBackWithRedirect();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
   const { user } = useAuthentication();
@@ -171,7 +171,7 @@ export default function PageEdit({ onSuccess }) {
   });
 
   const iframeRef = useRef(null);
-  const [previewDevice, setPreviewDevice] = useState(null);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
   const previewVisible = previewDevice !== null;
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
@@ -311,15 +311,15 @@ export default function PageEdit({ onSuccess }) {
   useEffect(() => {
     setShowBackButton(true);
     setHideNotifications(true);
-    setHideProfileDropdown(true);
+    setHideSiteSelector(true);
     setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
       setHideNotifications(false);
-      setHideProfileDropdown(false);
+      setHideSiteSelector(false);
       setHideGoToSite(false);
     };
-  }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
+  }, [setShowBackButton, setHideNotifications, setHideSiteSelector, setHideGoToSite]);
 
   const currentContent = useMemo(() => {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
