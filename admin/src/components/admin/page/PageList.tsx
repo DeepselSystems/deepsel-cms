@@ -16,7 +16,6 @@ import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
-import Checkbox from '../../../common/ui/Checkbox.jsx';
 import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
@@ -37,6 +36,8 @@ type PageContent = {
   locale?: PageLocale;
   title?: string;
   slug?: string;
+  published?: boolean;
+  has_draft?: boolean;
 };
 
 type PageRow = {
@@ -363,21 +364,33 @@ export default function PageList() {
     },
     {
       field: 'published',
-      headerName: t('Published'),
-      width: 90,
+      headerName: t('Status'),
+      width: 180,
       renderCell: (params: any) => {
         if (isThemeRow(params.row)) {
           return (
             <LinkedCell params={params} to={params.row._themeEditorLink}>
-              <Checkbox checked readOnly />
+              <Badge size="sm" variant="light" color="green" radius="sm">
+                {t('Published')}
+              </Badge>
             </LinkedCell>
           );
         }
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
+        const isPublished = Boolean(selectedContent?.published);
+        const hasDraft = Boolean(selectedContent?.has_draft);
+        const color = !isPublished ? 'gray' : hasDraft ? 'blue' : 'green';
+        const label = !isPublished
+          ? t('Draft')
+          : hasDraft
+            ? t('Published · Draft pending')
+            : t('Published');
         const themeLink = selectedContent?.slug ? getThemeEditorLink(selectedContent.slug) : null;
         return (
           <LinkedCell params={params} to={themeLink || `/pages/${params.row.id}/edit`}>
-            <Checkbox checked={Boolean(params.value)} readOnly />
+            <Badge size="sm" variant="light" color={color} radius="sm">
+              {label}
+            </Badge>
           </LinkedCell>
         );
       },
