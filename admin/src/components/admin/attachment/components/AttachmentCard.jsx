@@ -104,7 +104,7 @@ export function AttachmentCard({
   return (
     <div
       className={clsx(
-        'relative shadow border rounded-lg overflow-hidden cursor-pointer',
+        'relative cursor-pointer',
         selected ? 'border-primary-main ring-2 ring-primary-main' : 'border-gray-300',
       )}
       onClick={handleCardClick}

@@ -93,7 +93,7 @@ export function AttachmentPreview({
     null;
 
   return (
-    <Box>
+    <Box className='border rounded overflow-hidden shadow'>
       <Box ref={observerRef}>
         <AspectRatio
           ratio={1}
@@ -128,13 +128,15 @@ export function AttachmentPreview({
         </AspectRatio>
       </Box>
 
-      <VersionFlagBar
-        versions={resolvedVersions}
-        selectedLocaleId={selectedLocaleId ?? defaultLocaleId ?? null}
-        onSelectLocale={onSelectLocale}
-        defaultLocaleId={defaultLocaleId}
-        availableLanguages={availableLanguages}
-      />
+      <div onClick={(e) => e.stopPropagation()}>
+        <VersionFlagBar
+          versions={resolvedVersions}
+          selectedLocaleId={selectedLocaleId ?? defaultLocaleId ?? null}
+          onSelectLocale={onSelectLocale}
+          defaultLocaleId={defaultLocaleId}
+          availableLanguages={availableLanguages}
+        />
+      </div>
 
       <div className="p-2 text-sm">
         <div className="font-medium break-words" title={attachment.name ?? undefined}>

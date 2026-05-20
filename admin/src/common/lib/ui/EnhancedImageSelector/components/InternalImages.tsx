@@ -290,7 +290,7 @@ export function InternalImages({
 
         {/*region images grid*/}
         <Checkbox.Group value={checkboxValue} onChange={handleCheckboxChange}>
-          <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
+          <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 items-start">
             {attachmentImages.map((attachmentImage, index) => (
               <Checkbox.Card
                 key={index}
@@ -324,8 +324,8 @@ export function InternalImages({
                     aspectRatioClassName={clsx(
                       'transition-all duration-200',
                       checkboxValue.includes(String(attachmentImage.id))
-                        ? 'border-4 border-gray !rounded-xl'
-                        : 'hover:border-4 border-gray-westar !rounded-xl',
+                        ? 'border-3 border-gray'
+                        : 'hover:border-3 border-gray-westar',
                     )}
                   />
                 </Box>
