@@ -182,6 +182,9 @@ export function AttachmentCard({
 
       {/* Object name (slug) always shown; file size only when a version exists for the selected locale */}
       <div className="p-2 text-sm">
+        <div className="font-medium break-words text-gray-500 text-xs" title={attachment.name}>
+          {selectedVersion?.name}
+        </div>
         <div className="font-medium break-words" title={attachment.name}>
           {attachment.name}
         </div>
