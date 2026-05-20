@@ -19,7 +19,6 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import { getAttachmentUrl } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
@@ -50,6 +49,7 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 
 const BLOG_POST_DRAFT_FIELDS = [
   'title',
@@ -673,7 +673,7 @@ export default function BlogPostEdit() {
                     {content.featured_image ? (
                       <div className="w-full my-4 relative group cursor-pointer">
                         <img
-                          src={getAttachmentUrl(backendHost, content.featured_image.name)}
+                          src={getAttachmentByNameRelativeUrl(content.featured_image.name)}
                           alt={content.title || 'Featured image'}
                           className="w-full h-auto object-cover rounded-md max-h-[400px]"
                         />

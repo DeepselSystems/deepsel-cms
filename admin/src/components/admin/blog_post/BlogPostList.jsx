@@ -19,12 +19,7 @@ import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPhoto, IconPlus } from '@tabler/icons-react';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
-
-const renderCell = (params) => (
-  <LinkedCell params={params} to={`${params.row.id}/edit`}>
-    {params.value}
-  </LinkedCell>
-);
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 
 export default function BlogPostList() {
   useShowSiteSelector();
@@ -126,7 +121,7 @@ export default function BlogPostList() {
         if (image?.name) {
           return (
             <img
-              src={`/api/v1/attachment/serve/${image.name}`}
+              src={getAttachmentByNameRelativeUrl(image.name)}
               alt={image.alt_text || ''}
               className="w-28 h-20 object-cover rounded"
             />
