@@ -33,7 +33,7 @@ Model = models_pool[table_name]
 
 UserModel = models_pool["user"]
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
-CMSSettingsModel = models_pool["organization"]
+OrganizationModel = models_pool["organization"]
 LocaleModel = models_pool["locale"]
 
 router = CRUDRouter(
@@ -79,8 +79,15 @@ def upload_files(
     # Get current organization ID from user
     current_organization_id = getattr(user, "current_organization_id", None)
 
-    # Use caller-supplied locale_id when provided; fall back to org default
-    effective_locale_id = locale_id or current_organization_id
+    # Use caller-supplied locale_id when provided; fall back to org default language
+    org = (
+        db.query(OrganizationModel)
+        .filter(OrganizationModel.id == current_organization_id)
+        .first()
+        if current_organization_id
+        else None
+    )
+    effective_locale_id = locale_id or getattr(org, "default_language_id", None)
 
     instances = []
     for file in files:
