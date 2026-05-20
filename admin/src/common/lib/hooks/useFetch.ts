@@ -76,7 +76,10 @@ export function useFetch<T = unknown, R = unknown>(
   }) {
     try {
       let endpoint = `${backendHost}/${path}`;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const isFormData = data instanceof FormData;
+      const headers: Record<string, string> = isFormData
+        ? {}
+        : { 'Content-Type': 'application/json' };
 
       if (typeof window !== 'undefined') {
         const organizationId = parseInt(localStorage.getItem('organizationId') || '', 10);
@@ -92,7 +95,7 @@ export function useFetch<T = unknown, R = unknown>(
       };
 
       if (method !== 'GET' && data) {
-        fetchOptions.body = JSON.stringify(data);
+        fetchOptions.body = isFormData ? data : JSON.stringify(data);
       } else if (method === 'GET' && data) {
         const queryString = new URLSearchParams(data as Record<string, string>).toString();
         endpoint = `${endpoint}?${queryString}`;

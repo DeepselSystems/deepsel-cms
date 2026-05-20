@@ -97,7 +97,6 @@ function CompactDropzone({ onDrop, stagedFile, loading }) {
 function ExistingVersionCard({
   version,
   draft,
-  localeOptions,
   stagedFile,
   previewUrl,
   isImage,
@@ -188,15 +187,7 @@ function ExistingVersionCard({
         />
 
         {/* Locale select */}
-        <Select
-          label={t('Language')}
-          description={t('The locale this version is assigned to')}
-          value={draft.localeId != null ? String(draft.localeId) : null}
-          data={localeOptions}
-          onChange={(val) => onDraftChange({ localeId: val != null ? Number(val) : null })}
-          size="xs"
-          disabled={loading}
-        />
+        {/* Hide locale select for edtting */}
 
         {/* Alt text */}
         <Textarea
