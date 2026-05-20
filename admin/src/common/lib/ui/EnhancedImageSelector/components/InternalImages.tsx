@@ -10,7 +10,10 @@ import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 import { useDefaultLocale } from '../../../../hooks/useDefaultLocale';
+import { useSelectedVersion } from '../../../../hooks/useSelectedVersion';
+import { useUploadLocaleOverlay } from '../../../hooks/useUploadLocaleOverlay';
 import { AttachmentPreview } from '../../AttachmentPreview';
+import type { OrgLanguage } from '../../AttachmentPreview';
 import {
   IconChecks,
   IconCloudUpload,
@@ -60,6 +63,101 @@ interface InternalImagesProps {
   notify?: NotifyFn;
 }
 
+/** Props for the per-card ImageCard sub-component */
+interface ImageCardProps {
+  attachmentImage: AttachmentFile;
+  defaultLocaleId: number | null;
+  availableLanguages: OrgLanguage[];
+  multiple: boolean;
+  isEditMode: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  shouldLoad: boolean;
+  observerRef: (node: HTMLElement | null) => void;
+  backendHost: string;
+  setUser: (user: User | null) => void;
+  notify?: NotifyFn;
+  /** Called with the updated attachment and the locale ID that was just uploaded */
+  onVersionUploaded: (attachment: AttachmentFile, localeId: number) => void;
+}
+
+/**
+ * Renders a single attachment card with locale switching, lazy-load, and
+ * an "Upload for {lang}" overlay when the selected locale has no file yet.
+ */
+function ImageCard({
+  attachmentImage,
+  defaultLocaleId,
+  availableLanguages,
+  multiple,
+  isEditMode,
+  isSelected,
+  onSelect,
+  shouldLoad,
+  observerRef,
+  backendHost,
+  setUser,
+  notify,
+  onVersionUploaded,
+}: ImageCardProps) {
+  const { t } = useTranslation();
+
+  const { selectedVersion, selectedLocaleId, setSelectedLocale } = useSelectedVersion(
+    attachmentImage.locale_versions ?? [],
+    defaultLocaleId,
+  );
+
+  const selectedLangName =
+    availableLanguages.find((l) => l.id === selectedLocaleId)?.name ??
+    selectedVersion?.locale?.name ??
+    null;
+
+  const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
+    selectedLocaleId,
+    selectedLangName,
+    attachmentId: attachmentImage.id,
+    backendHost,
+    setUser,
+    notify,
+    onVersionUploaded,
+    t,
+  });
+
+  return (
+    <Checkbox.Card
+      radius="md"
+      className="overflow-hidden"
+      withBorder={false}
+      value={String(attachmentImage.id)}
+      onClick={() => !isEditMode && onSelect()}
+    >
+      {fileInputElement}
+      <Box className="relative">
+        <Box
+          className={clsx('absolute top-0 left-0 p-2 z-10', !multiple && !isEditMode && 'hidden')}
+        >
+          <Checkbox.Indicator size="md" className="!cursor-pointer" />
+        </Box>
+
+        <AttachmentPreview
+          attachment={attachmentImage}
+          shouldLoad={shouldLoad}
+          observerRef={observerRef}
+          selectedLocaleId={selectedLocaleId}
+          onSelectLocale={setSelectedLocale}
+          defaultLocaleId={defaultLocaleId}
+          availableLanguages={availableLanguages}
+          overlay={uploadOverlay}
+          aspectRatioClassName={clsx(
+            'transition-all duration-200',
+            isSelected ? 'border-3 border-gray' : 'hover:border-3 border-gray-westar',
+          )}
+        />
+      </Box>
+    </Checkbox.Card>
+  );
+}
+
 /**
  * Internal image selector with upload, lazy loading, and edit/delete capabilities.
  * Supports multi-lang attachments: each card shows a locale flag bar so the user
@@ -88,7 +186,6 @@ export function InternalImages({
     { backendHost, user, setUser },
     { pageSize: null },
   );
-
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingImages, setEditingImages] = useState<AttachmentFile[]>([]);
 
@@ -96,13 +193,6 @@ export function InternalImages({
   const lazyLoadObserverRef = useRef<IntersectionObserver | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
-
-  /**
-   * Per-card selected locale ID.
-   * Key: attachment.id, Value: locale_id of the currently previewed version.
-   * Absent = fall back to default locale (resolved inside AttachmentCardPreview).
-   */
-  const [selectedLocaleIds, setSelectedLocaleIds] = useState<Record<string | number, number>>({});
 
   const attachmentImagesMap = useMemo(
     () =>
@@ -292,44 +382,26 @@ export function InternalImages({
         <Checkbox.Group value={checkboxValue} onChange={handleCheckboxChange}>
           <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 items-start">
             {attachmentImages.map((attachmentImage, index) => (
-              <Checkbox.Card
+              <ImageCard
                 key={index}
-                radius="md"
-                className="overflow-hidden"
-                withBorder={false}
-                value={String(attachmentImage.id)}
-                onClick={() => !isEditMode && onSelect?.(attachmentImage)}
-              >
-                {/* relative wrapper provides positioning context for the checkbox indicator */}
-                <Box className="relative">
-                  <Box
-                    className={clsx(
-                      'absolute top-0 left-0 p-2 z-10',
-                      !multiple && !isEditMode && 'hidden',
-                    )}
-                  >
-                    <Checkbox.Indicator size="md" className="!cursor-pointer" />
-                  </Box>
-
-                  <AttachmentPreview
-                    attachment={attachmentImage}
-                    shouldLoad={loadedImages.has(attachmentImage.id)}
-                    observerRef={(node) => imageRefCallback(node, attachmentImage.id)}
-                    selectedLocaleId={selectedLocaleIds[attachmentImage.id] ?? null}
-                    onSelectLocale={(localeId) =>
-                      setSelectedLocaleIds((prev) => ({ ...prev, [attachmentImage.id]: localeId }))
-                    }
-                    defaultLocaleId={defaultLocaleId}
-                    availableLanguages={availableLanguages}
-                    aspectRatioClassName={clsx(
-                      'transition-all duration-200',
-                      checkboxValue.includes(String(attachmentImage.id))
-                        ? 'border-3 border-gray'
-                        : 'hover:border-3 border-gray-westar',
-                    )}
-                  />
-                </Box>
-              </Checkbox.Card>
+                attachmentImage={attachmentImage}
+                defaultLocaleId={defaultLocaleId}
+                availableLanguages={availableLanguages}
+                multiple={multiple}
+                isEditMode={isEditMode}
+                isSelected={checkboxValue.includes(String(attachmentImage.id))}
+                onSelect={() => onSelect?.(attachmentImage)}
+                shouldLoad={loadedImages.has(attachmentImage.id)}
+                observerRef={(node) => imageRefCallback(node, attachmentImage.id)}
+                backendHost={backendHost}
+                setUser={setUser}
+                notify={notify}
+                onVersionUploaded={(updated) =>
+                  setAttachmentImages((prev) =>
+                    prev.map((a) => (a.id === updated.id ? updated : a)),
+                  )
+                }
+              />
             ))}
           </Box>
         </Checkbox.Group>
