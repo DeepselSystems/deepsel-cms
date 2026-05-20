@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Tooltip, UnstyledButton } from '@mantine/core';
+import { Image, Tooltip, UnstyledButton } from '@mantine/core';
 import clsx from 'clsx';
 import { getFlagUrlForIsoCode } from '../utils/localeFlag.js';
 import { FALLBACK_FLAG_CODE, FLAG_HEIGHT_PX } from '../../constants/attachment.js';
@@ -67,10 +67,10 @@ export function LocaleFlag({
         )}
       >
         {/* width:auto preserves the flag's natural aspect ratio */}
-        <img
+        <Image
           src={flagUrl}
           alt={localeName}
-          className="block w-auto"
+          className="block w-auto pointer-events-none"
           style={imgStyle}
           onError={handleImgError}
         />

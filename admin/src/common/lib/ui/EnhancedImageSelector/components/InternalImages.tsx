@@ -10,7 +10,7 @@ import type { User } from '../../../types';
 import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 import { useDefaultLocale } from '../../../../hooks/useDefaultLocale';
-import { AttachmentCardPreview } from './AttachmentCardPreview';
+import { AttachmentPreview } from '../../AttachmentPreview';
 import {
   IconChecks,
   IconCloudUpload,
@@ -311,10 +311,9 @@ export function InternalImages({
                     <Checkbox.Indicator size="md" className="!cursor-pointer" />
                   </Box>
 
-                  <AttachmentCardPreview
+                  <AttachmentPreview
                     attachment={attachmentImage}
                     shouldLoad={loadedImages.has(attachmentImage.id)}
-                    isSelected={checkboxValue.includes(String(attachmentImage.id))}
                     observerRef={(node) => imageRefCallback(node, attachmentImage.id)}
                     selectedLocaleId={selectedLocaleIds[attachmentImage.id] ?? null}
                     onSelectLocale={(localeId) =>
@@ -322,6 +321,12 @@ export function InternalImages({
                     }
                     defaultLocaleId={defaultLocaleId}
                     availableLanguages={availableLanguages}
+                    aspectRatioClassName={clsx(
+                      'transition-all duration-200',
+                      checkboxValue.includes(String(attachmentImage.id))
+                        ? 'border-4 border-gray !rounded-xl'
+                        : 'hover:border-4 border-gray-westar !rounded-xl',
+                    )}
                   />
                 </Box>
               </Checkbox.Card>

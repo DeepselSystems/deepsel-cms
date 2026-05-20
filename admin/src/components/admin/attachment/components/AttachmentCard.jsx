@@ -1,18 +1,14 @@
 import { useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Checkbox, Text } from '@mantine/core';
+import { Checkbox } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconFile, IconFileOff } from '@tabler/icons-react';
 import clsx from 'clsx';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
 import { useSelectedVersion } from '../../../../common/hooks/useSelectedVersion.js';
 import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
-import { formatFileSize } from '@deepsel/cms-utils/common/utils';
-import { VersionFlagBar } from '../../../../common/ui/VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from '../../../../common/lib/ui/AttachmentCardOverlay.tsx';
+import { AttachmentPreview } from '../../../../common/lib/ui/AttachmentPreview.tsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
 import { AttachmentUsageModal } from './AttachmentUsageModal.jsx';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 
 /**
  * @typedef AttachmentCardProps
@@ -42,8 +38,6 @@ export function AttachmentCard({
   selectionMode,
   onAttachmentUpdated,
 }) {
-  const { t } = useTranslation();
-  const [showOverlay, setShowOverlay] = useState(false);
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
   const [usageOpened, { open: openUsage, close: closeUsage }] = useDisclosure(false);
 
@@ -51,8 +45,10 @@ export function AttachmentCard({
   const [localVersions, setLocalVersions] = useState(attachment?.locale_versions ?? []);
 
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
-  const { selectedVersion, selectedLocaleId, setSelectedLocale, availableVersions } =
-    useSelectedVersion(localVersions, defaultLocaleId);
+  const { selectedVersion, selectedLocaleId, setSelectedLocale } = useSelectedVersion(
+    localVersions,
+    defaultLocaleId,
+  );
 
   /**
    * Called by the edit modal after a successful save.
@@ -82,13 +78,6 @@ export function AttachmentCard({
   // Derive display values from the currently selected locale version
   const fileName = selectedVersion?.name ?? null;
   const isImage = selectedVersion?.content_type?.startsWith('image') ?? false;
-  const fileSize = formatFileSize(selectedVersion?.filesize ?? 0);
-
-  // Locale name for the no-file placeholder (from availableLanguages or version locale)
-  const selectedLangName =
-    availableLanguages?.find((l) => l.id === selectedLocaleId)?.name ??
-    selectedVersion?.locale?.name ??
-    null;
 
   const { overlayActions } = useAttachmentCardActions({
     selectedVersion,
@@ -124,70 +113,22 @@ export function AttachmentCard({
       <div
         className={clsx(
           'absolute top-2 left-2 z-10 bg-white rounded p-0.5 shadow transition-opacity',
-          selected || showOverlay || selectionMode ? 'opacity-100' : 'opacity-0',
+          selected || selectionMode ? 'opacity-100' : 'opacity-0',
         )}
         onClick={handleCheckboxClick}
       >
         <Checkbox checked={selected} onChange={() => {}} size="sm" />
       </div>
 
-      <div onMouseEnter={() => setShowOverlay(true)} onMouseLeave={() => setShowOverlay(false)}>
-        {/* Preview area — switches content based on selected locale and whether a file exists */}
-        {!hasVersion ? (
-          <div className="relative bg-gray-50">
-            <div className="flex flex-col items-center justify-center h-36 gap-1.5 text-gray-400">
-              <IconFileOff size={32} />
-              <span className="text-xs text-center px-2">
-                {selectedLangName
-                  ? t('No file for {{lang}}', { lang: selectedLangName })
-                  : t('No file for this language')}
-              </span>
-            </div>
-            {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
-          </div>
-        ) : isImage ? (
-          <div className="relative">
-            <img
-              src={getAttachmentRelativeUrl(fileName)}
-              className="h-36 w-full object-cover"
-              alt={selectedVersion.alt_text ?? fileName}
-            />
-            {showOverlay && <AttachmentCardOverlay actions={overlayActions} blurred />}
-          </div>
-        ) : (
-          <div className="relative bg-gray-100">
-            <div className="flex flex-col items-center justify-center h-36 p-2" title={fileName}>
-              <div className="flex flex-col items-center gap-1 text-gray-400">
-                <IconFile size={28} />
-                <Text size="xs" className="text-center px-2 max-w-full">
-                  {fileName}
-                </Text>
-              </div>
-            </div>
-            {showOverlay && <AttachmentCardOverlay actions={overlayActions} />}
-          </div>
-        )}
-      </div>
-
-      {/* Locale flag bar — click any flag (including no-file ones) to switch locale */}
-      <VersionFlagBar
-        versions={availableVersions}
+      <AttachmentPreview
+        attachment={attachment}
+        versions={localVersions}
         selectedLocaleId={selectedLocaleId}
         onSelectLocale={setSelectedLocale}
         defaultLocaleId={defaultLocaleId}
         availableLanguages={availableLanguages}
+        overlay={<AttachmentCardOverlay actions={overlayActions} blurred={isImage && hasVersion} />}
       />
-
-      {/* Object name (slug) always shown; file size only when a version exists for the selected locale */}
-      <div className="p-2 text-sm">
-        <div className="font-medium break-words" title={attachment.name}>
-          {attachment.name}
-        </div>
-        <div className="font-medium break-words text-gray-500" title={attachment.name}>
-          {selectedVersion?.name}
-        </div>
-        {hasVersion && <div className="text-gray-500">{fileSize}</div>}
-      </div>
 
       {/* Edit modal — mounted per card so each card manages its own state */}
       <EditAttachmentModal
