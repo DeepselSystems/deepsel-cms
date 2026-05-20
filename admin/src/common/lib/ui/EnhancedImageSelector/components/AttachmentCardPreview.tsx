@@ -1,9 +1,8 @@
-import React, {useMemo} from 'react';
-import { Box, Image, AspectRatio } from '@mantine/core';
+import React, { useMemo } from 'react';
+import { Box, Image, AspectRatio, Text } from '@mantine/core';
 import clsx from 'clsx';
-import {getAttachmentRelativeUrl, getAttachmentUrl} from '@deepsel/cms-utils';
-import { IconPhotoPlus } from '@tabler/icons-react';
-
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { IconFile } from '@tabler/icons-react';
 import type { AttachmentFile, AttachmentLocaleVersion } from '../../ChooseAttachmentModal';
 import { VersionFlagBar } from '../../../../ui/VersionFlagBar';
 
@@ -70,13 +69,11 @@ export function AttachmentCardPreview({
   availableLanguages,
 }: AttachmentCardPreviewProps) {
   const selectedVersion = useMemo(
-      () => resolveVersion(attachment, selectedLocaleId, defaultLocaleId),
-      [attachment, selectedLocaleId, defaultLocaleId],
+    () => resolveVersion(attachment, selectedLocaleId, defaultLocaleId),
+    [attachment, selectedLocaleId, defaultLocaleId],
   );
-  const imageSrc = useMemo(
-      () => (selectedVersion?.name ? getAttachmentRelativeUrl(selectedVersion?.name) : undefined),
-      [selectedVersion?.name],
-  );
+  const isImage =
+    (selectedVersion?.name && selectedVersion?.content_type?.startsWith('image')) ?? false;
 
   return (
     <Box>
@@ -91,16 +88,23 @@ export function AttachmentCardPreview({
               : 'hover:border-4 border-gray-westar !rounded-xl overflow-hidden',
           )}
         >
-          {shouldLoad ? (
-            imageSrc ? (
-              <Image className="!rounded-lg" alt={selectedVersion?.alt_text ?? ''} src={imageSrc} />
-            ) : (
-              <Box className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <IconPhotoPlus size={20} className="text-gray-300" />
-              </Box>
-            )
-          ) : (
-            <Box className="w-full h-full bg-gray-100 animate-pulse" />
+          {shouldLoad && (
+            <>
+              {isImage ? (
+                <Image
+                  className="!rounded-lg"
+                  src={getAttachmentRelativeUrl(selectedVersion?.name ?? '')}
+                  alt={selectedVersion?.alt_text ?? ''}
+                />
+              ) : (
+                <Box className="w-full h-full bg-gray-100 text-gray-500 flex flex-col items-center justify-center gap-3">
+                  <IconFile size={28} />
+                  <Text size="xs" className="text-center px-2 max-w-full">
+                    {selectedVersion?.name}
+                  </Text>
+                </Box>
+              )}
+            </>
           )}
         </AspectRatio>
       </Box>

@@ -7,13 +7,12 @@ import clsx from 'clsx';
 import { useDefaultLocale } from '../../../../common/hooks/useDefaultLocale.js';
 import { useSelectedVersion } from '../../../../common/hooks/useSelectedVersion.js';
 import { useAttachmentCardActions } from '../hooks/useAttachmentCardActions.js';
-import { getAttachmentUrl } from '../../../../common/utils/index.js';
-import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { VersionFlagBar } from '../../../../common/ui/VersionFlagBar.jsx';
 import { AttachmentCardOverlay } from '../../../../common/lib/ui/AttachmentCardOverlay.tsx';
 import { EditAttachmentModal } from './EditAttachmentModal.jsx';
 import { AttachmentUsageModal } from './AttachmentUsageModal.jsx';
+import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 
 /**
  * @typedef AttachmentCardProps
@@ -44,7 +43,6 @@ export function AttachmentCard({
   onAttachmentUpdated,
 }) {
   const { t } = useTranslation();
-  const { backendHost } = BackendHostURLState((state) => state);
   const [showOverlay, setShowOverlay] = useState(false);
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
   const [usageOpened, { open: openUsage, close: closeUsage }] = useDisclosure(false);
@@ -150,7 +148,7 @@ export function AttachmentCard({
         ) : isImage ? (
           <div className="relative">
             <img
-              src={getAttachmentUrl(backendHost, fileName)}
+              src={getAttachmentRelativeUrl(fileName)}
               className="h-36 w-full object-cover"
               alt={selectedVersion.alt_text ?? fileName}
             />
