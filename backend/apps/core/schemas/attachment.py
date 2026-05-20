@@ -166,6 +166,7 @@ class AttachmentUsageItem(BaseModel):
     locale: Optional[LocaleRead] = None
     title: Optional[str] = None  # Human-readable label for the content record
     edit_path: Optional[str] = None  # Admin SPA path, e.g. "/pages/5/edit"
+    is_draft: bool = False  # True when the reference is in draft_content, not published content
 
 
 class AttachmentUsagesResponse(BaseModel):

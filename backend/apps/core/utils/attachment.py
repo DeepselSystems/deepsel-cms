@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from fastapi import UploadFile
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from apps.core.schemas.attachment import (
@@ -270,49 +271,59 @@ def find_attachment_usages(
 
     usages: list[AttachmentUsageItem] = []
 
-    # --- page_content ---
+    # --- page_content (published + draft) ---
     page_q = db.query(PageContentModel).filter(
-        PageContentModel.content.like(like_pattern)
+        or_(
+            PageContentModel.content.like(like_pattern),
+            PageContentModel.draft_content.like(like_pattern),
+        )
     )
     if locale_id is not None:
         page_q = page_q.filter(PageContentModel.locale_id == locale_id)
     for row in page_q.all():
-        if not _ATTACHMENT_JINJA_RE.search(row.content or ""):
-            continue
-        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
-            continue
-        usages.append(
-            AttachmentUsageItem(
-                content_type="page",
-                content_id=row.id,
-                parent_id=row.page_id,
-                locale_id=row.locale_id,
-                locale=row.locale,
-                title=row.title,
-                edit_path=f"/pages/{row.page_id}/edit",
-            )
-        )
+        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.content or "")
+        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.draft_content or "")
+        for is_draft in (False, True):
+            if (is_draft and found_in_draft) or (not is_draft and found_in_published):
+                usages.append(
+                    AttachmentUsageItem(
+                        content_type="page",
+                        content_id=row.id,
+                        parent_id=row.page_id,
+                        locale_id=row.locale_id,
+                        locale=row.locale,
+                        title=row.title,
+                        edit_path=f"/pages/{row.page_id}/edit",
+                        is_draft=is_draft,
+                    )
+                )
 
-    # --- blog_post_content ---
+    # --- blog_post_content (published + draft) ---
     blog_q = db.query(BlogPostContentModel).filter(
-        BlogPostContentModel.content.like(like_pattern)
+        or_(
+            BlogPostContentModel.content.like(like_pattern),
+            BlogPostContentModel.draft_content.like(like_pattern),
+        )
     )
     if locale_id is not None:
         blog_q = blog_q.filter(BlogPostContentModel.locale_id == locale_id)
     for row in blog_q.all():
-        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
-            continue
-        usages.append(
-            AttachmentUsageItem(
-                content_type="blog_post",
-                content_id=row.id,
-                parent_id=row.post_id,
-                locale_id=row.locale_id,
-                locale=row.locale,
-                title=row.title,
-                edit_path=f"/blog_posts/{row.post_id}/edit",
-            )
-        )
+        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.content or "")
+        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.draft_content or "")
+        for is_draft in (False, True):
+            if (is_draft and found_in_draft) or (not is_draft and found_in_published):
+                usages.append(
+                    AttachmentUsageItem(
+                        content_type="blog_post",
+                        content_id=row.id,
+                        parent_id=row.post_id,
+                        locale_id=row.locale_id,
+                        locale=row.locale,
+                        title=row.title,
+                        edit_path=f"/blog_posts/{row.post_id}/edit",
+                        is_draft=is_draft,
+                    )
+                )
 
     # --- template_content ---
     tpl_q = db.query(TemplateContentModel).filter(

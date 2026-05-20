@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Modal, Text, Loader, ActionIcon, Tooltip } from '@mantine/core';
+import { Modal, Text, Loader, ActionIcon, Tooltip, Badge } from '@mantine/core';
 import { IconFileText, IconPhoto, IconLayout, IconExternalLink } from '@tabler/icons-react';
 import useFetch from '../../../../common/api/useFetch.js';
 
@@ -105,10 +105,17 @@ export function AttachmentUsageModal({ attachment, opened, onClose, localeId }) 
                 <div className="flex items-center gap-2 min-w-0">
                   <Icon size={16} className="text-gray-500 shrink-0" />
                   <div className="min-w-0">
-                    <Text size="sm" fw={500} className="truncate">
-                      {usage.title ??
-                        `${CONTENT_TYPE_LABEL[usage.content_type] ?? usage.content_type} #${usage.parent_id}`}
-                    </Text>
+                    <div className="flex items-center gap-1.5">
+                      <Text size="sm" fw={500} className="truncate">
+                        {usage.title ??
+                          `${CONTENT_TYPE_LABEL[usage.content_type] ?? usage.content_type} #${usage.parent_id}`}
+                      </Text>
+                      {usage.is_draft && (
+                        <Badge size="xs" color="orange" variant="light">
+                          {t('Draft')}
+                        </Badge>
+                      )}
+                    </div>
                     <Text size="xs" c="dimmed">
                       {t(CONTENT_TYPE_LABEL[usage.content_type] ?? usage.content_type)}
                       {usage.locale && ` · ${formatLocale(usage.locale)}`}
