@@ -12,6 +12,7 @@ const RichTextInput = React.forwardRef(function RichTextInput(props, ref) {
   const { notify } = NotificationState();
   const { settings: siteSettings } = SitePublicSettingsState();
   const { organizationId } = OrganizationIdState();
+
   return (
     <BaseRichTextInput
       ref={ref}
@@ -21,6 +22,7 @@ const RichTextInput = React.forwardRef(function RichTextInput(props, ref) {
       notify={notify}
       siteSettings={siteSettings}
       organizationId={organizationId}
+      currentLocaleIsoCode={props.currentLocaleIsoCode}
       {...props}
     />
   );

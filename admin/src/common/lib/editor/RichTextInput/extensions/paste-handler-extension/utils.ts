@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/core';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentRelativeUrl, getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 
 /**
  * Constants for paste handler attributes
@@ -19,10 +19,14 @@ interface AttachmentFile {
  * Handles different content types (image, video, audio)
  * @param {Array<AttachmentFile>} attachments - Array of uploaded attachment files
  * @param {Object} editor - TipTap editor instance
+ * @param {string} [locale] - Active editor locale ISO code (e.g. "en", "fr").
+ *   When provided, image src is resolved via getAttachmentByNameRelativeUrl so
+ *   the URL points to the locale-specific version of the attachment.
  */
 export const insertAttachmentsToEditor = async (
   attachments: AttachmentFile[],
   editor: Editor,
+  locale?: string,
 ): Promise<void> => {
   if (!attachments || attachments.length === 0 || !editor) {
     return;
@@ -37,7 +41,7 @@ export const insertAttachmentsToEditor = async (
     switch (fileType) {
       case 'image': {
         if (editor.can().setEnhancedImage({ src: '', description: '' })) {
-          const imageUrl = getAttachmentRelativeUrl(attachment.name);
+          const imageUrl = getAttachmentByNameRelativeUrl(attachment.name, locale);
           editor
             .chain()
             .focus()

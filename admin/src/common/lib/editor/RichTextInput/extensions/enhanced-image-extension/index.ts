@@ -25,17 +25,28 @@ declare module '@tiptap/core' {
   }
 }
 
+interface EnhancedImageOptions {
+  /** ISO code of the active editor locale (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
+  locale?: string;
+}
+
 /**
  * Enhanced Image extension with description support
  * Stores images as Jinja syntax: {{ attachment('name', {...attrs}) }}
  * Parses back both old HTML format (backward compat) and new Jinja format
  */
-export const EnhancedImage = Node.create({
+export const EnhancedImage = Node.create<EnhancedImageOptions>({
   name: 'enhancedImage',
 
   group: 'block',
 
   atom: true,
+
+  addOptions() {
+    return {
+      locale: undefined,
+    };
+  },
 
   addAttributes() {
     return {

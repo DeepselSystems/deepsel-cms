@@ -41,7 +41,7 @@ interface ImageAttributes {
  * EditorNodeView component for enhanced image with description
  * Provides hover menu with image controls and description editing
  */
-const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) => {
+const EditorNodeView = ({ node, editor, updateAttributes, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +49,10 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
 
   const { src, alt, title, width, height, alignment, rounded, circle, inline, description } =
     node.attrs as ImageAttributes;
+
+  const locale = editor.extensionManager.extensions.find(
+    (ext) => ext.name === 'enhancedImage',
+  )?.options?.locale as string | undefined;
 
   /**
    * Handle alignment change
@@ -174,7 +178,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
     >
       {/* Image */}
       <img
-        src={getAttachmentByNameRelativeUrl(src)}
+        src={getAttachmentByNameRelativeUrl(src, locale)}
         alt={alt || src || ''}
         title={title || ''}
         width={width}

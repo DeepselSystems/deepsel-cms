@@ -32,7 +32,6 @@ import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { useAIProviderConfig } from '../../../common/AIProviderConfigContext.js';
 import ConnectOpenRouterModal from '../../../common/ui/ConnectOpenRouterModal.jsx';
-import { buildFullUrl } from '../../../utils/domainUtils.js';
 import {
   IconAi,
   IconCloudCheck,
@@ -1074,7 +1073,7 @@ export default function PageEdit({ onSuccess }) {
                           key={`editor-${content.id}-${editorKey}`}
                           variant="subtle"
                           content={content.content || ''}
-                          currentLocaleId={content.locale_id}
+                          currentLocaleIsoCode={content.locale.iso_code}
                           onChange={(value) => {
                             updateContentField(content.id, 'content', value);
                           }}

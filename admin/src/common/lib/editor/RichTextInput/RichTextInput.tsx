@@ -163,6 +163,13 @@ export interface RichTextInputProps {
    * (e.g. `NotificationState.getState().notify`).
    */
   notify?: NotifyFn;
+
+  /**
+   * ISO code of the active editor locale (e.g. "en", "fr", "it").
+   * When provided, pasted images are inserted with a locale-aware URL via
+   * getAttachmentByNameRelativeUrl so the correct locale version is served.
+   */
+  currentLocaleIsoCode?: string;
 }
 
 /**
@@ -225,6 +232,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     organizationId = 0,
     className,
     notify,
+    currentLocaleIsoCode,
     ...restProps
   } = props;
 
@@ -283,7 +291,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         SubScript,
         Highlight,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
-        EnhancedImage,
+        EnhancedImage.configure({ locale: currentLocaleIsoCode }),
         EnhancedCodeBlock,
         Youtube,
         YoutubeJumpMarks,
@@ -312,6 +320,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           backendHost,
           token: user?.token,
           notify,
+          locale: currentLocaleIsoCode,
         }),
         AuthenticatedContent,
         jinja2Markdown,
