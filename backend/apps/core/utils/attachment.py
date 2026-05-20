@@ -281,8 +281,12 @@ def find_attachment_usages(
     if locale_id is not None:
         page_q = page_q.filter(PageContentModel.locale_id == locale_id)
     for row in page_q.all():
-        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.content or "")
-        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.draft_content or "")
+        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+            row.content or ""
+        )
+        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+            row.draft_content or ""
+        )
         for is_draft in (False, True):
             if (is_draft and found_in_draft) or (not is_draft and found_in_published):
                 usages.append(
@@ -308,8 +312,12 @@ def find_attachment_usages(
     if locale_id is not None:
         blog_q = blog_q.filter(BlogPostContentModel.locale_id == locale_id)
     for row in blog_q.all():
-        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.content or "")
-        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(row.draft_content or "")
+        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+            row.content or ""
+        )
+        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+            row.draft_content or ""
+        )
         for is_draft in (False, True):
             if (is_draft and found_in_draft) or (not is_draft and found_in_published):
                 usages.append(
