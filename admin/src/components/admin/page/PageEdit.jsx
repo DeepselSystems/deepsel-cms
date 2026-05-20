@@ -343,45 +343,20 @@ export default function PageEdit({ onSuccess }) {
     }
   }, [currentContent?.content, currentContent?.locale?.iso_code, organizationId]);
 
-  // Generate preview URL — uses same-origin path so iframe can communicate
-  // via postMessage and session cookies are sent automatically
+  // Always route the iframe to /preview — the admin supplies all data via
+  // postMessage, so the backend page fetch path is unnecessary (and would 404
+  // for unpublished drafts in edit mode when the iframe lacks the session cookie).
   const previewUrl = useMemo(() => {
     const selectedLocaleCode = currentContent?.locale?.iso_code;
     if (!selectedLocaleCode) return null;
 
-    let path;
-    if (!currentContent.slug || isCreateMode) {
-      path = `/preview?lang=${selectedLocaleCode}`;
-    } else {
-      const isDefaultLanguage =
-        selectedLocaleCode?.toLowerCase() ===
-        siteSettings?.default_language?.iso_code?.toLowerCase();
-
-      if (isDefaultLanguage) {
-        path = currentContent.slug;
-      } else {
-        const localePrefix = `/${selectedLocaleCode}`;
-        const cleanSlug = currentContent.slug.startsWith('/')
-          ? currentContent.slug
-          : `/${currentContent.slug}`;
-        path = `${localePrefix}${cleanSlug}`;
-      }
-    }
-
-    // Use same-origin path — session cookie handles auth, org_id tells backend which site
-    const url = new URL(path, window.location.origin);
+    const url = new URL(`/preview?lang=${selectedLocaleCode}`, window.location.origin);
     url.searchParams.set('preview', 'true');
     if (record?.organization_id) {
       url.searchParams.set('org_id', String(record.organization_id));
     }
     return url.toString();
-  }, [
-    activeContentTab,
-    currentContent,
-    record,
-    siteSettings?.default_language?.iso_code,
-    isCreateMode,
-  ]);
+  }, [currentContent?.locale?.iso_code, record?.organization_id]);
 
   const previewData = useMemo(() => {
     if (!currentContent?.locale?.iso_code) return null;

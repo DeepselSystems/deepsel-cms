@@ -365,7 +365,7 @@ export default function PageList() {
     {
       field: 'published',
       headerName: t('Status'),
-      width: 180,
+      width: 200,
       renderCell: (params: any) => {
         if (isThemeRow(params.row)) {
           return (
