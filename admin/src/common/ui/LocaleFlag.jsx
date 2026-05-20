@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Tooltip, UnstyledButton } from '@mantine/core';
 import clsx from 'clsx';
 import { getFlagUrlForIsoCode } from '../utils/localeFlag.js';
@@ -45,9 +45,10 @@ export function LocaleFlag({
   const handleImgError = () => {
     if (!errored) setErrored(true);
   };
+  const imgStyle = useMemo(() => ({ height: size }), [size]);
 
   return (
-    <Tooltip label={localeName} zIndex={11000} withArrow>
+    <Tooltip keepMounted label={localeName} zIndex={11000} withArrow>
       <UnstyledButton
         type="button"
         aria-label={
@@ -70,7 +71,7 @@ export function LocaleFlag({
           src={flagUrl}
           alt={localeName}
           className="block w-auto"
-          style={{ height: size }}
+          style={imgStyle}
           onError={handleImgError}
         />
       </UnstyledButton>

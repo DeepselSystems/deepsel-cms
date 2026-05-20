@@ -105,7 +105,7 @@ export function VersionFlagBar({
     >
       {items.map(({ lang, version }) => (
         <LocaleFlag
-          key={lang?.id ?? version?.id}
+          key={lang?.id ?? lang?.iso_code ?? lang?.name}
           locale={lang}
           selected={lang?.id === selectedLocaleId}
           noFile={version == null}

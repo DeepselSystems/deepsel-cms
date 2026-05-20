@@ -4,7 +4,6 @@ import { Box, Text, Checkbox, Group, UnstyledButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
-
 import { useModel } from '../../../hooks';
 import { useUpload } from '../../../hooks';
 import type { User } from '../../../types';
@@ -138,15 +137,12 @@ export function InternalImages({
   /**
    * Ref callback for image containers — registers them with the IntersectionObserver
    */
-  const imageRefCallback = useCallback(
-    (node: HTMLElement | null, imageId: string | number) => {
-      if (node && lazyLoadObserverRef.current) {
-        node.setAttribute(LAZY_LOAD_ATTRIBUTE, String(imageId));
-        lazyLoadObserverRef.current.observe(node);
-      }
-    },
-    [],
-  );
+  const imageRefCallback = useCallback((node: HTMLElement | null, imageId: string | number) => {
+    if (node && lazyLoadObserverRef.current) {
+      node.setAttribute(LAZY_LOAD_ATTRIBUTE, String(imageId));
+      lazyLoadObserverRef.current.observe(node);
+    }
+  }, []);
 
   /**
    * Handle file drop
@@ -317,7 +313,6 @@ export function InternalImages({
 
                   <AttachmentCardPreview
                     attachment={attachmentImage}
-                    backendHost={backendHost}
                     shouldLoad={loadedImages.has(attachmentImage.id)}
                     isSelected={checkboxValue.includes(String(attachmentImage.id))}
                     observerRef={(node) => imageRefCallback(node, attachmentImage.id)}

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import { Box, Image, AspectRatio } from '@mantine/core';
 import clsx from 'clsx';
-import { getAttachmentUrl } from '@deepsel/cms-utils';
+import {getAttachmentRelativeUrl, getAttachmentUrl} from '@deepsel/cms-utils';
 import { IconPhotoPlus } from '@tabler/icons-react';
 
 import type { AttachmentFile, AttachmentLocaleVersion } from '../../ChooseAttachmentModal';
@@ -19,7 +19,6 @@ export interface OrgLanguage {
 
 interface AttachmentCardPreviewProps {
   attachment: AttachmentFile;
-  backendHost: string;
   /** Whether the image has entered the viewport (lazy load gate) */
   shouldLoad: boolean;
   /** Whether this card is in a selected/checked state — controls AspectRatio border */
@@ -62,7 +61,6 @@ function resolveVersion(
  */
 export function AttachmentCardPreview({
   attachment,
-  backendHost,
   shouldLoad,
   isSelected,
   observerRef,
@@ -71,10 +69,14 @@ export function AttachmentCardPreview({
   defaultLocaleId,
   availableLanguages,
 }: AttachmentCardPreviewProps) {
-  const selectedVersion = resolveVersion(attachment, selectedLocaleId, defaultLocaleId);
-  const imageSrc = selectedVersion
-    ? getAttachmentUrl(backendHost, selectedVersion.name)
-    : undefined;
+  const selectedVersion = useMemo(
+      () => resolveVersion(attachment, selectedLocaleId, defaultLocaleId),
+      [attachment, selectedLocaleId, defaultLocaleId],
+  );
+  const imageSrc = useMemo(
+      () => (selectedVersion?.name ? getAttachmentRelativeUrl(selectedVersion?.name) : undefined),
+      [selectedVersion?.name],
+  );
 
   return (
     <Box>
