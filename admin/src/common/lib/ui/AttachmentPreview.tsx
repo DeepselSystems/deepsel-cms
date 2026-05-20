@@ -57,9 +57,10 @@ function resolveVersion(
   if (!versions.length) return undefined;
   const localeId = selectedLocaleId ?? defaultLocaleId;
   if (localeId != null) {
-    return versions.find((v) => v.locale_id === localeId) ?? versions[0];
+    return versions.find((v) => v.locale_id === localeId);
+  } else {
+    return versions[0];
   }
-  return versions[0];
 }
 
 /**
@@ -93,7 +94,7 @@ export function AttachmentPreview({
     null;
 
   return (
-    <Box className='border rounded overflow-hidden shadow'>
+    <Box className="border rounded overflow-hidden shadow">
       <Box ref={observerRef}>
         <AspectRatio
           ratio={1}
