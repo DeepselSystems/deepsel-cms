@@ -5,6 +5,7 @@ import { useFetch } from './useFetch';
 import type { User } from '../types';
 import type { NotifyFn } from '../types';
 import type { AttachmentFile } from '../ui';
+import BackendHostURLState from '../../stores/BackendHostURLState';
 
 /** Shape of the batch_upsert endpoint response */
 interface BatchUpsertResult {
@@ -13,14 +14,12 @@ interface BatchUpsertResult {
 }
 
 interface UseUploadLocaleOverlayOptions {
+  /** Parent attachment object */
+  attachment: AttachmentFile;
   /** Currently selected locale ID — null disables the upload action */
   selectedLocaleId: number | null;
   /** Display name of the selected language — used in the button tooltip */
   selectedLangName: string | null;
-  /** Parent attachment ID — used to build the batch_upsert URL */
-  attachmentId: string | number;
-  /** Backend host URL — forwarded to useFetch */
-  backendHost: string;
   /** setUser from UserState — forwarded to useFetch for 401 handling */
   setUser: (user: User | null) => void;
   /** Optional notification callback */
@@ -52,16 +51,20 @@ interface UseUploadLocaleOverlayReturn {
  * Pass selectedLocaleId = null to suppress the action (e.g. in select mode).
  */
 export function useUploadLocaleOverlay({
+  attachment,
   selectedLocaleId,
   selectedLangName,
-  attachmentId,
-  backendHost,
   setUser,
   notify,
   onVersionUploaded,
   t,
 }: UseUploadLocaleOverlayOptions): UseUploadLocaleOverlayReturn {
+  const attachmentId = attachment.id;
+  const hasAttachmentVersion = attachment.locale_versions?.some(
+    (v) => v.locale_id === selectedLocaleId,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { backendHost } = BackendHostURLState();
 
   const { post: batchUpsert } = useFetch<never, BatchUpsertResult>('attachment', {
     backendHost,
@@ -111,7 +114,7 @@ export function useUploadLocaleOverlay({
     [handleUpload, selectedLocaleId],
   );
 
-  const showUploadAction = selectedLocaleId != null;
+  const showUploadAction = selectedLocaleId != null && !hasAttachmentVersion;
 
   const uploadOverlay = showUploadAction ? (
     <AttachmentCardOverlay
@@ -133,7 +136,13 @@ export function useUploadLocaleOverlay({
   ) : undefined;
 
   const fileInputElement = (
-    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileInputChange} />
+    <input
+      ref={fileInputRef}
+      type="file"
+      className="hidden"
+      onChange={handleFileInputChange}
+      onClick={(e) => e.stopPropagation()}
+    />
   );
 
   return { uploadOverlay, fileInputElement };

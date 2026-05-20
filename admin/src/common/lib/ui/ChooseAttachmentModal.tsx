@@ -137,10 +137,9 @@ function FileImage({
 
   const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
     // Suppress upload action in select mode — pass null to disable
+    attachment: file,
     selectedLocaleId: isSelectMode ? null : selectedLocaleId,
     selectedLangName,
-    attachmentId: file.id,
-    backendHost,
     setUser,
     notify,
     onVersionUploaded,

@@ -113,10 +113,9 @@ function ImageCard({
     null;
 
   const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
+    attachment: attachmentImage,
     selectedLocaleId,
     selectedLangName,
-    attachmentId: attachmentImage.id,
-    backendHost,
     setUser,
     notify,
     onVersionUploaded,
@@ -396,11 +395,12 @@ export function InternalImages({
                 backendHost={backendHost}
                 setUser={setUser}
                 notify={notify}
-                onVersionUploaded={(updated) =>
+                onVersionUploaded={(updated) => {
                   setAttachmentImages((prev) =>
                     prev.map((a) => (a.id === updated.id ? updated : a)),
-                  )
-                }
+                  );
+                  onSelect?.(attachmentImage);
+                }}
               />
             ))}
           </Box>
