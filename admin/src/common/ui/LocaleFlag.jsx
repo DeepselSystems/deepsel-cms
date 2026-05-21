@@ -37,14 +37,9 @@ export function LocaleFlag({
   // Track whether the flag image failed to load so we can swap to the fallback once.
   // Only used in SVG mode (no emoji_flag).
   const [errored, setErrored] = useState(false);
-
   const localeName = locale?.name ?? 'No language assigned';
-
-  // Prefer emoji_flag (text, zero network cost) over SVG image load
-  const emojiFlag = locale?.emoji_flag ?? null;
-
   const isoCode = errored ? FALLBACK_FLAG_CODE : (locale?.iso_code ?? null);
-  const flagUrl = emojiFlag ? null : getFlagUrlForIsoCode(isoCode);
+  const flagUrl = getFlagUrlForIsoCode(isoCode);
 
   /** Swap to fallback SVG on load error; guard prevents infinite re-trigger. */
   const handleImgError = () => {
@@ -62,7 +57,7 @@ export function LocaleFlag({
         aria-pressed={selected}
         onClick={onClick}
         className={clsx(
-          'transition-all cursor-pointer flex items-center justify-center px-0.5 border rounded-md',
+          'transition-all cursor-pointer flex items-center justify-center p-0.5 border rounded',
           // Dim when no file and not currently selected
           selected
             ? 'opacity-100 border-gray-main'
@@ -70,25 +65,14 @@ export function LocaleFlag({
           className,
         )}
       >
-        {emojiFlag ? (
-          // Emoji flag — pure text, no network request
-          <span
-            className="block pointer-events-none leading-none select-none"
-            style={{ fontSize: size, lineHeight: 1 }}
-            aria-hidden="true"
-          >
-            {emojiFlag}
-          </span>
-        ) : (
-          // SVG fallback when no emoji_flag is available
-          <Image
-            src={flagUrl}
-            alt={localeName}
-            className="block w-auto pointer-events-none"
-            style={imgStyle}
-            onError={handleImgError}
-          />
-        )}
+        <Image
+          loading="lazy"
+          src={flagUrl}
+          alt={localeName}
+          className="block w-auto pointer-events-none"
+          style={imgStyle}
+          onError={handleImgError}
+        />
       </button>
     </Tooltip>
   );

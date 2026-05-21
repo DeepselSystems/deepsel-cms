@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import clsx from 'clsx';
 import { Box, Text, Checkbox, Group, UnstyledButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
@@ -27,21 +27,6 @@ import {
  * Pixel margin for the Dropzone group minimum height
  */
 const DROPZONE_MIN_HEIGHT = 100;
-
-/**
- * Pixels before viewport entry to begin loading an image (lazy load margin)
- */
-const LAZY_LOAD_ROOT_MARGIN = '50px';
-
-/**
- * Minimum intersection ratio to trigger lazy loading
- */
-const LAZY_LOAD_THRESHOLD = 0.01;
-
-/**
- * Data attribute name used to identify images in the IntersectionObserver
- */
-const LAZY_LOAD_ATTRIBUTE = 'data-image-id';
 
 interface InternalImagesProps {
   multiple?: boolean;
@@ -72,8 +57,6 @@ interface ImageCardProps {
   isEditMode: boolean;
   isSelected: boolean;
   onSelect: () => void;
-  shouldLoad: boolean;
-  observerRef: (node: HTMLElement | null) => void;
   backendHost: string;
   setUser: (user: User | null) => void;
   notify?: NotifyFn;
@@ -93,9 +76,6 @@ function ImageCard({
   isEditMode,
   isSelected,
   onSelect,
-  shouldLoad,
-  observerRef,
-  backendHost,
   setUser,
   notify,
   onVersionUploaded,
@@ -112,7 +92,7 @@ function ImageCard({
     selectedVersion?.locale?.name ??
     null;
 
-  const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
+  const { uploadOverlay } = useUploadLocaleOverlay({
     attachment: attachmentImage,
     selectedLocaleId,
     selectedLangName,
@@ -140,8 +120,6 @@ function ImageCard({
 
         <AttachmentPreview
           attachment={attachmentImage}
-          shouldLoad={shouldLoad}
-          observerRef={observerRef}
           selectedLocaleId={selectedLocaleId}
           onSelectLocale={setSelectedLocale}
           defaultLocaleId={defaultLocaleId}
@@ -187,18 +165,12 @@ export function InternalImages({
   );
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingImages, setEditingImages] = useState<AttachmentFile[]>([]);
-
-  const [loadedImages, setLoadedImages] = useState(new Set<number | string>());
-  const lazyLoadObserverRef = useRef<IntersectionObserver | null>(null);
-
   const [isUploading, setIsUploading] = useState(false);
-
   const attachmentImagesMap = useMemo(
     () =>
       fromPairs(attachmentImages.map((o) => [o.id, o])) as Record<string | number, AttachmentFile>,
     [attachmentImages],
   );
-
   const checkboxValue = useMemo(
     () =>
       isEditMode
@@ -206,12 +178,12 @@ export function InternalImages({
         : selectedImages?.map((o) => String(o.id)) || [],
     [editingImages, isEditMode, selectedImages],
   );
-
   const isSelectedAllEditing = useMemo(
     () => editingImages.length === attachmentImages.length,
     [attachmentImages.length, editingImages.length],
   );
 
+  /** Handle checkbox change */
   const handleCheckboxChange = useCallback(
     (values: string[]) => {
       if (isEditMode) {
@@ -222,16 +194,6 @@ export function InternalImages({
     },
     [attachmentImagesMap, isEditMode, multiple, setSelectedImages],
   );
-
-  /**
-   * Ref callback for image containers — registers them with the IntersectionObserver
-   */
-  const imageRefCallback = useCallback((node: HTMLElement | null, imageId: string | number) => {
-    if (node && lazyLoadObserverRef.current) {
-      node.setAttribute(LAZY_LOAD_ATTRIBUTE, String(imageId));
-      lazyLoadObserverRef.current.observe(node);
-    }
-  }, []);
 
   /**
    * Handle file drop
@@ -277,30 +239,6 @@ export function InternalImages({
       });
     }
   }, [deleteWithConfirm, editingImages, setAttachmentImages]);
-
-  /**
-   * Initialize IntersectionObserver for lazy loading images
-   */
-  useEffect(() => {
-    lazyLoadObserverRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const imageId = entry.target.getAttribute(LAZY_LOAD_ATTRIBUTE);
-            if (imageId) {
-              setLoadedImages((prev) => new Set([...prev, Number(imageId)]));
-              lazyLoadObserverRef.current?.unobserve(entry.target);
-            }
-          }
-        });
-      },
-      { rootMargin: LAZY_LOAD_ROOT_MARGIN, threshold: LAZY_LOAD_THRESHOLD },
-    );
-
-    return () => {
-      lazyLoadObserverRef.current?.disconnect();
-    };
-  }, []);
 
   /**
    * Reset editing images when edit mode is disabled
@@ -390,8 +328,6 @@ export function InternalImages({
                 isEditMode={isEditMode}
                 isSelected={checkboxValue.includes(String(attachmentImage.id))}
                 onSelect={() => onSelect?.(attachmentImage)}
-                shouldLoad={loadedImages.has(attachmentImage.id)}
-                observerRef={(node) => imageRefCallback(node, attachmentImage.id)}
                 backendHost={backendHost}
                 setUser={setUser}
                 notify={notify}

@@ -38,13 +38,6 @@ interface AttachmentPreviewProps {
    * The parent controls when to show it (hover state, etc.).
    */
   overlay?: React.ReactNode;
-  /**
-   * When false, skips rendering the file preview (lazy load gate). Defaults to true.
-   * The no-version placeholder is always rendered regardless of this flag.
-   */
-  shouldLoad?: boolean;
-  /** Ref callback forwarded to the preview container for IntersectionObserver registration */
-  observerRef?: (node: HTMLElement | null) => void;
   /** Extra className applied to the AspectRatio element (e.g. selected border styles) */
   aspectRatioClassName?: string;
 }
@@ -77,8 +70,6 @@ export function AttachmentPreview({
   defaultLocaleId,
   availableLanguages,
   overlay,
-  shouldLoad = true,
-  observerRef,
   aspectRatioClassName,
 }: AttachmentPreviewProps) {
   const { t } = useTranslation();
@@ -95,7 +86,7 @@ export function AttachmentPreview({
 
   return (
     <Box>
-      <Box ref={observerRef}>
+      <Box>
         <AspectRatio
           ratio={1}
           mx="auto"
@@ -110,21 +101,19 @@ export function AttachmentPreview({
                   : t('No file for this language')}
               </span>
             </Box>
-          ) : shouldLoad ? (
-            isImage ? (
-              <Image
-                src={getAttachmentRelativeUrl(selectedVersion.name)}
-                alt={selectedVersion.alt_text ?? ''}
-              />
-            ) : (
-              <Box className="w-full h-full bg-gray-100 text-gray-500 flex flex-col items-center justify-center gap-3">
-                <IconFile size={28} />
-                <Text size="xs" className="text-center px-2 max-w-full">
-                  {selectedVersion.name}
-                </Text>
-              </Box>
-            )
-          ) : null}
+          ) : isImage ? (
+            <Image
+              src={getAttachmentRelativeUrl(selectedVersion.name)}
+              alt={selectedVersion.alt_text ?? ''}
+            />
+          ) : (
+            <Box className="w-full h-full bg-gray-100 text-gray-500 flex flex-col items-center justify-center gap-3">
+              <IconFile size={28} />
+              <Text size="xs" className="text-center px-2 max-w-full">
+                {selectedVersion.name}
+              </Text>
+            </Box>
+          )}
           {overlay && <Box className="hidden group-hover:block absolute inset-0">{overlay}</Box>}
         </AspectRatio>
       </Box>
