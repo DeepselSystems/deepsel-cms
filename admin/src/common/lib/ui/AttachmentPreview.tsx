@@ -130,12 +130,12 @@ export function AttachmentPreview({
       </Box>
 
       <Box className="p-2 text-sm">
-        <Box className="font-medium break-words" title={attachment.name ?? undefined}>
+        <Box className="font-medium break-words line-clamp-2" title={attachment.name ?? undefined}>
           {attachment.name}
         </Box>
         {hasVersion && (
           <>
-            <Box className="break-words text-gray-500" title={selectedVersion!.name}>
+            <Box className="break-words text-gray-500 line-clamp-2" title={selectedVersion!.name}>
               {selectedVersion!.name}
             </Box>
             <Box className="text-gray-500">{formatFileSize(selectedVersion!.filesize ?? 0)}</Box>

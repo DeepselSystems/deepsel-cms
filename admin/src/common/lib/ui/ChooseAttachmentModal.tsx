@@ -57,7 +57,7 @@ export interface AttachmentLocaleVersion {
  */
 export interface AttachmentFile {
   id: string | number;
-  /** @deprecated Use locale_versions[*].name instead */
+  /** This is 'object name' . Use locale_versions[*].name to get the file name. */
   name: string | null;
   /** @deprecated Use locale_versions[*].content_type instead */
   content_type?: string;
