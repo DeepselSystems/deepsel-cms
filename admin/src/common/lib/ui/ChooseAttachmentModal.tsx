@@ -13,7 +13,7 @@ import { useDefaultLocale } from '../../hooks/useDefaultLocale';
 import { useSelectedVersion } from '../../hooks/useSelectedVersion';
 import { AttachmentPreview } from './AttachmentPreview';
 import { AttachmentDropzone } from './AttachmentDropzone';
-import { useUploadLocaleOverlay } from '../hooks/useUploadLocaleOverlay';
+import { useAttachmentCardOverlay } from '../hooks/useAttachmentCardOverlay';
 import { IconChecks, IconEdit, IconX } from '@tabler/icons-react';
 import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 
@@ -118,7 +118,6 @@ function FileImage({
   isNewUpload = false,
   defaultLocaleId,
   availableLanguages,
-  backendHost,
   setUser,
   notify,
   onVersionUploaded,
@@ -135,7 +134,7 @@ function FileImage({
     selectedVersion?.locale?.name ??
     null;
 
-  const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
+  const { overlay, fileInputElement } = useAttachmentCardOverlay({
     // Suppress upload action in select mode — pass null to disable
     attachment: file,
     selectedLocaleId: isSelectMode ? null : selectedLocaleId,
@@ -144,6 +143,7 @@ function FileImage({
     notify,
     onVersionUploaded,
     t,
+    onSelect: () => (isSelectMode ? onClick() : onSelectFile(file)),
   });
 
   return (
@@ -157,11 +157,9 @@ function FileImage({
       processing={false}
       position="top-end"
       zIndex={2}
+      classNames={{ root: 'border rounded overflow-hidden' }}
     >
-      <div
-        onClick={() => (isSelectMode ? onClick() : onSelectFile(file))}
-        className="relative cursor-pointer"
-      >
+      <div className="relative cursor-pointer">
         {isSelectMode && (
           <Checkbox
             className="absolute top-2 left-2 bg-white rounded-md z-10"
@@ -177,7 +175,7 @@ function FileImage({
           onSelectLocale={setSelectedLocale}
           defaultLocaleId={defaultLocaleId}
           availableLanguages={availableLanguages}
-          overlay={uploadOverlay}
+          overlay={overlay}
         />
       </div>
 

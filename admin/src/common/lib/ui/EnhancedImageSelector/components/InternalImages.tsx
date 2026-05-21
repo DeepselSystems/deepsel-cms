@@ -12,7 +12,7 @@ import type { NotifyFn } from '../../../types';
 import type { AttachmentFile } from '../../ChooseAttachmentModal';
 import { useDefaultLocale } from '../../../../hooks/useDefaultLocale';
 import { useSelectedVersion } from '../../../../hooks/useSelectedVersion';
-import { useUploadLocaleOverlay } from '../../../hooks/useUploadLocaleOverlay';
+import { useAttachmentCardOverlay } from '../../../hooks/useAttachmentCardOverlay';
 import { AttachmentPreview } from '../../AttachmentPreview';
 import type { OrgLanguage } from '../../AttachmentPreview';
 import {
@@ -116,7 +116,7 @@ const ImageCard = memo(function ImageCard({
     [onVersionUploaded],
   );
 
-  const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
+  const { overlay, fileInputElement } = useAttachmentCardOverlay({
     attachment: attachmentImage,
     selectedLocaleId,
     selectedLangName,
@@ -124,6 +124,8 @@ const ImageCard = memo(function ImageCard({
     notify,
     onVersionUploaded: handleVersionUploaded,
     t,
+    isEditMode,
+    onSelect: () => !isEditMode && onSelect(attachmentImage.id),
   });
 
   return (
@@ -133,7 +135,6 @@ const ImageCard = memo(function ImageCard({
       className="overflow-hidden h-full"
       component="div"
       value={String(attachmentImage.id)}
-      onClick={() => !isEditMode && onSelect(attachmentImage.id)}
       ref={intersectionRef}
     >
       <Box className="relative">
@@ -151,7 +152,7 @@ const ImageCard = memo(function ImageCard({
             onSelectLocale={setSelectedLocale}
             defaultLocaleId={defaultLocaleId}
             availableLanguages={availableLanguages}
-            overlay={uploadOverlay}
+            overlay={overlay}
             aspectRatioClassName={clsx(
               'transition-all duration-200',
               isSelected ? 'border-3 border-gray' : 'hover:border-3 border-gray-westar',
