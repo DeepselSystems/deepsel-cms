@@ -40,6 +40,8 @@ interface AttachmentPreviewProps {
   overlay?: React.ReactNode;
   /** Extra className applied to the AspectRatio element (e.g. selected border styles) */
   aspectRatioClassName?: string;
+  /** If provided, renders this instead of the AspectRatio image area (e.g. a Skeleton placeholder for lazy loading) */
+  imagePlaceholder?: React.ReactNode;
 }
 
 function resolveVersion(
@@ -71,6 +73,7 @@ export function AttachmentPreview({
   availableLanguages,
   overlay,
   aspectRatioClassName,
+  imagePlaceholder,
 }: AttachmentPreviewProps) {
   const { t } = useTranslation();
 
@@ -86,38 +89,42 @@ export function AttachmentPreview({
 
   return (
     <Box>
-      <Box>
-        <AspectRatio
-          ratio={1}
-          mx="auto"
-          className={clsx('relative overflow-hidden', overlay && 'group', aspectRatioClassName)}
-        >
-          {!hasVersion ? (
-            <Box className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-gray-400 bg-gray-50">
-              <IconFileOff size={32} />
-              <span className="text-xs text-center px-2">
-                {selectedLangName
-                  ? t('No file for {{lang}}', { lang: selectedLangName })
-                  : t('No file for this language')}
-              </span>
-            </Box>
-          ) : isImage ? (
-            <Image
-              loading="lazy"
-              src={getAttachmentRelativeUrl(selectedVersion.name)}
-              alt={selectedVersion.alt_text ?? ''}
-            />
-          ) : (
-            <Box className="w-full h-full bg-gray-100 text-gray-500 flex flex-col items-center justify-center gap-3">
-              <IconFile size={28} />
-              <Text size="xs" className="text-center px-2 max-w-full">
-                {selectedVersion.name}
-              </Text>
-            </Box>
-          )}
-          {overlay && <Box className="hidden group-hover:block absolute inset-0">{overlay}</Box>}
-        </AspectRatio>
-      </Box>
+      {imagePlaceholder != null ? (
+        <Box>{imagePlaceholder}</Box>
+      ) : (
+        <Box>
+          <AspectRatio
+            ratio={1}
+            mx="auto"
+            className={clsx('relative overflow-hidden', overlay && 'group', aspectRatioClassName)}
+          >
+            {!hasVersion ? (
+              <Box className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-gray-400 bg-gray-50">
+                <IconFileOff size={32} />
+                <span className="text-xs text-center px-2">
+                  {selectedLangName
+                    ? t('No file for {{lang}}', { lang: selectedLangName })
+                    : t('No file for this language')}
+                </span>
+              </Box>
+            ) : isImage ? (
+              <Image
+                loading="lazy"
+                src={getAttachmentRelativeUrl(selectedVersion.name)}
+                alt={selectedVersion.alt_text ?? ''}
+              />
+            ) : (
+              <Box className="w-full h-full bg-gray-100 text-gray-500 flex flex-col items-center justify-center gap-3">
+                <IconFile size={28} />
+                <Text size="xs" className="text-center px-2 max-w-full">
+                  {selectedVersion.name}
+                </Text>
+              </Box>
+            )}
+            {overlay && <Box className="hidden group-hover:block absolute inset-0">{overlay}</Box>}
+          </AspectRatio>
+        </Box>
+      )}
 
       <Box onClick={(e) => e.stopPropagation()}>
         <VersionFlagBar

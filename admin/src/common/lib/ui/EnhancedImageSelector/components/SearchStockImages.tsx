@@ -314,7 +314,7 @@ export function SearchStockImages({
             <b>{selectedImage?.title} </b>
             <>
               {selectedImage?.description && (
-                <Tooltip withArrow label={selectedImage.description}>
+                <Tooltip keepMounted withArrow label={selectedImage.description}>
                   <IconInfoCircle
                     size={16}
                     className="text-gray-pale-sky transition opacity-50 hover:opacity-100"
