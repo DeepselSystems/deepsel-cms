@@ -116,7 +116,7 @@ const ImageCard = memo(function ImageCard({
     [onVersionUploaded],
   );
 
-  const { uploadOverlay } = useUploadLocaleOverlay({
+  const { uploadOverlay, fileInputElement } = useUploadLocaleOverlay({
     attachment: attachmentImage,
     selectedLocaleId,
     selectedLangName,
@@ -137,6 +137,7 @@ const ImageCard = memo(function ImageCard({
       ref={intersectionRef}
     >
       <Box className="relative">
+        {fileInputElement}
         <Box
           className={clsx('absolute top-0 left-0 p-2 z-10', !multiple && !isEditMode && 'hidden')}
         >

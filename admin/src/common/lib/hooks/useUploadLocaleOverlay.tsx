@@ -1,6 +1,5 @@
 import React, { useCallback, useRef } from 'react';
 import { IconUpload } from '@tabler/icons-react';
-import { AttachmentCardOverlay } from '../ui/AttachmentCardOverlay';
 import { useFetch } from './useFetch';
 import type { User } from '../types';
 import type { NotifyFn } from '../types';
@@ -114,25 +113,23 @@ export function useUploadLocaleOverlay({
     [handleUpload, selectedLocaleId],
   );
 
-  const showUploadAction = selectedLocaleId != null && !hasAttachmentVersion;
+  const showUploadAction =
+    selectedLocaleId != null && selectedLangName != null && !hasAttachmentVersion;
 
   const uploadOverlay = showUploadAction ? (
-    <AttachmentCardOverlay
-      actions={[
-        {
-          key: 'upload-for-lang',
-          icon: IconUpload,
-          label: selectedLangName
-            ? t('Upload for {{lang}}', { lang: selectedLangName })
-            : t('Upload'),
-          onClick: (e) => {
-            e.stopPropagation();
-            fileInputRef.current?.click();
-          },
-        },
-      ]}
-      blurred={false}
-    />
+    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+      <button
+        type="button"
+        className="flex flex-col items-center gap-1.5 text-white text-xs font-medium px-3 py-2 rounded bg-black/40 hover:bg-black/60 transition-colors cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInputRef.current?.click();
+        }}
+      >
+        <IconUpload size={20} />
+        <span>{t('Upload for {{lang}}', { lang: selectedLangName })}</span>
+      </button>
+    </div>
   ) : undefined;
 
   const fileInputElement = (
