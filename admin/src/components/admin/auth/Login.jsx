@@ -12,7 +12,7 @@ import { useDisclosure } from '@mantine/hooks';
 import useFetch from '../../../common/api/useFetch.js';
 import { useBasename } from '../../../common/BasenameContext.js';
 
-export default function Login() {
+export default function Login({ defaultRedirect = '/pages' }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -87,11 +87,11 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      let redirectPath = redirect || '/pages';
+      let redirectPath = redirect || defaultRedirect;
       if (redirectPath.startsWith(basename + '/')) {
-        redirectPath = redirectPath.substring(basename.length) || '/pages';
+        redirectPath = redirectPath.substring(basename.length) || defaultRedirect;
       } else if (redirectPath === basename) {
-        redirectPath = '/pages';
+        redirectPath = defaultRedirect;
       }
       navigate(redirectPath);
     } catch (err) {
@@ -129,11 +129,11 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      let redirectPath = redirect || '/pages';
+      let redirectPath = redirect || defaultRedirect;
       if (redirectPath.startsWith(basename + '/')) {
-        redirectPath = redirectPath.substring(basename.length) || '/pages';
+        redirectPath = redirectPath.substring(basename.length) || defaultRedirect;
       } else if (redirectPath === basename) {
-        redirectPath = '/pages';
+        redirectPath = defaultRedirect;
       }
       navigate(redirectPath);
     } catch (err) {
@@ -223,11 +223,11 @@ export default function Login() {
         type: 'success',
       });
       const redirect = new URLSearchParams(location.search).get('redirect');
-      let redirectPath = redirect || '/pages';
+      let redirectPath = redirect || defaultRedirect;
       if (redirectPath.startsWith(basename + '/')) {
-        redirectPath = redirectPath.substring(basename.length) || '/pages';
+        redirectPath = redirectPath.substring(basename.length) || defaultRedirect;
       } else if (redirectPath === basename) {
-        redirectPath = '/pages';
+        redirectPath = defaultRedirect;
       }
       navigate(redirectPath);
     } catch (err) {
