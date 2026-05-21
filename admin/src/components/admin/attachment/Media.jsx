@@ -55,7 +55,7 @@ export default function Media() {
 
   const { record: unusedResult, get: fetchUnusedFiles } = useFetch('attachment/unused/list', {
     autoFetch: false,
-    params: { page_size: 200 },
+    params: {},
   });
 
   const unusedFiles = unusedResult?.data ?? null;
@@ -127,10 +127,20 @@ export default function Media() {
 
   const clearSelection = () => setSelectedIds(new Set());
 
-  const sortedFiles = useMemo(
-    () => sortFilesWithNewUploadsFirst(showUnused ? (unusedFiles ?? []) : files, newUploads),
-    [files, unusedFiles, showUnused, newUploads],
-  );
+  const sortedFiles = useMemo(() => {
+    let source = showUnused ? (unusedFiles ?? []) : files;
+    if (showUnused && debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      source = source.filter(
+        (f) =>
+          f.name?.toLowerCase().includes(q) ||
+          f.locale_versions?.some(
+            (v) => v.name?.toLowerCase().includes(q) || v.alt_text?.toLowerCase().includes(q),
+          ),
+      );
+    }
+    return sortFilesWithNewUploadsFirst(source, newUploads);
+  }, [files, unusedFiles, showUnused, newUploads, debouncedSearch]);
 
   const allSelected = sortedFiles.length > 0 && selectedIds.size === sortedFiles.length;
   const selectAll = () => {
@@ -222,10 +232,12 @@ export default function Media() {
     fetchStorageInfo().then();
   }, []);
 
-  // Forward debounced search term to model
+  // Forward debounced search term to backend only in normal mode; unused mode filters client-side
   useEffect(() => {
-    setSearchTerm(debouncedSearch);
-  }, [debouncedSearch, setSearchTerm]);
+    if (!showUnused) {
+      setSearchTerm(debouncedSearch);
+    }
+  }, [debouncedSearch, setSearchTerm, showUnused]);
 
   return (
     <>
@@ -263,7 +275,6 @@ export default function Media() {
               ) : null
             }
             className="flex-1"
-            disabled={showUnused}
           />
           <Switch
             label={t('Show unused')}
@@ -301,14 +312,14 @@ export default function Media() {
           </div>
         )}
 
-        {sortedFiles.length === 0 && showUnused && (
+        {sortedFiles.length === 0 && showUnused && !debouncedSearch && (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
             <IconSearch size={36} />
             <Text size="sm">{t('All attachments are in use.')}</Text>
           </div>
         )}
 
-        {sortedFiles.length === 0 && !showUnused && debouncedSearch && (
+        {sortedFiles.length === 0 && debouncedSearch && (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
             <IconSearch size={36} />
             <Text size="sm">{t('No files match "{{query}}"', { query: debouncedSearch })}</Text>
