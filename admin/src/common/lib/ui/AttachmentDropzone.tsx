@@ -13,6 +13,8 @@ interface AttachmentDropzoneProps {
   imageMode?: boolean;
   /** Extra className applied to the outer wrapper div */
   className?: string;
+  /** Disables the dropzone when true */
+  disabled?: boolean;
 }
 
 /**
@@ -24,6 +26,7 @@ export function AttachmentDropzone({
   accept,
   imageMode = false,
   className,
+  disabled = false,
 }: AttachmentDropzoneProps) {
   const { t } = useTranslation();
 
@@ -31,6 +34,7 @@ export function AttachmentDropzone({
     <Dropzone
       onDrop={onDrop}
       accept={accept}
+      disabled={disabled}
       className={
         className ??
         'border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors'

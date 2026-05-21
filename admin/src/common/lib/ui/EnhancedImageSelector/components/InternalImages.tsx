@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import clsx from 'clsx';
-import { AspectRatio, Box, Text, Checkbox, Group, UnstyledButton, Skeleton } from '@mantine/core';
+import { AspectRatio, Box, Text, Checkbox, UnstyledButton, Skeleton } from '@mantine/core';
 import { useIntersection } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
-import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { AttachmentDropzone } from '../../AttachmentDropzone';
 import { useModel } from '../../../hooks';
 import { useUpload } from '../../../hooks';
 import type { User } from '../../../types';
@@ -15,19 +16,7 @@ import { useSelectedVersion } from '../../../../hooks/useSelectedVersion';
 import { useAttachmentCardOverlay } from '../../../hooks/useAttachmentCardOverlay';
 import { AttachmentPreview } from '../../AttachmentPreview';
 import type { OrgLanguage } from '../../AttachmentPreview';
-import {
-  IconChecks,
-  IconCloudUpload,
-  IconEdit,
-  IconPhoto,
-  IconPhotoPlus,
-  IconX,
-} from '@tabler/icons-react';
-
-/**
- * Pixel margin for the Dropzone group minimum height
- */
-const DROPZONE_MIN_HEIGHT = 100;
+import { IconChecks, IconEdit, IconPhotoPlus, IconX } from '@tabler/icons-react';
 
 interface InternalImagesProps {
   multiple?: boolean;
@@ -301,36 +290,12 @@ export function InternalImages({
       <Box>
         {/*region dropzone*/}
         <div className="mb-4">
-          <Dropzone
-            disabled={isImagesLoading || isUploading}
+          <AttachmentDropzone
             onDrop={(files) => void handleDropping(files)}
             accept={IMAGE_MIME_TYPE}
-            className="border-dashed border-2 border-gray-300 rounded-lg p-4 cursor-pointer hover:border-primary-main transition-colors"
-          >
-            <Group
-              justify="center"
-              gap="xl"
-              style={{ minHeight: DROPZONE_MIN_HEIGHT, pointerEvents: 'none' }}
-            >
-              <Dropzone.Accept>
-                <IconCloudUpload size={16} className="text-3xl text-green-500" />
-              </Dropzone.Accept>
-              <Dropzone.Reject>
-                <IconX size={16} className="text-3xl text-danger-main" />
-              </Dropzone.Reject>
-              <Dropzone.Idle>
-                <IconPhoto size={16} className="text-3xl text-gray-500" />
-              </Dropzone.Idle>
-              <div className="text-center">
-                <Text size="xl" inline className="font-medium">
-                  {t('Drag files here or click to select files')}
-                </Text>
-                <Text size="sm" c="dimmed" inline mt={7}>
-                  {t('Upload as many files as you need')}
-                </Text>
-              </div>
-            </Group>
-          </Dropzone>
+            disabled={isImagesLoading || isUploading}
+            imageMode
+          />
         </div>
         {/*endregion dropzone*/}
 
