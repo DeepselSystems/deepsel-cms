@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import clsx from 'clsx';
-import { Box, Text, Checkbox, Group, UnstyledButton } from '@mantine/core';
+import { AspectRatio, Box, Text, Checkbox, Group, UnstyledButton, Skeleton } from '@mantine/core';
+import { useIntersection } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
@@ -67,6 +68,7 @@ interface ImageCardProps {
 /**
  * Renders a single attachment card with locale switching, lazy-load, and
  * an "Upload for {lang}" overlay when the selected locale has no file yet.
+ * Uses IntersectionObserver to defer rendering until the card enters the viewport.
  */
 const ImageCard = memo(function ImageCard({
   attachmentImage,
@@ -81,6 +83,23 @@ const ImageCard = memo(function ImageCard({
   onVersionUploaded,
 }: ImageCardProps) {
   const { t } = useTranslation();
+
+  // Track when the card enters the viewport so we can lazy-load the attachment preview.
+  const { ref: intersectionRef, entry } = useIntersection({
+    root: null,
+    threshold: 0.1,
+    rootMargin: '100px',
+  });
+  const [hasEntered, setHasEntered] = useState(false);
+
+  /**
+   * Track when the card enters the viewport so we can lazy-load the attachment preview.
+   */
+  useEffect(() => {
+    if (entry?.isIntersecting && !hasEntered) {
+      setHasEntered(true);
+    }
+  }, [entry?.isIntersecting, hasEntered]);
 
   const { selectedVersion, selectedLocaleId, setSelectedLocale } = useSelectedVersion(
     attachmentImage.locale_versions ?? [],
@@ -115,6 +134,7 @@ const ImageCard = memo(function ImageCard({
       component="div"
       value={String(attachmentImage.id)}
       onClick={() => !isEditMode && onSelect(attachmentImage.id)}
+      ref={intersectionRef}
     >
       <Box className="relative">
         <Box
@@ -123,18 +143,24 @@ const ImageCard = memo(function ImageCard({
           <Checkbox.Indicator size="md" className="!cursor-pointer" />
         </Box>
 
-        <AttachmentPreview
-          attachment={attachmentImage}
-          selectedLocaleId={selectedLocaleId}
-          onSelectLocale={setSelectedLocale}
-          defaultLocaleId={defaultLocaleId}
-          availableLanguages={availableLanguages}
-          overlay={uploadOverlay}
-          aspectRatioClassName={clsx(
-            'transition-all duration-200',
-            isSelected ? 'border-3 border-gray' : 'hover:border-3 border-gray-westar',
-          )}
-        />
+        {hasEntered ? (
+          <AttachmentPreview
+            attachment={attachmentImage}
+            selectedLocaleId={selectedLocaleId}
+            onSelectLocale={setSelectedLocale}
+            defaultLocaleId={defaultLocaleId}
+            availableLanguages={availableLanguages}
+            overlay={uploadOverlay}
+            aspectRatioClassName={clsx(
+              'transition-all duration-200',
+              isSelected ? 'border-3 border-gray' : 'hover:border-3 border-gray-westar',
+            )}
+          />
+        ) : (
+          <AspectRatio ratio={1} mx="auto">
+            <Skeleton radius="md" animate />
+          </AspectRatio>
+        )}
       </Box>
     </Checkbox.Card>
   );
