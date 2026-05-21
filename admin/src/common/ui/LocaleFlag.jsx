@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Image, Tooltip, UnstyledButton } from '@mantine/core';
+import { Image, Tooltip } from '@mantine/core';
 import clsx from 'clsx';
 import { getFlagUrlForIsoCode } from '../utils/localeFlag.js';
 import { FALLBACK_FLAG_CODE, FLAG_HEIGHT_PX } from '../../constants/attachment.js';
@@ -34,14 +34,19 @@ export function LocaleFlag({
   noFile = false,
   className = '',
 }) {
-  // Track whether the flag image failed to load so we can swap to the fallback once
+  // Track whether the flag image failed to load so we can swap to the fallback once.
+  // Only used in SVG mode (no emoji_flag).
   const [errored, setErrored] = useState(false);
 
-  const isoCode = errored ? FALLBACK_FLAG_CODE : (locale?.iso_code ?? null);
-  const flagUrl = getFlagUrlForIsoCode(isoCode);
   const localeName = locale?.name ?? 'No language assigned';
 
-  /** Swap to fallback flag on load error; guard prevents infinite re-trigger. */
+  // Prefer emoji_flag (text, zero network cost) over SVG image load
+  const emojiFlag = locale?.emoji_flag ?? null;
+
+  const isoCode = errored ? FALLBACK_FLAG_CODE : (locale?.iso_code ?? null);
+  const flagUrl = emojiFlag ? null : getFlagUrlForIsoCode(isoCode);
+
+  /** Swap to fallback SVG on load error; guard prevents infinite re-trigger. */
   const handleImgError = () => {
     if (!errored) setErrored(true);
   };
@@ -49,7 +54,7 @@ export function LocaleFlag({
 
   return (
     <Tooltip keepMounted label={localeName} zIndex={11000} withArrow>
-      <UnstyledButton
+      <button
         type="button"
         aria-label={
           noFile ? `${localeName}: no file uploaded yet` : `Switch to ${localeName} version`
@@ -57,24 +62,34 @@ export function LocaleFlag({
         aria-pressed={selected}
         onClick={onClick}
         className={clsx(
-          'rounded overflow-hidden border-2 transition-all cursor-pointer',
+          'transition-all cursor-pointer flex items-center justify-center px-0.5 border rounded-md',
           // Dim when no file and not currently selected
-          !selected && 'opacity-40',
           selected
-            ? 'border-primary-main ring-2 ring-primary-main'
-            : 'border-transparent hover:border-gray-300',
+            ? 'opacity-100 border-gray-main'
+            : 'opacity-40 border-transparent hover:border-gray-westar',
           className,
         )}
       >
-        {/* width:auto preserves the flag's natural aspect ratio */}
-        <Image
-          src={flagUrl}
-          alt={localeName}
-          className="block w-auto pointer-events-none"
-          style={imgStyle}
-          onError={handleImgError}
-        />
-      </UnstyledButton>
+        {emojiFlag ? (
+          // Emoji flag — pure text, no network request
+          <span
+            className="block pointer-events-none leading-none select-none"
+            style={{ fontSize: size, lineHeight: 1 }}
+            aria-hidden="true"
+          >
+            {emojiFlag}
+          </span>
+        ) : (
+          // SVG fallback when no emoji_flag is available
+          <Image
+            src={flagUrl}
+            alt={localeName}
+            className="block w-auto pointer-events-none"
+            style={imgStyle}
+            onError={handleImgError}
+          />
+        )}
+      </button>
     </Tooltip>
   );
 }

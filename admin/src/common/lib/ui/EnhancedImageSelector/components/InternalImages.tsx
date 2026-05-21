@@ -124,13 +124,13 @@ function ImageCard({
 
   return (
     <Checkbox.Card
+      withBorder
       radius="md"
-      className="overflow-hidden"
-      withBorder={false}
+      className="overflow-hidden h-full"
+      component="div"
       value={String(attachmentImage.id)}
       onClick={() => !isEditMode && onSelect()}
     >
-      {fileInputElement}
       <Box className="relative">
         <Box
           className={clsx('absolute top-0 left-0 p-2 z-10', !multiple && !isEditMode && 'hidden')}

@@ -94,7 +94,7 @@ export function AttachmentPreview({
     null;
 
   return (
-    <Box className="border rounded overflow-hidden shadow">
+    <Box>
       <Box ref={observerRef}>
         <AspectRatio
           ratio={1}
@@ -102,14 +102,14 @@ export function AttachmentPreview({
           className={clsx('relative overflow-hidden', overlay && 'group', aspectRatioClassName)}
         >
           {!hasVersion ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-gray-400 bg-gray-50">
+            <Box className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-gray-400 bg-gray-50">
               <IconFileOff size={32} />
               <span className="text-xs text-center px-2">
                 {selectedLangName
                   ? t('No file for {{lang}}', { lang: selectedLangName })
                   : t('No file for this language')}
               </span>
-            </div>
+            </Box>
           ) : shouldLoad ? (
             isImage ? (
               <Image
@@ -125,11 +125,11 @@ export function AttachmentPreview({
               </Box>
             )
           ) : null}
-          {overlay && <div className="hidden group-hover:block absolute inset-0">{overlay}</div>}
+          {overlay && <Box className="hidden group-hover:block absolute inset-0">{overlay}</Box>}
         </AspectRatio>
       </Box>
 
-      <div onClick={(e) => e.stopPropagation()}>
+      <Box onClick={(e) => e.stopPropagation()}>
         <VersionFlagBar
           versions={resolvedVersions}
           selectedLocaleId={selectedLocaleId ?? defaultLocaleId ?? null}
@@ -137,21 +137,21 @@ export function AttachmentPreview({
           defaultLocaleId={defaultLocaleId}
           availableLanguages={availableLanguages}
         />
-      </div>
+      </Box>
 
-      <div className="p-2 text-sm">
-        <div className="font-medium break-words" title={attachment.name ?? undefined}>
+      <Box className="p-2 text-sm">
+        <Box className="font-medium break-words" title={attachment.name ?? undefined}>
           {attachment.name}
-        </div>
+        </Box>
         {hasVersion && (
           <>
-            <div className="break-words text-gray-500" title={selectedVersion!.name}>
+            <Box className="break-words text-gray-500" title={selectedVersion!.name}>
               {selectedVersion!.name}
-            </div>
-            <div className="text-gray-500">{formatFileSize(selectedVersion!.filesize ?? 0)}</div>
+            </Box>
+            <Box className="text-gray-500">{formatFileSize(selectedVersion!.filesize ?? 0)}</Box>
           </>
         )}
-      </div>
+      </Box>
     </Box>
   );
 }
