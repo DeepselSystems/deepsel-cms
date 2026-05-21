@@ -294,8 +294,17 @@ def upload_theme(
             detail="Invalid zip file",
         )
 
+    def _is_macos_artifact(name: str) -> bool:
+        # macOS-created zips include __MACOSX/ resource-fork entries and
+        # ._-prefixed AppleDouble files. Ignore them everywhere.
+        if name.startswith("__MACOSX/") or "/__MACOSX/" in name:
+            return True
+        return os.path.basename(name).startswith("._")
+
     # Security: check for path traversal
     for name in zf.namelist():
+        if _is_macos_artifact(name):
+            continue
         if name.startswith("/") or ".." in name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -306,6 +315,8 @@ def upload_theme(
     top_level_dirs = set()
     top_level_files = set()
     for name in zf.namelist():
+        if _is_macos_artifact(name):
+            continue
         parts = name.split("/")
         if len(parts) > 1 and parts[1]:
             top_level_dirs.add(parts[0])
@@ -320,7 +331,7 @@ def upload_theme(
     # Validate required files exist
     zip_files = set()
     for name in zf.namelist():
-        if name.endswith("/"):
+        if name.endswith("/") or _is_macos_artifact(name):
             continue
         relative = name[len(prefix) :] if prefix else name
         zip_files.add(relative)
@@ -366,7 +377,7 @@ def upload_theme(
     # Extract to source themes directory
     os.makedirs(target_path, exist_ok=True)
     for name in zf.namelist():
-        if name.endswith("/"):
+        if name.endswith("/") or _is_macos_artifact(name):
             continue
         relative = name[len(prefix) :] if prefix else name
         if not relative:
