@@ -22,7 +22,6 @@ const RichTextInput = React.forwardRef(function RichTextInput(props, ref) {
       notify={notify}
       siteSettings={siteSettings}
       organizationId={organizationId}
-      currentLocaleIsoCode={props.currentLocaleIsoCode}
       {...props}
     />
   );

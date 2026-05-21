@@ -13,6 +13,7 @@ interface EnhancedImageButtonProps {
   backendHost: string;
   user: User | null;
   setUser: (user: User | null) => void;
+  currentLocaleId?: number | null;
 }
 
 interface Attachment {
@@ -30,6 +31,7 @@ const EnhancedImageButton = ({
   backendHost,
   user,
   setUser,
+  currentLocaleId,
   children,
 }: EnhancedImageButtonProps) => {
   const { t } = useTranslation();
@@ -54,6 +56,7 @@ const EnhancedImageButton = ({
         setUser={setUser}
         opened={enhanceImageSelectorModalOpened}
         setOpened={setEnhanceImageSelectorModalOpened}
+        currentLocaleId={currentLocaleId}
         onSelect={(attachment: Attachment) => {
           const attachmentName = attachment.name ?? '';
 

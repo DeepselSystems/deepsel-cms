@@ -36,6 +36,8 @@ interface InternalImagesProps {
    * Passed down from EnhancedImageSelector.
    */
   notify?: NotifyFn;
+  /** Active editor locale ID — passed as locale_id when uploading via the dropzone */
+  currentLocaleId?: number | null;
 }
 
 /** Props for the per-card ImageCard sub-component */
@@ -174,11 +176,10 @@ export function InternalImages({
   user,
   setUser,
   notify,
+  currentLocaleId,
 }: InternalImagesProps) {
   const { t } = useTranslation();
-
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
-
   const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
   const { deleteWithConfirm } = useModel<AttachmentFile>(
     'attachment',
@@ -228,6 +229,7 @@ export function InternalImages({
           const newImageAttachments = (await uploadFileModel(
             'attachment',
             files,
+            currentLocaleId != null ? { locale_id: currentLocaleId } : undefined,
           )) as AttachmentFile[];
           setAttachmentImages((prevState) => [...newImageAttachments, ...prevState]);
           notify?.({ message: t('Uploaded successfully'), type: 'success' });
@@ -239,7 +241,7 @@ export function InternalImages({
         }
       }
     },
-    [notify, setAttachmentImages, t, uploadFileModel],
+    [notify, setAttachmentImages, t, uploadFileModel, currentLocaleId],
   );
 
   /**

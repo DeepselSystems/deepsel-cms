@@ -77,7 +77,8 @@ import { GalleryModal } from './modals/GalleryModal';
 import type { GalleryAttachment, GalleryModalSaveData } from './modals/GalleryModal';
 import { RichTextModal } from './modals/RichTextModal';
 import type { RichTextModalSaveData } from './modals/RichTextModal';
-import { HtmlComponentsModal } from '../../ui/HtmlComponentsModal';
+import { HtmlComponentsModal } from '../../ui';
+import { useDefaultLocale } from '../../../hooks/useDefaultLocale';
 import type { User } from '../../types';
 import type { NotifyFn } from '../../types';
 import type { JumpMarkData } from './extensions/youtube-jumpmarks-extension/types';
@@ -163,13 +164,6 @@ export interface RichTextInputProps {
    * (e.g. `NotificationState.getState().notify`).
    */
   notify?: NotifyFn;
-
-  /**
-   * ISO code of the active editor locale (e.g. "en", "fr", "it").
-   * When provided, pasted images are inserted with a locale-aware URL via
-   * getAttachmentByNameRelativeUrl so the correct locale version is served.
-   */
-  currentLocaleIsoCode?: string;
 }
 
 /**
@@ -232,11 +226,13 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     organizationId = 0,
     className,
     notify,
-    currentLocaleIsoCode,
     ...restProps
   } = props;
 
   const { t } = useTranslation();
+  const { availableLanguages } = useDefaultLocale();
+  const currentLocaleIsoCode =
+    availableLanguages.find((l) => l.id === currentLocaleId)?.iso_code ?? undefined;
 
   const [isGalleryModalOpened, { open: openGalleryModal, close: closeGalleryModal }] =
     useDisclosure(false);
@@ -859,6 +855,9 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                       backendHost={backendHost}
                       user={user}
                       setUser={setUser}
+                      currentLocaleId={
+                        typeof currentLocaleId === 'number' ? currentLocaleId : undefined
+                      }
                     />
                     <Tooltip label={t('Insert Gallery')}>
                       <button

@@ -24,6 +24,8 @@ export interface EnhancedImageSelectorProps {
    * (e.g. `NotificationState.getState().notify`).
    */
   notify?: NotifyFn;
+  /** Active editor locale ID — forwarded to dropzone uploads in InternalImages */
+  currentLocaleId?: number | null;
 }
 
 /**
@@ -38,6 +40,7 @@ export function EnhancedImageSelector({
   user,
   setUser,
   notify,
+  currentLocaleId,
 }: EnhancedImageSelectorProps) {
   const { t } = useTranslation();
 
@@ -123,6 +126,7 @@ export function EnhancedImageSelector({
             user={user}
             setUser={setUser}
             notify={notify}
+            currentLocaleId={currentLocaleId}
           />
         </Tabs.Panel>
 

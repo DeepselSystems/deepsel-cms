@@ -9,7 +9,11 @@ export interface UseUploadConfig {
 export interface UseUploadReturn {
   loading: boolean;
   error: string | null;
-  uploadFileModel: (api: string, files: File[] | FileList) => Promise<unknown[]>;
+  uploadFileModel: (
+    api: string,
+    files: File[] | FileList,
+    queryParams?: Record<string, string | number>,
+  ) => Promise<unknown[]>;
 }
 
 /**
@@ -23,11 +27,16 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
 
   /**
    * Uploads one or more files to the given API endpoint
-   * @param api - API path (e.g. "file/upload")
+   * @param api - API path (e.g. "attachment")
    * @param files - Files to upload
+   * @param queryParams - Optional query params appended to the URL (e.g. locale_id)
    * @returns Array of uploaded attachments from the server
    */
-  async function uploadFileModel(api: string, files: File[] | FileList): Promise<unknown[]> {
+  async function uploadFileModel(
+    api: string,
+    files: File[] | FileList,
+    queryParams?: Record<string, string | number>,
+  ): Promise<unknown[]> {
     try {
       setLoading(true);
       setError(null);
@@ -48,7 +57,15 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
         }
       }
 
-      const response = await fetch(`${backendHost}/${api}`, {
+      let url = `${backendHost}/${api}`;
+      if (queryParams) {
+        const params = new URLSearchParams(
+          Object.fromEntries(Object.entries(queryParams).map(([k, v]) => [k, String(v)])),
+        );
+        url = `${url}?${params.toString()}`;
+      }
+
+      const response = await fetch(url, {
         method: 'POST',
         headers,
         credentials: 'include',

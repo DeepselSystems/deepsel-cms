@@ -725,7 +725,7 @@ export default function BlogPostEdit() {
                         key={`editor-${content.id}-${editorKey}`}
                         variant="subtle"
                         content={content.content || ''}
-                        currentLocaleIsoCode={content.locale.iso_code}
+                        currentLocaleId={content.locale_id}
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}
