@@ -1,7 +1,7 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { getAttachmentRelativeUrl, getAttachmentUrl } from '@deepsel/cms-utils/common/utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 
 interface GalleryConfig {
   imagesPerRow: number;
@@ -166,7 +166,7 @@ export const Gallery = Node.create<GalleryOptions>({
         [
           'img',
           {
-            src: getAttachmentRelativeUrl(attachment.name),
+            src: getAttachmentByNameRelativeUrl(attachment.name),
             alt: attachment.alt_text || '',
             class: 'gallery-image',
             style: `width: 100%; height: auto; object-fit: cover; aspect-ratio: 1 / 1; ${config.rounded ? 'border-radius: 6px;' : ''}`,
@@ -214,9 +214,7 @@ export const Gallery = Node.create<GalleryOptions>({
   },
 
   addNodeView() {
-    const backendHost = this.options.backendHost;
-    const resolveUrl = (name: string) =>
-      backendHost ? getAttachmentUrl(backendHost, name) : getAttachmentRelativeUrl(name);
+    const resolveUrl = (name: string) => getAttachmentByNameRelativeUrl(name);
 
     return ({ node, editor, getPos }) => {
       const dom = document.createElement('div');
