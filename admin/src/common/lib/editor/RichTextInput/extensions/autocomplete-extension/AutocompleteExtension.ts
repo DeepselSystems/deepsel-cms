@@ -386,11 +386,16 @@ async function checkForSuggestion(
     if (fetchAutocompletion) {
       suggestion = await fetchAutocompletion(text, position);
     } else {
+      const orgId =
+        typeof window !== 'undefined'
+          ? parseInt(localStorage.getItem('organizationId') || '', 10)
+          : NaN;
       const response = await fetch(`${backendHost}${AUTOCOMPLETE_CONSTANTS.API_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          ...(Number.isFinite(orgId) ? { 'X-Organization-Id': String(orgId) } : {}),
         },
         body: JSON.stringify({
           text,

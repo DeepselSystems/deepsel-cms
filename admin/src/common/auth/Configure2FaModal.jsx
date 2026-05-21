@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useFetch from '../api/useFetch.js';
 import BackendHostURLState from '../stores/BackendHostURLState.js';
+import OrganizationIdState from '../stores/OrganizationIdState.js';
 import NotificationState from '../stores/NotificationState.js';
 import Button from '../ui/Button.jsx';
 import TextInput from '../ui/TextInput.jsx';
@@ -14,7 +15,10 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
   const { t } = useTranslation();
   const { get: get2FaConfig } = useFetch(`user/me/2fa-config`);
   const { backendHost } = BackendHostURLState();
+  const { organizationId } = OrganizationIdState();
   const { notify } = NotificationState((state) => state);
+
+  const orgHeader = organizationId ? { 'X-Organization-Id': String(organizationId) } : {};
   const [visible, { open: openLoading, close: closeLoading }] = useDisclosure(false);
 
   const [is2FaEnabled, setIs2FaEnabled] = useState(false);
@@ -45,7 +49,7 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
     try {
       const response = await fetch(`${backendHost}/user/me/2fa-config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...orgHeader },
         credentials: 'include',
         body: JSON.stringify({ action: 'setup' }),
       });
@@ -77,7 +81,7 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
     try {
       const response = await fetch(`${backendHost}/user/me/2fa-config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...orgHeader },
         credentials: 'include',
         body: JSON.stringify({ action: 'confirm', otp }),
       });
@@ -115,7 +119,7 @@ export default function Configure2FaModal({ isOpen, close, onConfirmUsed2Fa = ()
     try {
       const response = await fetch(`${backendHost}/user/me/2fa-config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...orgHeader },
         credentials: 'include',
         body: JSON.stringify({ action: 'disable', otp }),
       });

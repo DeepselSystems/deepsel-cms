@@ -92,7 +92,7 @@ export default function BlogPostEdit() {
   const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
   const { setShowBackButton } = ShowHeaderBackButtonState();
-  const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
+  const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
   const { organizationId } = OrganizationIdState();
   const { user } = UserState();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
@@ -354,15 +354,15 @@ export default function BlogPostEdit() {
   useEffect(() => {
     setShowBackButton(true);
     setHideNotifications(true);
-    setHideProfileDropdown(true);
+    setHideSiteSelector(true);
     setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
       setHideNotifications(false);
-      setHideProfileDropdown(false);
+      setHideSiteSelector(false);
       setHideGoToSite(false);
     };
-  }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
+  }, [setShowBackButton, setHideNotifications, setHideSiteSelector, setHideGoToSite]);
 
   // Generate a slug from a title (used in create mode). Returns '' when the
   // title yields no usable characters so callers decide the fallback instead

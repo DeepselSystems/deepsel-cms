@@ -56,7 +56,8 @@ export default function AppLayout(props) {
   const showSiteSelector =
     showSiteSelectorProp !== undefined ? showSiteSelectorProp : showSiteSelectorStore;
   const { goToSiteLink } = GoToSiteLinkState();
-  const { hideNotifications, hideProfileDropdown, hideGoToSite } = HideHeaderItemsState();
+  const { hideNotifications, hideProfileDropdown, hideGoToSite, hideSiteSelector } =
+    HideHeaderItemsState();
   const { back } = useBack();
   const { confirmNavigation } = NavigationConfirmationState();
   const { organizationId, setOrganizationId } = OrganizationIdState((state) => state);
@@ -237,7 +238,7 @@ export default function AppLayout(props) {
               )}
 
               {/*region site selector*/}
-              {showSiteSelector && (
+              {showSiteSelector && !hideSiteSelector && (
                 <VisibilityControl
                   roleIds={[
                     'super_admin_role',
@@ -259,7 +260,7 @@ export default function AppLayout(props) {
                 </VisibilityControl>
               )}
               {/*endregion site selector*/}
-              {showSiteSelector && !hideGoToSite && (
+              {showSiteSelector && !hideGoToSite && !hideSiteSelector && (
                 <a
                   href={goToSiteLink}
                   target="_blank"

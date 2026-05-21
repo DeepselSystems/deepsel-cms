@@ -86,7 +86,7 @@ def check_website_admin_role(current_user: UserModel = Depends(get_current_user)
     user_roles = current_user.get_user_roles()
 
     has_permission = any(
-        role.string_id in ["admin_role", "super_admin_role", "website_admin_role"]
+        role.string_id in ["admin_role", "website_admin_role"]
         for role in user_roles
     )
 
@@ -294,8 +294,17 @@ def upload_theme(
             detail="Invalid zip file",
         )
 
+    def _is_macos_artifact(name: str) -> bool:
+        # macOS-created zips include __MACOSX/ resource-fork entries and
+        # ._-prefixed AppleDouble files. Ignore them everywhere.
+        if name.startswith("__MACOSX/") or "/__MACOSX/" in name:
+            return True
+        return os.path.basename(name).startswith("._")
+
     # Security: check for path traversal
     for name in zf.namelist():
+        if _is_macos_artifact(name):
+            continue
         if name.startswith("/") or ".." in name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -306,6 +315,8 @@ def upload_theme(
     top_level_dirs = set()
     top_level_files = set()
     for name in zf.namelist():
+        if _is_macos_artifact(name):
+            continue
         parts = name.split("/")
         if len(parts) > 1 and parts[1]:
             top_level_dirs.add(parts[0])
@@ -320,7 +331,7 @@ def upload_theme(
     # Validate required files exist
     zip_files = set()
     for name in zf.namelist():
-        if name.endswith("/"):
+        if name.endswith("/") or _is_macos_artifact(name):
             continue
         relative = name[len(prefix) :] if prefix else name
         zip_files.add(relative)
@@ -366,7 +377,7 @@ def upload_theme(
     # Extract to source themes directory
     os.makedirs(target_path, exist_ok=True)
     for name in zf.namelist():
-        if name.endswith("/"):
+        if name.endswith("/") or _is_macos_artifact(name):
             continue
         relative = name[len(prefix) :] if prefix else name
         if not relative:
@@ -524,15 +535,25 @@ def reset_theme(
             detail=f"Theme '{request.folder_name}' not found",
         )
 
+    current_org_id = getattr(current_user, "current_organization_id", None)
+    if current_org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
+
     try:
         ThemeFileModel = models_pool.get("theme_file")
         ThemeFileContentModel = models_pool.get("theme_file_content")
 
-        # Get theme file IDs, then delete content first (FK constraint)
+        # Get theme file IDs for THIS org only, then delete content first (FK constraint)
         theme_file_ids = [
             tf.id
             for tf in db.query(ThemeFileModel.id)
-            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .filter(
+                ThemeFileModel.theme_name == request.folder_name,
+                ThemeFileModel.organization_id == current_org_id,
+            )
             .all()
         ]
 
@@ -543,18 +564,37 @@ def reset_theme(
 
         deleted = (
             db.query(ThemeFileModel)
-            .filter(ThemeFileModel.theme_name == request.folder_name)
+            .filter(
+                ThemeFileModel.theme_name == request.folder_name,
+                ThemeFileModel.organization_id == current_org_id,
+            )
             .delete(synchronize_session=False)
         )
         db.commit()
 
-        # Clean up language-variant folders in source themes dir
+        # Clean up THIS org's overlay directory on disk
+        from platformdirs import user_data_dir as _user_data_dir
+
+        overlay_dir = os.path.join(
+            _user_data_dir("deepsel-cms", "deepsel"),
+            "themes",
+            f"org_{current_org_id}",
+            request.folder_name,
+        )
+        if os.path.exists(overlay_dir):
+            shutil.rmtree(overlay_dir, ignore_errors=True)
+            logger.info(f"Removed org overlay directory: {overlay_dir}")
+
+        # Clean up language-variant folders in source themes dir (still global —
+        # language base files are shared, language-specific org overlays live
+        # under themes/org_<id>/<lang>/<theme>/ and are cleared by reconcile)
         source_dir = os.path.normpath(SOURCE_THEMES_DIR)
         if os.path.exists(source_dir):
             for entry in os.listdir(source_dir):
                 lang_theme_path = os.path.join(source_dir, entry, request.folder_name)
                 if (
                     entry != request.folder_name
+                    and not entry.startswith("org_")
                     and os.path.isdir(os.path.join(source_dir, entry))
                     and os.path.isdir(lang_theme_path)
                 ):
@@ -565,13 +605,10 @@ def reset_theme(
 
         # Rebuild in background (pass selected theme for single-theme imports)
         CMSSettingsModel = models_pool.get("organization")
-        current_org_id = getattr(current_user, "current_organization_id", None)
         org = (
             db.query(CMSSettingsModel)
             .filter(CMSSettingsModel.id == current_org_id)
             .first()
-            if current_org_id
-            else None
         )
         current_selected = org.selected_theme if org else None
         background_tasks.add_task(
@@ -666,6 +703,13 @@ def get_theme_file(
     """
     Get a theme file content. Returns both filesystem content and any saved DB versions.
     """
+    current_org_id = getattr(current_user, "current_organization_id", None)
+    if current_org_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-Organization-Id header required",
+        )
+
     try:
         ThemeFileModel = models_pool.get("theme_file")
 
@@ -681,12 +725,13 @@ def get_theme_file(
         with open(full_path, "r", encoding="utf-8") as f:
             default_content = f.read()
 
-        # Check if file has DB records
+        # Check if file has DB records for THIS org
         theme_file = (
             db.query(ThemeFileModel)
             .filter(
                 ThemeFileModel.theme_name == theme_name,
                 ThemeFileModel.file_path == file_path,
+                ThemeFileModel.organization_id == current_org_id,
             )
             .first()
         )
@@ -817,25 +862,33 @@ def save_theme_file(
 
     temp_dir = None
     try:
-        # Phase 1: Validate build in isolation (no DB/filesystem changes yet)
+        # Phase 1: Validate build in isolation (no DB/filesystem changes yet).
+        # In dev mode the data dir isn't populated (no npm workspace, no
+        # node_modules, no package.json) so the temp build can't run — and
+        # it isn't needed either, because Astro dev catches breakage live
+        # through HMR. Skip straight to the DB write.
+        from ..utils.client_process import NO_CLIENT
         from ..utils.setup_themes import validate_theme_build
 
-        temp_dir = validate_theme_build(
-            theme_name=request.theme_name,
-            file_path=request.file_path,
-            contents=request.contents,
-        )
+        if not NO_CLIENT:
+            temp_dir = validate_theme_build(
+                theme_name=request.theme_name,
+                file_path=request.file_path,
+                contents=request.contents,
+                organization_id=current_org_id,
+            )
 
         # Phase 2: Build succeeded — apply changes
         ThemeFileModel = models_pool.get("theme_file")
         ThemeFileContentModel = models_pool.get("theme_file_content")
 
-        # Get or create theme file record
+        # Get or create theme file record FOR THIS ORG
         theme_file = (
             db.query(ThemeFileModel)
             .filter(
                 ThemeFileModel.theme_name == request.theme_name,
                 ThemeFileModel.file_path == request.file_path,
+                ThemeFileModel.organization_id == current_org_id,
             )
             .first()
         )
@@ -899,34 +952,56 @@ def save_theme_file(
 
         db.commit()
 
-        # Copy validated build artifacts from temp to real data dir
-        real_dist = os.path.join(DATA_DIR, "client", "dist")
-        temp_dist = os.path.join(temp_dir, "client", "dist")
-        if os.path.exists(temp_dist):
-            if os.path.exists(real_dist):
-                shutil.rmtree(real_dist)
-            shutil.copytree(temp_dist, real_dist)
+        if NO_CLIENT:
+            # Dev mode: no managed Astro client to restart, no data-dir build
+            # artifacts to swap. Reconcile the overlay tree against the repo
+            # so the Astro dev server's HMR picks up the new files, and
+            # regenerate themes.ts so any newly-introduced overlay entries
+            # become importable.
+            from ..utils.setup_themes import reconcile_theme_overlays
+            from ..utils.theme_imports import (
+                generate_theme_imports,
+                generate_tailwind_config,
+            )
 
-        # Run setup_themes in background to update state hashes and sync
-        # (build will be skipped since dist is fresh)
-        if has_deletions:
-            background_tasks.add_task(
-                trigger_setup_themes,
-                force_sync=True,
-                selected_theme=request.theme_name,
+            project_root = os.path.normpath(
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
+            )
+            reconcile_theme_overlays(project_root, force=True)
+            generate_theme_imports(
+                data_dir_path=project_root, selected_theme=request.theme_name
+            )
+            generate_tailwind_config(
+                data_dir_path=project_root, selected_theme=request.theme_name
             )
         else:
-            background_tasks.add_task(
-                trigger_setup_themes, selected_theme=request.theme_name
-            )
+            # Production: copy validated build artifacts into the real data dir
+            # then trigger setup_themes in the background for state-hash bookkeeping.
+            real_dist = os.path.join(DATA_DIR, "client", "dist")
+            temp_dist = os.path.join(temp_dir, "client", "dist")
+            if os.path.exists(temp_dist):
+                if os.path.exists(real_dist):
+                    shutil.rmtree(real_dist)
+                shutil.copytree(temp_dist, real_dist)
 
-        # Restart client to pick up the new build
-        from ..utils.client_process import get_client_manager
+            if has_deletions:
+                background_tasks.add_task(
+                    trigger_setup_themes,
+                    force_sync=True,
+                    selected_theme=request.theme_name,
+                )
+            else:
+                background_tasks.add_task(
+                    trigger_setup_themes, selected_theme=request.theme_name
+                )
 
-        manager = get_client_manager()
-        if manager:
-            logger.info("Restarting Astro client after successful theme build...")
-            manager.restart()
+            # Restart client to pick up the new build
+            from ..utils.client_process import get_client_manager
+
+            manager = get_client_manager()
+            if manager:
+                logger.info("Restarting Astro client after successful theme build...")
+                manager.restart()
 
         logger.info(f"Saved theme file: {request.theme_name}/{request.file_path}")
 

@@ -41,22 +41,6 @@ export default function BlogPostList() {
       });
     }
 
-    // Add owner filter for website_author_role who are not admins
-    if (
-      user.roles.some((role) => role.string_id === 'website_author_role') &&
-      !user.roles.some((role) =>
-        ['admin_role', 'super_admin_role', 'website_admin_role', 'website_editor_role'].includes(
-          role.string_id,
-        ),
-      )
-    ) {
-      filters.push({
-        field: 'owner_id',
-        operator: '=',
-        value: user.id,
-      });
-    }
-
     return filters;
   };
 
@@ -86,7 +70,7 @@ export default function BlogPostList() {
   // Update filters when organizationId changes
   useEffect(() => {
     setFilters(buildFilters());
-  }, [organizationId, user.id, user.roles]);
+  }, [organizationId]);
 
   const pickContent = (contents) => {
     if (!contents || contents.length === 0) return null;
@@ -155,6 +139,24 @@ export default function BlogPostList() {
       renderCell: (params) => (
         <LinkedCell params={params} to={`${params.row.id}/edit`}>
           {params.value || '-'}
+        </LinkedCell>
+      ),
+    },
+    {
+      field: 'author',
+      headerName: t('Author'),
+      width: 200,
+      sortable: false,
+      filterable: false,
+      valueGetter: (params) => {
+        const author = params.row.author;
+        if (!author) return '-';
+        const fullName = [author.first_name, author.last_name].filter(Boolean).join(' ').trim();
+        return fullName || author.name || author.username || author.email || '-';
+      },
+      renderCell: (params) => (
+        <LinkedCell params={params} to={`${params.row.id}/edit`}>
+          {params.value}
         </LinkedCell>
       ),
     },

@@ -22,39 +22,75 @@ const isDev = process.env.NODE_ENV !== 'production';
 // 3. prefixer now runs AFTER tailwind so it scopes everything the theme
 //    emits (utilities, preflight, custom CSS) to [data-theme="<name>"].
 
+// Returns either a plain theme name ("starter_react") or a per-org overlay key
+// ("alcoris__1") depending on where the source file lives:
+//   themes/<theme>/...                     -> "<theme>"
+//   themes/<lang>/<theme>/...              -> "<theme>"
+//   themes/org_<id>/<theme>/...            -> "<theme>__<id>"
+//   themes/org_<id>/<lang>/<theme>/...     -> "<theme>__<id>"
 function themeNameFromFile(filePath) {
   if (!filePath) return null;
   const norm = filePath.replace(/\\/g, '/');
   const idx = norm.indexOf('/themes/');
   if (idx === -1) return null;
   const parts = norm.slice(idx + '/themes/'.length).split('/');
+  if (parts.length === 0) return null;
+
+  const orgMatch = parts[0].match(/^org_(\d+)$/);
+  if (orgMatch) {
+    const orgId = orgMatch[1];
+    const rest = parts.slice(1);
+    if (rest.length === 0) return null;
+    const themeName = /^[a-z]{2}(_[A-Z]{2})?$/.test(rest[0]) ? rest[1] : rest[0];
+    return themeName ? `${themeName}__${orgId}` : null;
+  }
+
   const seg1 = parts[0];
   return /^[a-z]{2}(_[A-Z]{2})?$/.test(seg1) ? parts[1] : seg1;
 }
 
-// themeName ('__base__' for non-theme files) -> Promise<postcss.Processor>.
+// themeKey ('__base__' for non-theme files, "<theme>" for base, or
+// "<theme>__<orgId>" for an org overlay) -> Promise<postcss.Processor>.
 // Promise (not resolved value) is cached to avoid a race when concurrent
 // CSS files trigger the first load. In dev we skip the cache so edits to
 // a theme's tailwind.config.js take effect on next file save.
 const cache = new Map();
-function getProcessor(themeName) {
-  const key = themeName ?? '__base__';
+function getProcessor(themeKey) {
+  const key = themeKey ?? '__base__';
   if (!isDev && cache.has(key)) return cache.get(key);
 
-  const configPath = themeName
-    ? path.join(themesDir, themeName, 'tailwind.config.js')
-    : baseConfigPath;
+  // Resolve the tailwind config: org overlay → base theme → root base.
+  let candidates = [baseConfigPath];
+  if (themeKey) {
+    const overlayMatch = themeKey.match(/^(.+)__(\d+)$/);
+    if (overlayMatch) {
+      const [, themeName, orgId] = overlayMatch;
+      candidates = [
+        path.join(themesDir, `org_${orgId}`, themeName, 'tailwind.config.js'),
+        path.join(themesDir, themeName, 'tailwind.config.js'),
+        baseConfigPath,
+      ];
+    } else {
+      candidates = [path.join(themesDir, themeKey, 'tailwind.config.js'), baseConfigPath];
+    }
+  }
 
   const promise = (async () => {
-    try {
-      const url = `${pathToFileURL(configPath).href}${isDev ? `?t=${Date.now()}` : ''}`;
-      const mod = await import(url);
-      return postcss([tailwindcss(mod.default)]);
-    } catch (e) {
-      console.warn(`[tailwind-per-theme] failed to load ${configPath}; using base`, e);
-      const base = await import(pathToFileURL(baseConfigPath).href);
-      return postcss([tailwindcss(base.default)]);
+    for (const configPath of candidates) {
+      try {
+        const url = `${pathToFileURL(configPath).href}${isDev ? `?t=${Date.now()}` : ''}`;
+        const mod = await import(url);
+        return postcss([tailwindcss(mod.default)]);
+      } catch (e) {
+        // Try the next candidate
+        if (configPath === candidates[candidates.length - 1]) {
+          console.warn(`[tailwind-per-theme] failed to load any config for ${key}`, e);
+        }
+      }
     }
+    // Fallthrough: should be unreachable thanks to baseConfigPath, but keeps
+    // the function total in case the import system misbehaves.
+    return postcss([]);
   })();
 
   if (!isDev) cache.set(key, promise);

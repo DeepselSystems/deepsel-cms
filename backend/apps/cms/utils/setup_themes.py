@@ -19,6 +19,13 @@ from .state_utils import load_setup_state, save_setup_state
 from .theme_imports import generate_theme_imports, generate_tailwind_config
 from .theme_language import ensure_language_theme_exists
 from .sync_utils import sync_directory
+from .theme_overlay import (
+    cleanup_stale_org_overlays,
+    cleanup_stale_org_themes,
+    ensure_org_theme_clone,
+    org_theme_dir,
+    rewrite_data_theme_in_tree,
+)
 from platformdirs import user_data_dir
 from traceback import print_exc
 
@@ -43,6 +50,117 @@ def _run_npm(cmd, cwd, timeout=300):
         text=True,
         timeout=timeout,
     )
+
+
+def reconcile_theme_overlays(data_dir, force=False, previous_db_hash=None):
+    """Materialize per-org theme overlays on disk and return (db_hash, did_sync).
+
+    For each (org, theme) pair that has any ``theme_file`` rows:
+      1. Mirror the base theme into ``themes/org_<id>/<theme>/`` (and the
+         language variant tree when needed).
+      2. Write each row's content into the overlay (DB is source of truth).
+      3. Rewrite ``data-theme="<theme>"`` → ``data-theme="<theme>__<id>"`` in
+         every .astro file under the overlay so the PostCSS per-theme dispatch
+         produces a matching CSS scope.
+
+    Stale ``themes/org_*/`` directories whose orgs/themes/langs no longer have
+    rows in the DB are removed regardless of ``force``.
+
+    ``previous_db_hash`` lets callers skip the actual file writes when the DB
+    hasn't changed; pruning still runs.
+    """
+    with get_db_context() as db:
+        ThemeFileModel = models_pool.get("theme_file")
+        theme_files = db.query(ThemeFileModel).all()
+
+        if not theme_files:
+            cleanup_stale_org_overlays(data_dir, set())
+            logger.info("No theme edits in database to reconcile")
+            return None, False
+
+        db_hash = hash_theme_files(theme_files)
+
+        active_orgs: set[int] = set()
+        active_themes_per_org: dict[int, set[str]] = {}
+        active_langs_per_org_theme: dict[int, dict[str, set[str]]] = {}
+        for tf in theme_files:
+            active_orgs.add(tf.organization_id)
+            active_themes_per_org.setdefault(tf.organization_id, set()).add(
+                tf.theme_name
+            )
+            lang_map = active_langs_per_org_theme.setdefault(tf.organization_id, {})
+            for content in tf.contents:
+                if content.lang_code:
+                    lang_map.setdefault(tf.theme_name, set()).add(content.lang_code)
+
+        cleanup_stale_org_overlays(data_dir, active_orgs)
+        for org_id, themes in active_themes_per_org.items():
+            cleanup_stale_org_themes(
+                data_dir,
+                org_id,
+                themes,
+                active_langs_per_org_theme.get(org_id, {}),
+            )
+
+        if not force and previous_db_hash == db_hash:
+            logger.info("Theme edits unchanged; skipping reconciliation")
+            return db_hash, False
+
+        for org_id, themes in active_themes_per_org.items():
+            for theme_name in themes:
+                ensure_org_theme_clone(data_dir, org_id, theme_name)
+                for lang_code in active_langs_per_org_theme.get(org_id, {}).get(
+                    theme_name, set()
+                ):
+                    ensure_language_theme_exists(
+                        lang_code=lang_code,
+                        theme_name=theme_name,
+                        data_dir_path=data_dir,
+                    )
+                    ensure_org_theme_clone(data_dir, org_id, theme_name, lang_code)
+
+        reconciled_count = 0
+        for theme_file in theme_files:
+            for content in theme_file.contents:
+                if not content.content:
+                    continue
+                dest = os.path.join(
+                    org_theme_dir(
+                        data_dir,
+                        theme_file.organization_id,
+                        theme_file.theme_name,
+                        content.lang_code,
+                    ),
+                    theme_file.file_path,
+                )
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                with open(dest, "w", encoding="utf-8") as f:
+                    f.write(content.content)
+                reconciled_count += 1
+
+        rewrite_count = 0
+        for org_id, themes in active_themes_per_org.items():
+            for theme_name in themes:
+                rewrite_count += rewrite_data_theme_in_tree(
+                    org_theme_dir(data_dir, org_id, theme_name),
+                    theme_name,
+                    org_id,
+                )
+                for lang_code in active_langs_per_org_theme.get(org_id, {}).get(
+                    theme_name, set()
+                ):
+                    rewrite_count += rewrite_data_theme_in_tree(
+                        org_theme_dir(data_dir, org_id, theme_name, lang_code),
+                        theme_name,
+                        org_id,
+                    )
+
+        logger.info(
+            f"Reconciled {reconciled_count} theme file overlays "
+            f"({rewrite_count} data-theme rewrites) across "
+            f"{len(active_orgs)} org(s)"
+        )
+        return db_hash, True
 
 
 def build_in_dir(data_dir, run_install=True, run_build=True):
@@ -81,15 +199,23 @@ def build_in_dir(data_dir, run_install=True, run_build=True):
         logger.info("Build artifacts up to date; skipping client build")
 
 
-def validate_theme_build(theme_name, file_path, contents):
+def validate_theme_build(theme_name, file_path, contents, organization_id):
     """
     Build theme in an isolated temp directory to validate changes
     without modifying the live site or database.
+
+    The pending edit is written into the org's overlay tree
+    (``themes/org_<id>/<theme_name>/...``) inside the temp dir so the build
+    mirrors what reconcile will produce on commit. The base theme is cloned
+    into the overlay first (matching :func:`ensure_org_theme_clone`) and
+    every .astro has its ``data-theme`` attribute rewritten to
+    ``<theme_name>__<organization_id>``.
 
     Args:
         theme_name: Name of the theme being edited
         file_path: Relative path of the file within the theme
         contents: List of content objects with content, lang_code attributes
+        organization_id: Org performing the edit (used for the overlay path)
 
     Returns:
         Path to temp directory on success (caller must clean up).
@@ -126,23 +252,43 @@ def validate_theme_build(theme_name, file_path, contents):
         if os.path.exists(node_modules_src):
             os.symlink(node_modules_src, os.path.join(temp_dir, "node_modules"))
 
-        # Write new file content into temp themes (simulates DB reconcile)
-        for content_data in contents:
-            if content_data.lang_code:
-                ensure_language_theme_exists(
-                    lang_code=content_data.lang_code,
-                    theme_name=theme_name,
-                    data_dir_path=temp_dir,
-                )
-                dest_path = os.path.join(
-                    temp_dir, "themes", content_data.lang_code, theme_name, file_path
-                )
-            else:
-                dest_path = os.path.join(temp_dir, "themes", theme_name, file_path)
+        # Ensure the org overlay tree exists in the temp dir for this theme
+        # (and for any language the edit targets).
+        lang_codes_in_edit = {c.lang_code for c in contents if c.lang_code}
+        ensure_org_theme_clone(temp_dir, organization_id, theme_name)
+        for lang_code in lang_codes_in_edit:
+            ensure_language_theme_exists(
+                lang_code=lang_code,
+                theme_name=theme_name,
+                data_dir_path=temp_dir,
+            )
+            ensure_org_theme_clone(temp_dir, organization_id, theme_name, lang_code)
 
+        # Write new file content into the org's overlay tree
+        for content_data in contents:
+            dest_path = os.path.join(
+                org_theme_dir(
+                    temp_dir, organization_id, theme_name, content_data.lang_code
+                ),
+                file_path,
+            )
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
             with open(dest_path, "w", encoding="utf-8") as f:
                 f.write(content_data.content)
+
+        # Rewrite data-theme attribute for every .astro under the overlay so
+        # the PostCSS per-theme dispatch produces a matching CSS scope.
+        rewrite_data_theme_in_tree(
+            org_theme_dir(temp_dir, organization_id, theme_name),
+            theme_name,
+            organization_id,
+        )
+        for lang_code in lang_codes_in_edit:
+            rewrite_data_theme_in_tree(
+                org_theme_dir(temp_dir, organization_id, theme_name, lang_code),
+                theme_name,
+                organization_id,
+            )
 
         # Regenerate theme imports and tailwind config for the temp workspace
         generate_theme_imports(data_dir_path=temp_dir, selected_theme=theme_name)
@@ -371,61 +517,12 @@ def setup_themes(
         else:
             logger.info("Client folder unchanged; skipping sync")
 
-        # Reconcile files from DB (DB is source of truth for edited files)
-        with get_db_context() as db:
-            ThemeFileModel = models_pool.get("theme_file")
-            theme_files = db.query(ThemeFileModel).all()
-            db_hash = None
-
-            if theme_files:
-                db_hash = hash_theme_files(theme_files)
-                need_db_sync = (
-                    need_themes_sync or previous_state.get("db_hash") != db_hash
-                )
-
-                if need_db_sync:
-                    reconciled_count = 0
-
-                    for theme_file in theme_files:
-                        for content in theme_file.contents:
-                            if not content.content:
-                                continue
-
-                            if content.lang_code:
-                                ensure_language_theme_exists(
-                                    lang_code=content.lang_code,
-                                    theme_name=theme_file.theme_name,
-                                    data_dir_path=data_dir,
-                                )
-                                file_path = os.path.join(
-                                    data_dir,
-                                    "themes",
-                                    content.lang_code,
-                                    theme_file.theme_name,
-                                    theme_file.file_path,
-                                )
-                            else:
-                                file_path = os.path.join(
-                                    data_dir,
-                                    "themes",
-                                    theme_file.theme_name,
-                                    theme_file.file_path,
-                                )
-
-                            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-                            with open(file_path, "w", encoding="utf-8") as f:
-                                f.write(content.content)
-
-                            reconciled_count += 1
-
-                    logger.info(
-                        f"Reconciled {reconciled_count} theme files from database"
-                    )
-                else:
-                    logger.info("Theme edits unchanged; skipping reconciliation")
-            else:
-                logger.info("No theme edits in database to reconcile")
+        # Reconcile files from DB (DB is source of truth for edited files).
+        db_hash, _ = reconcile_theme_overlays(
+            data_dir,
+            force=need_themes_sync,
+            previous_db_hash=previous_state.get("db_hash"),
+        )
 
         # Generate theme imports and tailwind config for client_build (after sync and reconciliation)
         generate_theme_imports(data_dir_path=data_dir, selected_theme=selected_theme)

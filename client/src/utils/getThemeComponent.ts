@@ -10,15 +10,24 @@ import type {
 const systemKeys = new Set(Object.values(themeSystemKeys));
 
 /**
- * Validates that a theme name exists in themeMap.
- * Falls back to the first available theme if not found.
+ * Validates a theme key against themeMap. Prefers the per-org overlay key
+ * (`<theme>__<org_id>`) when present, falls back to the base theme name,
+ * then to the first available theme.
  */
-export function resolveThemeName(themeName: string | undefined | null): ThemeName {
-  if (themeName && themeName in themeMap) {
-    return themeName as ThemeName;
+export function resolveThemeName(
+  themeKey: string | undefined | null,
+  selectedTheme?: string | undefined | null,
+): ThemeName {
+  if (themeKey && themeKey in themeMap) {
+    return themeKey as ThemeName;
+  }
+  if (selectedTheme && selectedTheme in themeMap) {
+    return selectedTheme as ThemeName;
   }
   const fallback = Object.keys(themeMap)[0] as ThemeName;
-  console.warn(`[CMS] Theme "${themeName}" not found in themeMap. Falling back to "${fallback}".`);
+  console.warn(
+    `[CMS] Theme key "${themeKey}" / selected "${selectedTheme}" not found in themeMap. Falling back to "${fallback}".`,
+  );
   return fallback;
 }
 
@@ -26,7 +35,10 @@ function getSelectedThemeSettings(
   data: PageData | BlogListData | BlogPostData | SearchResultsData,
 ) {
   const publicSettings = data.public_settings;
-  const selectedTheme = resolveThemeName(publicSettings?.selected_theme);
+  const selectedTheme = resolveThemeName(
+    (publicSettings as { theme_key?: string } | undefined)?.theme_key,
+    publicSettings?.selected_theme,
+  );
   const defaultLangIsoCode = publicSettings?.default_language?.iso_code;
   return { selectedTheme, defaultLangIsoCode };
 }

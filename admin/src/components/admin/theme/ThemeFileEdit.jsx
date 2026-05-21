@@ -18,6 +18,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-css';
 import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
+import { createApiHeaders } from '../../../utils/apiUtils.js';
 import {
   IconChevronDown,
   IconChevronRight,
@@ -111,10 +112,9 @@ export default function ThemeFileEdit() {
     const fetchFileTree = async () => {
       try {
         const tokenResult = await Preferences.get({ key: 'token' });
-        const headers = {};
-        if (tokenResult?.value) {
-          headers.Authorization = `Bearer ${tokenResult.value}`;
-        }
+        const headers = createApiHeaders(
+          tokenResult?.value ? { Authorization: `Bearer ${tokenResult.value}` } : {},
+        );
 
         const response = await fetch(`${backendHost}/theme/files/${themeName}`, {
           headers,
@@ -144,10 +144,9 @@ export default function ThemeFileEdit() {
       setLoading(true);
       try {
         const tokenResult = await Preferences.get({ key: 'token' });
-        const headers = {};
-        if (tokenResult?.value) {
-          headers.Authorization = `Bearer ${tokenResult.value}`;
-        }
+        const headers = createApiHeaders(
+          tokenResult?.value ? { Authorization: `Bearer ${tokenResult.value}` } : {},
+        );
 
         const response = await fetch(`${backendHost}/theme/file/${themeName}/${filePath}`, {
           headers,
@@ -303,10 +302,9 @@ export default function ThemeFileEdit() {
 
     try {
       const tokenResult = await Preferences.get({ key: 'token' });
-      const headers = { 'Content-Type': 'application/json' };
-      if (tokenResult?.value) {
-        headers.Authorization = `Bearer ${tokenResult.value}`;
-      }
+      const headers = createApiHeaders(
+        tokenResult?.value ? { Authorization: `Bearer ${tokenResult.value}` } : {},
+      );
 
       const payload = {
         theme_name: fileData.theme_name,

@@ -174,7 +174,20 @@ export function useModel<T = Record<string, unknown>>(
   config: UseModelConfig,
   options: UseModelOptions = {},
 ): UseModelReturn<T> {
-  const { backendHost, user, setUser, t = (key: string) => key } = config;
+  const { backendHost, user, setUser, organizationId, t = (key: string) => key } = config;
+
+  function _buildHeaders(extra: Record<string, string> = {}): Record<string, string> {
+    const headers: Record<string, string> = { ...extra };
+    const orgId =
+      organizationId ??
+      (typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('organizationId') || '', 10)
+        : NaN);
+    if (Number.isFinite(orgId)) {
+      headers['X-Organization-Id'] = String(orgId);
+    }
+    return headers;
+  }
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -324,7 +337,7 @@ export function useModel<T = Record<string, unknown>>(
       const response = await fetch(endpoint, {
         method: 'POST',
         body: JSON.stringify(query),
-        headers: { 'Content-Type': 'application/json' },
+        headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         signal: abortControllerRef.current.signal,
       });
@@ -373,6 +386,7 @@ export function useModel<T = Record<string, unknown>>(
       const endpoint = `${backendHost}/${modelName}/${recordId}`;
 
       const response = await fetch(endpoint, {
+        headers: _buildHeaders(),
         credentials: 'include',
         signal: abortControllerRef.current.signal,
       });
@@ -428,7 +442,7 @@ export function useModel<T = Record<string, unknown>>(
       const response = await fetch(endpoint, {
         method: 'POST',
         body: JSON.stringify(query),
-        headers: { 'Content-Type': 'application/json' },
+        headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
       });
 
@@ -462,6 +476,7 @@ export function useModel<T = Record<string, unknown>>(
 
       const res = await fetch(endpoint, {
         method: 'POST',
+        headers: _buildHeaders(),
         credentials: 'include',
         body: formData,
       });
@@ -497,7 +512,7 @@ export function useModel<T = Record<string, unknown>>(
 
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         body: JSON.stringify(newItemCopy),
       });
@@ -543,7 +558,7 @@ export function useModel<T = Record<string, unknown>>(
 
       const response = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         body: JSON.stringify(updatedItemCopy),
       });
@@ -582,7 +597,11 @@ export function useModel<T = Record<string, unknown>>(
       let endpoint = `${backendHost}/${modelName}/${recordId}`;
       if (force) endpoint += '?force=true';
 
-      const response = await fetch(endpoint, { method: 'DELETE', credentials: 'include' });
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: _buildHeaders(),
+        credentials: 'include',
+      });
 
       if (response.status === 401) {
         await resetAuth();
@@ -615,7 +634,7 @@ export function useModel<T = Record<string, unknown>>(
       const endpoint = `${backendHost}/${modelName}/bulk_delete${force ? '?force=true' : ''}`;
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
         body: JSON.stringify(queryObject),
       });
@@ -681,7 +700,7 @@ export function useModel<T = Record<string, unknown>>(
     setLoading(true);
     const res = await fetch(
       `${backendHost}/util/delete_check/${modelName}/${recordIds.join(',')}`,
-      { credentials: 'include' },
+      { headers: _buildHeaders(), credentials: 'include' },
     );
     const response = (await res.json()) as {
       to_delete?: Record<string, string[]>;
@@ -778,6 +797,7 @@ export function useModel<T = Record<string, unknown>>(
 
       const res = await fetch(`${backendHost}/attachment/`, {
         method: 'POST',
+        headers: _buildHeaders(),
         credentials: 'include',
         body: formData,
       });

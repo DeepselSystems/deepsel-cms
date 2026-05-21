@@ -24,6 +24,8 @@ client_build
 figma_migration
 .playwright-cli
 
+themes/org_*
+
 tests/e2e/.auth
 tests/e2e/test-results
 tests/e2e/playwright-report

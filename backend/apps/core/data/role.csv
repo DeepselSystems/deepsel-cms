@@ -1,15 +1,16 @@
 string_id,name,permissions,system
 admin_role,Admin,"[
-    ""user:*:org"",
-    ""role:*:org"",
-    ""implied_role:*:org"",
-    ""user_role:*:org"",
-    ""organization:*:org"",
-    ""attachment:*:org"",
+    ""user:*:*"",
+    ""user_organization:*:*"",
+    ""user_role:*:*"",
+    ""role:*:*"",
+    ""implied_role:*:*"",
+    ""organization:*:*"",
+    ""attachment:*:*"",
     ""attachment_locale_version:*:org"",
-    ""activity:*:org"",
-    ""email_template:*:org"",
-    ""cron:*:org""
+    ""activity:*:*"",
+    ""email_template:*:*"",
+    ""cron:*:*""
 ]",true
 user_role,User,"[
     ""user:read:own"",
@@ -21,8 +22,8 @@ user_role,User,"[
     ""activity:*:own""
 ]",true
 locales_public_role,Locales Public Role,"[
-    ""currency:read:org"",
-    ""country:read:org"",
-    ""locale:read:org"",
+    ""currency:read:*"",
+    ""country:read:*"",
+    ""locale:read:*"",
     ""form_submission:*:*""
 ]",true

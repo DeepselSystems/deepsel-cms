@@ -15,6 +15,7 @@ import Switch from '../../../../common/ui/Switch.jsx';
 import TextInput from '../../../../common/ui/TextInput.jsx';
 import useModel from '../../../../common/api/useModel.jsx';
 import SiteSettingsSection from './SiteSettingsSection.jsx';
+import DeleteSiteSection from './DeleteSiteSection.jsx';
 
 export default function SiteSettingsGeneral() {
   const { t } = useTranslation();
@@ -63,7 +64,7 @@ export default function SiteSettingsGeneral() {
         window.location.reload();
       }}
     >
-      {({ record, setRecord }) => (
+      {({ record, setRecord, organizationId }) => (
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
@@ -259,6 +260,8 @@ export default function SiteSettingsGeneral() {
               />
             </div>
           </div>
+
+          <DeleteSiteSection record={record} organizationId={organizationId} />
         </div>
       )}
     </SiteSettingsSection>

@@ -80,7 +80,7 @@ export default function PageEdit({ onSuccess }) {
   const { organizationId } = OrganizationIdState();
   const { organizations } = OrganizationState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
-  const { setHideNotifications, setHideProfileDropdown, setHideGoToSite } = HideHeaderItemsState();
+  const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
   const backWithRedirect = useBackWithRedirect();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
   const { user } = useAuthentication();
@@ -170,7 +170,7 @@ export default function PageEdit({ onSuccess }) {
   });
 
   const iframeRef = useRef(null);
-  const [previewDevice, setPreviewDevice] = useState(null);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
   const previewVisible = previewDevice !== null;
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
@@ -247,6 +247,9 @@ export default function PageEdit({ onSuccess }) {
         if (tokenResult?.value) {
           headers.Authorization = `Bearer ${tokenResult.value}`;
         }
+        if (organizationId) {
+          headers['X-Organization-Id'] = String(organizationId);
+        }
 
         const response = await fetch(
           `${backendHost}/theme/page-slugs/${siteSettings.selected_theme}`,
@@ -307,15 +310,15 @@ export default function PageEdit({ onSuccess }) {
   useEffect(() => {
     setShowBackButton(true);
     setHideNotifications(true);
-    setHideProfileDropdown(true);
+    setHideSiteSelector(true);
     setHideGoToSite(true);
     return () => {
       setShowBackButton(false);
       setHideNotifications(false);
-      setHideProfileDropdown(false);
+      setHideSiteSelector(false);
       setHideGoToSite(false);
     };
-  }, [setShowBackButton, setHideNotifications, setHideProfileDropdown, setHideGoToSite]);
+  }, [setShowBackButton, setHideNotifications, setHideSiteSelector, setHideGoToSite]);
 
   const currentContent = useMemo(() => {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
@@ -339,45 +342,20 @@ export default function PageEdit({ onSuccess }) {
     }
   }, [currentContent?.content, currentContent?.locale?.iso_code, organizationId]);
 
-  // Generate preview URL — uses same-origin path so iframe can communicate
-  // via postMessage and session cookies are sent automatically
+  // Always route the iframe to /preview — the admin supplies all data via
+  // postMessage, so the backend page fetch path is unnecessary (and would 404
+  // for unpublished drafts in edit mode when the iframe lacks the session cookie).
   const previewUrl = useMemo(() => {
     const selectedLocaleCode = currentContent?.locale?.iso_code;
     if (!selectedLocaleCode) return null;
 
-    let path;
-    if (!currentContent.slug || isCreateMode) {
-      path = `/preview?lang=${selectedLocaleCode}`;
-    } else {
-      const isDefaultLanguage =
-        selectedLocaleCode?.toLowerCase() ===
-        siteSettings?.default_language?.iso_code?.toLowerCase();
-
-      if (isDefaultLanguage) {
-        path = currentContent.slug;
-      } else {
-        const localePrefix = `/${selectedLocaleCode}`;
-        const cleanSlug = currentContent.slug.startsWith('/')
-          ? currentContent.slug
-          : `/${currentContent.slug}`;
-        path = `${localePrefix}${cleanSlug}`;
-      }
-    }
-
-    // Use same-origin path — session cookie handles auth, org_id tells backend which site
-    const url = new URL(path, window.location.origin);
+    const url = new URL(`/preview?lang=${selectedLocaleCode}`, window.location.origin);
     url.searchParams.set('preview', 'true');
     if (record?.organization_id) {
       url.searchParams.set('org_id', String(record.organization_id));
     }
     return url.toString();
-  }, [
-    activeContentTab,
-    currentContent,
-    record,
-    siteSettings?.default_language?.iso_code,
-    isCreateMode,
-  ]);
+  }, [currentContent?.locale?.iso_code, record?.organization_id]);
 
   const previewData = useMemo(() => {
     if (!currentContent?.locale?.iso_code) return null;
@@ -713,6 +691,10 @@ export default function PageEdit({ onSuccess }) {
         resetUnsavedChanges();
         notify({ message: t('Draft saved!'), type: 'success' });
         if (onSuccess) onSuccess(created);
+        if (created?.id) {
+          navigate(`/pages/${created.id}/edit`, { replace: true });
+          window.location.reload();
+        }
       } catch (error) {
         console.error(error);
         notify({ message: error.message, type: 'error' });
@@ -721,7 +703,15 @@ export default function PageEdit({ onSuccess }) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [record, processContentsForSubmit, validateContents, create, organizationId, onSuccess],
+    [
+      record,
+      processContentsForSubmit,
+      validateContents,
+      create,
+      organizationId,
+      onSuccess,
+      navigate,
+    ],
   );
 
   const flushDraftBeforePublish = async () => {

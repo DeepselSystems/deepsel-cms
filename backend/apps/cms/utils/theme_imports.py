@@ -53,6 +53,34 @@ def get_all_active_themes_from_db() -> set[str]:
         return set()
 
 
+def get_org_overlay_themes_from_db() -> dict[int, set[str]]:
+    """Return {organization_id: {theme_name, ...}} of orgs that have at least
+    one theme_file overlay row for a given theme. Used to know which per-org
+    themeMap entries to emit."""
+    try:
+        from db import get_db_context
+        from apps.core.utils.models_pool import models_pool
+
+        ThemeFileModel = models_pool.get("theme_file")
+        if not ThemeFileModel:
+            return {}
+        with get_db_context() as db:
+            rows = (
+                db.query(ThemeFileModel.organization_id, ThemeFileModel.theme_name)
+                .distinct()
+                .all()
+            )
+            result: dict[int, set[str]] = {}
+            for org_id, theme_name in rows:
+                if org_id is None or not theme_name:
+                    continue
+                result.setdefault(org_id, set()).add(theme_name)
+            return result
+    except Exception as e:
+        logger.warning(f"Could not read org overlay themes from DB: {e}")
+        return {}
+
+
 def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None):
     """
     Generate static imports for all theme variants in client/src/themes.ts
@@ -110,12 +138,14 @@ def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None
         imports: list[str] = []
         theme_map_entries: dict[str, dict[str, str]] = {}
 
-        def _to_component_name(theme: str, filename: str, lang_suffix: str = "") -> str:
+        def _to_component_name(
+            theme: str, filename: str, lang_suffix: str = "", org_suffix: str = ""
+        ) -> str:
             # Convert theme name to PascalCase (handles hyphens and underscores)
             theme_part = "".join(word.capitalize() for word in re.split(r"[-_]", theme))
             file_base = filename[:-6] if filename.endswith(".astro") else filename
             page_part = file_base.capitalize().replace("-", "")
-            return f"{theme_part}{lang_suffix}{page_part}"
+            return f"{theme_part}{org_suffix}{lang_suffix}{page_part}"
 
         # Scan all .astro files in each theme folder
         for theme in theme_folders:
@@ -184,6 +214,72 @@ def generate_theme_imports(data_dir_path: str, selected_theme: str | None = None
                     system_key = system_key_mapping.get(page_key, page_key)
                     map_key = f"{lang}:{system_key}"
                     theme_map_entries[theme][map_key] = component_name
+
+        # Per-org overlay entries: themeMap['<theme>__<org_id>'] points at the
+        # org's cloned tree (themes/org_<id>/<theme>/...). Reconcile produces a
+        # full clone of the base, so we just scan that dir for .astro files.
+        org_overlays = get_org_overlay_themes_from_db()
+        for org_id, overlay_themes in org_overlays.items():
+            for theme in overlay_themes:
+                overlay_dir = os.path.join(themes_dir, f"org_{org_id}", theme)
+                if not os.path.isdir(overlay_dir):
+                    logger.warning(
+                        f"Overlay dir missing for org {org_id} theme {theme}; "
+                        f"skipping themeMap entry"
+                    )
+                    continue
+                map_key = f"{theme}__{org_id}"
+                theme_map_entries.setdefault(map_key, {})
+                org_suffix = f"Org{org_id}"
+
+                astro_files = sorted(
+                    [
+                        f
+                        for f in os.listdir(overlay_dir)
+                        if f.endswith(".astro")
+                        and os.path.isfile(os.path.join(overlay_dir, f))
+                    ]
+                )
+                for astro_file in astro_files:
+                    page_key = astro_file[:-6].lower()
+                    component_name = _to_component_name(
+                        theme, astro_file, org_suffix=org_suffix
+                    )
+                    import_path = f"../../themes/org_{org_id}/{theme}/{astro_file}"
+                    imports.append(f'import {component_name} from "{import_path}";')
+                    system_key = system_key_mapping.get(page_key, page_key)
+                    theme_map_entries[map_key][system_key] = component_name
+
+                # Language overlays for this (org, theme)
+                org_root = os.path.join(themes_dir, f"org_{org_id}")
+                for entry in os.listdir(org_root):
+                    if entry not in valid_language_codes:
+                        continue
+                    lang_overlay_dir = os.path.join(org_root, entry, theme)
+                    if not os.path.isdir(lang_overlay_dir):
+                        continue
+                    lang_suffix = entry.capitalize().replace("_", "").replace("@", "")
+                    astro_files = sorted(
+                        [
+                            f
+                            for f in os.listdir(lang_overlay_dir)
+                            if f.endswith(".astro")
+                            and os.path.isfile(os.path.join(lang_overlay_dir, f))
+                        ]
+                    )
+                    for astro_file in astro_files:
+                        page_key = astro_file[:-6].lower()
+                        component_name = _to_component_name(
+                            theme, astro_file, lang_suffix, org_suffix
+                        )
+                        import_path = (
+                            f"../../themes/org_{org_id}/{entry}/{theme}/{astro_file}"
+                        )
+                        imports.append(f'import {component_name} from "{import_path}";')
+                        system_key = system_key_mapping.get(page_key, page_key)
+                        theme_map_entries[map_key][
+                            f"{entry}:{system_key}"
+                        ] = component_name
 
         # Generate theme map code
         theme_map_lines = ["export const themeMap = {"]

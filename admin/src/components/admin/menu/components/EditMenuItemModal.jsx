@@ -52,6 +52,7 @@ const EditMenuItemModal = ({
         const tokenResult = await Preferences.get({ key: 'token' });
         const headers = {};
         if (tokenResult?.value) headers.Authorization = `Bearer ${tokenResult.value}`;
+        if (organizationId) headers['X-Organization-Id'] = String(organizationId);
         const response = await fetch(
           `${backendHost}/theme/page-slugs/${siteSettings.selected_theme}`,
           { headers },
@@ -64,7 +65,7 @@ const EditMenuItemModal = ({
       }
     };
     fetchThemeSlugs();
-  }, [opened, siteSettings?.selected_theme, backendHost]);
+  }, [opened, siteSettings?.selected_theme, backendHost, organizationId]);
 
   // Fetch page_content records for the active language tab
   const { data: pageContents, get: fetchPages } = useModel('page_content', {

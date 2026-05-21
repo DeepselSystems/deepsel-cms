@@ -303,6 +303,56 @@ def _migrate_encrypt_org_secrets(db, *args, **kwargs):
         raise
 
 
+@migration_task("Prepend / to blog post slugs for consistency with pages", "1.0.8")
+def _migrate_blog_post_slugs_prepend_slash(db, *args, **kwargs):
+    """Backfill leading / on existing blog post slugs so they match the page pattern."""
+    _logger = logging.getLogger(
+        f"{__name__}:{_migrate_blog_post_slugs_prepend_slash.__name__}"
+    )
+    try:
+        BlogPostModel = models_pool["blog_post"]
+        posts = (
+            db.query(BlogPostModel)
+            .filter(BlogPostModel.slug.isnot(None))
+            .filter(~BlogPostModel.slug.startswith("/"))
+            .all()
+        )
+        _logger.info(f"Backfilling leading / on {len(posts)} blog posts")
+        for post in posts:
+            post.slug = f"/{post.slug}"
+        db.commit()
+        _logger.info("Blog post slug migration completed.")
+    except Exception as e:
+        _logger.error(f"Blog post slug migration failed: {e}")
+        db.rollback()
+        raise
+
+
+@migration_task("Reset theme_file for per-org overlay schema", "1.0.10")
+def _migrate_reset_theme_file_for_org_scope(db, *args, **kwargs):
+    """Drop all theme_file rows so the new (theme_name, file_path, organization_id)
+    unique constraint can be enforced cleanly. Pre-existing rows had no org_id
+    (the column didn't exist), so there's no way to attribute them; the fresh
+    slate was confirmed by the user."""
+    _logger = logging.getLogger(
+        f"{__name__}:{_migrate_reset_theme_file_for_org_scope.__name__}"
+    )
+    try:
+        db.execute(
+            sa_text(
+                "TRUNCATE TABLE theme_file_content, theme_file RESTART IDENTITY CASCADE"
+            )
+        )
+        db.commit()
+        _logger.info(
+            "theme_file and theme_file_content truncated for org-scope migration."
+        )
+    except Exception as e:
+        _logger.error(f"theme_file reset migration failed: {e}")
+        db.rollback()
+        raise
+
+
 @migration_task("Backfill per-content published flag from parent", "1.0.9")
 def _migrate_backfill_content_published(db, *args, **kwargs):
     """Copy parent.published onto each content row.
@@ -349,27 +399,37 @@ def upgrade(db, from_version, to_version):
     # Full-text search vectors
     _migrate_add_search_vectors(db, __name__, from_version, to_version)
 
+    # Prepend / to blog post slugs (align with page slug pattern)
+    _migrate_blog_post_slugs_prepend_slash(db, __name__, from_version, to_version)
+
     # Per-content published backfill (publish state moved from parent to content)
     _migrate_backfill_content_published(db, __name__, from_version, to_version)
+
+    # Reset theme_file before reconcile sees the new organization_id column
+    _migrate_reset_theme_file_for_org_scope(db, __name__, from_version, to_version)
 
     # Ensure a theme is selected BEFORE generating imports
     set_default_theme_if_empty(db)
 
     # Read the selected theme for single-theme imports
     org = db.query(CMSSettingsModel).first()
-    selected_theme = org.selected_theme if org else "starter_react"
+    selected_theme = org.selected_theme if org else "alcoris"
 
     # Setup themes
     from .utils.client_process import NO_CLIENT
 
     if NO_CLIENT:
-        # Dev mode: generate theme imports and tailwind config locally
+        # Dev mode: reconcile per-org overlays into the repo's themes/ tree
+        # (Astro dev imports straight from there), then regenerate theme imports
+        # and tailwind config.
         from .utils.theme_imports import (
             generate_theme_imports,
             generate_tailwind_config,
         )
+        from .utils.setup_themes import reconcile_theme_overlays
 
         project_root = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        reconcile_theme_overlays(project_root, force=True)
         generate_theme_imports(
             data_dir_path=project_root, selected_theme=selected_theme
         )
