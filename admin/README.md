@@ -101,7 +101,9 @@ export default function App() {
   const [bootstrapping, setBootstrapping] = useState(true);
 
   useEffect(() => {
-    fetchUser().catch(() => {}).finally(() => setBootstrapping(false));
+    fetchUser()
+      .catch(() => {})
+      .finally(() => setBootstrapping(false));
   }, []);
 
   if (bootstrapping) return null;
@@ -118,13 +120,10 @@ export default function App() {
 import { useModel } from '@deepsel/admin';
 
 function ItemList() {
-  const {
-    data,
-    loading,
-    create,
-    update,
-    deleteWithConfirm,
-  } = useModel('your_table', { autoFetch: true, pageSize: 50 });
+  const { data, loading, create, update, deleteWithConfirm } = useModel('your_table', {
+    autoFetch: true,
+    pageSize: 50,
+  });
 
   if (loading) return <p>Loading...</p>;
   return (
