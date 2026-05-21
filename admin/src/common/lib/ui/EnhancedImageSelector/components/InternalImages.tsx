@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import clsx from 'clsx';
 import { Box, Text, Checkbox, Group, UnstyledButton } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
@@ -56,19 +56,19 @@ interface ImageCardProps {
   multiple: boolean;
   isEditMode: boolean;
   isSelected: boolean;
-  onSelect: () => void;
-  backendHost: string;
+  /** Called with the attachment id when the card is selected */
+  onSelect: (id: number | string) => void;
   setUser: (user: User | null) => void;
   notify?: NotifyFn;
-  /** Called with the updated attachment and the locale ID that was just uploaded */
-  onVersionUploaded: (attachment: AttachmentFile, localeId: number) => void;
+  /** Called with the updated attachment when a locale version is uploaded */
+  onVersionUploaded: (attachment: AttachmentFile) => void;
 }
 
 /**
  * Renders a single attachment card with locale switching, lazy-load, and
  * an "Upload for {lang}" overlay when the selected locale has no file yet.
  */
-function ImageCard({
+const ImageCard = memo(function ImageCard({
   attachmentImage,
   defaultLocaleId,
   availableLanguages,
@@ -92,13 +92,18 @@ function ImageCard({
     selectedVersion?.locale?.name ??
     null;
 
+  const handleVersionUploaded = useCallback(
+    (attachment: AttachmentFile, _localeId: number) => onVersionUploaded(attachment),
+    [onVersionUploaded],
+  );
+
   const { uploadOverlay } = useUploadLocaleOverlay({
     attachment: attachmentImage,
     selectedLocaleId,
     selectedLangName,
     setUser,
     notify,
-    onVersionUploaded,
+    onVersionUploaded: handleVersionUploaded,
     t,
   });
 
@@ -109,7 +114,7 @@ function ImageCard({
       className="overflow-hidden h-full"
       component="div"
       value={String(attachmentImage.id)}
-      onClick={() => !isEditMode && onSelect()}
+      onClick={() => !isEditMode && onSelect(attachmentImage.id)}
     >
       <Box className="relative">
         <Box
@@ -133,7 +138,7 @@ function ImageCard({
       </Box>
     </Checkbox.Card>
   );
-}
+});
 
 /**
  * Internal image selector with upload, lazy loading, and edit/delete capabilities.
@@ -227,6 +232,22 @@ export function InternalImages({
     setEditingImages(isSelectedAllEditing ? [] : attachmentImages);
   }, [attachmentImages, isSelectedAllEditing]);
 
+  const handleCardSelect = useCallback(
+    (id: number | string) => {
+      const attachment = attachmentImagesMap[id];
+      if (attachment) onSelect(attachment);
+    },
+    [attachmentImagesMap, onSelect],
+  );
+
+  const handleCardVersionUploaded = useCallback(
+    (updated: AttachmentFile) => {
+      setAttachmentImages((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+      onSelect(updated);
+    },
+    [onSelect, setAttachmentImages],
+  );
+
   const handleDelete = useCallback(() => {
     const deletingImageIds = editingImages.map((o) => o.id);
     if (deletingImageIds.length) {
@@ -318,25 +339,19 @@ export function InternalImages({
         {/*region images grid*/}
         <Checkbox.Group value={checkboxValue} onChange={handleCheckboxChange}>
           <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 items-start">
-            {attachmentImages.map((attachmentImage, index) => (
+            {attachmentImages.map((attachmentImage) => (
               <ImageCard
-                key={index}
+                key={attachmentImage.id}
                 attachmentImage={attachmentImage}
                 defaultLocaleId={defaultLocaleId}
                 availableLanguages={availableLanguages}
                 multiple={multiple}
                 isEditMode={isEditMode}
                 isSelected={checkboxValue.includes(String(attachmentImage.id))}
-                onSelect={() => onSelect?.(attachmentImage)}
-                backendHost={backendHost}
+                onSelect={handleCardSelect}
                 setUser={setUser}
                 notify={notify}
-                onVersionUploaded={(updated) => {
-                  setAttachmentImages((prev) =>
-                    prev.map((a) => (a.id === updated.id ? updated : a)),
-                  );
-                  onSelect?.(attachmentImage);
-                }}
+                onVersionUploaded={handleCardVersionUploaded}
               />
             ))}
           </Box>

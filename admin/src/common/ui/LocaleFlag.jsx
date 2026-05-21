@@ -34,12 +34,15 @@ export function LocaleFlag({
   noFile = false,
   className = '',
 }) {
-  // Track whether the flag image failed to load so we can swap to the fallback once.
-  // Only used in SVG mode (no emoji_flag).
+  // Only used in SVG fallback mode (when emoji_flag is absent).
   const [errored, setErrored] = useState(false);
   const localeName = locale?.name ?? 'No language assigned';
+
+  // Prefer emoji_flag (text, zero network cost) over SVG.
+  const emojiFlag = locale?.emoji_flag ?? null;
+
   const isoCode = errored ? FALLBACK_FLAG_CODE : (locale?.iso_code ?? null);
-  const flagUrl = getFlagUrlForIsoCode(isoCode);
+  const flagUrl = emojiFlag ? null : getFlagUrlForIsoCode(isoCode);
 
   /** Swap to fallback SVG on load error; guard prevents infinite re-trigger. */
   const handleImgError = () => {
@@ -65,14 +68,24 @@ export function LocaleFlag({
           className,
         )}
       >
-        <Image
-          loading="lazy"
-          src={flagUrl}
-          alt={localeName}
-          className="block w-auto pointer-events-none"
-          style={imgStyle}
-          onError={handleImgError}
-        />
+        {emojiFlag ? (
+          <span
+            className="block pointer-events-none leading-none select-none"
+            style={{ fontSize: size, lineHeight: 1 }}
+            aria-hidden="true"
+          >
+            {emojiFlag}
+          </span>
+        ) : (
+          <Image
+            loading="lazy"
+            src={flagUrl}
+            alt={localeName}
+            className="block w-auto pointer-events-none"
+            style={imgStyle}
+            onError={handleImgError}
+          />
+        )}
       </button>
     </Tooltip>
   );

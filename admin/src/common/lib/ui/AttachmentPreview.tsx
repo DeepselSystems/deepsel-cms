@@ -103,6 +103,7 @@ export function AttachmentPreview({
             </Box>
           ) : isImage ? (
             <Image
+              loading="lazy"
               src={getAttachmentRelativeUrl(selectedVersion.name)}
               alt={selectedVersion.alt_text ?? ''}
             />
