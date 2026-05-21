@@ -317,7 +317,7 @@ def serve_file_by_attachment_name(
     return Response(content=result.content, media_type=result.content_type)
 
 
-@router.get("/unused", response_model=AttachmentSearch)
+@router.get("/unused/list", response_model=AttachmentSearch)
 def get_unused_attachments(
     page: int = 1,
     page_size: int = 20,

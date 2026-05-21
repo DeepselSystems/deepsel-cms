@@ -53,7 +53,7 @@ export default function Media() {
     searchFields: SEARCH_FIELDS,
   });
 
-  const { record: unusedResult, get: fetchUnusedFiles } = useFetch('attachment/unused', {
+  const { record: unusedResult, get: fetchUnusedFiles } = useFetch('attachment/unused/list', {
     autoFetch: false,
     params: { page_size: 200 },
   });
