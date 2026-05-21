@@ -38,6 +38,8 @@ interface InternalImagesProps {
   notify?: NotifyFn;
   /** Active editor locale ID — passed as locale_id when uploading via the dropzone */
   currentLocaleId?: number | null;
+  /** Called after a successful dropzone upload to close the parent modal */
+  onClose?: () => void;
 }
 
 /** Props for the per-card ImageCard sub-component */
@@ -177,6 +179,7 @@ export function InternalImages({
   setUser,
   notify,
   currentLocaleId,
+  onClose,
 }: InternalImagesProps) {
   const { t } = useTranslation();
   const { defaultLocaleId, availableLanguages } = useDefaultLocale();
@@ -233,6 +236,10 @@ export function InternalImages({
           )) as AttachmentFile[];
           setAttachmentImages((prevState) => [...newImageAttachments, ...prevState]);
           notify?.({ message: t('Uploaded successfully'), type: 'success' });
+          if (newImageAttachments[0]) {
+            onSelect(newImageAttachments[0]);
+          }
+          onClose?.();
         } catch (err) {
           notify?.({ message: (err as Error).message, type: 'error' });
           console.error(err);
@@ -241,7 +248,7 @@ export function InternalImages({
         }
       }
     },
-    [notify, setAttachmentImages, t, uploadFileModel, currentLocaleId],
+    [notify, onSelect, setAttachmentImages, t, uploadFileModel, currentLocaleId, onClose],
   );
 
   /**

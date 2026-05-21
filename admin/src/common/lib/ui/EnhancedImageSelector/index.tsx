@@ -26,6 +26,8 @@ export interface EnhancedImageSelectorProps {
   notify?: NotifyFn;
   /** Active editor locale ID — forwarded to dropzone uploads in InternalImages */
   currentLocaleId?: number | null;
+  /** Called after a successful dropzone upload to close the parent modal */
+  onClose?: () => void;
 }
 
 /**
@@ -41,6 +43,7 @@ export function EnhancedImageSelector({
   setUser,
   notify,
   currentLocaleId,
+  onClose,
 }: EnhancedImageSelectorProps) {
   const { t } = useTranslation();
 
@@ -127,6 +130,7 @@ export function EnhancedImageSelector({
             setUser={setUser}
             notify={notify}
             currentLocaleId={currentLocaleId}
+            onClose={onClose}
           />
         </Tabs.Panel>
 
@@ -175,7 +179,7 @@ export function EnhancedImageSelectorModal({
         title={t('Select image')}
         zIndex={11000}
       >
-        <EnhancedImageSelector {...props} />
+        <EnhancedImageSelector {...props} onClose={() => setOpened(false)} />
       </Modal>
     </>
   );
