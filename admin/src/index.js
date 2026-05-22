@@ -71,3 +71,7 @@ export {
   AIProviderConfigProvider,
   useAIProviderConfig,
 } from './common/AIProviderConfigContext.js';
+
+// Config API
+export { default as configureAdmin } from './common/configureAdmin.js';
+export { default as DeepselAdminProvider } from './common/DeepselAdminProvider.jsx';

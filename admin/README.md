@@ -24,11 +24,32 @@ npm install \
 
 ## Configure backend URL
 
-Add to `.env.development` (or your shell environment):
+You have three options, picked in this priority order:
+
+**1. Runtime API (recommended for consumers)** — call `configureAdmin` at app entry, before rendering any admin component:
+
+```js
+import { configureAdmin } from '@deepsel/admin';
+configureAdmin({ backendHost: 'http://localhost:8000' });
+```
+
+Or wrap your tree with `<DeepselAdminProvider>` — it applies the value synchronously before children render, so the first request sees the configured host:
+
+```jsx
+import { DeepselAdminProvider } from '@deepsel/admin';
+
+<DeepselAdminProvider backendHost="http://localhost:8000">
+  <YourAdminTree />
+</DeepselAdminProvider>
+```
+
+**2. Build-time env var** — for Vite consumers, set this in `.env.development` (or your shell):
 
 ```
 VITE_PUBLIC_BACKEND=http://localhost:8000
 ```
+
+**3. Global** — set `window.PUBLIC_BACKEND` before importing `@deepsel/admin`.
 
 The package auto-appends `/api/v1` if the URL doesn't already include it. The default dev login for a fresh deepsel backend is `admin` / `1234`.
 

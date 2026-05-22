@@ -1,4 +1,4 @@
-import backendHost from '../constants/backendHost';
+import BackendHostURLState from '../common/stores/BackendHostURLState.js';
 import { isValidLanguage } from '../constants/locales';
 
 /**
@@ -54,6 +54,7 @@ export async function fetchPageData(
     }
 
     // Determine the URL based on whether a language is provided
+    const backendHost = BackendHostURLState.getState().backendHost;
     let url;
     if (lang && lang !== 'default') {
       url = `${backendHost}/page/website/${lang}${formattedSlug}`;
@@ -167,6 +168,7 @@ export async function fetchFormData(lang, slug, authToken) {
     const formattedSlug = slug.replace(/^\/forms\//, '');
 
     // Determine the URL based on whether a language is provided
+    const backendHost = BackendHostURLState.getState().backendHost;
     const url = `${backendHost}/form/website/${lang}/${formattedSlug}`;
 
     // Prepare fetch options
@@ -227,6 +229,7 @@ export async function fetchFormData(lang, slug, authToken) {
  */
 export async function fetchPublicSettings(orgId = null, astroRequest = null, lang = null) {
   try {
+    const backendHost = BackendHostURLState.getState().backendHost;
     let url;
 
     if (orgId === null) {

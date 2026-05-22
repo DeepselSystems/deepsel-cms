@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import backendHost from '../../constants/backendHost.js';
+import BackendHostURLState from './BackendHostURLState.js';
 import { createApiHeaders } from '../../utils/apiUtils.js';
 
 const initialState = {
@@ -73,6 +73,7 @@ const ChatBoxState = create((set, get) => ({
     const currentHistory = get().history.slice(0, -1);
 
     try {
+      const backendHost = BackendHostURLState.getState().backendHost;
       const response = await fetch(`${backendHost}/chat/stream`, {
         method: 'POST',
         headers: createApiHeaders(),
