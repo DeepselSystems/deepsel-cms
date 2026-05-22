@@ -7,3 +7,4 @@ export * from './useModel';
 export * from './useFetch';
 export * from './useBack';
 export * from './useAPISchema';
+export * from '../formatErrorDetail';

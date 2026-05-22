@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { User } from '../types';
+import { formatErrorDetail } from '../formatErrorDetail';
 
 export interface UseFetchConfig {
   backendHost: string;
@@ -106,8 +107,12 @@ export function useFetch<T = unknown, R = unknown>(
       }
 
       if (!response.ok) {
-        const errorBody = (await response.json()) as { detail?: string };
-        throw new Error(errorBody?.detail ?? JSON.stringify(errorBody));
+        const errorBody = (await response.json()) as { detail?: unknown };
+        throw new Error(
+          errorBody?.detail !== undefined
+            ? formatErrorDetail(errorBody.detail)
+            : JSON.stringify(errorBody),
+        );
       }
 
       return (await response.json()) as T[] | R;
