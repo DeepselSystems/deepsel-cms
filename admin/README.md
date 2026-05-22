@@ -40,7 +40,7 @@ import { DeepselAdminProvider } from '@deepsel/admin';
 
 <DeepselAdminProvider backendHost="http://localhost:8000">
   <YourAdminTree />
-</DeepselAdminProvider>
+</DeepselAdminProvider>;
 ```
 
 **2. Build-time env var** — for Vite consumers, set this in `.env.development` (or your shell):
