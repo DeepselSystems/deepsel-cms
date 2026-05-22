@@ -10,6 +10,7 @@ from typing import Callable, Dict, Optional
 from sqlalchemy.orm import Session
 
 from .attachment import make_attachment_func
+from .gallery import make_gallery_func
 
 
 def build_jinja2_globals(
@@ -22,4 +23,5 @@ def build_jinja2_globals(
     """
     return {
         "attachment": make_attachment_func(db, organization_id, lang),
+        "gallery": make_gallery_func(db, organization_id, lang),
     }

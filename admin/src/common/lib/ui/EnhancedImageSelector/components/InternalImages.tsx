@@ -1,7 +1,16 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import clsx from 'clsx';
-import { AspectRatio, Box, Text, Checkbox, UnstyledButton, Skeleton } from '@mantine/core';
-import { useIntersection } from '@mantine/hooks';
+import {
+  AspectRatio,
+  Box,
+  Text,
+  Checkbox,
+  UnstyledButton,
+  Skeleton,
+  TextInput,
+} from '@mantine/core';
+import { useIntersection, useDebouncedValue } from '@mantine/hooks';
+import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import fromPairs from 'lodash/fromPairs';
 import { IMAGE_MIME_TYPE } from '@mantine/dropzone';
@@ -193,6 +202,21 @@ export function InternalImages({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingImages, setEditingImages] = useState<AttachmentFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch] = useDebouncedValue(searchQuery, 300);
+
+  const filteredImages = useMemo(() => {
+    if (!debouncedSearch.trim()) return attachmentImages;
+    const q = debouncedSearch.toLowerCase();
+    return attachmentImages.filter(
+      (img) =>
+        img.name?.toLowerCase().includes(q) ||
+        img.locale_versions?.some(
+          (v) => v.name?.toLowerCase().includes(q) || v.alt_text?.toLowerCase().includes(q),
+        ),
+    );
+  }, [attachmentImages, debouncedSearch]);
+
   const attachmentImagesMap = useMemo(
     () =>
       fromPairs(attachmentImages.map((o) => [o.id, o])) as Record<string | number, AttachmentFile>,
@@ -206,8 +230,8 @@ export function InternalImages({
     [editingImages, isEditMode, selectedImages],
   );
   const isSelectedAllEditing = useMemo(
-    () => editingImages.length === attachmentImages.length,
-    [attachmentImages.length, editingImages.length],
+    () => filteredImages.length > 0 && editingImages.length === filteredImages.length,
+    [filteredImages.length, editingImages.length],
   );
 
   /** Handle checkbox change */
@@ -256,8 +280,8 @@ export function InternalImages({
    * Handle select all checkbox change
    */
   const handleSelectAll = useCallback(() => {
-    setEditingImages(isSelectedAllEditing ? [] : attachmentImages);
-  }, [attachmentImages, isSelectedAllEditing]);
+    setEditingImages(isSelectedAllEditing ? [] : filteredImages);
+  }, [filteredImages, isSelectedAllEditing]);
 
   const handleCardSelect = useCallback(
     (id: number | string) => {
@@ -309,6 +333,16 @@ export function InternalImages({
         </div>
         {/*endregion dropzone*/}
 
+        {/*region search*/}
+        <TextInput
+          placeholder={t('Search images...')}
+          leftSection={<IconSearch size={16} />}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          className="mb-3"
+        />
+        {/*endregion search*/}
+
         {/*region edit actions*/}
         <Box className="text-end my-4 mx-2 space-x-6">
           {isEditMode && !!editingImages?.length && (
@@ -342,7 +376,7 @@ export function InternalImages({
         {/*region images grid*/}
         <Checkbox.Group value={checkboxValue} onChange={handleCheckboxChange}>
           <Box className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3 items-start">
-            {attachmentImages.map((attachmentImage) => (
+            {filteredImages.map((attachmentImage) => (
               <ImageCard
                 key={attachmentImage.id}
                 attachmentImage={attachmentImage}
@@ -362,11 +396,10 @@ export function InternalImages({
         {/*endregion images grid*/}
 
         {/*region empty state*/}
-        {!isImagesLoading && !attachmentImages.length && (
+        {!isImagesLoading && !filteredImages.length && (
           <Box className="text-center space-y-3 px-6 py-16">
-            <IconPhotoPlus size={16} className="text-gray-pale-sky" />
             <Text c="dimmed" size="sm">
-              {t('No images found.')}
+              {debouncedSearch ? t('No images match your search.') : t('No images found.')}
             </Text>
           </Box>
         )}
