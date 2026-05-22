@@ -8,8 +8,10 @@ import utc from 'dayjs/plugin/utc';
 import { PagingTableParams } from '@deepsel/cms-utils';
 import type { User } from '../types';
 import { H2 } from '../ui';
+import { extractDeletedIds } from './extractDeletedIds';
 import { useSearchParamState } from './useSearchParamState';
 import { usePagingTableParams } from './usePagingTableParams';
+import { formatErrorDetail } from '../formatErrorDetail';
 
 dayjs.extend(utc);
 
@@ -347,9 +349,10 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       const responseData = (await response.json()) as { data: T[]; total: number };
@@ -396,9 +399,10 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       const recordData = (await response.json()) as Record<string, unknown>;
@@ -451,9 +455,10 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       setError(null);
@@ -482,9 +487,10 @@ export function useModel<T = Record<string, unknown>>(
       });
 
       if (res.status !== 200) {
-        const { detail } = (await res.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await res.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       return res.json();
@@ -522,10 +528,11 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        console.error(detail);
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        console.error(message);
+        setError(message);
+        throw new Error(message);
       }
 
       const createdItem = (await response.json()) as T;
@@ -568,9 +575,10 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       const updatedOriginalData = originalData.map((item) =>
@@ -608,9 +616,10 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       const updatedOriginalData = originalData.filter(
@@ -644,9 +653,22 @@ export function useModel<T = Record<string, unknown>>(
         return;
       }
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
+      }
+
+      const deletedIds = extractDeletedIds(queryObject);
+      if (deletedIds) {
+        const idSet = new Set<string | number>(deletedIds);
+        const updatedOriginalData = originalData.filter(
+          (item) => !idSet.has((item as Record<string, unknown>).id as string | number),
+        );
+        setOriginalData(updatedOriginalData);
+        setData(applyClientSideFilter(updatedOriginalData));
+      } else {
+        await get();
       }
 
       setError(null);
@@ -803,9 +825,10 @@ export function useModel<T = Record<string, unknown>>(
       });
 
       if (res.status !== 200) {
-        const { detail } = (await res.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await res.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
       const resp = (await res.json()) as { id: string | number };

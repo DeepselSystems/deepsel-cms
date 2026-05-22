@@ -40,5 +40,8 @@ jobs:
           npm run build --workspace=packages/cms-utils
           npm run build --workspace=packages/cms-react
 
+      - name: Run unit tests
+        run: npm test --workspace=admin
+
       - name: Build library
         run: npm run build:lib --workspace=admin

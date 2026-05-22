@@ -52,6 +52,11 @@ interface InternalImagesProps {
   user: User | null;
   setUser: (user: User | null) => void;
   /**
+   * Organization id used for the `X-Organization-Id` header on uploads.
+   * Passed down from EnhancedImageSelector.
+   */
+  organizationId?: number | null;
+  /**
    * Callback to display toast/snackbar notifications (upload errors, success).
    * Sourced from the consuming app's notification store
    * (e.g. `NotificationState.getState().notify`).
@@ -74,13 +79,14 @@ export function InternalImages({
   backendHost,
   user,
   setUser,
+  organizationId,
   notify,
 }: InternalImagesProps) {
   // Translation
   const { t } = useTranslation();
 
   // Upload query
-  const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
+  const { uploadFileModel } = useUpload({ backendHost, token: user?.token, organizationId });
   const { deleteWithConfirm } = useModel<AttachmentFile>(
     'attachment',
     { backendHost, user, setUser },
