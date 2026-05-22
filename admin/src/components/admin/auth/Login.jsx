@@ -12,7 +12,12 @@ import { useDisclosure } from '@mantine/hooks';
 import useFetch from '../../../common/api/useFetch.js';
 import { useBasename } from '../../../common/BasenameContext.js';
 
-export default function Login({ defaultRedirect = '/pages' }) {
+export default function Login({
+  defaultRedirect = '/pages',
+  allowSignup = true,
+  allowResetPassword = true,
+  allowPasswordlessLogin = true,
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -51,7 +56,7 @@ export default function Login({ defaultRedirect = '/pages' }) {
 
   // on mount, if passwordlessToken is present, try to login
   useEffect(() => {
-    if (passwordlessToken) {
+    if (allowPasswordlessLogin && passwordlessToken) {
       handlePasswordlessLogin();
     }
   }, []);
@@ -246,7 +251,7 @@ export default function Login({ defaultRedirect = '/pages' }) {
       <Tabs defaultValue="login" variant="outline" className={`max-w-[400px] mx-auto`}>
         <Tabs.List justify="start">
           <Tabs.Tab value="login">{t('Login')}</Tabs.Tab>
-          {orgPublicSettings?.allow_public_signup && (
+          {allowSignup && orgPublicSettings?.allow_public_signup && (
             <Tabs.Tab value="signup">{t('Signup')}</Tabs.Tab>
           )}
         </Tabs.List>
@@ -326,17 +331,19 @@ export default function Login({ defaultRedirect = '/pages' }) {
                 <div className="ml-4">{t('Login with SAML')}</div>
               </Button>
             )}
-            <Button
-              onClick={() => {
-                setIsOpenModel(true);
-                setIsOpenResetPasswordModalToConfig2Fa(false);
-              }}
-              variant="light"
-            >
-              {t('Reset password')}
-            </Button>
+            {allowResetPassword && (
+              <Button
+                onClick={() => {
+                  setIsOpenModel(true);
+                  setIsOpenResetPasswordModalToConfig2Fa(false);
+                }}
+                variant="light"
+              >
+                {t('Reset password')}
+              </Button>
+            )}
 
-            {failCount > 0 && orgPublicSettings?.is_smtp_configured && (
+            {allowPasswordlessLogin && failCount > 0 && orgPublicSettings?.is_smtp_configured && (
               <button
                 className={`text-primary-main underline text-sm mt-2`}
                 onClick={openPasswordlessModal}
@@ -347,7 +354,7 @@ export default function Login({ defaultRedirect = '/pages' }) {
           </form>
         </Tabs.Panel>
 
-        {orgPublicSettings?.allow_public_signup && (
+        {allowSignup && orgPublicSettings?.allow_public_signup && (
           <Tabs.Panel value="signup">
             <form className={`flex flex-col gap-2 pt-2`} onSubmit={handleSignup}>
               <TextInput

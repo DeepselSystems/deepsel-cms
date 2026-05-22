@@ -14,6 +14,7 @@ export default function useUploadSizeLimit() {
   const [uploadSizeLimit, setUploadSizeLimit] = useState(globalUploadConfig?.uploadSizeLimit || 5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refetchTick, setRefetchTick] = useState(0);
   const hasInitialized = useRef(false);
 
   const { get } = useFetch('attachment/config/upload_size_limit', {
@@ -89,17 +90,16 @@ export default function useUploadSizeLimit() {
         // Clear the promise after completion
         globalPromise = null;
       });
-  }, [get]);
+  }, [get, refetchTick]);
 
   const reFetch = useCallback(async () => {
     // Clear global cache and re-fetch
     globalUploadConfig = null;
     globalPromise = null;
     hasInitialized.current = false;
-
-    // Trigger re-fetch
     setLoading(true);
-    // The useEffect will handle the re-fetch
+    // Bump the tick so the effect re-runs even though `get` is stable.
+    setRefetchTick((t) => t + 1);
   }, []);
 
   return {
