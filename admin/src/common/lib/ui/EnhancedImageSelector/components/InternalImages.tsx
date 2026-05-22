@@ -118,6 +118,7 @@ const ImageCard = memo(function ImageCard({
     onVersionUploaded: handleVersionUploaded,
     t,
     isEditMode,
+    hideSelectAction: multiple,
     onSelect: () => !isEditMode && onSelect(attachmentImage.id),
   });
 

@@ -34,6 +34,8 @@ interface UseAttachmentCardOverlayOptions {
   onSelect?: (id: number | string) => void;
   /** Suppresses the select overlay while in edit/delete mode */
   isEditMode?: boolean;
+  /** Hides the select action */
+  hideSelectAction?: boolean;
 }
 
 interface UseAttachmentCardOverlayReturn {
@@ -64,6 +66,7 @@ export function useAttachmentCardOverlay({
   t,
   onSelect,
   isEditMode = false,
+  hideSelectAction = false,
 }: UseAttachmentCardOverlayOptions): UseAttachmentCardOverlayReturn {
   const attachmentId = attachment.id;
   const hasAttachmentVersion = attachment.locale_versions?.some(
@@ -139,7 +142,7 @@ export function useAttachmentCardOverlay({
         <span>{t('Upload for {{lang}}', { lang: selectedLangName })}</span>
       </button>
     </div>
-  ) : showSelectAction ? (
+  ) : showSelectAction && !hideSelectAction ? (
     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
       <button
         type="button"
