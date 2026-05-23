@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
@@ -89,7 +88,6 @@ export default function BlogPostEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { notify } = NotificationState((state) => state);
-  const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
   const { setShowBackButton } = ShowHeaderBackButtonState();
   const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
@@ -728,7 +726,7 @@ export default function BlogPostEdit() {
                         key={`editor-${content.id}-${editorKey}`}
                         variant="subtle"
                         content={content.content || ''}
-                        currentLocaleId={content.locale_id}
+                        locale={content.locale}
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}

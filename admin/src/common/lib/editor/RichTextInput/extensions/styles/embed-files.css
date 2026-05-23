@@ -41,3 +41,12 @@
 .embed-file-item:hover .embed-file-link {
   color: #0060bf;
 }
+
+.embed-file-not-available {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  color: #9ca3af;
+  font-style: italic;
+  border: 1px dashed #d1d5db;
+  border-radius: 4px;
+}

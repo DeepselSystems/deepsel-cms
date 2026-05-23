@@ -78,10 +78,10 @@ import type { GalleryAttachment, GalleryModalSaveData } from './modals/GalleryMo
 import { RichTextModal } from './modals/RichTextModal';
 import type { RichTextModalSaveData } from './modals/RichTextModal';
 import { HtmlComponentsModal } from '../../ui';
-import { useDefaultLocale } from '../../../hooks/useDefaultLocale';
 import type { User } from '../../types';
 import type { NotifyFn } from '../../types';
 import type { JumpMarkData } from './extensions/youtube-jumpmarks-extension/types';
+import { Language } from '@deepsel/cms-utils';
 
 /**
  * Optional site settings for AI autocomplete features
@@ -117,8 +117,8 @@ export interface RichTextInputProps {
   /** Mantine RichTextEditor variant. */
   variant?: string;
 
-  /** Current locale ID used to filter HTML template components. */
-  currentLocaleId?: string | number;
+  /** Current locale */
+  locale?: Language;
 
   /** Whether to enable AI autocomplete (requires siteSettings with API key). */
   autoComplete?: boolean;
@@ -217,7 +217,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     canAddImage = true,
     onAddImageOverride = () => {},
     variant = 'subtle',
-    currentLocaleId,
+    locale,
     autoComplete = false,
     backendHost,
     user,
@@ -228,11 +228,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     notify,
     ...restProps
   } = props;
-
   const { t } = useTranslation();
-  const { availableLanguages } = useDefaultLocale();
-  const currentLocaleIsoCode =
-    availableLanguages.find((l) => l.id === currentLocaleId)?.iso_code ?? undefined;
 
   const [isGalleryModalOpened, { open: openGalleryModal, close: closeGalleryModal }] =
     useDisclosure(false);
@@ -287,13 +283,13 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         SubScript,
         Highlight,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
-        EnhancedImage.configure({ locale: currentLocaleIsoCode }),
+        EnhancedImage.configure({ locale: locale?.iso_code }),
         EnhancedCodeBlock,
         Youtube,
         YoutubeJumpMarks,
         FontSize,
         TextStyle,
-        Gallery.configure({ backendHost, locale: currentLocaleIsoCode }),
+        Gallery.configure({ backendHost, locale: locale?.iso_code }),
         RichText,
         Table.configure({
           resizable: true,
@@ -311,13 +307,13 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           backendHost,
           user,
           setUser,
-          locale: currentLocaleIsoCode,
+          locale: locale?.iso_code,
         }),
         PasteHandler.configure({
           backendHost,
           token: user?.token,
           notify,
-          locale: currentLocaleIsoCode,
+          locale: locale?.iso_code,
         }),
         AuthenticatedContent,
         jinja2Markdown,
@@ -856,9 +852,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                       backendHost={backendHost}
                       user={user}
                       setUser={setUser}
-                      currentLocaleId={
-                        typeof currentLocaleId === 'number' ? currentLocaleId : undefined
-                      }
+                      currentLocaleId={locale?.id ?? undefined}
                     />
                     <Tooltip label={t('Insert Gallery')}>
                       <button
@@ -962,7 +956,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
             backendHost={backendHost}
             user={user}
             setUser={setUser}
-            locale={currentLocaleIsoCode}
+            localeISOCode={locale?.iso_code}
             onSave={(savedData) => {
               if (galleryData?.updateGallery) {
                 // Update existing gallery node via the function stored in state
@@ -1092,7 +1086,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           <HtmlComponentsModal
             isOpen={isHtmlComponentsModalOpened}
             onClose={closeHtmlComponentsModal}
-            currentLocaleId={currentLocaleId}
+            currentLocaleId={locale?.id}
             organizationId={organizationId}
             backendHost={backendHost}
             user={user}

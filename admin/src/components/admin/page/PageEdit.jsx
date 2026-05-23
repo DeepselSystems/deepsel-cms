@@ -1057,7 +1057,7 @@ export default function PageEdit({ onSuccess }) {
                           key={`editor-${content.id}-${editorKey}`}
                           variant="subtle"
                           content={content.content || ''}
-                          currentLocaleId={content.locale_id}
+                          locale={content.locale}
                           onChange={(value) => {
                             updateContentField(content.id, 'content', value);
                           }}

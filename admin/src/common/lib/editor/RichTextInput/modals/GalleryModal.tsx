@@ -73,8 +73,9 @@ export interface GalleryModalProps {
    * Typically sourced from UserState.
    */
   setUser: (user: User | null) => void;
-  /** ISO code of the active editor locale (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
-  locale?: string;
+
+  /** ISO code of the active editor localeISOCode (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
+  localeISOCode?: string;
 }
 
 /**
@@ -103,7 +104,7 @@ export function GalleryModal({
   backendHost,
   user,
   setUser,
-  locale,
+  localeISOCode,
 }: GalleryModalProps) {
   const { t } = useTranslation();
 
@@ -278,7 +279,7 @@ export function GalleryModal({
                         {/* Image container with hover effects */}
                         <div className="relative group">
                           <img
-                            src={getAttachmentByNameRelativeUrl(attachment.name, locale)}
+                            src={getAttachmentByNameRelativeUrl(attachment.name, localeISOCode)}
                             alt={attachment.alt_text || ''}
                             className="group-hover:blur-xs transition-all duration-200"
                             style={{
