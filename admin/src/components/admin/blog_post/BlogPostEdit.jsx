@@ -673,7 +673,10 @@ export default function BlogPostEdit() {
                     {content.featured_image ? (
                       <div className="w-full my-4 relative group cursor-pointer">
                         <img
-                          src={getAttachmentByNameRelativeUrl(content.featured_image.name)}
+                          src={getAttachmentByNameRelativeUrl(
+                            content.featured_image.name,
+                            activeContent?.locale.iso_code,
+                          )}
                           alt={content.title || 'Featured image'}
                           className="w-full h-auto object-cover rounded-md max-h-[400px]"
                         />

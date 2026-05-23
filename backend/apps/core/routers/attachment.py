@@ -325,9 +325,9 @@ def get_unused_attachments(
     db: Session = Depends(get_db),
 ):
     """
-    Return attachments that are not referenced by any content record via
-    the Jinja attachment() or gallery() call. Paginated; uses the same
-    AttachmentSearch shape as the standard list endpoint.
+    Return attachments not referenced by any content — checks Jinja attachment()
+    calls and FK image columns (featured_image_id, seo_metadata_featured_image_id).
+    Paginated; uses the same AttachmentSearch shape as the standard list endpoint.
     """
     from apps.cms.models.page_content import PageContentModel
     from apps.cms.models.blog_post_content import BlogPostContentModel
@@ -341,12 +341,14 @@ def get_unused_attachments(
 
     unused = []
     for attachment in all_attachments:
-        if not attachment.name:
+        aid = attachment.id
+        name = attachment.name
+
+        if not name:
             unused.append(attachment)
             continue
-        name = attachment.name
-        # Matches any attachment() call (single-image or gallery) that contains
-        # this name as a quoted arg, regardless of argument position.
+
+        # 1. Jinja attachment() calls in content text (single-image and gallery).
         pattern = f"%attachment(%%'{name}'%"
         found = (
             db.query(PageContentModel)
@@ -359,6 +361,38 @@ def get_unused_attachments(
             .filter(TemplateContentModel.content.like(pattern))
             .first()
         )
+
+        # 2. FK image columns in blog_post_content.
+        if not found:
+            from sqlalchemy import or_
+
+            found = (
+                db.query(BlogPostContentModel)
+                .filter(
+                    or_(
+                        BlogPostContentModel.featured_image_id == aid,
+                        BlogPostContentModel.draft_featured_image_id == aid,
+                        BlogPostContentModel.seo_metadata_featured_image_id == aid,
+                        BlogPostContentModel.draft_seo_metadata_featured_image_id
+                        == aid,
+                    )
+                )
+                .first()
+            )
+
+        # 3. FK SEO image columns in page_content.
+        if not found:
+            found = (
+                db.query(PageContentModel)
+                .filter(
+                    or_(
+                        PageContentModel.seo_metadata_featured_image_id == aid,
+                        PageContentModel.draft_seo_metadata_featured_image_id == aid,
+                    )
+                )
+                .first()
+            )
+
         if not found:
             unused.append(attachment)
 
@@ -375,8 +409,9 @@ def get_attachment_usages(
     db: Session = Depends(get_db),
 ):
     """
-    Return all content records that embed this attachment via
-    {{ attachment('name') }} or inside a {{ gallery(...) }} Jinja call.
+    Return all content records that reference this attachment — via
+    {{ attachment(...) }} Jinja calls or FK image columns (featured_image_id,
+    seo_metadata_featured_image_id in blog_post_content and page_content).
 
     Optional query param locale_id narrows results to a single locale.
     """
@@ -395,6 +430,7 @@ def get_attachment_usages(
 
     usages = find_attachment_usages(
         attachment_name=attachment.name,
+        attachment_id=attachment_id,
         db=db,
         locale_id=locale_id,
     )
