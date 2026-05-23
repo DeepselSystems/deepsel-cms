@@ -16,13 +16,16 @@ const DEFAULT_GAP_PX = 4;
  * Renders a preview grid in the editor and fires an editGallery CustomEvent
  * on edit click so RichTextInput can open GalleryModal.
  */
-const GalleryNodeView = ({ node, updateAttributes }: NodeViewProps) => {
+const GalleryNodeView = ({ node, editor, updateAttributes }: NodeViewProps) => {
   const { t } = useTranslation();
   const { galleryId, config, attachments } = node.attrs as {
     galleryId: string | null;
     config: GalleryConfig;
     attachments: GalleryAttachment[];
   };
+
+  const locale = editor.extensionManager.extensions.find((ext) => ext.name === 'gallery')?.options
+    ?.locale as string | undefined;
 
   const imagesPerRow = config?.imagesPerRow ?? DEFAULT_IMAGES_PER_ROW;
   const gap = config?.gap ?? DEFAULT_GAP_PX;
@@ -96,7 +99,7 @@ const GalleryNodeView = ({ node, updateAttributes }: NodeViewProps) => {
           {attachments.map((attachment, idx) => (
             <div key={`${attachment.name}-${idx}`} className="gallery-image-container">
               <img
-                src={getAttachmentByNameRelativeUrl(attachment.name)}
+                src={getAttachmentByNameRelativeUrl(attachment.name, locale)}
                 alt={attachment.alt_text || ''}
                 className={clsx('gallery-image w-full h-auto object-cover aspect-square', {
                   'rounded-md': config?.rounded,

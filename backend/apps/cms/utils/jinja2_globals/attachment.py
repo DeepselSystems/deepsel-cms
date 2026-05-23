@@ -1,3 +1,4 @@
+import json
 from typing import Callable, Optional, TypedDict, Union, Dict, Any
 from markupsafe import Markup
 from sqlalchemy.orm import Session
@@ -171,24 +172,143 @@ def _render_version(version, attrs: AttachmentAttrs) -> Markup:
     return _render_file(version, attrs)
 
 
+def _resolve_locale_version(attachment_obj, lang: Optional[str], db: Session):
+    """Return the best-matching locale version for lang, falling back to the first available."""
+    locale_versions = getattr(attachment_obj, "locale_versions", None) or []
+    if not locale_versions:
+        return None
+
+    if lang:
+        LocaleModel = models_pool.get("locale")
+        if LocaleModel:
+            locale = db.query(LocaleModel).filter(LocaleModel.iso_code == lang).first()
+            if locale:
+                matched = next(
+                    (v for v in locale_versions if v.locale_id == locale.id), None
+                )
+                if matched:
+                    return matched
+
+    return locale_versions[0]
+
+
+def _render_gallery(
+    names: tuple,
+    config: dict,
+    db: Session,
+    organization_id: int,
+    lang: Optional[str],
+) -> Markup:
+    """
+    Render a multi-image gallery grid from a list of attachment names.
+    Config keys: imagesPerRow, gap, maxWidth, rounded.
+    Alt text is resolved from each attachment's locale version in the DB.
+    """
+    images_per_row = config.get("imagesPerRow", 3)
+    gap = config.get("gap", 4)
+    max_width = config.get("maxWidth")
+    rounded = config.get("rounded", True)
+
+    grid_style = (
+        f"display: grid;"
+        f" grid-template-columns: repeat({images_per_row}, 1fr);"
+        f" gap: {gap}px;"
+        f" margin: 1rem 0;"
+    )
+    if max_width:
+        grid_style += f" max-width: {max_width}px; margin: 1rem auto;"
+
+    img_border_radius = "border-radius: 6px;" if rounded else ""
+
+    AttachmentModel = models_pool.get("attachment")
+    if not AttachmentModel:
+        return Markup("<div>Gallery unavailable</div>")
+
+    image_parts = []
+    for name in names:
+        attachment_obj = (
+            db.query(AttachmentModel)
+            .filter(
+                AttachmentModel.name == name,
+                AttachmentModel.organization_id == organization_id,
+            )
+            .first()
+        )
+        if not attachment_obj:
+            continue
+
+        version = _resolve_locale_version(attachment_obj, lang, db)
+        if not version:
+            continue
+
+        src = f"{_SERVE_URL_PREFIX}/{version.name}"
+        alt = version.alt_text or ""
+
+        img_tag = (
+            f'<img src="{src}" alt="{alt}"'
+            f' class="gallery-image"'
+            f' style="width: 100%; height: auto; object-fit: cover;'
+            f' aspect-ratio: 1 / 1; {img_border_radius}">'
+        )
+        image_parts.append(f'<div class="gallery-image-container">{img_tag}</div>')
+
+    if not image_parts:
+        return Markup("<div>Gallery is empty</div>")
+
+    return Markup(
+        f'<div class="gallery-container" data-gallery="true" style="{grid_style}">'
+        + "".join(image_parts)
+        + "</div>"
+    )
+
+
 def make_attachment_func(
     db: Session,
     organization_id: int,
     lang: Optional[str],
 ) -> Callable[..., Markup]:
     """
-    Returns a Jinja2 callable that resolves an attachment by name and renders HTML.
+    Returns a Jinja2 callable that resolves attachments by name and renders HTML.
 
-    Usage in templates:
+    Single image:
         {{ attachment('my-image') }}
         {{ attachment('my-image', {'width': 500, 'alignment': 'left'}) }}
-        {{ attachment('my-file') }}
 
-    Supported attrs vary by content type — see each _render_* function for details.
+    Gallery (multiple images):
+        {{ attachment('img1', 'img2', 'img3') }}
+        {{ attachment('img1', 'img2', '{"imagesPerRow":3,"gap":4,"maxWidth":null,"rounded":true}') }}
+
+    The last arg is treated as config when it is a dict or a JSON string starting with '{'.
+    Gallery config keys: imagesPerRow, gap, maxWidth, rounded.
+    Single-image attrs vary by content type — see each _render_* function for details.
     """
 
-    def attachment(name: str, attrs: Optional[AttachmentAttrs] = None) -> Markup:
-        attrs = attrs or {}
+    def attachment(*args) -> Markup:
+        # Separate name args from optional config (last arg as dict or JSON string).
+        config: AttachmentAttrs = {}
+        names = list(args)
+
+        if names:
+            last = names[-1]
+            if isinstance(last, dict):
+                config = last
+                names = names[:-1]
+            elif isinstance(last, str) and last.strip().startswith("{"):
+                try:
+                    config = json.loads(last)
+                    names = names[:-1]
+                except (json.JSONDecodeError, ValueError):
+                    pass  # not valid JSON — treat as a name
+
+        if not names:
+            return Markup("<div>No attachment specified</div>")
+
+        # Gallery mode: more than one name arg.
+        if len(names) > 1:
+            return _render_gallery(tuple(names), config, db, organization_id, lang)
+
+        # Single attachment mode.
+        name = names[0]
         AttachmentModel = models_pool.get("attachment")
         if not AttachmentModel:
             return Markup(f"<div>File not found: {name}</div>")
@@ -205,31 +325,10 @@ def make_attachment_func(
         if not attachment_obj:
             return Markup(f"<div>File not found: {name}</div>")
 
-        locale_versions = getattr(attachment_obj, "locale_versions", None) or []
-
-        if not locale_versions:
+        version = _resolve_locale_version(attachment_obj, lang, db)
+        if not version:
             return Markup("<div>File not available for this locale</div>")
 
-        # Resolve version: match requested lang → fallback first version
-        resolved_version = None
-        if lang:
-            LocaleModel = models_pool.get("locale")
-            if LocaleModel:
-                locale = (
-                    db.query(LocaleModel).filter(LocaleModel.iso_code == lang).first()
-                )
-                if locale:
-                    resolved_version = next(
-                        (v for v in locale_versions if v.locale_id == locale.id),
-                        None,
-                    )
-
-        if not resolved_version:
-            resolved_version = locale_versions[0]
-
-        if not resolved_version:
-            return Markup("<div>File not available for this locale</div>")
-
-        return _render_version(resolved_version, attrs)
+        return _render_version(version, config)
 
     return attachment

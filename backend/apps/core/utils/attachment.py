@@ -19,10 +19,31 @@ logger = logging.getLogger(__name__)
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 AttachmentModel = models_pool["attachment"]
 
-# Captures attachment name from both {{ attachment('name') }} and
-# {{ attachment('name', {...}) }}. Stops at the closing single-quote so it
-# works regardless of whether optional attrs are present.
-_ATTACHMENT_JINJA_RE = re.compile(r"\{\{-?\s*attachment\('([^']+)'")
+# Captures the full args string inside every {{ attachment(...) }} call.
+# Works for both single-image and multi-image (gallery) calls.
+_ATTACHMENT_CALL_RE = re.compile(r"\{\{-?\s*attachment\(([\s\S]*?)\)\s*\}\}")
+
+# Finds individual single-quoted string args within an attachment() call.
+_QUOTED_ARG_RE = re.compile(r"'([^']*)'")
+
+
+def _extract_attachment_names(content: str) -> set[str]:
+    """
+    Return all attachment names referenced anywhere in content via attachment() calls.
+
+    Handles both single-image {{ attachment('name') }} and multi-image gallery calls
+    {{ attachment('img1', 'img2', 'configJSON') }}. The last arg is skipped when it is
+    a JSON config string (starts with '{').
+    """
+    names: set[str] = set()
+    for call_match in _ATTACHMENT_CALL_RE.finditer(content):
+        args_str = call_match.group(1)
+        quoted = [m.group(1) for m in _QUOTED_ARG_RE.finditer(args_str)]
+        # Skip last arg if it is a JSON gallery/attrs config.
+        if quoted and quoted[-1].strip().startswith("{"):
+            quoted = quoted[:-1]
+        names.update(quoted)
+    return names
 
 
 def resolve_unique_attachment_name(filename: str, db: Session) -> str:
@@ -61,6 +82,7 @@ def upsert_locale_versions(
     item_file_map: dict[int, UploadFile],
     db: Session,
     user,
+    organization_id,
 ) -> list[UpsertItemResult]:
     """
     Apply batch locale-version update-inserts for a single attachment.
@@ -84,6 +106,7 @@ def upsert_locale_versions(
         item_file_map:  Mapping of item list index → UploadFile for items that carry a file.
         db:             Active SQLAlchemy session.
         user:           Authenticated user passed to ORM create/update/delete calls.
+        organization_id: ID of the organization associated with the attachment.
 
     Returns:
         List of UpsertItemResult, one per item, in the same order as items.
@@ -127,6 +150,7 @@ def upsert_locale_versions(
                 file=file,
                 attachment_id=attachment_id,
                 locale_id=item.locale_id,
+                organization_id=organization_id,
                 **kwargs,
             )
 
@@ -195,6 +219,7 @@ def upsert_locale_versions(
                     attachment_id=attachment_id,
                     locale_id=item.locale_id,
                     alt_text=effective_alt,
+                    organization_id=organization_id,
                 )
             else:
                 # Metadata-only update: alt_text and/or file name can change.
@@ -264,10 +289,11 @@ def find_attachment_usages(
     from apps.cms.models.template_content import TemplateContentModel
     from apps.cms.models.template import TemplateModel
 
-    # SQL LIKE pattern — fast pre-filter before Python regex confirms the match.
-    # Ends after the closing quote (no closing paren) so it matches both
-    # attachment('name') and attachment('name', {...attrs...}).
-    like_pattern = f"%attachment('{attachment_name}'%"
+    # SQL LIKE pre-filter: matches any attachment() call that contains this name as a
+    # quoted arg — works for both single-image and multi-image gallery calls regardless
+    # of argument position. Python-level confirmation via _extract_attachment_names()
+    # eliminates any false positives from the broad pattern.
+    like_pattern = f"%attachment(%%'{attachment_name}'%"
 
     usages: list[AttachmentUsageItem] = []
 
@@ -281,10 +307,10 @@ def find_attachment_usages(
     if locale_id is not None:
         page_q = page_q.filter(PageContentModel.locale_id == locale_id)
     for row in page_q.all():
-        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+        found_in_published = attachment_name in _extract_attachment_names(
             row.content or ""
         )
-        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+        found_in_draft = attachment_name in _extract_attachment_names(
             row.draft_content or ""
         )
         for is_draft in (False, True):
@@ -312,10 +338,10 @@ def find_attachment_usages(
     if locale_id is not None:
         blog_q = blog_q.filter(BlogPostContentModel.locale_id == locale_id)
     for row in blog_q.all():
-        found_in_published = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+        found_in_published = attachment_name in _extract_attachment_names(
             row.content or ""
         )
-        found_in_draft = attachment_name in _ATTACHMENT_JINJA_RE.findall(
+        found_in_draft = attachment_name in _extract_attachment_names(
             row.draft_content or ""
         )
         for is_draft in (False, True):
@@ -340,7 +366,7 @@ def find_attachment_usages(
     if locale_id is not None:
         tpl_q = tpl_q.filter(TemplateContentModel.locale_id == locale_id)
     for row in tpl_q.all():
-        if attachment_name not in _ATTACHMENT_JINJA_RE.findall(row.content or ""):
+        if attachment_name not in _extract_attachment_names(row.content or ""):
             continue
         # Fetch template name for the title label
         template = (

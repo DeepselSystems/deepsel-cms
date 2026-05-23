@@ -19,7 +19,7 @@ export interface GalleryAttachment {
 }
 
 interface GalleryNodeAttributes {
-  galleryId: string | null;
+  galleryId?: string | null;
   config: GalleryConfig;
   attachments: GalleryAttachment[];
 }
@@ -35,6 +35,8 @@ declare module '@tiptap/core' {
 
 export interface GalleryOptions {
   backendHost?: string;
+  /** ISO code of the active editor locale (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
+  locale?: string;
 }
 
 /** Default gallery layout config */
@@ -45,13 +47,15 @@ const DEFAULT_GALLERY_CONFIG: GalleryConfig = {
   rounded: true,
 };
 
-/** data-type attribute value identifying gallery wrapper divs */
-const GALLERY_DATA_TYPE = 'gallery';
+/** HTML attribute on the gallery wrapper div — mirrors enhanced-image-extension pattern */
+const GALLERY_CONTAINER_ATTR = 'data-gallery';
 
 /**
  * Gallery extension for TipTap.
- * Stores gallery as Jinja syntax: {{ gallery('id', 'configJSON', 'attachmentsJSON') }}
- * Parses back both old data-* format (backward compat) and new Jinja format.
+ * Stores gallery using the attachment() Jinja function:
+ *   {{ attachment('img1', 'img2', 'img3', 'configJSON') }}
+ * wrapped in <div data-gallery="true"> so the extension can identify its nodes.
+ * The backend attachment() function detects multiple names and renders gallery HTML.
  */
 export const Gallery = Node.create<GalleryOptions>({
   name: 'gallery',
@@ -67,12 +71,12 @@ export const Gallery = Node.create<GalleryOptions>({
   addOptions() {
     return {
       backendHost: undefined,
+      locale: undefined,
     };
   },
 
   addAttributes() {
     return {
-      galleryId: { default: null },
       config: { default: DEFAULT_GALLERY_CONFIG },
       attachments: { default: [] },
     };
@@ -81,40 +85,39 @@ export const Gallery = Node.create<GalleryOptions>({
   parseHTML() {
     return [
       {
-        tag: `div[data-type="${GALLERY_DATA_TYPE}"]`,
+        tag: `div[${GALLERY_CONTAINER_ATTR}]`,
         getAttrs: (node) => {
           if (!(node instanceof HTMLElement)) return {};
 
           const text = node.textContent?.trim() || '';
 
-          // New Jinja format: {{ gallery('id', 'configJSON', 'attachmentsJSON') }}
-          const jinjaMatch = text.match(
-            /^\{\{\s*gallery\('([^']*)',\s*'([\s\S]*?)',\s*'([\s\S]*?)'\s*\)\s*\}\}$/,
-          );
-          if (jinjaMatch) {
+          // Format: {{ attachment('img1', 'img2', 'configJSON') }}
+          const attachmentMatch = text.match(/^\{\{-?\s*attachment\(([\s\S]*?)\)\s*\}\}$/);
+          if (attachmentMatch) {
             try {
+              const argsStr = attachmentMatch[1];
+              // Extract all single-quoted string values from the args.
+              const allArgs = [...argsStr.matchAll(/'([^']*)'/g)].map((m) => m[1]);
+
+              let config: GalleryConfig = { ...DEFAULT_GALLERY_CONFIG };
+              let names = allArgs;
+
+              // Last arg is the JSON config when it starts with '{'.
+              if (allArgs.length > 0 && allArgs[allArgs.length - 1].trim().startsWith('{')) {
+                config = JSON.parse(allArgs[allArgs.length - 1]) as GalleryConfig;
+                names = allArgs.slice(0, -1);
+              }
+
               return {
-                galleryId: jinjaMatch[1] || null,
-                config: JSON.parse(jinjaMatch[2]),
-                attachments: JSON.parse(jinjaMatch[3]),
+                config,
+                attachments: names.map((name) => ({ name, alt_text: '', caption: '' })),
               };
             } catch {
               return false;
             }
           }
 
-          // Backward compat: old data-* attribute format
-          try {
-            const configStr = node.getAttribute('data-config');
-            const attachmentsStr = node.getAttribute('data-attachments');
-            return {
-              galleryId: node.getAttribute('data-gallery-id') || null,
-              config: configStr ? (JSON.parse(configStr) as GalleryConfig) : DEFAULT_GALLERY_CONFIG,
-              attachments: attachmentsStr ? (JSON.parse(attachmentsStr) as GalleryAttachment[]) : [],
-            };
-          } catch {
-            return {};
-          }
+          return false;
         },
       },
     ];
@@ -123,21 +126,16 @@ export const Gallery = Node.create<GalleryOptions>({
   renderHTML({ node }) {
     const config = (node.attrs.config as GalleryConfig) || DEFAULT_GALLERY_CONFIG;
     const attachments = (node.attrs.attachments as GalleryAttachment[]) || [];
-    const galleryId = (node.attrs.galleryId as string) || '';
 
-    const configStr = JSON.stringify(config);
-    const attachmentsStr = JSON.stringify(
-      attachments.map((a) => ({
-        name: a.name,
-        alt_text: a.alt_text || '',
-        caption: a.caption || '',
-      })),
-    );
+    const nameArgs = attachments.map((a) => `'${a.name}'`).join(', ');
+    const configArg = `'${JSON.stringify(config)}'`;
 
+    // Emit: <div data-gallery="true">{{ attachment('img1', 'img2', 'configJSON') }}</div>
+    // The data-gallery="true" wrapper lets parseHTML recognise the node on reload.
     return [
       'div',
-      { 'data-type': GALLERY_DATA_TYPE },
-      `{{ gallery('${galleryId}', '${configStr}', '${attachmentsStr}') }}`,
+      { [GALLERY_CONTAINER_ATTR]: 'true' },
+      attachments.length ? `{{ attachment(${nameArgs}, ${configArg}) }}` : '',
     ];
   },
 

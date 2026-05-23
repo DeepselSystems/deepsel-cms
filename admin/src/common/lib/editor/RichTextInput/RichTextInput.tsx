@@ -293,7 +293,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         YoutubeJumpMarks,
         FontSize,
         TextStyle,
-        Gallery.configure({ backendHost }),
+        Gallery.configure({ backendHost, locale: currentLocaleIsoCode }),
         RichText,
         Table.configure({
           resizable: true,

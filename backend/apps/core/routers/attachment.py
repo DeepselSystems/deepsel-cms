@@ -326,8 +326,8 @@ def get_unused_attachments(
 ):
     """
     Return attachments that are not referenced by any content record via
-    the Jinja attachment() call. Paginated; uses the same AttachmentSearch
-    shape as the standard list endpoint.
+    the Jinja attachment() or gallery() call. Paginated; uses the same
+    AttachmentSearch shape as the standard list endpoint.
     """
     from apps.cms.models.page_content import PageContentModel
     from apps.cms.models.blog_post_content import BlogPostContentModel
@@ -345,7 +345,9 @@ def get_unused_attachments(
             unused.append(attachment)
             continue
         name = attachment.name
-        pattern = f"%attachment('{name}'%"
+        # Matches any attachment() call (single-image or gallery) that contains
+        # this name as a quoted arg, regardless of argument position.
+        pattern = f"%attachment(%%'{name}'%"
         found = (
             db.query(PageContentModel)
             .filter(PageContentModel.content.like(pattern))
@@ -373,7 +375,8 @@ def get_attachment_usages(
     db: Session = Depends(get_db),
 ):
     """
-    Return all content records that embed this attachment via {{ attachment('name') }}.
+    Return all content records that embed this attachment via
+    {{ attachment('name') }} or inside a {{ gallery(...) }} Jinja call.
 
     Optional query param locale_id narrows results to a single locale.
     """
