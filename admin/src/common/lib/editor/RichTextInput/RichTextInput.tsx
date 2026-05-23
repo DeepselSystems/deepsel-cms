@@ -311,6 +311,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           backendHost,
           user,
           setUser,
+          locale: currentLocaleIsoCode,
         }),
         PasteHandler.configure({
           backendHost,
@@ -961,6 +962,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            locale={currentLocaleIsoCode}
             onSave={(savedData) => {
               if (galleryData?.updateGallery) {
                 // Update existing gallery node via the function stored in state

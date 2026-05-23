@@ -73,6 +73,8 @@ export interface GalleryModalProps {
    * Typically sourced from UserState.
    */
   setUser: (user: User | null) => void;
+  /** ISO code of the active editor locale (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
+  locale?: string;
 }
 
 /**
@@ -101,6 +103,7 @@ export function GalleryModal({
   backendHost,
   user,
   setUser,
+  locale,
 }: GalleryModalProps) {
   const { t } = useTranslation();
 
@@ -275,7 +278,7 @@ export function GalleryModal({
                         {/* Image container with hover effects */}
                         <div className="relative group">
                           <img
-                            src={getAttachmentByNameRelativeUrl(attachment.name)}
+                            src={getAttachmentByNameRelativeUrl(attachment.name, locale)}
                             alt={attachment.alt_text || ''}
                             className="group-hover:blur-xs transition-all duration-200"
                             style={{
@@ -367,6 +370,7 @@ export function GalleryModal({
         opened={!!editingCaption}
         onClose={() => setEditingCaption(null)}
         title={t('Edit Caption')}
+        zIndex={11000}
       >
         <TextInput
           value={newCaption}

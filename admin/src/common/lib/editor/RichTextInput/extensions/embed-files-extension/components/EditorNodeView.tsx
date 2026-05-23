@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from '../utils';
 import clsx from 'clsx';
 import FilesSelectorModal from './FilesSelectorModal';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 import type { EmbedFileItem } from '../types';
 
 /**
@@ -23,10 +23,12 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
     (ext) => ext.name === 'pasteHandler',
   );
-  const { backendHost, user, setUser } = pasteHandlerExtension?.options || {
+
+  const { backendHost, user, setUser, locale } = pasteHandlerExtension?.options || {
     backendHost: '',
     user: null,
     setUser: () => {},
+    locale: null,
   };
 
   const { t } = useTranslation();
@@ -118,7 +120,7 @@ const EditorNodeView = ({ node, editor, deleteNode, updateAttributes }: NodeView
       {/* Files Container — hrefs are editor-preview URLs only */}
       <div className={EMBED_FILES_CLASSES.FILES_CONTAINER}>
         {files.map((file, index) => {
-          const previewUrl = getAttachmentRelativeUrl(file.attachmentName);
+          const previewUrl = getAttachmentByNameRelativeUrl(file.attachmentName, locale);
           return (
             <div key={index} className={clsx(EMBED_FILES_CLASSES.FILE_ITEM)}>
               <a
