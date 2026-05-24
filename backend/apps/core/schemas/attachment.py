@@ -13,6 +13,13 @@ class LocaleRead(BaseModel):
     emoji_flag: Optional[str] = None
 
 
+class AttachmentBriefRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: Optional[str] = None
+
+
 class AttachmentLocaleVersionRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,6 +30,7 @@ class AttachmentLocaleVersionRead(BaseModel):
     filesize: Optional[int] = None
     alt_text: Optional[str] = None
     attachment_id: Optional[int] = None
+    attachment: Optional[AttachmentBriefRead] = None
     locale_id: Optional[int] = None
     locale: Optional[LocaleRead] = None
     organization_id: Optional[int] = None
@@ -59,7 +67,10 @@ class AttachmentLocaleVersionUpdate(BaseModel):
 
 
 class AttachmentLocaleVersionUpdateSearch(BaseModel):
-    pass
+    model_config = ConfigDict(from_attributes=True)
+
+    total: int
+    data: list[AttachmentLocaleVersionRead]
 
 
 class AttachmentLocaleVersionUpdate(BaseModel):

@@ -15,6 +15,7 @@
  * @property {number|null} filesize - Size in bytes
  * @property {string|null} alt_text
  * @property {number} attachment_id
+ * @property {AttachmentFile} attachment
  * @property {number} locale_id
  * @property {LocaleInfo|null} locale
  * @property {number|null} organization_id

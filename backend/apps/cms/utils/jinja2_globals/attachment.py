@@ -8,6 +8,21 @@ from apps.core.utils.models_pool import models_pool
 _SERVE_URL_PREFIX = "/api/v1/attachment/serve"
 
 
+_NOT_AVAILABLE_STYLE = (
+    "display: inline-flex; align-items: center; justify-content: center;"
+    " width: 5rem; height: 5rem; padding: 0.375rem; color: #9ca3af;"
+    " font-style: italic; font-size: 0.65rem; text-align: center;"
+    " border: 1px dashed #d1d5db; border-radius: 4px;"
+)
+
+
+def _not_available(msg: str) -> Markup:
+    """Return a styled placeholder span for missing/unavailable attachments."""
+    return Markup(
+        f'<span class="embed-file-not-available" style="{_NOT_AVAILABLE_STYLE}">{msg}</span>'
+    )
+
+
 class ImageAttrs(TypedDict, total=False):
     width: int
     height: int
@@ -189,7 +204,7 @@ def _resolve_locale_version(attachment_obj, lang: Optional[str], db: Session):
                 if matched:
                     return matched
 
-    return locale_versions[0]
+    return None
 
 
 def _render_gallery(
@@ -301,7 +316,7 @@ def make_attachment_func(
                     pass  # not valid JSON — treat as a name
 
         if not names:
-            return Markup("<div>No attachment specified</div>")
+            return _not_available("No attachment specified")
 
         # Gallery mode: more than one name arg.
         if len(names) > 1:
@@ -311,7 +326,7 @@ def make_attachment_func(
         name = names[0]
         AttachmentModel = models_pool.get("attachment")
         if not AttachmentModel:
-            return Markup(f"<div>File not found: {name}</div>")
+            return _not_available(f"File not found: {name}")
 
         attachment_obj = (
             db.query(AttachmentModel)
@@ -323,11 +338,11 @@ def make_attachment_func(
         )
 
         if not attachment_obj:
-            return Markup(f"<div>File not found: {name}</div>")
+            return _not_available(f"File not found: {name}")
 
         version = _resolve_locale_version(attachment_obj, lang, db)
         if not version:
-            return Markup("<div>File not available for this locale</div>")
+            return _not_available("File not available for this locale")
 
         return _render_version(version, config)
 

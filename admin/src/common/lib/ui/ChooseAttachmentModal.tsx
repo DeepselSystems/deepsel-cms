@@ -42,6 +42,7 @@ export interface AttachmentLocaleVersion {
   filesize?: number | null;
   alt_text?: string | null;
   attachment_id: number;
+  attachment: AttachmentFile;
   locale_id: number;
   locale?: AttachmentLocaleInfo | null;
   string_id?: string | null;

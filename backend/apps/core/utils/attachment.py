@@ -19,6 +19,19 @@ logger = logging.getLogger(__name__)
 AttachmentLocaleVersionModel = models_pool["attachment_locale_version"]
 AttachmentModel = models_pool["attachment"]
 
+PLACEHOLDER_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">'
+    '<rect x="0.5" y="0.5" width="79" height="79" fill="none"'
+    ' stroke="#d1d5db" stroke-width="1" stroke-dasharray="4 3" rx="4"/>'
+    '<text x="40" y="26" font-family="sans-serif" font-size="10" fill="#9ca3af"'
+    ' font-style="italic" text-anchor="middle">File not</text>'
+    '<text x="40" y="40" font-family="sans-serif" font-size="10" fill="#9ca3af"'
+    ' font-style="italic" text-anchor="middle">available for</text>'
+    '<text x="40" y="54" font-family="sans-serif" font-size="10" fill="#9ca3af"'
+    ' font-style="italic" text-anchor="middle">this locale</text>'
+    "</svg>"
+)
+
 # Captures the full args string inside every {{ attachment(...) }} call.
 # Works for both single-image and multi-image (gallery) calls.
 _ATTACHMENT_CALL_RE = re.compile(r"\{\{-?\s*attachment\(([\s\S]*?)\)\s*\}\}")

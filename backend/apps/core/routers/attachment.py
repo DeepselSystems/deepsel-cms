@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 
 from fastapi import Depends, File, Form, Response, UploadFile, status, HTTPException
 from fastapi.responses import RedirectResponse
@@ -95,7 +96,9 @@ def upload_files(
         if alt_text:
             kwargs["alt_text"] = alt_text
 
-        attachment_name = resolve_unique_attachment_name(file.filename, db)
+        attachment_name = resolve_unique_attachment_name(
+            str(uuid.uuid4()).split("-")[0], db
+        )
         instance = Model().create(
             db=db,
             user=user,
