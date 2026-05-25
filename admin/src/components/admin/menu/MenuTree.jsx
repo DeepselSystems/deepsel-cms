@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import { LoadingOverlay, Skeleton } from '@mantine/core';
+import { LoadingOverlay } from '@mantine/core';
 import Button from '../../../common/ui/Button.jsx';
 import { useDisclosure } from '@mantine/hooks';
 import { Helmet } from 'react-helmet';
@@ -537,13 +537,7 @@ export default function MenuTree() {
           {error && <div className="p-4 bg-red-100 text-red-700 rounded-md mb-4">{error}</div>}
 
           <div className="pt-4">
-            {loading ? (
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Skeleton key={index} height={48} radius="sm" />
-                ))}
-              </div>
-            ) : menuItems.length > 0 ? (
+            {menuItems.length > 0 ? (
               menuItems.map((item) => (
                 <MenuItem
                   key={item.id}
@@ -561,7 +555,7 @@ export default function MenuTree() {
               ))
             ) : (
               <div className="text-center py-8 text-gray-500">
-                {t('No menu items yet. Add your first menu item!')}
+                {loading ? t('Loading...') : t('No menu items yet. Add your first menu item!')}
               </div>
             )}
           </div>
