@@ -212,7 +212,7 @@ export function useModel<T = Record<string, unknown>>(
   const [data, setData] = useState<T[]>([]);
   const [originalData, setOriginalData] = useState<T[]>([]);
   const [record, setRecord] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
 
@@ -320,12 +320,13 @@ export function useModel<T = Record<string, unknown>>(
    * Fetches a paginated list of records
    */
   async function get(queryObject: Record<string, unknown> | null = null) {
-    try {
-      if (abortControllerRef.current && abortPreviousRequest) {
-        abortControllerRef.current.abort();
-      }
-      abortControllerRef.current = new AbortController();
+    if (abortControllerRef.current && abortPreviousRequest) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
+    try {
       setLoading(true);
       const skip = (page - 1) * (pageSizeOverride || 0);
 
@@ -341,7 +342,7 @@ export function useModel<T = Record<string, unknown>>(
         body: JSON.stringify(query),
         headers: _buildHeaders({ 'Content-Type': 'application/json' }),
         credentials: 'include',
-        signal: abortControllerRef.current.signal,
+        signal: controller.signal,
       });
 
       if (response.status === 401) {
@@ -371,7 +372,9 @@ export function useModel<T = Record<string, unknown>>(
     } catch (err) {
       if ((err as Error).name !== 'AbortError') throw err;
     } finally {
-      setLoading(false);
+      // Don't flip loading=false for aborted requests — a newer in-flight request
+      // is still loading, and flipping it would briefly expose the empty state
+      if (abortControllerRef.current === controller) setLoading(false);
     }
   }
 
