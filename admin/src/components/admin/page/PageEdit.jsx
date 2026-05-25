@@ -352,11 +352,12 @@ export default function PageEdit({ onSuccess }) {
 
     const url = new URL(`/preview?lang=${selectedLocaleCode}`, window.location.origin);
     url.searchParams.set('preview', 'true');
-    if (record?.organization_id) {
-      url.searchParams.set('org_id', String(record.organization_id));
+    const previewOrgId = record?.organization_id || organizationId;
+    if (previewOrgId) {
+      url.searchParams.set('org_id', String(previewOrgId));
     }
     return url.toString();
-  }, [currentContent?.locale?.iso_code, record?.organization_id]);
+  }, [currentContent?.locale?.iso_code, record?.organization_id, organizationId]);
 
   const previewData = useMemo(() => {
     if (!currentContent?.locale?.iso_code) return null;
