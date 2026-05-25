@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES } from '../utils';
 import clsx from 'clsx';
 import FilesSelectorModal from './FilesSelectorModal';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 import type { EmbedFileItem } from '../types';
 import { useModel } from '../../../../../hooks';
 

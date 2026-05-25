@@ -48,7 +48,7 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 
 const BLOG_POST_DRAFT_FIELDS = [
   'title',

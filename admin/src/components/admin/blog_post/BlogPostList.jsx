@@ -19,7 +19,7 @@ import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPhoto, IconPlus } from '@tabler/icons-react';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 
 export default function BlogPostList() {
   useShowSiteSelector();

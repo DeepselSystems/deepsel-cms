@@ -4,7 +4,7 @@ import { Group, Modal, Text, TextInput } from '@mantine/core';
 import { IconArrowDown, IconArrowUp, IconEdit, IconPhoto, IconTrash } from '@tabler/icons-react';
 import { Button } from '../../../ui';
 import { Checkbox } from '../../../ui';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 import { EnhancedImageSelector } from '../../../ui';
 import type { User } from '../../../types';
 

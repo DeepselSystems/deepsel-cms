@@ -14,7 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 import DescriptionModal from './DescriptionModal';
 import {
   ENHANCED_IMAGE_ALIGNMENTS,
@@ -50,9 +50,8 @@ const EditorNodeView = ({ node, editor, updateAttributes, deleteNode }: NodeView
   const { src, alt, title, width, height, alignment, rounded, circle, inline, description } =
     node.attrs as ImageAttributes;
 
-  const locale = editor.extensionManager.extensions.find(
-    (ext) => ext.name === 'enhancedImage',
-  )?.options?.locale as string | undefined;
+  const locale = editor.extensionManager.extensions.find((ext) => ext.name === 'enhancedImage')
+    ?.options?.locale as string | undefined;
 
   /**
    * Handle alignment change
