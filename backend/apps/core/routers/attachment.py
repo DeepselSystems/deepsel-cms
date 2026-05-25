@@ -353,12 +353,24 @@ def get_unused_attachments(
 
         # 1. Jinja attachment() calls in content text (single-image and gallery).
         pattern = f"%attachment(%%'{name}'%"
+        from sqlalchemy import or_
+
         found = (
             db.query(PageContentModel)
-            .filter(PageContentModel.content.like(pattern))
+            .filter(
+                or_(
+                    PageContentModel.content.like(pattern),
+                    PageContentModel.draft_content.like(pattern),
+                )
+            )
             .first()
             or db.query(BlogPostContentModel)
-            .filter(BlogPostContentModel.content.like(pattern))
+            .filter(
+                or_(
+                    BlogPostContentModel.content.like(pattern),
+                    BlogPostContentModel.draft_content.like(pattern),
+                )
+            )
             .first()
             or db.query(TemplateContentModel)
             .filter(TemplateContentModel.content.like(pattern))
@@ -367,8 +379,6 @@ def get_unused_attachments(
 
         # 2. FK image columns in blog_post_content.
         if not found:
-            from sqlalchemy import or_
-
             found = (
                 db.query(BlogPostContentModel)
                 .filter(
