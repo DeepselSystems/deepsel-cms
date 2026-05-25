@@ -4,6 +4,12 @@ import uuid
 
 from fastapi import Depends, File, Form, Response, UploadFile, status, HTTPException
 from fastapi.responses import RedirectResponse
+
+
+def _placeholder_response() -> Response:
+    return Response(content=PLACEHOLDER_SVG, media_type="image/svg+xml")
+
+
 from sqlalchemy.orm import Session
 from settings import UPLOAD_SIZE_LIMIT
 from db import get_db
@@ -16,6 +22,7 @@ from apps.core.utils.attachment import (
     find_attachment_usages,
     upsert_locale_versions,
     resolve_unique_attachment_name,
+    PLACEHOLDER_SVG,
 )
 from apps.core.schemas.attachment import (
     AttachmentVersionUpsertItem,
@@ -169,15 +176,11 @@ def batch_upsert_locale_versions(
                 )
             item_file_map[idx] = file_map[item.file_id]
 
-    # Get current organization ID from user
-    current_organization_id = getattr(user, "current_organization_id", None)
-
     # Validate attachment exists and belongs to this organization
     attachment = (
         db.query(Model)
         .filter(
             Model.id == attachment_id,
-            Model.organization_id == current_organization_id,
         )
         .first()
     )
@@ -231,6 +234,9 @@ def batch_upsert_locale_versions(
         f.file.seek(0)
     AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
 
+    # Get current organization ID from user
+    current_organization_id = getattr(user, "current_organization_id", None)
+
     # Apply batch locale-version updates and inserts for a single attachment.
     results = upsert_locale_versions(
         attachment_id=attachment_id,
@@ -238,6 +244,7 @@ def batch_upsert_locale_versions(
         item_file_map=item_file_map,
         db=db,
         user=user,
+        organization_id=current_organization_id,
     )
 
     db.refresh(attachment)
@@ -287,10 +294,7 @@ def serve_file_by_attachment_name(
 
     locale_versions = attachment.locale_versions or []
     if not locale_versions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No locale versions available for this attachment",
-        )
+        return _placeholder_response()
 
     resolved_version = None
 
@@ -302,17 +306,18 @@ def serve_file_by_attachment_name(
             resolved_version = next(
                 (v for v in locale_versions if v.locale_id == locale_record.id), None
             )
-
-    if not resolved_version:
-        org_settings = db.query(CMSSettingsModel).get(attachment.organization_id)
+        # Locale explicitly requested but not found — return placeholder immediately.
+        if not resolved_version:
+            return _placeholder_response()
+    else:
+        org_settings = db.query(OrganizationModel).get(attachment.organization_id)
         default_locale_id = org_settings.default_language_id if org_settings else None
         if default_locale_id:
             resolved_version = next(
                 (v for v in locale_versions if v.locale_id == default_locale_id), None
             )
-
-    if not resolved_version:
-        resolved_version = locale_versions[0]
+        if not resolved_version:
+            return _placeholder_response()
 
     result = resolved_version.get_serve_result()
     if result.redirect_url:

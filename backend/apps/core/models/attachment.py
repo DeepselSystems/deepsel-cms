@@ -1,7 +1,7 @@
 import os
 
 from sqlalchemy import Column, Enum, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 
 from db import Base
 from apps.core.mixins.base_model import BaseModel
@@ -28,6 +28,10 @@ class AttachmentModel(Base, BaseModel):
         back_populates="attachment",
         cascade="all, delete-orphan",
     )
+
+    @classmethod
+    def get_by_name(cls, db: Session, name: str):
+        return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
     def create(cls, db, user, organization_id, commit=True, *args, **kwargs):

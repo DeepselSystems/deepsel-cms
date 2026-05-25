@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
-from ..models.organization import CMSSettingsModel
 from .jinja2_globals import build_jinja2_globals
+from ..models.organization import CMSSettingsModel
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
