@@ -1070,8 +1070,10 @@ export default function PageEdit({ onSuccess }) {
                             updateContentField(content.id, 'content', value);
                           }}
                           classNames={{
-                            root: 'border-none',
                             content: 'min-h-[1000px]',
+                          }}
+                          styles={{
+                            root: { border: 'none' },
                           }}
                           autoComplete={aiAutocompleteEnabled && aiAutoCompleteAvailable}
                         />
