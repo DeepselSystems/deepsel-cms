@@ -147,14 +147,13 @@ def get_public_settings_by_domain(
     if HAS_CMS:
         return CMSSettingsModel.get_public_settings(org_settings.id, db, lang=lang)
     else:
-        return OrganizationModel.get_public_settings(org_settings.id, db, lang=lang)
+        return OrganizationModel.get_public_settings(org_settings.id, db)
 
 
 # Keep existing route for backward compatibility
 @router.get("/public_settings/{organization_id}")
 def get_public_settings(
     organization_id: int,
-    lang: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    return OrganizationModel.get_public_settings(organization_id, db, lang=lang)
+    return OrganizationModel.get_public_settings(organization_id, db)

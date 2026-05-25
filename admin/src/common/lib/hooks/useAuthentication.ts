@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useDeviceData } from 'react-device-detect';
 import { v4 as uuidv4 } from 'uuid';
 import type { User } from '../types';
+import { formatErrorDetail } from '../formatErrorDetail';
 
 export type { User };
 
@@ -109,10 +110,9 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     });
     if (response.status !== 200) {
       const { detail } = await response.json();
-      if (typeof detail === 'string') {
-        setError(detail);
-        throw new Error(detail);
-      }
+      const message = formatErrorDetail(detail);
+      setError(message);
+      throw new Error(message);
     }
     return response.json();
   }
@@ -144,10 +144,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let detail = 'Login failed';
         try {
           const errorBody = await res.json();
-          detail =
-            typeof errorBody.detail === 'string'
-              ? errorBody.detail
-              : JSON.stringify(errorBody.detail);
+          detail = formatErrorDetail(errorBody.detail);
         } catch {
           // response body not parseable
         }
@@ -214,10 +211,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let message = 'Signup failed';
         try {
           const errorBody = await response.json();
-          message =
-            typeof errorBody.detail === 'string'
-              ? errorBody.detail
-              : JSON.stringify(errorBody.detail);
+          message = formatErrorDetail(errorBody.detail);
         } catch {
           // response body not parseable
         }
@@ -263,10 +257,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
         let message = 'Login failed';
         try {
           const errorBody = await response.json();
-          message =
-            typeof errorBody.detail === 'string'
-              ? errorBody.detail
-              : JSON.stringify(errorBody.detail);
+          message = formatErrorDetail(errorBody.detail);
         } catch {
           // response body not parseable
         }

@@ -23,6 +23,7 @@ client_build
 .mcp.json
 figma_migration
 .playwright-cli
+.playwright-mcp
 
 themes/org_*
 

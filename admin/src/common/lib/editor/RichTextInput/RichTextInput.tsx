@@ -312,6 +312,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         PasteHandler.configure({
           backendHost,
           token: user?.token,
+          organizationId,
           notify,
           locale: locale?.iso_code,
         }),

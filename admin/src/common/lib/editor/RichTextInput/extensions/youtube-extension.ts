@@ -15,7 +15,7 @@ declare module '@tiptap/core' {
   }
 }
 
-function getEmbedUrl(url: string): string | null {
+export function getEmbedUrl(url: string): string | null {
   if (!url) {
     return null;
   }

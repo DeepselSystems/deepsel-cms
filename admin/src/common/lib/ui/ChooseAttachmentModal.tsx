@@ -378,6 +378,13 @@ export interface ChooseAttachmentModalProps {
    * Callback to trigger fetching the upload size limit from the backend.
    */
   onFetchUploadSizeLimit?: (apiFunc: () => Promise<{ max_size: number; unit: string }>) => void;
+
+  /**
+   * Organization id used for the `X-Organization-Id` header.
+   * Pass from the consuming app's `OrganizationIdState` store so fresh
+   * logins (where localStorage hasn't been written yet) still work.
+   */
+  organizationId?: number | null;
 }
 
 /**
@@ -406,6 +413,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     setUser,
     notify,
     onFetchUploadSizeLimit,
+    organizationId,
   } = props;
 
   const { t } = useTranslation();
@@ -435,7 +443,7 @@ export function ChooseAttachmentModal(props: ChooseAttachmentModalProps) {
     deleteWithConfirm,
   } = useModel('attachment', { backendHost, user, setUser }, { pageSize: null, filters });
 
-  const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
+  const { uploadFileModel } = useUpload({ backendHost, token: user?.token, organizationId });
 
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Set<string | number>>(new Set());

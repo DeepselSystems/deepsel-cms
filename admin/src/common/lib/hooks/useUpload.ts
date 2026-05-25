@@ -1,9 +1,29 @@
 import { useState } from 'react';
+import { formatErrorDetail } from '../formatErrorDetail';
 
 export interface UseUploadConfig {
   backendHost: string;
   /** JWT token from the authenticated user */
   token: string | undefined;
+  /**
+   * Organization id used for the `X-Organization-Id` header.
+   * Prefer passing the value from the org store so the in-memory default
+   * works on fresh login (before anything writes to localStorage).
+   */
+  organizationId?: number | null;
+}
+
+/**
+ * Minimal shape returned by the attachment upload endpoint.
+ * The backend returns more fields than this; the index signature keeps
+ * downstream cast-free access compiling.
+ */
+export interface UploadedAttachment {
+  id: string | number;
+  name: string;
+  content_type?: string;
+  filesize?: number;
+  [key: string]: unknown;
 }
 
 export interface UseUploadReturn {
@@ -13,20 +33,20 @@ export interface UseUploadReturn {
     api: string,
     files: File[] | FileList,
     queryParams?: Record<string, string | number>,
-  ) => Promise<unknown[]>;
+  ) => Promise<UploadedAttachment[]>;
 }
 
 /**
  * Hook for uploading files to the backend via multipart form data
  */
 export function useUpload(config: UseUploadConfig): UseUploadReturn {
-  const { backendHost, token } = config;
+  const { backendHost, token, organizationId } = config;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Uploads one or more files to the given API endpoint
+   * Uploads one or more files to the given API path.
    * @param api - API path (e.g. "attachment")
    * @param files - Files to upload
    * @param queryParams - Optional query params appended to the URL (e.g. locale_id)
@@ -36,7 +56,7 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
     api: string,
     files: File[] | FileList,
     queryParams?: Record<string, string | number>,
-  ): Promise<unknown[]> {
+  ): Promise<UploadedAttachment[]> {
     try {
       setLoading(true);
       setError(null);
@@ -50,11 +70,13 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
-      if (typeof window !== 'undefined') {
-        const organizationId = parseInt(localStorage.getItem('organizationId') || '', 10);
-        if (Number.isFinite(organizationId)) {
-          headers['X-Organization-Id'] = organizationId.toString();
-        }
+      const orgId =
+        organizationId ??
+        (typeof window !== 'undefined'
+          ? parseInt(localStorage.getItem('organizationId') || '', 10)
+          : NaN);
+      if (Number.isFinite(orgId)) {
+        headers['X-Organization-Id'] = String(orgId);
       }
 
       let url = `${backendHost}/${api}`;
@@ -73,12 +95,13 @@ export function useUpload(config: UseUploadConfig): UseUploadReturn {
       });
 
       if (response.status !== 200) {
-        const { detail } = (await response.json()) as { detail: string };
-        setError(detail);
-        throw new Error(detail);
+        const { detail } = (await response.json()) as { detail: unknown };
+        const message = formatErrorDetail(detail);
+        setError(message);
+        throw new Error(message);
       }
 
-      return await response.json();
+      return (await response.json()) as UploadedAttachment[];
     } finally {
       setLoading(false);
     }

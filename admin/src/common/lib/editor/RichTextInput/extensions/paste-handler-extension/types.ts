@@ -13,6 +13,11 @@ export interface PasteHandlerOptions {
   /** JWT authentication token for API requests */
   token: string | undefined;
   /**
+   * Organization id used for the `X-Organization-Id` header on uploads.
+   * Pass from the consuming app's `OrganizationIdState` store.
+   */
+  organizationId?: number | null;
+  /**
    * Callback to display toast/snackbar notifications after upload.
    * Sourced from the consuming app's notification store
    * (e.g. `NotificationState.getState().notify`).

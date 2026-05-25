@@ -4,7 +4,7 @@ import { modals } from '@mantine/modals';
 import NotificationState from '../stores/NotificationState.js';
 import dayjs from 'dayjs';
 import { Preferences } from '@capacitor/preferences';
-import backendHost from '../../constants/backendHost.js';
+import BackendHostURLState from '../stores/BackendHostURLState.js';
 import { IconAlertTriangle, IconArrowBack } from '@tabler/icons-react';
 
 function RevisionItem({ revision, hasWritePermission, onRestore, loading }) {
@@ -155,6 +155,7 @@ export default function ActivityContentRevision({
       }
 
       // Make fetch request to restore endpoint
+      const backendHost = BackendHostURLState.getState().backendHost;
       const response = await fetch(`${backendHost}/revision/restore`, {
         method: 'POST',
         headers,

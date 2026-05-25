@@ -18,6 +18,11 @@ export interface EnhancedImageSelectorProps {
   user: User | null;
   setUser: (user: User | null) => void;
   /**
+   * Organization id used for the `X-Organization-Id` header on uploads.
+   * Pass from the consuming app's `OrganizationIdState` store.
+   */
+  organizationId?: number | null;
+  /**
    * Callback to display toast/snackbar notifications.
    * Passed down to InternalImages and SearchStockImages sub-components.
    * Sourced from the consuming app's notification store
@@ -41,6 +46,7 @@ export function EnhancedImageSelector({
   backendHost,
   user,
   setUser,
+  organizationId,
   notify,
   currentLocaleId,
   onClose,
@@ -128,6 +134,7 @@ export function EnhancedImageSelector({
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            organizationId={organizationId}
             notify={notify}
             currentLocaleId={currentLocaleId}
             onClose={onClose}
@@ -144,6 +151,7 @@ export function EnhancedImageSelector({
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            organizationId={organizationId}
             notify={notify}
           />
         </Tabs.Panel>

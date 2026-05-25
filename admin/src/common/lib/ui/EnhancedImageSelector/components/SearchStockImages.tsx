@@ -42,6 +42,11 @@ interface SearchStockImagesProps {
   user: User | null;
   setUser: (user: User | null) => void;
   /**
+   * Organization id used for the `X-Organization-Id` header on uploads.
+   * Passed down from EnhancedImageSelector.
+   */
+  organizationId?: number | null;
+  /**
    * Callback to display toast/snackbar notifications (save errors, success).
    * Sourced from the consuming app's notification store
    * (e.g. `NotificationState.getState().notify`).
@@ -61,6 +66,7 @@ export function SearchStockImages({
   backendHost,
   user,
   setUser,
+  organizationId,
   notify,
 }: SearchStockImagesProps) {
   // Translation
@@ -88,7 +94,7 @@ export function SearchStockImages({
   const [isCloningStockImage, setIsCloningStockImage] = useState(false);
 
   // Attachment query
-  const { uploadFileModel } = useUpload({ backendHost, token: user?.token });
+  const { uploadFileModel } = useUpload({ backendHost, token: user?.token, organizationId });
 
   // Trigger a default search once on mount so the panel isn't empty.
   const didInitialSearchRef = useRef(false);

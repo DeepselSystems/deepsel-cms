@@ -30,17 +30,18 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
   );
 
   /**
-   * backendHost, token, and notify are sourced from PasteHandler.configure() options,
+   * backendHost, token, organizationId, and notify are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.
    */
-  const { backendHost, token, notify, locale } = pasteHandlerExtension?.options || {
+  const { backendHost, token, organizationId, notify, locale } = pasteHandlerExtension?.options || {
     backendHost: '',
     token: undefined,
+    organizationId: undefined,
     notify: undefined,
     locale: undefined,
   };
 
-  const { uploadFileModel } = useUpload({ backendHost, token });
+  const { uploadFileModel } = useUpload({ backendHost, token, organizationId });
 
   /**
    * Load basic file information
