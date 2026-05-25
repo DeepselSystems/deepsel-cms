@@ -230,6 +230,7 @@ export default function PageList() {
       field: 'contents',
       headerName: t('Title'),
       width: 350,
+      sortable: false,
       valueGetter: (params: any) => {
         if (isThemeRow(params.row)) return params.row._themeTitle;
         const selectedContent = getContentForCurrentLanguage(params.row.contents);
@@ -302,6 +303,7 @@ export default function PageList() {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
+      sortable: false,
       valueGetter: (params: any) => {
         if (isThemeRow(params.row)) return params.row._themeSlug;
         const selectedContent = getContentForCurrentLanguage(params.row.contents);

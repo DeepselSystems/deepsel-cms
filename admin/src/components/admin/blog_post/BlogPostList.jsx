@@ -127,6 +127,7 @@ export default function BlogPostList() {
       field: 'contents',
       headerName: t('Title'),
       width: 350,
+      sortable: false,
       valueGetter: (params) => {
         const selectedContent = pickContent(params.row.contents);
         return selectedContent?.title || '-';
