@@ -1,9 +1,9 @@
+from deepsel.orm import ORMBaseMixin
 from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Text, Boolean, Enum
+
+from apps.cms.utils.shared_datatypes import FormFieldTypeEnum
 from db import Base
 from sqlalchemy.orm import relationship
-
-from deepsel.mixins.orm import ORMBaseMixin
-from apps.cms.utils.shared_datatypes import FormFieldTypeEnum
 
 
 class FormContentModel(Base, ORMBaseMixin):

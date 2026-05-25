@@ -1,14 +1,14 @@
 from datetime import datetime
 
+from deepsel.orm import ORMBaseMixin
 from fastapi import HTTPException, status
 from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Text
 
 from apps.cms.utils.form_submission import get_lasted_user_submission
+from apps.core.models.user import UserModel
 from db import Base
 from sqlalchemy.orm import relationship, Session
 
-from deepsel.mixins.orm import ORMBaseMixin
-from deepsel.models.user import UserModel
 from deepsel.utils.models_pool import models_pool
 
 

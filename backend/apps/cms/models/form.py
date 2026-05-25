@@ -1,14 +1,10 @@
+from deepsel.orm import PAGINATION, SearchQuery, OrderByCriteria, SearchCriteria
+from deepsel.orm.activity_mixin import ActivityMixin
 from sqlalchemy import Column, Integer, Boolean, Text
+
+from apps.core.mixins.base_model import BaseModel
+from apps.core.models.user import UserModel
 from db import Base
-from deepsel.mixins.base_model import BaseModel
-from deepsel.mixins.activity import ActivityMixin
-from deepsel.mixins.orm import (
-    PAGINATION,
-    SearchQuery,
-    OrderByCriteria,
-    SearchCriteria,
-)
-from deepsel.models.user import UserModel
 from sqlalchemy.orm import relationship, Session
 from fastapi import HTTPException, status
 from typing import Optional
