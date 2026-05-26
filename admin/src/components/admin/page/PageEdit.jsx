@@ -509,7 +509,7 @@ export default function PageEdit({ onSuccess }) {
   const autosave = useDraftAutosave({
     recordType: 'page',
     recordId: isCreateMode ? null : id,
-    enabled: !isCreateMode && !!record?.id,
+    enabled: !isCreateMode && !!record?.id && !settingsDrawerOpened,
     buildContentsPayload,
   });
 
@@ -735,10 +735,12 @@ export default function PageEdit({ onSuccess }) {
   };
 
   // Snapshot parent-level settings when the drawer opens so we can detect on close
-  // whether anything changed. Content-level fields (slug, SEO, per-lang custom_code)
-  // flow through autosave already; parent fields have no draft column, so we persist
-  // them directly via update() if dirty.
+  // Parent fields (no draft column) are snapshot-compared on drawer open/close and
+  // persisted via update() if dirty. Slug is a content field with no draft column
+  // either, so it's also saved on close. Homepage switch additionally sets all
+  // content slugs to '/' (backend resolves the old homepage's slug automatically).
   const settingsSnapshotRef = useRef(null);
+  const slugSnapshotRef = useRef(null);
   const snapshotSettings = () =>
     JSON.stringify({
       is_homepage: record?.is_homepage ?? false,
@@ -748,6 +750,7 @@ export default function PageEdit({ onSuccess }) {
 
   const handleOpenSettingsDrawer = () => {
     settingsSnapshotRef.current = snapshotSettings();
+    slugSnapshotRef.current = { id: activeContent?.id, slug: activeContent?.slug ?? '' };
     openSettingsDrawer();
   };
 
@@ -758,17 +761,61 @@ export default function PageEdit({ onSuccess }) {
     const pendingContents = buildContentsPayload();
     if (pendingContents.length) await autosave.flushNow?.(pendingContents);
 
-    if (snapshotSettings() === settingsSnapshotRef.current) return;
-    try {
-      await update({
-        id: record.id,
-        is_homepage: record.is_homepage,
-        require_login: record.require_login,
-        page_custom_code: record.page_custom_code,
-      });
-    } catch (error) {
-      console.error(error);
-      notify({ message: error.message, type: 'error' });
+    const wasHomepage = JSON.parse(settingsSnapshotRef.current || '{}').is_homepage ?? false;
+    const settingsChanged = snapshotSettings() !== settingsSnapshotRef.current;
+    const homepageChanged = record.is_homepage !== wasHomepage;
+    let homepageApiOk = true;
+
+    if (settingsChanged) {
+      try {
+        await update({
+          id: record.id,
+          is_homepage: record.is_homepage,
+          require_login: record.require_login,
+          page_custom_code: record.page_custom_code,
+        });
+      } catch (error) {
+        console.error(error);
+        notify({ message: error.message, type: 'error' });
+        if (homepageChanged) homepageApiOk = false;
+      }
+    }
+
+    // is_homepage just toggled ON: set all content slugs to '/'
+    if (record.is_homepage && !wasHomepage) {
+      try {
+        await Promise.all(
+          (record.contents || [])
+            .filter((c) => c.id && !c._addNew)
+            .map((c) => pageContentModel.update({ id: c.id, slug: HOMEPAGE_DEFAULT_SLUG })),
+        );
+        setRecord((prev) => ({
+          ...prev,
+          contents: (prev.contents || []).map((c) => ({ ...c, slug: HOMEPAGE_DEFAULT_SLUG })),
+        }));
+      } catch (error) {
+        console.error(error);
+        notify({ message: error.message, type: 'error' });
+        homepageApiOk = false;
+      }
+    } else {
+      // Save slug for active content if changed (not applicable when is_homepage is on)
+      const snap = slugSnapshotRef.current;
+      if (!record.is_homepage && snap?.id) {
+        const currentSlug = record.contents?.find((c) => c.id === snap.id)?.slug ?? '';
+        if (currentSlug !== snap.slug) {
+          try {
+            await pageContentModel.update({ id: snap.id, slug: currentSlug });
+          } catch (error) {
+            console.error(error);
+            notify({ message: error.message, type: 'error' });
+          }
+        }
+      }
+    }
+
+    if (homepageChanged && homepageApiOk) {
+      window.location.reload();
     }
   };
 
