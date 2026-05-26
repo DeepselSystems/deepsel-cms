@@ -47,15 +47,22 @@ const FilesSelectorModal = ({
   const [isAttachmentModalOpened, setIsAttachmentModalOpened] = useState(false);
 
   /**
-   * Filter attachments to exclude video, audio, and image files
+   * Filter attachments to exclude video, audio, and image files.
+   * Reads from locale_versions[0].content_type because the parent
+   * attachment.content_type is deprecated and null after the multilang refactor.
+   * Falls back to attachment.content_type for legacy data that has not been migrated.
    */
   const filterFunc = (attachments: AttachmentFile[]) =>
     attachments.filter((attachment) => {
-      const contentType = attachment.content_type?.toLowerCase() || '';
+      const effectiveContentType = (
+        attachment.locale_versions?.[0]?.content_type ??
+        attachment.content_type ??
+        ''
+      ).toLowerCase();
       return (
-        !contentType.startsWith('video') &&
-        !contentType.startsWith('audio') &&
-        !contentType.startsWith('image')
+        !effectiveContentType.startsWith('video') &&
+        !effectiveContentType.startsWith('audio') &&
+        !effectiveContentType.startsWith('image')
       );
     });
 

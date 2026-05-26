@@ -190,6 +190,14 @@ def _migrate_generic_attachments(db, attachments: list) -> None:
             locale_iso = locale.iso_code  # e.g. "de"
 
             # -- Derive clean slug and new lv storage key --
+            # DESIGN: slug uniqueness is guaranteed by the old upload model.
+            # The old single-file system created exactly one AttachmentModel row
+            # per upload — a locale suffix in the filename (e.g. logo_de.png) was
+            # a naming convention on disk, never a separate DB row. The migration
+            # target list therefore contains at most one row per logical slug, so
+            # stripping the suffix cannot produce a duplicate within this batch.
+            # Any unexpected collision is caught by the per-attachment try/except
+            # and logged as a failed record without aborting the whole migration.
             old_name = attachment.name or ""
             base, ext = os.path.splitext(old_name)
             clean_base = _LOCALE_SUFFIX_RE.sub("", base)

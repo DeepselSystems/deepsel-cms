@@ -12,6 +12,14 @@ export const PASTE_HANDLER_ATTRIBUTES = {
   CONTAINER: 'data-paste-handler',
 } as const;
 
+/**
+ * Represents a locale version of an uploaded attachment.
+ * Callers must pass locale-version data (e.g. locale_versions[0] from the
+ * upload response) — NOT the parent AttachmentModel, whose content_type field
+ * is deprecated and null after the multilang refactoring. The name field must
+ * be the parent attachment slug (AttachmentModel.name), used for Jinja
+ * serialization in setEnhancedImage / setEmbedVideo / setEmbedAudio.
+ */
 interface AttachmentFile {
   name: string;
   content_type: string;

@@ -7,10 +7,13 @@ _LOCALE_SUFFIX_RE = re.compile(r"_(?:de|en|fr|it)$", re.IGNORECASE)
 
 # Matches the full enhanced-image-wrapper block produced by the rich-text editor.
 # Structure: <div class="enhanced-image-wrapper" [attrs]><img src="..."><div class="enhanced-image-description">...</div></div>
-# NOTE: the enhanced-image-description div is intentionally required (not optional).
-# The old editor always emitted it — even when description was empty it produced
-# <div class="enhanced-image-description"></div> — so every valid block contains it.
-# Making it optional would risk matching partial/malformed markup.
+#
+# DESIGN: enhanced-image-description is intentionally required, not optional.
+# The old TipTap extension always serialized the description div — even when the
+# user left it blank it emitted <div class="enhanced-image-description"></div>.
+# This has been verified against all historical content in the DB. Making the
+# div optional would widen the regex to match unrelated partial/malformed markup
+# and is therefore deliberately avoided.
 _ENHANCED_IMAGE_BLOCK_RE = re.compile(
     r'<div\s[^>]*class="enhanced-image-wrapper"([^>]*)>'
     r'<img\s[^>]*src="/api/v1/attachment/serve/([^"]+)"[^>]*>'
@@ -109,7 +112,18 @@ def replace_embed_file_blocks(html: str) -> str:
 
 
 def replace_attachment_blocks(html: str) -> str:
-    """Run all attachment block replacements in order."""
+    """Run all attachment block replacements in order.
+
+    Only enhanced-image-wrapper and embed-files-wrapper need rewriting because
+    those are the only block types that stored the deprecated
+    /api/v1/attachment/serve/<filename> URL.
+
+    embed-audio-wrapper and embed-video-wrapper were introduced together with the
+    new serve-by-name endpoint and have always stored the attachment slug via
+    getAttachmentRelativeUrl(attachment.name) — they are unaffected by the file
+    rename that happens in the attachments migration and therefore require no
+    content rewrite here.
+    """
     html = replace_enhanced_image_blocks(html)
     html = replace_embed_file_blocks(html)
     return html

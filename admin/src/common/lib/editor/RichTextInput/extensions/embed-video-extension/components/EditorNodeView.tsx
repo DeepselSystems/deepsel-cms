@@ -4,7 +4,7 @@ import type { NodeViewProps } from '@tiptap/react';
 import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 import { EMBED_VIDEO_ATTRIBUTES, EMBED_VIDEO_CLASSES } from '../utils';
 import clsx from 'clsx';
 
@@ -68,7 +68,7 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
       {/* Video Player */}
       <div className={EMBED_VIDEO_CLASSES.VIDEO_CONTAINER}>
         <video
-          src={getAttachmentRelativeUrl(src)}
+          src={getAttachmentByNameRelativeUrl(src)}
           controls
           className={EMBED_VIDEO_CLASSES.VIDEO_CONTENT}
         >

@@ -4,7 +4,7 @@ import type { NodeViewProps } from '@tiptap/react';
 import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 import { EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES } from '../utils';
 import clsx from 'clsx';
 
@@ -71,7 +71,7 @@ const EditorNodeView = ({ node, deleteNode }: NodeViewProps) => {
       {/* Audio Player */}
       <div className={EMBED_AUDIO_CLASSES.AUDIO_CONTAINER}>
         <audio
-          src={getAttachmentRelativeUrl(src)}
+          src={getAttachmentByNameRelativeUrl(src)}
           controls
           className={EMBED_AUDIO_CLASSES.AUDIO_CONTENT}
         >
