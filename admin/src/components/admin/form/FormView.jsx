@@ -20,7 +20,6 @@ import Button from '../../../common/ui/Button.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import FormFieldsPreview from './components/FormFieldsPreview/index.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import {CustomCodeRenderer} from "@deepsel/cms-react";
 
 /**
  * Form view component for displaying form preview with language tabs
@@ -289,14 +288,6 @@ const FormView = () => {
                   <Tabs.Panel key={index} value={String(localeId)}>
                     <FormFieldsPreview
                       formContent={formContentsMap[localeId]}
-                    />
-                    {/* Custom Code Renderer for preview - disabled execution for security */}
-                    <CustomCodeRenderer
-                      pageData={{
-                        form_custom_code: form?.form_custom_code,
-                      }}
-                      contentData={formContentsMap[localeId]}
-                      type="form"
                     />
                   </Tabs.Panel>
                 ))}
