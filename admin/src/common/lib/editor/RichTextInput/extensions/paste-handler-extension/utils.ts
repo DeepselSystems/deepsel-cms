@@ -1,5 +1,8 @@
 import type { Editor } from '@tiptap/core';
-import { getAttachmentRelativeUrl, getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
+import {
+  getAttachmentRelativeUrl,
+  getAttachmentByNameRelativeUrl,
+} from '@deepsel/cms-utils/common/utils';
 
 /**
  * Constants for paste handler attributes

@@ -33,8 +33,9 @@ PLACEHOLDER_SVG = (
 )
 
 # Captures the full args string inside every {{ attachment(...) }} call.
-# Works for both single-image and multi-image (gallery) calls.
-_ATTACHMENT_CALL_RE = re.compile(r"\{\{-?\s*attachment\(([\s\S]*?)\)\s*\}\}")
+# Works for both single-image and multi-image (gallery) calls, and tolerates
+# Jinja whitespace-control markers on either side ({{- ... -}}).
+_ATTACHMENT_CALL_RE = re.compile(r"\{\{-?\s*attachment\(([\s\S]*?)\)\s*-?\}\}")
 
 # Finds individual single-quoted string args within an attachment() call.
 _QUOTED_ARG_RE = re.compile(r"'([^']*)'")
@@ -284,6 +285,7 @@ def upsert_locale_versions(
 def find_attachment_usages(
     attachment_name: str,
     db: Session,
+    organization_id: int,
     locale_id: Optional[int] = None,
     attachment_id: Optional[int] = None,
 ) -> list[AttachmentUsageItem]:
@@ -298,6 +300,8 @@ def find_attachment_usages(
 
     Args:
         attachment_name: The AttachmentModel.name slug to search for.
+        organization_id: Required — restricts every content query to this org so
+                         attachments cannot surface references from other tenants.
         locale_id:       When provided, restrict results to that locale.
         attachment_id:   The attachment PK — used for FK column checks.
                          Looked up by name if not supplied.
@@ -314,7 +318,10 @@ def find_attachment_usages(
     if attachment_id is None:
         att = (
             db.query(AttachmentModel)
-            .filter(AttachmentModel.name == attachment_name)
+            .filter(
+                AttachmentModel.name == attachment_name,
+                AttachmentModel.organization_id == organization_id,
+            )
             .first()
         )
         attachment_id = att.id if att else None
@@ -329,10 +336,11 @@ def find_attachment_usages(
 
     # --- page_content (published + draft) ---
     page_q = db.query(PageContentModel).filter(
+        PageContentModel.organization_id == organization_id,
         or_(
             PageContentModel.content.like(like_pattern),
             PageContentModel.draft_content.like(like_pattern),
-        )
+        ),
     )
     if locale_id is not None:
         page_q = page_q.filter(PageContentModel.locale_id == locale_id)
@@ -360,10 +368,11 @@ def find_attachment_usages(
 
     # --- blog_post_content (published + draft) ---
     blog_q = db.query(BlogPostContentModel).filter(
+        BlogPostContentModel.organization_id == organization_id,
         or_(
             BlogPostContentModel.content.like(like_pattern),
             BlogPostContentModel.draft_content.like(like_pattern),
-        )
+        ),
     )
     if locale_id is not None:
         blog_q = blog_q.filter(BlogPostContentModel.locale_id == locale_id)
@@ -391,7 +400,8 @@ def find_attachment_usages(
 
     # --- template_content ---
     tpl_q = db.query(TemplateContentModel).filter(
-        TemplateContentModel.content.like(like_pattern)
+        TemplateContentModel.organization_id == organization_id,
+        TemplateContentModel.content.like(like_pattern),
     )
     if locale_id is not None:
         tpl_q = tpl_q.filter(TemplateContentModel.locale_id == locale_id)
@@ -422,13 +432,14 @@ def find_attachment_usages(
 
         # blog_post_content: featured_image + SEO featured image (published + draft)
         blog_img_q = db.query(BlogPostContentModel).filter(
+            BlogPostContentModel.organization_id == organization_id,
             or_(
                 BlogPostContentModel.featured_image_id == attachment_id,
                 BlogPostContentModel.draft_featured_image_id == attachment_id,
                 BlogPostContentModel.seo_metadata_featured_image_id == attachment_id,
                 BlogPostContentModel.draft_seo_metadata_featured_image_id
                 == attachment_id,
-            )
+            ),
         )
         if locale_id is not None:
             blog_img_q = blog_img_q.filter(BlogPostContentModel.locale_id == locale_id)
@@ -462,10 +473,11 @@ def find_attachment_usages(
 
         # page_content: SEO featured image (published + draft)
         page_img_q = db.query(PageContentModel).filter(
+            PageContentModel.organization_id == organization_id,
             or_(
                 PageContentModel.seo_metadata_featured_image_id == attachment_id,
                 PageContentModel.draft_seo_metadata_featured_image_id == attachment_id,
-            )
+            ),
         )
         if locale_id is not None:
             page_img_q = page_img_q.filter(PageContentModel.locale_id == locale_id)

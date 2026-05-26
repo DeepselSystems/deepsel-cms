@@ -357,28 +357,35 @@ def get_unused_attachments(
             continue
 
         # 1. Jinja attachment() calls in content text (single-image and gallery).
+        # All content queries are scoped to the same org as the attachment so
+        # references in another tenant's content cannot mark this row as used.
         pattern = f"%attachment(%%'{name}'%"
         from sqlalchemy import or_
 
         found = (
             db.query(PageContentModel)
             .filter(
+                PageContentModel.organization_id == current_organization_id,
                 or_(
                     PageContentModel.content.like(pattern),
                     PageContentModel.draft_content.like(pattern),
-                )
+                ),
             )
             .first()
             or db.query(BlogPostContentModel)
             .filter(
+                BlogPostContentModel.organization_id == current_organization_id,
                 or_(
                     BlogPostContentModel.content.like(pattern),
                     BlogPostContentModel.draft_content.like(pattern),
-                )
+                ),
             )
             .first()
             or db.query(TemplateContentModel)
-            .filter(TemplateContentModel.content.like(pattern))
+            .filter(
+                TemplateContentModel.organization_id == current_organization_id,
+                TemplateContentModel.content.like(pattern),
+            )
             .first()
         )
 
@@ -387,13 +394,14 @@ def get_unused_attachments(
             found = (
                 db.query(BlogPostContentModel)
                 .filter(
+                    BlogPostContentModel.organization_id == current_organization_id,
                     or_(
                         BlogPostContentModel.featured_image_id == aid,
                         BlogPostContentModel.draft_featured_image_id == aid,
                         BlogPostContentModel.seo_metadata_featured_image_id == aid,
                         BlogPostContentModel.draft_seo_metadata_featured_image_id
                         == aid,
-                    )
+                    ),
                 )
                 .first()
             )
@@ -403,10 +411,11 @@ def get_unused_attachments(
             found = (
                 db.query(PageContentModel)
                 .filter(
+                    PageContentModel.organization_id == current_organization_id,
                     or_(
                         PageContentModel.seo_metadata_featured_image_id == aid,
                         PageContentModel.draft_seo_metadata_featured_image_id == aid,
-                    )
+                    ),
                 )
                 .first()
             )
@@ -424,6 +433,7 @@ def get_unused_attachments(
 def get_attachment_usages(
     attachment_id: int,
     locale_id: int = None,
+    user: UserModel = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -433,11 +443,13 @@ def get_attachment_usages(
 
     Optional query param locale_id narrows results to a single locale.
     """
+    current_organization_id = getattr(user, "current_organization_id", None)
 
     attachment = (
         db.query(Model)
         .filter(
             Model.id == attachment_id,
+            Model.organization_id == current_organization_id,
         )
         .first()
     )
@@ -450,6 +462,7 @@ def get_attachment_usages(
         attachment_name=attachment.name,
         attachment_id=attachment_id,
         db=db,
+        organization_id=attachment.organization_id,
         locale_id=locale_id,
     )
 
