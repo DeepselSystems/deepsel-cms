@@ -4,13 +4,8 @@ import uuid
 
 from fastapi import Depends, File, Form, Response, UploadFile, status, HTTPException
 from fastapi.responses import RedirectResponse
-
-
-def _placeholder_response() -> Response:
-    return Response(content=PLACEHOLDER_SVG, media_type="image/svg+xml")
-
-
 from sqlalchemy.orm import Session
+
 from settings import UPLOAD_SIZE_LIMIT
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
@@ -34,6 +29,11 @@ from apps.core.schemas.attachment import (
     UploadSizeLimitResponse,
     StorageInfoResponse,
 )
+
+
+def _placeholder_response() -> Response:
+    return Response(content=PLACEHOLDER_SVG, media_type="image/svg+xml")
+
 
 table_name = "attachment"
 Model = models_pool[table_name]

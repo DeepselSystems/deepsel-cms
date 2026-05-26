@@ -62,10 +62,6 @@ class AttachmentRead(BaseModel):
     locale_versions: list[AttachmentLocaleVersionRead] = []
 
 
-class AttachmentLocaleVersionUpdate(BaseModel):
-    pass
-
-
 class AttachmentLocaleVersionUpdateSearch(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

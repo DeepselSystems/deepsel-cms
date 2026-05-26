@@ -86,7 +86,7 @@ describe('ChooseAttachmentModal', () => {
     const options = useModelMock.mock.calls[0][2];
     expect(options.filters).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ field: 'content_type', operator: 'like', value: 'image%' }),
+        expect.objectContaining({ field: 'locale_versions.content_type', operator: 'like', value: 'image%' }),
       ]),
     );
   });

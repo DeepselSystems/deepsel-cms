@@ -70,7 +70,7 @@ describe('EnhancedImageSelector', () => {
     expect(config.backendHost).toBe('https://h/api/v1');
     expect(options.pageSize).toBeNull();
     expect(options.autoFetch).toBe(false);
-    expect(options.filters).toEqual([{ field: 'content_type', operator: 'like', value: 'image%' }]);
+    expect(options.filters).toEqual([{ field: 'locale_versions.content_type', operator: 'like', value: 'image%' }]);
   });
 
   it('renders the internal "Library" tab by default and forwards key props', () => {
