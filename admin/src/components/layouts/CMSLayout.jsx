@@ -38,6 +38,25 @@ const navbarLinks = [
     roleIds: ['website_admin_role'],
   },
   {
+    label: 'Forms',
+    icon: IconPalette,
+    roleIds: ['website_admin_role'],
+    children: [
+      {
+        label: 'Forms',
+        to: '/forms',
+        icon: IconAdjustments,
+        roleIds: ['website_admin_role'],
+      },
+      {
+        label: 'Submissions',
+        to: '/forms/submissions',
+        icon: IconAdjustments,
+        roleIds: ['website_admin_role'],
+      },
+    ],
+  },
+  {
     label: 'Media',
     to: '/media',
     icon: IconPhoto,

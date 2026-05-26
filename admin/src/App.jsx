@@ -30,10 +30,6 @@ import RoleCreate from './components/admin/role/RoleCreate.jsx';
 import OrganizationLayout from './components/layouts/OrganizationLayout.jsx';
 import ResetPassword from './components/admin/auth/ResetPassword.jsx';
 import OrganizationSettings from './components/admin/organization/OrganizationSettings.jsx';
-import EmailTemplateList from './components/admin/email_template/EmailTemplateList.jsx';
-import EmailTemplateView from './components/admin/email_template/EmailTemplateView.jsx';
-import EmailTemplateCreate from './components/admin/email_template/EmailTemplateCreate.jsx';
-import EmailTemplateEdit from './components/admin/email_template/EmailTemplateEdit.jsx';
 import SMTPSettings from './components/admin/organization/SMTPSettings.jsx';
 import GoogleAuth from './common/auth/GoogleAuth.jsx';
 import SamlAuth from './common/auth/SamlAuth.jsx';
@@ -85,6 +81,8 @@ import { LocalstorageKey } from './constants/localstorage.js';
 import useBrowserLanguages from './common/hooks/useBrowserLanguages.js';
 import useEffectOnce from './common/hooks/useEffectOnce.js';
 import { BasenameProvider } from './common/BasenameContext.js';
+import FormList from './components/admin/form/FormList.jsx';
+import FormUpsert from './components/admin/form/FormUpsert.jsx';
 
 export default function App(props) {
   console.log('APP', { props });
@@ -288,6 +286,9 @@ export default function App(props) {
                       <Route path="/templates/:id/edit" element={<TemplateEdit />} />
                       <Route path="/themes" element={<ThemeList />} />
                       <Route path="/themes/edit/:themeName" element={<ThemeFileEdit />} />
+
+                      <Route path="/forms" element={<FormList />} />
+                      <Route path="/forms/create" element={<FormUpsert />} />
 
                       <Route path="/blog_posts" element={<BlogPostList />} />
                       <Route path="/blog_posts/create" element={<BlogPostEdit />} />
