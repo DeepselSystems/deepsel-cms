@@ -1,36 +1,36 @@
 import React from 'react';
-import {DataGrid} from '@mui/x-data-grid';
-import useModel from '../../../common/api/useModel.jsx';
-import useAuthentication from '../../../common/api/useAuthentication.js';
+import { DataGrid } from '@mui/x-data-grid';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import H1 from '../../../common/ui/H1.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import {Helmet} from 'react-helmet';
+import { Helmet } from 'react-helmet';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faTriangleExclamation, faPlus} from '@fortawesome/free-solid-svg-icons';
-import {Alert} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Alert } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import Checkbox from '../../../common/ui/Checkbox.jsx';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
 import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import FormActionsCell from './components/FormActionsCell/index.jsx';
+import UserState from '../../../common/stores/UserState.js';
+import useModel from '../../../common/api/useModel.jsx';
 
 const FormList = () => {
-  const {t} = useTranslation();
-  const {user} = useAuthentication();
-  const {organizationId} = OrganizationIdState();
-  const {settings: siteSettings} = SitePublicSettingsState((state) => state);
+  const { t } = useTranslation();
+  const { user } = UserState();
+  const { organizationId } = OrganizationIdState();
+  const { settings: siteSettings } = SitePublicSettingsState((state) => state);
   const query = useModel('form', {
     autoFetch: true,
     searchFields: ['contents.title', 'contents.slug'],
     syncPagingParamsWithURL: true,
-    orderBy: {field: 'id', direction: 'desc'},
+    orderBy: { field: 'id', direction: 'desc' },
     filters: organizationId
       ? [
           {
@@ -67,7 +67,7 @@ const FormList = () => {
               value: organizationId,
             },
           ]
-        : []
+        : [],
     );
   }, [organizationId, setFilters]);
 
@@ -80,9 +80,7 @@ const FormList = () => {
 
     // Get the default site language code
     const defaultLangId = siteSettings?.default_language_id;
-    const defaultLangContent = contents.find(
-      (content) => content.locale_id === defaultLangId
-    );
+    const defaultLangContent = contents.find((content) => content.locale_id === defaultLangId);
 
     // Find content based on priority order:
     // 1. Selected language
@@ -92,9 +90,7 @@ const FormList = () => {
     let selectedContent;
 
     // 1. Try to find content matching the current selected language
-    selectedContent = contents.find(
-      (content) => content.locale?.iso_code === currentLang
-    );
+    selectedContent = contents.find((content) => content.locale?.iso_code === currentLang);
 
     // 2. If not found, try to find content matching the default site language
     if (!selectedContent && defaultLangContent) {
@@ -103,9 +99,7 @@ const FormList = () => {
 
     // 3. If still not found, try to find English content
     if (!selectedContent) {
-      selectedContent = contents.find(
-        (content) => content.locale?.iso_code === 'en'
-      );
+      selectedContent = contents.find((content) => content.locale?.iso_code === 'en');
     }
 
     // 4. If still not found, use the first content
@@ -128,28 +122,20 @@ const FormList = () => {
       headerName: t('Title'),
       width: 350,
       valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent?.title || '-';
       },
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value}</LinkedCell>,
     },
     {
       field: 'slug',
       headerName: t('Slug'),
       width: 250,
       valueGetter: (params) => {
-        const selectedContent = getContentForCurrentLanguage(
-          params.row.contents
-        );
+        const selectedContent = getContentForCurrentLanguage(params.row.contents);
         return selectedContent.slug;
       },
-      renderCell: (params) => (
-        <LinkedCell params={params}>{params.value || '-'}</LinkedCell>
-      ),
+      renderCell: (params) => <LinkedCell params={params}>{params.value || '-'}</LinkedCell>,
     },
     {
       field: 'languages',
@@ -231,12 +217,7 @@ const FormList = () => {
           setSelectedRows={setSelectedRows}
           allowDelete={
             user.roles.find((role) =>
-              [
-                'admin_role',
-                'super_admin_role',
-                'website_admin_role',
-                'website_editor_role',
-              ].includes(role.string_id)
+              ['admin_role', 'website_admin_role', 'website_editor_role'].includes(role.string_id),
             ) || false
           }
         />
@@ -296,8 +277,8 @@ const FormList = () => {
             ColumnMenu: DataGridColumnMenu,
             Footer: () => null,
           }}
-          componentsProps={{columnMenu: {query}}}
-          localeText={{noRowsLabel: t('Nothing here yet.')}}
+          componentsProps={{ columnMenu: { query } }}
+          localeText={{ noRowsLabel: t('Nothing here yet.') }}
         />
 
         <ListViewPagination query={query} />

@@ -19,8 +19,8 @@ import NotificationState from '../../../common/stores/NotificationState.js';
 import Button from '../../../common/ui/Button.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import FormFieldsPreview from './components/FormFieldsPreview/index.jsx';
-import CustomCodeRenderer from '../../website/CustomCodeRenderer.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
+import {CustomCodeRenderer} from "@deepsel/cms-react";
 
 /**
  * Form view component for displaying form preview with language tabs

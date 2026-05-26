@@ -60,6 +60,15 @@ class UserModel(Base, UserMixin, ORMBaseMixin):
 
     # --- UserMixin settings ---
 
+    def is_public_user(self):
+        return not self.signed_up or self.string_id == "locales_public_role"
+
+    def is_admin(self):
+        roles = self.get_user_roles()
+        return any(
+            [role.string_id in ["admin_role", "website_admin_role"] for role in roles]
+        )
+
     @classmethod
     def _get_app_secret(cls):
         from settings import APP_SECRET

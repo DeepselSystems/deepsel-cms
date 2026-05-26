@@ -289,6 +289,7 @@ export default function App(props) {
 
                       <Route path="/forms" element={<FormList />} />
                       <Route path="/forms/create" element={<FormUpsert />} />
+                      <Route path="/forms/:id" element={<FormUpsert />} />
 
                       <Route path="/blog_posts" element={<BlogPostList />} />
                       <Route path="/blog_posts/create" element={<BlogPostEdit />} />

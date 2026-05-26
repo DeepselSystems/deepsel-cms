@@ -20,6 +20,12 @@ class FormModel(Base, ActivityMixin, BaseModel):
     __tablename__ = "form"
     __tracked_fields__ = ["published"]
 
+    @classmethod
+    def _get_activity_model(cls):
+        from apps.core.models.activity import ActivityModel, ActivityType
+
+        return ActivityModel, ActivityType
+
     id = Column(Integer, primary_key=True)
     published = Column(Boolean, default=True)  # Default true as per requirement
 
