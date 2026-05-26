@@ -7,6 +7,10 @@ _LOCALE_SUFFIX_RE = re.compile(r"_(?:de|en|fr|it)$", re.IGNORECASE)
 
 # Matches the full enhanced-image-wrapper block produced by the rich-text editor.
 # Structure: <div class="enhanced-image-wrapper" [attrs]><img src="..."><div class="enhanced-image-description">...</div></div>
+# NOTE: the enhanced-image-description div is intentionally required (not optional).
+# The old editor always emitted it — even when description was empty it produced
+# <div class="enhanced-image-description"></div> — so every valid block contains it.
+# Making it optional would risk matching partial/malformed markup.
 _ENHANCED_IMAGE_BLOCK_RE = re.compile(
     r'<div\s[^>]*class="enhanced-image-wrapper"([^>]*)>'
     r'<img\s[^>]*src="/api/v1/attachment/serve/([^"]+)"[^>]*>'

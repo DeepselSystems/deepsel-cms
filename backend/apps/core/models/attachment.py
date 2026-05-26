@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, Session
 
 from db import Base
 from apps.core.mixins.base_model import BaseModel
-from deepsel.orm.attachment_mixin import AttachmentMixin, AttachmentTypeOptions
+from deepsel.orm.attachment_mixin import AttachmentTypeOptions
 
 
 class AttachmentModel(Base, BaseModel):
@@ -32,18 +32,3 @@ class AttachmentModel(Base, BaseModel):
     @classmethod
     def get_by_name(cls, db: Session, name: str):
         return db.query(cls).filter(cls.name == name).first()
-
-    @classmethod
-    def create(cls, db, user, organization_id, commit=True, *args, **kwargs):
-        # Overrides BaseModel.create() to be DB-only: no file upload, no storage logic.
-        # All file handling (upload, validation, ClamAV scan, S3/Azure/local storage)
-        # is delegated to AttachmentLocaleVersionModel, one record per locale per attachment.
-        attachment = AttachmentModel(
-            owner_id=user.id,
-            organization_id=organization_id,
-            name=kwargs.get("name"),
-        )
-        db.add(attachment)
-        if commit:
-            db.commit()
-        return attachment

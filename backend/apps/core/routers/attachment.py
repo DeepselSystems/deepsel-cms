@@ -109,8 +109,10 @@ def upload_files(
         instance = Model().create(
             db=db,
             user=user,
-            organization_id=current_organization_id,
-            name=attachment_name,
+            values={
+                "name": attachment_name,
+                "organization_id": current_organization_id,
+            },
             **kwargs,
         )
 
@@ -176,11 +178,15 @@ def batch_upsert_locale_versions(
                 )
             item_file_map[idx] = file_map[item.file_id]
 
+    # Get current organization ID from user
+    current_organization_id = getattr(user, "current_organization_id", None)
+
     # Validate attachment exists and belongs to this organization
     attachment = (
         db.query(Model)
         .filter(
             Model.id == attachment_id,
+            Model.organization_id == current_organization_id,
         )
         .first()
     )
@@ -233,9 +239,6 @@ def batch_upsert_locale_versions(
         total_new_bytes += f.file.tell()
         f.file.seek(0)
     AttachmentLocaleVersionModel.check_storage_quota(db, total_new_bytes)
-
-    # Get current organization ID from user
-    current_organization_id = getattr(user, "current_organization_id", None)
 
     # Apply batch locale-version updates and inserts for a single attachment.
     results = upsert_locale_versions(
@@ -336,92 +339,98 @@ def get_unused_attachments(
     Return attachments not referenced by any content — checks Jinja attachment()
     calls and FK image columns (featured_image_id, seo_metadata_featured_image_id).
     Paginated; uses the same AttachmentSearch shape as the standard list endpoint.
+
+    Uses a set-based approach: precompute all referenced names/IDs in 6 fixed
+    queries (regardless of attachment count), then filter in Python — avoiding
+    the previous O(N × 5) per-attachment query pattern.
     """
+    import re
     from apps.cms.models.page_content import PageContentModel
     from apps.cms.models.blog_post_content import BlogPostContentModel
     from apps.cms.models.template_content import TemplateContentModel
 
     current_organization_id = getattr(user, "current_organization_id", None)
 
+    # --- Step 1: pull content text columns (one query per table) ---
+    page_rows = (
+        db.query(PageContentModel.content, PageContentModel.draft_content)
+        .filter(PageContentModel.organization_id == current_organization_id)
+        .all()
+    )
+    blog_rows = (
+        db.query(BlogPostContentModel.content, BlogPostContentModel.draft_content)
+        .filter(BlogPostContentModel.organization_id == current_organization_id)
+        .all()
+    )
+    template_rows = (
+        db.query(TemplateContentModel.content)
+        .filter(TemplateContentModel.organization_id == current_organization_id)
+        .all()
+    )
+
+    # --- Step 2: extract every attachment name from Jinja attachment() calls ---
+    # Matches attachment('name') and gallery attachment('a', 'b', ...).
+    # Single-quoted strings inside attachment(...) are always slug names —
+    # the JSON config uses double quotes so there is no ambiguity.
+    _call_re = re.compile(r"attachment\(([^)]*)\)", re.IGNORECASE)
+    _name_re = re.compile(r"'([^']+)'")
+
+    all_texts = (
+        [r.content for r in page_rows]
+        + [r.draft_content for r in page_rows]
+        + [r.content for r in blog_rows]
+        + [r.draft_content for r in blog_rows]
+        + [r.content for r in template_rows]
+    )
+
+    referenced_names: set[str] = set()
+    for text in all_texts:
+        if not text:
+            continue
+        for call_match in _call_re.finditer(text):
+            for name_match in _name_re.finditer(call_match.group(1)):
+                referenced_names.add(name_match.group(1))
+
+    # --- Step 3: collect all FK image IDs (one query per table) ---
+    blog_fk_rows = (
+        db.query(
+            BlogPostContentModel.featured_image_id,
+            BlogPostContentModel.draft_featured_image_id,
+            BlogPostContentModel.seo_metadata_featured_image_id,
+            BlogPostContentModel.draft_seo_metadata_featured_image_id,
+        )
+        .filter(BlogPostContentModel.organization_id == current_organization_id)
+        .all()
+    )
+    page_fk_rows = (
+        db.query(
+            PageContentModel.seo_metadata_featured_image_id,
+            PageContentModel.draft_seo_metadata_featured_image_id,
+        )
+        .filter(PageContentModel.organization_id == current_organization_id)
+        .all()
+    )
+
+    referenced_ids: set[int] = set()
+    for row in blog_fk_rows:
+        for val in row:
+            if val is not None:
+                referenced_ids.add(val)
+    for row in page_fk_rows:
+        for val in row:
+            if val is not None:
+                referenced_ids.add(val)
+
+    # --- Step 4: filter attachments in Python using the precomputed sets ---
     all_attachments = (
         db.query(Model).filter(Model.organization_id == current_organization_id).all()
     )
 
-    unused = []
-    for attachment in all_attachments:
-        aid = attachment.id
-        name = attachment.name
-
-        if not name:
-            unused.append(attachment)
-            continue
-
-        # 1. Jinja attachment() calls in content text (single-image and gallery).
-        # All content queries are scoped to the same org as the attachment so
-        # references in another tenant's content cannot mark this row as used.
-        pattern = f"%attachment(%%'{name}'%"
-        from sqlalchemy import or_
-
-        found = (
-            db.query(PageContentModel)
-            .filter(
-                PageContentModel.organization_id == current_organization_id,
-                or_(
-                    PageContentModel.content.like(pattern),
-                    PageContentModel.draft_content.like(pattern),
-                ),
-            )
-            .first()
-            or db.query(BlogPostContentModel)
-            .filter(
-                BlogPostContentModel.organization_id == current_organization_id,
-                or_(
-                    BlogPostContentModel.content.like(pattern),
-                    BlogPostContentModel.draft_content.like(pattern),
-                ),
-            )
-            .first()
-            or db.query(TemplateContentModel)
-            .filter(
-                TemplateContentModel.organization_id == current_organization_id,
-                TemplateContentModel.content.like(pattern),
-            )
-            .first()
-        )
-
-        # 2. FK image columns in blog_post_content.
-        if not found:
-            found = (
-                db.query(BlogPostContentModel)
-                .filter(
-                    BlogPostContentModel.organization_id == current_organization_id,
-                    or_(
-                        BlogPostContentModel.featured_image_id == aid,
-                        BlogPostContentModel.draft_featured_image_id == aid,
-                        BlogPostContentModel.seo_metadata_featured_image_id == aid,
-                        BlogPostContentModel.draft_seo_metadata_featured_image_id
-                        == aid,
-                    ),
-                )
-                .first()
-            )
-
-        # 3. FK SEO image columns in page_content.
-        if not found:
-            found = (
-                db.query(PageContentModel)
-                .filter(
-                    PageContentModel.organization_id == current_organization_id,
-                    or_(
-                        PageContentModel.seo_metadata_featured_image_id == aid,
-                        PageContentModel.draft_seo_metadata_featured_image_id == aid,
-                    ),
-                )
-                .first()
-            )
-
-        if not found:
-            unused.append(attachment)
+    unused = [
+        a
+        for a in all_attachments
+        if not a.name or (a.name not in referenced_names and a.id not in referenced_ids)
+    ]
 
     total = len(unused)
     offset = (page - 1) * page_size

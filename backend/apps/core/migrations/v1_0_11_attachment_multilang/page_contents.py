@@ -13,7 +13,9 @@ def migrate_page_contents(db) -> None:
         db.query(PageContentModel)
         .filter(
             PageContentModel.content.like("%/api/v1/attachment/serve/%")
-            | PageContentModel.content.like("%embed-files-wrapper%"),
+            | PageContentModel.content.like("%embed-files-wrapper%")
+            | PageContentModel.draft_content.like("%/api/v1/attachment/serve/%")
+            | PageContentModel.draft_content.like("%embed-files-wrapper%"),
         )
         .all()
     )

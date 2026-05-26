@@ -13,7 +13,9 @@ def migrate_blog_contents(db) -> None:
         db.query(BlogPostContentModel)
         .filter(
             BlogPostContentModel.content.like("%/api/v1/attachment/serve/%")
-            | BlogPostContentModel.content.like("%embed-files-wrapper%"),
+            | BlogPostContentModel.content.like("%embed-files-wrapper%")
+            | BlogPostContentModel.draft_content.like("%/api/v1/attachment/serve/%")
+            | BlogPostContentModel.draft_content.like("%embed-files-wrapper%"),
         )
         .all()
     )

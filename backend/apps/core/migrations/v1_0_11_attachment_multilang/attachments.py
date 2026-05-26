@@ -75,6 +75,10 @@ def _migrate_ch_theme_attachments(db, attachments: list) -> None:
             old_file_reused = False
 
             for locale, lv_name in lv_names.items():
+                # actual_lv_name starts as the intended locale-suffixed name.
+                # If the storage clone fails it falls back to old_name so the
+                # DB row always points to a file that physically exists.
+                actual_lv_name = lv_name
                 if lv_name == old_name:
                     old_file_reused = True
                 else:
@@ -86,9 +90,10 @@ def _migrate_ch_theme_attachments(db, attachments: list) -> None:
                         logger.error(
                             f"[theme] id={attachment.id}: clone {old_name!r} → {lv_name!r} FAILED — {file_exc}"
                         )
+                        actual_lv_name = old_name
 
                 lv = AttachmentLocaleVersionModel(
-                    name=lv_name,
+                    name=actual_lv_name,
                     type=attachment.type,
                     content_type=attachment.content_type,
                     filesize=attachment.filesize,
@@ -212,11 +217,12 @@ def _migrate_generic_attachments(db, attachments: list) -> None:
                 lv.rename_in_storage(
                     new_lv_name, db=db, update_db=False, auto_unique=False
                 )
+                lv.name = new_lv_name
             except Exception as file_exc:
                 logger.error(
                     f"[generic] id={attachment.id}: rename {old_name!r} → {new_lv_name!r} FAILED — {file_exc}"
                 )
-            lv.name = new_lv_name
+                # lv.name stays as old_name so the DB row points to the existing file
 
             # -- Update parent attachment: clean slug, clear deprecated fields --
             # string_id is preserved as-is (None stays None)
