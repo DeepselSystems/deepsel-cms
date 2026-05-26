@@ -63,6 +63,7 @@ export default function UserList() {
     {
       field: 'image.name',
       headerName: t('Image'),
+      sortable: false,
       valueGetter: (params) => params.row?.image?.name,
       width: 200,
       renderCell: (params) => (
@@ -86,6 +87,7 @@ export default function UserList() {
     {
       field: 'roles',
       headerName: t('Roles'),
+      sortable: false,
       valueGetter: (params) =>
         Array.isArray(params.row?.roles)
           ? params.row.roles.map((item) => item.name).join(', ')
@@ -106,6 +108,7 @@ export default function UserList() {
     {
       field: 'organizations',
       headerName: t('Organizations'),
+      sortable: false,
       valueGetter: (params) =>
         Array.isArray(params.row?.organizations)
           ? params.row.organizations.map((item) => item.name).join(', ')

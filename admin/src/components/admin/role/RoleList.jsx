@@ -53,6 +53,7 @@ export default function RoleList() {
     {
       field: 'implied_roles',
       headerName: t('Implied Roles'),
+      sortable: false,
       valueGetter: (params) =>
         Array.isArray(params.row?.implied_roles)
           ? params.row.implied_roles.map((item) => item.name).join(', ')

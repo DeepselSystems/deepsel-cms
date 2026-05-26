@@ -212,7 +212,7 @@ export function useModel<T = Record<string, unknown>>(
   const [data, setData] = useState<T[]>([]);
   const [originalData, setOriginalData] = useState<T[]>([]);
   const [record, setRecord] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
 

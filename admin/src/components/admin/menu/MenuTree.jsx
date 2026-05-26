@@ -92,16 +92,18 @@ export default function MenuTree() {
     return Array.from(ids);
   }, [data]);
 
-  const pageContentsQuery = useModel('page_content', {
-    autoFetch: true,
-    filters: [{ field: 'id', operator: 'in', value: pageContentIds }],
+  const { data: pageContents, get: getPageContents } = useModel('page_content', {
+    autoFetch: false,
+    pageSize: null,
   });
-  const { data: pageContents, setFilters: setPageContentFilters } = pageContentsQuery;
 
   useEffect(() => {
     if (pageContentIds.length > 0) {
-      setPageContentFilters([{ field: 'id', operator: 'in', value: pageContentIds }]);
+      void getPageContents({
+        search: { AND: [{ field: 'id', operator: 'in', value: pageContentIds }], OR: [] },
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageContentIds]);
 
   // Create, update and delete functions
