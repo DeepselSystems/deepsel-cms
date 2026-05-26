@@ -4,6 +4,7 @@ import uuid
 
 from fastapi import Depends, File, Form, Response, UploadFile, status, HTTPException
 from fastapi.responses import RedirectResponse
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from settings import UPLOAD_SIZE_LIMIT
@@ -159,8 +160,19 @@ def batch_upsert_locale_versions(
     attachment_locale_version_id=None  →  create new version (file required)
     attachment_locale_version_id=<id>  →  update existing version (file optional)
     """
-    raw = json.loads(items_json)
-    items = [AttachmentVersionUpsertItem(**item) for item in raw]
+    try:
+        raw = json.loads(items_json)
+        items = [AttachmentVersionUpsertItem(**item) for item in raw]
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"items_json is not valid JSON: {exc}",
+        )
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=exc.errors(),
+        )
 
     # Build file map: filename without extension → UploadFile
     file_map: dict[str, UploadFile] = {
