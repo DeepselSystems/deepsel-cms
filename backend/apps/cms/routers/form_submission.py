@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from apps.cms.utils.form_submission import send_form_submission_notification
 from apps.core.models.user import UserModel
-from apps.core.utils.get_current_user import get_current_user
+from apps.core.utils.get_current_user import get_current_user, get_current_user_optional
 from db import get_db
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
@@ -66,7 +66,7 @@ def create_form_submission(
     data: CreateSchema,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    user: UserModel = Depends(get_current_user),
+    user: Optional[UserModel] = Depends(get_current_user_optional),
 ):
     """
     Create a new form submission and send notification email in background.

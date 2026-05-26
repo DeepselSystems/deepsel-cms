@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 from fastapi import Depends, HTTPException, Body, Path, Request, status
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
 from deepsel.utils.models_pool import models_pool
 
 from apps.core.models.user import UserModel
-from apps.core.utils.get_current_user import get_current_user
+from apps.core.utils.get_current_user import get_current_user, get_current_user_optional
 from db import get_db
 from apps.cms.models.organization import CMSSettingsModel
 import logging
@@ -163,7 +163,7 @@ def get_form_by_slug(
     lang: str = Path(..., description="Language code (e.g., 'en', 'vi')"),
     slug: str = Path(..., description="Form slug"),
     db: Session = Depends(get_db),
-    user: UserModel = Depends(get_current_user),
+    user: Optional[UserModel] = Depends(get_current_user_optional),
 ):
     """
     Get a form by slug and language for public rendering.
@@ -177,13 +177,18 @@ def get_form_statistics_by_slug(
     lang: str = Path(..., description="Language code"),
     slug: str = Path(..., description="Form slug"),
     db: Session = Depends(get_db),
-    user: UserModel = Depends(get_current_user),
+    user: Optional[UserModel] = Depends(get_current_user_optional),
 ):
     # Get form content data
     form_content = _get_form_content_by_slug(lang, slug, db, user)
 
-    # Check view permission
+    # Check view permission — unauthenticated users can only view public statistics
     if not form_content.get("enable_public_statistics"):
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Form statistics is not published",
+            )
         user_roles = user.get_user_roles()
         has_permission = any(
             [

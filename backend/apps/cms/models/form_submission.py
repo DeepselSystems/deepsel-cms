@@ -146,4 +146,13 @@ class FormSubmissionModel(Base, ORMBaseMixin):
 
             # Update form_id to make sure it is related with form_content
             values["form_id"] = form_content.form_id
-            return super().create(db, user, values, *args, **kwargs)
+
+            # Anonymous users (user is None) have no roles/permissions in the DB,
+            # so ORMBaseMixin._check_has_permission would raise AttributeError.
+            # We bypass the permission check for them — public form submission
+            # is intentionally open, and the form's published status was already
+            # validated above in _get_form_content_by_slug.
+            is_anonymous = user is None
+            return super().create(
+                db, user, values, bypass_permission=is_anonymous, *args, **kwargs
+            )
