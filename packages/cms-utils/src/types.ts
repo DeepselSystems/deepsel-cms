@@ -1,12 +1,13 @@
-import type { MenuItem } from './menus/types';
-import type { SpecialTemplate } from './page/types';
+import type { MenuItem } from './menus';
+import type { SpecialTemplate } from './page';
 import type { WebsiteDataType } from './constants';
 import type { PageData, SearchResultsData } from './page';
 import type { BlogListData, BlogPostData } from './blog';
+import type { FormData } from './form';
 
 export type WebsiteData = {
   type: WebsiteDataType;
-  data: PageData | BlogListData | BlogPostData | SearchResultsData;
+  data: PageData | BlogListData | BlogPostData | SearchResultsData | FormData;
   settings?: SiteSettings;
   pathname?: string;
 };
