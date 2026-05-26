@@ -19,8 +19,8 @@ _NOT_AVAILABLE_STYLE = (
 def _not_available(msg: str) -> Markup:
     """Return a styled placeholder span for missing/unavailable attachments."""
     return Markup(
-        f'<span class="embed-file-not-available" style="{_NOT_AVAILABLE_STYLE}">{msg}</span>'
-    )
+        '<span class="embed-file-not-available" style="{style}">{msg}</span>'
+    ).format(style=_NOT_AVAILABLE_STYLE, msg=msg)
 
 
 class ImageAttrs(TypedDict, total=False):
@@ -89,33 +89,40 @@ def _render_image(version, attrs: ImageAttrs) -> Markup:
         }
     wrapper_style = wrapper_styles.get(alignment, wrapper_styles["center"])
 
-    img_tag = (
-        f'<img src="{src}" alt="{alt}"'
-        f' width="{width}"'
-        + (f' height="{height}"' if height else "")
-        + (f' style="{img_style}"' if img_style else "")
-        + ">"
+    img_tag = Markup('<img src="{src}" alt="{alt}" width="{width}"').format(
+        src=src, alt=alt, width=width
     )
+    if height:
+        img_tag += Markup(' height="{height}"').format(height=height)
+    if img_style:
+        img_tag += Markup(' style="{style}"').format(style=img_style)
+    img_tag += Markup(">")
 
-    description_tag = (
-        f'<div class="enhanced-image-description">{description}</div>'
-        if description and description.strip()
-        else ""
-    )
+    if description and description.strip():
+        description_tag = Markup(
+            '<div class="enhanced-image-description">{description}</div>'
+        ).format(description=description)
+    else:
+        description_tag = Markup("")
 
     return Markup(
-        f"<div"
-        f' class="enhanced-image-wrapper"'
-        f' data-enhanced-image="true"'
-        f' data-alignment="{alignment}"'
-        f' data-rounded="{str(rounded).lower()}"'
-        f' data-circle="{str(circle).lower()}"'
-        f' data-inline="{str(inline).lower()}"'
-        f' data-width="{width}"'
-        f' data-height="{height}"'
-        f' data-description="{description}"'
-        f' style="{wrapper_style}"'
-        f">{img_tag}{description_tag}</div>"
+        '<div class="enhanced-image-wrapper" data-enhanced-image="true"'
+        ' data-alignment="{alignment}" data-rounded="{rounded}"'
+        ' data-circle="{circle}" data-inline="{inline}"'
+        ' data-width="{width}" data-height="{height}"'
+        ' data-description="{description}" style="{wrapper_style}">'
+        "{img_tag}{description_tag}</div>"
+    ).format(
+        alignment=alignment,
+        rounded=str(rounded).lower(),
+        circle=str(circle).lower(),
+        inline=str(inline).lower(),
+        width=width,
+        height=height,
+        description=description,
+        wrapper_style=wrapper_style,
+        img_tag=img_tag,
+        description_tag=description_tag,
     )
 
 
@@ -125,20 +132,20 @@ def _render_audio(version, attrs: AudioAttrs) -> Markup:
     width = attrs.get("width")
     width_style = f"width: {width}px;" if width else "width: 100%;"
 
-    return Markup(
-        f"<div"
-        f' class="embed-audio-wrapper"'
-        f' data-embed-audio="true"'
-        f' data-audio-src="{src}"'
-        + (f' data-audio-width="{width}"' if width else "")
-        + f">"
-        f'<div class="embed-audio-container" style="{width_style}">'
-        f'<audio src="{src}" controls class="embed-audio-content">'
-        f"Your browser does not support the audio tag."
-        f"</audio>"
-        f"</div>"
-        f"</div>"
-    )
+    wrapper_open = Markup(
+        '<div class="embed-audio-wrapper" data-embed-audio="true"'
+        ' data-audio-src="{src}"'
+    ).format(src=src)
+    if width:
+        wrapper_open += Markup(' data-audio-width="{width}"').format(width=width)
+    wrapper_open += Markup(">")
+
+    return wrapper_open + Markup(
+        '<div class="embed-audio-container" style="{width_style}">'
+        '<audio src="{src}" controls class="embed-audio-content">'
+        "Your browser does not support the audio tag."
+        "</audio></div></div>"
+    ).format(width_style=width_style, src=src)
 
 
 def _render_video(version, attrs: VideoAttrs) -> Markup:
@@ -146,19 +153,18 @@ def _render_video(version, attrs: VideoAttrs) -> Markup:
     src = f"{_SERVE_URL_PREFIX}/{version.name}"
     poster = attrs.get("poster", "")
 
-    return Markup(
-        f"<div"
-        f' class="embed-video-wrapper"'
-        f' data-embed-video="true"'
-        f">"
-        f'<div class="embed-video-container">'
-        f'<video src="{src}" controls class="embed-video-content" style="width: 100%; height: auto;"'
-        + (f' poster="{poster}"' if poster else "")
-        + f">"
-        f"Your browser does not support the video tag."
-        f"</video>"
-        f"</div>"
-        f"</div>"
+    video_open = Markup(
+        '<div class="embed-video-wrapper" data-embed-video="true">'
+        '<div class="embed-video-container">'
+        '<video src="{src}" controls class="embed-video-content"'
+        ' style="width: 100%; height: auto;"'
+    ).format(src=src)
+    if poster:
+        video_open += Markup(' poster="{poster}"').format(poster=poster)
+    video_open += Markup(">")
+
+    return video_open + Markup(
+        "Your browser does not support the video tag." "</video></div></div>"
     )
 
 
@@ -166,13 +172,12 @@ def _render_file(version, attrs: FileAttrs) -> Markup:
     href = f"{_SERVE_URL_PREFIX}/{version.name}"
     display_name = version.name
     return Markup(
-        f'<div class="embed-file-item">'
-        f'<a href="{href}" download class="embed-file-content" title="{display_name}">'
-        f'<span class="embed-file-icon">📄</span>'
-        f'<span class="embed-file-link">{display_name}</span>'
-        f"</a>"
-        f"</div>"
-    )
+        '<div class="embed-file-item">'
+        '<a href="{href}" download class="embed-file-content" title="{display_name}">'
+        '<span class="embed-file-icon">📄</span>'
+        '<span class="embed-file-link">{display_name}</span>'
+        "</a></div>"
+    ).format(href=href, display_name=display_name)
 
 
 def _render_version(version, attrs: AttachmentAttrs) -> Markup:
@@ -259,22 +264,23 @@ def _render_gallery(
         src = f"{_SERVE_URL_PREFIX}/{version.name}"
         alt = version.alt_text or ""
 
-        img_tag = (
-            f'<img src="{src}" alt="{alt}"'
-            f' class="gallery-image"'
-            f' style="width: 100%; height: auto; object-fit: cover;'
-            f' aspect-ratio: 1 / 1; {img_border_radius}">'
+        img_tag = Markup(
+            '<img src="{src}" alt="{alt}" class="gallery-image"'
+            ' style="width: 100%; height: auto; object-fit: cover;'
+            ' aspect-ratio: 1 / 1; {border_radius}">'
+        ).format(src=src, alt=alt, border_radius=img_border_radius)
+        image_parts.append(
+            Markup('<div class="gallery-image-container">{img}</div>').format(
+                img=img_tag
+            )
         )
-        image_parts.append(f'<div class="gallery-image-container">{img_tag}</div>')
 
     if not image_parts:
         return Markup("<div>Gallery is empty</div>")
 
     return Markup(
-        f'<div class="gallery-container" data-gallery="true" style="{grid_style}">'
-        + "".join(image_parts)
-        + "</div>"
-    )
+        '<div class="gallery-container" data-gallery="true" style="{style}">{body}</div>'
+    ).format(style=grid_style, body=Markup("").join(image_parts))
 
 
 def make_attachment_func(
