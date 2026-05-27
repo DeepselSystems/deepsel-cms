@@ -50,7 +50,7 @@ const navbarLinks = [
       },
       {
         label: 'Submissions',
-        to: '/forms/submissions',
+        to: '/form-submissions',
         icon: IconAdjustments,
         roleIds: ['website_admin_role'],
       },

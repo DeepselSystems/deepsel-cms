@@ -46,6 +46,11 @@ import SiteCreate from './components/admin/site/SiteCreate.jsx';
 import Media from './components/admin/attachment/Media.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
 import PublicAuth from './common/auth/PublicAuth.jsx';
+import FormList from './components/admin/form/FormList.jsx';
+import FormUpsert from './components/admin/form/FormUpsert.jsx';
+import FormView from './components/admin/form/FormView.jsx';
+import FormSubmissionList from './components/admin/form-submission/FormSubmissionList.jsx';
+import FormSubmissionView from './components/admin/form-submission/FormSubmissionView.jsx';
 
 import { useCallback, useEffect, useMemo } from 'react';
 import { MantineProvider } from '@mantine/core';
@@ -81,9 +86,6 @@ import { LocalstorageKey } from './constants/localstorage.js';
 import useBrowserLanguages from './common/hooks/useBrowserLanguages.js';
 import useEffectOnce from './common/hooks/useEffectOnce.js';
 import { BasenameProvider } from './common/BasenameContext.js';
-import FormList from './components/admin/form/FormList.jsx';
-import FormUpsert from './components/admin/form/FormUpsert.jsx';
-import FormView from './components/admin/form/FormView.jsx';
 
 export default function App(props) {
   console.log('APP', { props });
@@ -292,6 +294,8 @@ export default function App(props) {
                       <Route path="/forms/create" element={<FormUpsert />} />
                       <Route path="/forms/:id" element={<FormView />} />
                       <Route path="/forms/:id/edit" element={<FormUpsert />} />
+                      <Route path="/form-submissions" element={<FormSubmissionList />} />
+                      <Route path="/form-submissions/:id" element={<FormSubmissionView />} />
 
                       <Route path="/blog_posts" element={<BlogPostList />} />
                       <Route path="/blog_posts/create" element={<BlogPostEdit />} />
