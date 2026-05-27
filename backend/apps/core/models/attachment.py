@@ -34,10 +34,14 @@ class AttachmentModel(Base, BaseModel):
         return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
-    def create(cls, db, user, values=None, commit=True, *args, **kwargs):
-        values = values or {}
-        for field in ("type", "content_type", "filesize", "alt_text"):
-            values.pop(field, None)
-        return super().create(
-            db=db, user=user, values=values, commit=commit, *args, **kwargs
+    def create(cls, db, user, commit=True, *args, **kwargs):
+        # Overrides BaseModel.create() to be DB-only: no file upload, no storage logic.
+        # All file handling (upload, validation, ClamAV scan, S3/Azure/local storage)
+        # is delegated to AttachmentLocaleVersionModel, one record per locale per attachment.
+        attachment = AttachmentModel(
+            owner_id=user.id, organization_id=user.organization_id
         )
+        db.add(attachment)
+        if commit:
+            db.commit()
+        return attachment
