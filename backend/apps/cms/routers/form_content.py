@@ -33,7 +33,6 @@ router = CRUDRouter(
     create_schema=CRUDSchemas.Create,
     update_schema=CRUDSchemas.Update,
     table_name=table_name,
-    dependencies=[Depends(get_current_user)],
     bulk_delete_route=False,
     export_route=False,
     import_route=False,
