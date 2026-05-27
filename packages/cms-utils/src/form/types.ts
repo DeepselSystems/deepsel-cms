@@ -77,6 +77,7 @@ export interface FormData {
   custom_code?: string | null;
   /** All-language custom code on the parent form */
   form_custom_code?: string | null;
+  lang?: string;
   locale_id: number;
   max_submissions?: number | null;
   show_remaining_submissions?: boolean | null;
