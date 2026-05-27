@@ -18,9 +18,12 @@ interface InternalFieldData extends Partial<FormSubmissionFieldValue> {
   _error?: string;
 }
 
+/** Shape received by the RenderedForm onSubmit callback */
+export type FormSubmitData = Record<number, Record<string, unknown>>;
+
 export interface RenderedFormProps {
   formContent: FormData;
-  onSubmit?: (data: Record<number, InternalFieldData>) => void;
+  onSubmit?: (data: FormSubmitData) => void;
   loading?: boolean;
   submitted?: boolean;
   initialFieldsData?: Record<number, Partial<FormSubmissionFieldValue>>;
@@ -110,7 +113,7 @@ export const RenderedForm = ({
 
   const handleSubmit = useCallback(() => {
     if (validate()) {
-      onSubmit(formFieldsData);
+      onSubmit(formFieldsData as unknown as FormSubmitData);
     }
   }, [formFieldsData, onSubmit, validate]);
 
