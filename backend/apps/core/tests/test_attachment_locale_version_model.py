@@ -203,7 +203,12 @@ def test_attachment_create_is_db_only_no_file_metadata(db):
     db.commit()
 
     att = AttachmentModel.create(
-        db=db, user=user, organization_id=org.id, name="db-only"
+        db=db,
+        user=user,
+        values={
+            "name": "db-only",
+            "organization_id": org.id,
+        },
     )
 
     assert att.id is not None  # nosec B101
