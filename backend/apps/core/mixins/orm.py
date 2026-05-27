@@ -26,7 +26,7 @@ class ORMBaseMixin(_ORMBaseMixin):
         if scope == PermissionScope.all:
             return values
 
-        if scope in (PermissionScope.org, PermissionScope.own_org):
+        if scope == PermissionScope.org:
             user_org_ids = user.get_org_ids()
             if requested_org_id and requested_org_id in user_org_ids:
                 return values
