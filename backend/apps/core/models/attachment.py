@@ -34,5 +34,10 @@ class AttachmentModel(Base, BaseModel):
         return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
-    def create(cls, db, user, commit=True, *args, **kwargs):
-        return super().create(cls, db, user, commit=commit, *args, **kwargs)
+    def create(cls, db, user, values=None, commit=True, *args, **kwargs):
+        values = values or {}
+        for field in ("type", "content_type", "filesize", "alt_text"):
+            values.pop(field, None)
+        return super().create(
+            db=db, user=user, values=values, commit=commit, *args, **kwargs
+        )
