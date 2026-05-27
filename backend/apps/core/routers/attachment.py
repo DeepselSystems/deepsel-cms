@@ -110,10 +110,8 @@ def upload_files(
         instance = Model().create(
             db=db,
             user=user,
-            values={
-                "name": attachment_name,
-                "organization_id": current_organization_id,
-            },
+            organization_id=current_organization_id,
+            name=attachment_name,
             **kwargs,
         )
 
