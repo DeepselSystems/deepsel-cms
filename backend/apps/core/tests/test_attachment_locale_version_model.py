@@ -201,7 +201,6 @@ def test_attachment_create_is_db_only_no_file_metadata(db):
     user = UserModel(username="u", email="u@test.com")
     db.add(user)
     db.commit()
-    user.current_organization_id = org.id
 
     att = AttachmentModel.create(
         db=db, user=user, organization_id=org.id, name="db-only"
