@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { MantineProvider } from "@mantine/core";
 import {
   WebsiteDataProvider,
   useWebsiteData,
@@ -15,14 +16,22 @@ import SearchForm from "./SearchForm";
 /** Delay in ms before incrementing the view counter */
 const INCREMENT_VIEWS_DELAY_MS = 3000;
 
+/**
+ * Main form component to render form page
+ */
 export default function Form({ data }: { data: FormData }) {
   return (
-    <WebsiteDataProvider websiteData={{ type: WebsiteDataTypes.Form, data }}>
-      {data.notFound ? <FormNotFound /> : <FormContent />}
-    </WebsiteDataProvider>
+    <MantineProvider>
+      <WebsiteDataProvider websiteData={{ type: WebsiteDataTypes.Form, data }}>
+        {data.notFound ? <FormNotFound /> : <FormContent />}
+      </WebsiteDataProvider>
+    </MantineProvider>
   );
 }
 
+/**
+ * Form not found component
+ */
 function FormNotFound() {
   return (
     <main className="min-h-screen flex flex-col">
@@ -45,6 +54,9 @@ function FormNotFound() {
   );
 }
 
+/**
+ * Form content component
+ */
 function FormContent() {
   const { websiteData } = useWebsiteData();
   const formData = websiteData.data as FormData;
@@ -61,7 +73,7 @@ function FormContent() {
     );
   }, [formData.latest_user_submission]);
 
-  /** Increment view counter once, 3 s after mount */
+  /** Increment view counter once, 3s after mount */
   useEffect(() => {
     const timer = setTimeout(() => {
       void fetch(`/api/v1/form_content/${formData.id}/increment-views`, {
