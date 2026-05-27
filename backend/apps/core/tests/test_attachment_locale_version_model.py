@@ -209,6 +209,7 @@ def test_attachment_create_is_db_only_no_file_metadata(db):
             "name": "db-only",
             "organization_id": org.id,
         },
+        bypass_permission=True,
     )
 
     assert att.id is not None  # nosec B101
