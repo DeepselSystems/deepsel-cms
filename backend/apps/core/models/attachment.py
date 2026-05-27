@@ -32,3 +32,7 @@ class AttachmentModel(Base, BaseModel):
     @classmethod
     def get_by_name(cls, db: Session, name: str):
         return db.query(cls).filter(cls.name == name).first()
+
+    @classmethod
+    def create(cls, db, user, commit=True, *args, **kwargs):
+        return super().create(cls, db, user, commit=commit, *args, **kwargs)
