@@ -7,6 +7,7 @@ admin_role,Admin,"[
     ""implied_role:*:*"",
     ""organization:*:*"",
     ""attachment:*:*"",
+    ""attachment_locale_version:*:org"",
     ""activity:*:*"",
     ""email_template:*:*"",
     ""cron:*:*""
@@ -17,6 +18,7 @@ user_role,User,"[
     ""implied_role:read:org"",
     ""organization:read:org"",
     ""attachment:*:own"",
+    ""attachment_locale_version:*:own"",
     ""activity:*:own""
 ]",true
 locales_public_role,Locales Public Role,"[

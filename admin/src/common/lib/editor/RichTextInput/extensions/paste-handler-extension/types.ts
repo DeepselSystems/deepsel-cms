@@ -23,4 +23,10 @@ export interface PasteHandlerOptions {
    * (e.g. `NotificationState.getState().notify`).
    */
   notify?: NotifyFn;
+  /**
+   * ISO code of the active editor locale (e.g. "en", "fr", "it").
+   * When provided, pasted images are inserted via getAttachmentByNameRelativeUrl
+   * so the URL resolves to the locale-specific version of the attachment.
+   */
+  locale?: string;
 }

@@ -56,6 +56,7 @@ export const PasteHandler = Node.create<PasteHandlerOptions>({
       backendHost: '',
       token: undefined,
       notify: undefined,
+      locale: undefined,
     };
   },
 

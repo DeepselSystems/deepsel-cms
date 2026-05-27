@@ -11,7 +11,6 @@ import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsSt
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import OrganizationState from '../../../common/stores/OrganizationState.js';
 import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
@@ -23,8 +22,6 @@ import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx'
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
 import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
-import useBackWithRedirect from '../../../common/hooks/useBackWithRedirect.js';
-import useAuthentication from '../../../common/api/useAuthentication.js';
 
 import useEditSession from '../../../common/hooks/useEditSession.js';
 import useDraftAutosave from '../../../common/hooks/useDraftAutosave.js';
@@ -32,7 +29,6 @@ import useFetch from '../../../common/api/useFetch.js';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import { useAIProviderConfig } from '../../../common/AIProviderConfigContext.js';
 import ConnectOpenRouterModal from '../../../common/ui/ConnectOpenRouterModal.jsx';
-import { buildFullUrl } from '../../../utils/domainUtils.js';
 import {
   IconAi,
   IconCloudCheck,
@@ -79,12 +75,9 @@ export default function PageEdit({ onSuccess }) {
   const { notify } = NotificationState();
   const { settings: siteSettings } = SitePublicSettingsState();
   const { organizationId } = OrganizationIdState();
-  const { organizations } = OrganizationState();
   const { setShowBackButton } = ShowHeaderBackButtonState();
   const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
-  const backWithRedirect = useBackWithRedirect();
   const { isCollapsed, temporaryCollapse, clearTemporaryOverride } = useSidebar();
-  const { user } = useAuthentication();
 
   // Determine if this is create mode (no id) or edit mode (has id)
   const isCreateMode = !id;
@@ -1065,7 +1058,7 @@ export default function PageEdit({ onSuccess }) {
                           key={`editor-${content.id}-${editorKey}`}
                           variant="subtle"
                           content={content.content || ''}
-                          currentLocaleId={content.locale_id}
+                          locale={content.locale}
                           onChange={(value) => {
                             updateContentField(content.id, 'content', value);
                           }}

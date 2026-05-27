@@ -14,6 +14,7 @@ import {
 } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 import DescriptionModal from './DescriptionModal';
 import {
   ENHANCED_IMAGE_ALIGNMENTS,
@@ -40,7 +41,7 @@ interface ImageAttributes {
  * EditorNodeView component for enhanced image with description
  * Provides hover menu with image controls and description editing
  */
-const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) => {
+const EditorNodeView = ({ node, editor, updateAttributes, deleteNode }: NodeViewProps) => {
   const { t } = useTranslation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,6 +49,9 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
 
   const { src, alt, title, width, height, alignment, rounded, circle, inline, description } =
     node.attrs as ImageAttributes;
+
+  const locale = editor.extensionManager.extensions.find((ext) => ext.name === 'enhancedImage')
+    ?.options?.locale as string | undefined;
 
   /**
    * Handle alignment change
@@ -157,8 +161,7 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
       ref={wrapperRef}
       className={clsx(
         ENHANCED_IMAGE_CLASSES.WRAPPER,
-        'relative inline-block max-w-fit',
-        'transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10',
+        'relative inline-block max-w-fit transition group hover:bg-gray-500 -m-2 p-2 hover:bg-opacity-10',
       )}
       style={alignmentStyles}
       {...{
@@ -174,8 +177,8 @@ const EditorNodeView = ({ node, updateAttributes, deleteNode }: NodeViewProps) =
     >
       {/* Image */}
       <img
-        src={src}
-        alt={alt || ''}
+        src={getAttachmentByNameRelativeUrl(src, locale)}
+        alt={alt || src || ''}
         title={title || ''}
         width={width}
         height={height}

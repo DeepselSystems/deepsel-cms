@@ -6,8 +6,8 @@ import clsx from 'clsx';
 import { Skeleton } from '@mantine/core';
 import { formatFileSize } from '@deepsel/cms-utils/common/utils';
 import { insertAttachmentsToEditor } from '../utils';
-import { useEffectOnce } from '../../../../../hooks/useEffectOnce';
-import { useUpload } from '../../../../../hooks/useUpload';
+import { useEffectOnce } from '../../../../../hooks';
+import { useUpload } from '../../../../../hooks';
 
 interface AttachmentFile {
   name: string;
@@ -33,11 +33,12 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
    * backendHost, token, organizationId, and notify are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.
    */
-  const { backendHost, token, organizationId, notify } = pasteHandlerExtension?.options || {
+  const { backendHost, token, organizationId, notify, locale } = pasteHandlerExtension?.options || {
     backendHost: '',
     token: undefined,
     organizationId: undefined,
     notify: undefined,
+    locale: undefined,
   };
 
   const { uploadFileModel } = useUpload({ backendHost, token, organizationId });
@@ -62,7 +63,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
             .run();
 
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          insertAttachmentsToEditor(attachments as AttachmentFile[], editor).then();
+          insertAttachmentsToEditor(attachments as AttachmentFile[], editor, locale).then();
 
           notify({
             message: t('Uploaded successfully'),

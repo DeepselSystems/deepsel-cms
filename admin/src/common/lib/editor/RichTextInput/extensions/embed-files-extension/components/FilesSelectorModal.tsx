@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import { Button, Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
 import { IconFile, IconPlus, IconTrash } from '@tabler/icons-react';
 import clsx from 'clsx';
-import { getShortUrl, MAX_FILES_COUNT } from '../utils';
+import { MAX_FILES_COUNT } from '../utils';
 import type { EmbedFileItem } from '../types';
-import { ChooseAttachmentModal } from '../../../../../ui/ChooseAttachmentModal';
-import type { AttachmentFile } from '../../../../../ui/ChooseAttachmentModal';
+import { ChooseAttachmentModal } from '../../../../../ui';
+import type { AttachmentFile } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
 interface FilesSelectorModalProps {
@@ -48,20 +47,27 @@ const FilesSelectorModal = ({
   const [isAttachmentModalOpened, setIsAttachmentModalOpened] = useState(false);
 
   /**
-   * Filter attachments to exclude video, audio, and image files
+   * Filter attachments to exclude video, audio, and image files.
+   * Reads from locale_versions[0].content_type because the parent
+   * attachment.content_type is deprecated and null after the multilang refactor.
+   * Falls back to attachment.content_type for legacy data that has not been migrated.
    */
   const filterFunc = (attachments: AttachmentFile[]) =>
     attachments.filter((attachment) => {
-      const contentType = attachment.content_type?.toLowerCase() || '';
+      const effectiveContentType = (
+        attachment.locale_versions?.[0]?.content_type ??
+        attachment.content_type ??
+        ''
+      ).toLowerCase();
       return (
-        !contentType.startsWith('video') &&
-        !contentType.startsWith('audio') &&
-        !contentType.startsWith('image')
+        !effectiveContentType.startsWith('video') &&
+        !effectiveContentType.startsWith('audio') &&
+        !effectiveContentType.startsWith('image')
       );
     });
 
   /**
-   * Insert or update files
+   * Insert or update files in the editor
    */
   const insertFiles = () => {
     if (selectedFiles.length === 0) {
@@ -74,13 +80,7 @@ const FilesSelectorModal = ({
     }
 
     if (editor) {
-      editor
-        .chain()
-        .focus()
-        .setEmbedFiles({
-          files: selectedFiles,
-        })
-        .run();
+      editor.chain().focus().setEmbedFiles({ files: selectedFiles }).run();
 
       setTimeout(() => {
         editor.chain().focus().createParagraphNear().run();
@@ -92,22 +92,21 @@ const FilesSelectorModal = ({
   };
 
   /**
-   * Handle remove file
+   * Handle remove file from selection
    */
   const handleRemoveFile = (index: number) => {
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(newFiles);
+    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
 
   /**
-   * Handle file selection from ChooseAttachmentModal
+   * Handle file selection from ChooseAttachmentModal.
+   * Stores attachmentName (the attachment.name column) + displayName for editor label.
    */
   const handleFileSelect = (attachment: AttachmentFile) => {
-    if (selectedFiles.some((f) => f.url === attachment.name)) {
-      notify({
-        type: 'warning',
-        message: t('This file is already selected'),
-      });
+    const attachmentName = attachment.name ?? '';
+
+    if (selectedFiles.some((f) => f.attachmentName === attachmentName)) {
+      notify({ type: 'warning', message: t('This file is already selected') });
       return;
     }
 
@@ -119,18 +118,9 @@ const FilesSelectorModal = ({
       return;
     }
 
-    const attachUrl = getAttachmentRelativeUrl(attachment.name);
+    const displayName = attachmentName.split('/').pop() || attachmentName;
 
-    const newFiles = [
-      ...selectedFiles,
-      {
-        url: attachUrl,
-        name: attachment.name.split('/').pop() || attachment.name,
-      },
-    ];
-
-    setSelectedFiles(newFiles);
-
+    setSelectedFiles([...selectedFiles, { attachmentName, displayName }]);
     setIsAttachmentModalOpened(false);
   };
 
@@ -145,6 +135,7 @@ const FilesSelectorModal = ({
         }
         onClose={() => setOpened(false)}
         size="xl"
+        zIndex={11000}
       >
         <div className="space-y-4">
           {/* Selected files list */}
@@ -153,29 +144,26 @@ const FilesSelectorModal = ({
               <div className="text-sm font-medium text-gray-700">
                 {t('Selected files')} ({selectedFiles.length}/{MAX_FILES_COUNT})
               </div>
-              {selectedFiles.map((file, index) => {
-                const shortUrl = getShortUrl(file.url);
-                return (
-                  <div
-                    key={index}
-                    className={clsx(
-                      'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200',
-                    )}
-                  >
-                    <IconFile size={20} className="text-blue-500" />
-                    <div className="flex-1 truncate" title={file.name || shortUrl}>
-                      {file.name || shortUrl}
-                    </div>
-                    <button
-                      onClick={() => handleRemoveFile(index)}
-                      className="p-2 text-primary-main hover:bg-red-50 rounded transition"
-                      title={t('Remove')}
-                    >
-                      <IconTrash size={16} />
-                    </button>
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className={clsx(
+                    'flex items-center gap-3 p-3 bg-gray-50 rounded border border-gray-200',
+                  )}
+                >
+                  <IconFile size={20} className="text-blue-500" />
+                  <div className="flex-1 truncate" title={file.displayName}>
+                    {file.displayName}
                   </div>
-                );
-              })}
+                  <button
+                    onClick={() => handleRemoveFile(index)}
+                    className="p-2 text-primary-main hover:bg-red-50 rounded transition"
+                    title={t('Remove')}
+                  >
+                    <IconTrash size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">

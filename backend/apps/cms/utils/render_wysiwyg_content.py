@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from apps.core.models.user import UserModel
 from apps.core.utils.models_pool import models_pool
+from .jinja2_globals import build_jinja2_globals
 from ..models.organization import CMSSettingsModel
 from fastapi import HTTPException
 
@@ -137,6 +138,7 @@ def render_template_content(
         loader=DictLoader(jinja2_templates),
         autoescape=select_autoescape(["html", "xml"]),
     )
+    env.globals.update(build_jinja2_globals(db, organization_id, lang))
     template = env.get_template(name)
     try:
         rendered_content = template.render(**context)
@@ -195,6 +197,7 @@ def render_wysiwyg_content(
             loader=DictLoader({**jinja2_templates, temp_template_name: content}),
             autoescape=select_autoescape(["html", "xml"]),
         )
+        env.globals.update(build_jinja2_globals(db, organization_id, lang))
         template = env.get_template(temp_template_name)
         return template.render(**context)
     except Exception as e:

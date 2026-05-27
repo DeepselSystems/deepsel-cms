@@ -51,7 +51,7 @@ import FontSize from 'tiptap-extension-font-size';
 import TextStyle from '@tiptap/extension-text-style';
 import { Menu, Modal, NumberInput, Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../ui/Button';
+import { Button } from '../../ui';
 import { YoutubeJumpMarks } from './extensions/youtube-jumpmarks-extension';
 import { EnhancedDetails, DetailsContent, DetailsSummary } from './extensions/details-extension';
 import { AutocompleteExtension } from './extensions/autocomplete-extension';
@@ -77,10 +77,11 @@ import { GalleryModal } from './modals/GalleryModal';
 import type { GalleryAttachment, GalleryModalSaveData } from './modals/GalleryModal';
 import { RichTextModal } from './modals/RichTextModal';
 import type { RichTextModalSaveData } from './modals/RichTextModal';
-import { HtmlComponentsModal } from '../../ui/HtmlComponentsModal';
+import { HtmlComponentsModal } from '../../ui';
 import type { User } from '../../types';
 import type { NotifyFn } from '../../types';
 import type { JumpMarkData } from './extensions/youtube-jumpmarks-extension/types';
+import { Language } from '@deepsel/cms-utils';
 
 /**
  * Optional site settings for AI autocomplete features
@@ -116,8 +117,8 @@ export interface RichTextInputProps {
   /** Mantine RichTextEditor variant. */
   variant?: string;
 
-  /** Current locale ID used to filter HTML template components. */
-  currentLocaleId?: string | number;
+  /** Current locale */
+  locale?: Language;
 
   /** Whether to enable AI autocomplete (requires siteSettings with API key). */
   autoComplete?: boolean;
@@ -216,7 +217,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     canAddImage = true,
     onAddImageOverride = () => {},
     variant = 'subtle',
-    currentLocaleId,
+    locale,
     autoComplete = false,
     backendHost,
     user,
@@ -227,7 +228,6 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
     notify,
     ...restProps
   } = props;
-
   const { t } = useTranslation();
 
   const [isGalleryModalOpened, { open: openGalleryModal, close: closeGalleryModal }] =
@@ -283,13 +283,13 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
         SubScript,
         Highlight,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
-        EnhancedImage,
+        EnhancedImage.configure({ locale: locale?.iso_code }),
         EnhancedCodeBlock,
         Youtube,
         YoutubeJumpMarks,
         FontSize,
         TextStyle,
-        Gallery.configure({ backendHost }),
+        Gallery.configure({ backendHost, locale: locale?.iso_code }),
         RichText,
         Table.configure({
           resizable: true,
@@ -307,12 +307,14 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           backendHost,
           user,
           setUser,
+          locale: locale?.iso_code,
         }),
         PasteHandler.configure({
           backendHost,
           token: user?.token,
           organizationId,
           notify,
+          locale: locale?.iso_code,
         }),
         AuthenticatedContent,
         jinja2Markdown,
@@ -851,6 +853,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
                       backendHost={backendHost}
                       user={user}
                       setUser={setUser}
+                      currentLocaleId={locale?.id ?? undefined}
                     />
                     <Tooltip label={t('Insert Gallery')}>
                       <button
@@ -954,6 +957,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
             backendHost={backendHost}
             user={user}
             setUser={setUser}
+            localeISOCode={locale?.iso_code}
             onSave={(savedData) => {
               if (galleryData?.updateGallery) {
                 // Update existing gallery node via the function stored in state
@@ -1083,7 +1087,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           <HtmlComponentsModal
             isOpen={isHtmlComponentsModalOpened}
             onClose={closeHtmlComponentsModal}
-            currentLocaleId={currentLocaleId}
+            currentLocaleId={locale?.id}
             organizationId={organizationId}
             backendHost={backendHost}
             user={user}
