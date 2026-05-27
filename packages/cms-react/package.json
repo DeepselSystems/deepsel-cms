@@ -72,6 +72,7 @@
     "@mantine/dropzone": ">=8.0.0",
     "@tabler/icons-react": ">=2.0.0",
     "clsx": ">=2.0.0",
+    "dayjs": ">=1.11.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-i18next": ">=13.0.0"
@@ -82,6 +83,7 @@
     "@mantine/dropzone": { "optional": true },
     "@tabler/icons-react": { "optional": true },
     "clsx": { "optional": true },
+    "dayjs": { "optional": true },
     "react-i18next": { "optional": true }
   }
 }
