@@ -1,24 +1,11 @@
-import {useCallback, useState} from 'react';
-import {
-  Box,
-  TextInput,
-  Button,
-  Group,
-  ActionIcon,
-  Text,
-  Stack,
-  Paper,
-} from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faPlus,
-  faTrash,
-  faGripVertical,
-} from '@fortawesome/free-solid-svg-icons';
-import {DragDropContext, Droppable, Draggable} from '@hello-pangea/dnd';
-import {useTranslation} from 'react-i18next';
-import {v4 as uuidv4} from 'uuid';
-import {FormFieldType} from '../../../../../constants/form.js';
+import { useCallback, useState } from 'react';
+import { Box, TextInput, Button, Group, ActionIcon, Text, Stack, Paper } from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useTranslation } from 'react-i18next';
+import { v4 as uuidv4 } from 'uuid';
+import { FORM_FIELD_TYPE as FormFieldType } from '@deepsel/cms-utils';
 
 /**
  * Generates a unique option ID
@@ -35,8 +22,8 @@ const generateOptionId = () => `${uuidv4()}`;
  * @param {string} props.fieldType - Field type (multiple_choice, checkboxes, or dropdown)
  * @returns {JSX.Element}
  */
-const OptionsEditor = ({options = [], onChange, fieldType}) => {
-  const {t} = useTranslation();
+const OptionsEditor = ({ options = [], onChange, fieldType }) => {
+  const { t } = useTranslation();
   const [newOptionLabel, setNewOptionLabel] = useState('');
 
   /**
@@ -82,7 +69,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
       };
       onChange(newOptions);
     },
-    [generateOptionValue, onChange, options]
+    [generateOptionValue, onChange, options],
   );
 
   /**
@@ -94,7 +81,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
       const newOptions = options.filter((_, i) => i !== index);
       onChange(newOptions);
     },
-    [onChange, options]
+    [onChange, options],
   );
 
   /**
@@ -105,7 +92,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
     (result) => {
       if (!result.destination) return;
 
-      const {source, destination} = result;
+      const { source, destination } = result;
       if (source.index === destination.index) return;
 
       const newOptions = Array.from(options);
@@ -114,7 +101,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
 
       onChange(newOptions);
     },
-    [onChange, options]
+    [onChange, options],
   );
 
   /**
@@ -128,7 +115,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
         addOption();
       }
     },
-    [addOption]
+    [addOption],
   );
 
   return (
@@ -148,18 +135,9 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="options">
             {(provided) => (
-              <Stack
-                gap="xs"
-                mb="md"
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-              >
+              <Stack gap="xs" mb="md" {...provided.droppableProps} ref={provided.innerRef}>
                 {options.map((option, index) => (
-                  <Draggable
-                    key={option.id}
-                    draggableId={option.id}
-                    index={index}
-                  >
+                  <Draggable key={option.id} draggableId={option.id} index={index}>
                     {(provided, snapshot) => (
                       <Paper
                         ref={provided.innerRef}
@@ -191,7 +169,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
                               })
                             }
                             size="sm"
-                            style={{flex: 1}}
+                            style={{ flex: 1 }}
                           />
 
                           <ActionIcon
@@ -223,7 +201,7 @@ const OptionsEditor = ({options = [], onChange, fieldType}) => {
           onChange={(e) => setNewOptionLabel(e.target.value)}
           onKeyPress={handleKeyPress}
           size="sm"
-          style={{flex: 1}}
+          style={{ flex: 1 }}
         />
         <Button
           leftSection={<FontAwesomeIcon icon={faPlus} />}

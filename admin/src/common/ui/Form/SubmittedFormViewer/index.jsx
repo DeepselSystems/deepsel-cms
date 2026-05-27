@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Text, Group, Badge, Stack, Alert } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { FormFieldType } from '../../../../constants/form.js';
+import { FORM_FIELD_TYPE as FormFieldType } from '@deepsel/cms-utils';
 import FileDisplay from '../../FileDisplay.jsx';
 import { formatFileSize } from '../../../utils/index.js';
 import { IconInfoCircle } from '@tabler/icons-react';

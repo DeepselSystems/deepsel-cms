@@ -13,7 +13,7 @@ import {
 } from '@mantine/core';
 import { DateInput, DateTimePicker, TimePicker } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
-import { FormFieldType, TimeFormat } from '../../../../constants/form.js';
+import { FORM_FIELD_TYPE as FormFieldType, TIME_FORMAT as TimeFormat } from '@deepsel/cms-utils';
 import { useTranslation } from 'react-i18next';
 import useUploadSizeLimit from '../../../api/useUploadSizeLimit.js';
 import useUpload from '../../../api/useUpload.js';

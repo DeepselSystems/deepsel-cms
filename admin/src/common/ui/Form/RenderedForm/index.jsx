@@ -6,7 +6,7 @@ import Button from '../../Button.jsx';
 import { useTranslation } from 'react-i18next';
 import useFormFieldsData from './useFormFieldsData.js';
 import fromPairs from 'lodash/fromPairs.js';
-import { FormFieldType } from '../../../../constants/form.js';
+import { FORM_FIELD_TYPE as FormFieldType } from '@deepsel/cms-utils';
 import clsx from 'clsx';
 import { IconCircleCheck } from '@tabler/icons-react';
 

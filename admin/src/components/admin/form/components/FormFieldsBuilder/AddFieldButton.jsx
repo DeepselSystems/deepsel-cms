@@ -1,9 +1,9 @@
-import {Menu, Text} from '@mantine/core';
+import { Menu, Text } from '@mantine/core';
 import Button from '../../../../../common/ui/Button.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faPlus} from '@fortawesome/free-solid-svg-icons';
-import {useTranslation} from 'react-i18next';
-import {FormFieldType} from '../../../../../constants/form.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
+import { FORM_FIELD_TYPE as FormFieldType } from '@deepsel/cms-utils';
 
 /**
  * Reusable button component for adding new form fields
@@ -15,13 +15,8 @@ import {FormFieldType} from '../../../../../constants/form.js';
  * @param {string} props.buttonText - Custom button text
  * @returns {JSX.Element}
  */
-const AddFieldButton = ({
-  onAddField,
-  variant = 'filled',
-  size = 'md',
-  buttonText,
-}) => {
-  const {t} = useTranslation();
+const AddFieldButton = ({ onAddField, variant = 'filled', size = 'md', buttonText }) => {
+  const { t } = useTranslation();
 
   const fieldTypeMenuItems = [
     {
@@ -77,17 +72,9 @@ const AddFieldButton = ({
   ];
 
   return (
-    <Menu
-      shadow="md"
-      width={280}
-      classNames={{dropdown: 'max-h-96 overflow-y-auto'}}
-    >
+    <Menu shadow="md" width={280} classNames={{ dropdown: 'max-h-96 overflow-y-auto' }}>
       <Menu.Target>
-        <Button
-          leftSection={<FontAwesomeIcon icon={faPlus} />}
-          variant={variant}
-          size={size}
-        >
+        <Button leftSection={<FontAwesomeIcon icon={faPlus} />} variant={variant} size={size}>
           {buttonText || t('Add Field')}
         </Button>
       </Menu.Target>

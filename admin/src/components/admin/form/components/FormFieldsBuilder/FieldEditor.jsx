@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import {
   Paper,
   TextInput,
@@ -14,19 +14,14 @@ import {
   Divider,
   Button,
 } from '@mantine/core';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faCopy, faGripHorizontal, faAngleUp } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 import {
-  faTrash,
-  faCopy,
-  faGripHorizontal,
-  faAngleUp,
-} from '@fortawesome/free-solid-svg-icons';
-import {useTranslation} from 'react-i18next';
-import {
-  FormFieldType,
-  TimeFormat,
-  TimeFormatOptions,
-} from '../../../../../constants/form.js';
+  FORM_FIELD_TYPE as FormFieldType,
+  TIME_FORMAT as TimeFormat,
+  TIME_FORMAT_OPTIONS as TimeFormatOptions,
+} from '@deepsel/cms-utils';
 import OptionsEditor from './OptionsEditor.jsx';
 import useUploadSizeLimit from '../../../../../common/api/useUploadSizeLimit.js';
 import clsx from 'clsx';
@@ -43,17 +38,10 @@ import clsx from 'clsx';
  * @param {Object} props.dragHandleProps - Props for drag handle
  * @returns {JSX.Element}
  */
-const FieldEditor = ({
-  field,
-  index,
-  onUpdate,
-  onDelete,
-  onDuplicate,
-  dragHandleProps,
-}) => {
-  const {t} = useTranslation();
+const FieldEditor = ({ field, index, onUpdate, onDelete, onDuplicate, dragHandleProps }) => {
+  const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const {uploadSizeLimit} = useUploadSizeLimit();
+  const { uploadSizeLimit } = useUploadSizeLimit();
 
   /**
    * Updates a field property
@@ -61,7 +49,7 @@ const FieldEditor = ({
    * @param {any} value - New value
    */
   const updateField = (property, value) => {
-    onUpdate(index, {...field, [property]: value});
+    onUpdate(index, { ...field, [property]: value });
   };
 
   /**
@@ -70,7 +58,7 @@ const FieldEditor = ({
    * @param {any} value - New value
    */
   const updateFieldConfig = (configKey, value) => {
-    const newConfig = {...field.field_config, [configKey]: value};
+    const newConfig = { ...field.field_config, [configKey]: value };
     updateField('field_config', newConfig);
   };
 
@@ -79,24 +67,19 @@ const FieldEditor = ({
       value: FormFieldType.ShortAnswer,
       label: t('Short Answer'),
     },
-    {value: FormFieldType.Paragraph, label: t('Paragraph')},
-    {value: FormFieldType.Number, label: t('Number')},
-    {value: FormFieldType.MultipleChoice, label: t('Multiple Choice')},
-    {value: FormFieldType.Checkboxes, label: t('Checkboxes')},
-    {value: FormFieldType.Dropdown, label: t('Dropdown')},
-    {value: FormFieldType.Date, label: t('Date')},
-    {value: FormFieldType.Datetime, label: t('Date & Time')},
-    {value: FormFieldType.Time, label: t('Time')},
-    {value: FormFieldType.Files, label: t('Files')},
+    { value: FormFieldType.Paragraph, label: t('Paragraph') },
+    { value: FormFieldType.Number, label: t('Number') },
+    { value: FormFieldType.MultipleChoice, label: t('Multiple Choice') },
+    { value: FormFieldType.Checkboxes, label: t('Checkboxes') },
+    { value: FormFieldType.Dropdown, label: t('Dropdown') },
+    { value: FormFieldType.Date, label: t('Date') },
+    { value: FormFieldType.Datetime, label: t('Date & Time') },
+    { value: FormFieldType.Time, label: t('Time') },
+    { value: FormFieldType.Files, label: t('Files') },
   ];
 
   return (
-    <Paper
-      shadow="sm"
-      p="md"
-      withBorder
-      className="group hover:shadow-md transition-shadow"
-    >
+    <Paper shadow="sm" p="md" withBorder className="group hover:shadow-md transition-shadow">
       {/* Header with drag handle and actions */}
       <Group justify="space-between" mb="md">
         <Group gap="xs">
@@ -271,9 +254,7 @@ const FieldEditor = ({
           )}
 
           {/* Date/Time field configurations */}
-          {[FormFieldType.Date, FormFieldType.Datetime].includes(
-            field.field_type
-          ) && (
+          {[FormFieldType.Date, FormFieldType.Datetime].includes(field.field_type) && (
             <Group grow mb="md">
               <TextInput
                 label={t('Minimum Date/Time')}
@@ -301,9 +282,7 @@ const FieldEditor = ({
               />
             </Group>
           )}
-          {[FormFieldType.Datetime, FormFieldType.Time].includes(
-            field.field_type
-          ) && (
+          {[FormFieldType.Datetime, FormFieldType.Time].includes(field.field_type) && (
             <Group grow mb="md">
               <NumberInput
                 label={t('Step (minutes)')}
@@ -320,9 +299,7 @@ const FieldEditor = ({
                   value: option.value,
                   label: t(option.label),
                 }))}
-                value={
-                  field.field_config?.time_format || TimeFormat.TWENTY_FOUR_HOUR
-                }
+                value={field.field_config?.time_format || TimeFormat.TWENTY_FOUR_HOUR}
                 onChange={(value) => updateFieldConfig('time_format', value)}
               />
             </Group>
@@ -347,16 +324,14 @@ const FieldEditor = ({
                   max={uploadSizeLimit}
                   step={1}
                   value={field.field_config?.max_file_size || uploadSizeLimit}
-                  onChange={(value) =>
-                    updateFieldConfig('max_file_size', value)
-                  }
+                  onChange={(value) => updateFieldConfig('max_file_size', value)}
                 />
               </Group>
               <Select
                 label={t('Allowed File Types')}
                 placeholder={t('Select allowed file types')}
                 data={[
-                  {value: 'image/*', label: t('Images (JPG, PNG, GIF, etc.)')},
+                  { value: 'image/*', label: t('Images (JPG, PNG, GIF, etc.)') },
                   {
                     value: 'application/pdf',
                     label: t('PDF Documents'),
@@ -371,13 +346,11 @@ const FieldEditor = ({
                       'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     label: t('Excel Spreadsheets'),
                   },
-                  {value: 'text/*', label: t('Text Files')},
-                  {value: '*', label: t('All File Types')},
+                  { value: 'text/*', label: t('Text Files') },
+                  { value: '*', label: t('All File Types') },
                 ]}
                 value={field.field_config?.allowed_file_types || 'image/*'}
-                onChange={(value) =>
-                  updateFieldConfig('allowed_file_types', value)
-                }
+                onChange={(value) => updateFieldConfig('allowed_file_types', value)}
                 mb="md"
               />
             </>
@@ -387,9 +360,7 @@ const FieldEditor = ({
             label={t('Validation Message')}
             placeholder={t('Enter custom validation error message')}
             value={field.field_config?.validation_message || ''}
-            onChange={(e) =>
-              updateFieldConfig('validation_message', e.target.value)
-            }
+            onChange={(e) => updateFieldConfig('validation_message', e.target.value)}
             mb="md"
           />
         </Collapse>

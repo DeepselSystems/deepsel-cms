@@ -1,17 +1,35 @@
 import type { SiteSettings } from '../types.js';
 
-/** Mirrors backend FormFieldTypeEnum */
-export type FormFieldType =
-  | 'short_answer'
-  | 'number'
-  | 'paragraph'
-  | 'multiple_choice'
-  | 'checkboxes'
-  | 'dropdown'
-  | 'date'
-  | 'datetime'
-  | 'time'
-  | 'files';
+/** Runtime constant — use as `FORM_FIELD_TYPE.ShortAnswer` etc. */
+export const FORM_FIELD_TYPE = {
+  ShortAnswer: 'short_answer',
+  Number: 'number',
+  Paragraph: 'paragraph',
+  MultipleChoice: 'multiple_choice',
+  Checkboxes: 'checkboxes',
+  Dropdown: 'dropdown',
+  Date: 'date',
+  Datetime: 'datetime',
+  Time: 'time',
+  Files: 'files',
+} as const;
+
+/** Union of all valid field type strings — derived from FORM_FIELD_TYPE */
+export type FormFieldType = (typeof FORM_FIELD_TYPE)[keyof typeof FORM_FIELD_TYPE];
+
+/** Time display format options for Time/Datetime fields */
+export const TIME_FORMAT = {
+  TWELVE_HOUR: '12h',
+  TWENTY_FOUR_HOUR: '24h',
+} as const;
+
+export type TimeFormat = (typeof TIME_FORMAT)[keyof typeof TIME_FORMAT];
+
+/** Select options for time format pickers */
+export const TIME_FORMAT_OPTIONS: { value: TimeFormat; label: string }[] = [
+  { value: TIME_FORMAT.TWELVE_HOUR, label: '12-hour (AM/PM)' },
+  { value: TIME_FORMAT.TWENTY_FOUR_HOUR, label: '24-hour' },
+];
 
 /** Mirrors backend FormFieldConfig */
 export interface FormFieldConfig {
