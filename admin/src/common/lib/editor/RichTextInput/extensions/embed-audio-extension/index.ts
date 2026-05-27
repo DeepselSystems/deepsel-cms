@@ -1,26 +1,25 @@
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView';
-import { AUDIO_WIDTH_DEFAULT, EMBED_AUDIO_ATTRIBUTES, EMBED_AUDIO_CLASSES } from './utils';
+import { EMBED_AUDIO_ATTRIBUTES } from './utils';
 
 interface EmbedAudioOptions {
   src: string;
-  width?: number;
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     embedAudio: {
       setEmbedAudio: (options: EmbedAudioOptions) => ReturnType;
-      updateEmbedAudio: (options: Partial<EmbedAudioOptions>) => ReturnType;
     };
   }
 }
 
 /**
  * Embed Audio extension for TipTap
- * Allows embedding audio files with basic player controls
+ * Stores audio as Jinja syntax: {{ attachment('name') }}
+ * Parses back via data-embed-audio marker on the wrapper div
  */
 export const EmbedAudio = Node.create({
   name: 'embedAudio',
@@ -29,49 +28,9 @@ export const EmbedAudio = Node.create({
 
   atom: true,
 
-  addOptions() {
-    return {
-      HTMLAttributes: {
-        class: EMBED_AUDIO_CLASSES.WRAPPER,
-      },
-    };
-  },
-
   addAttributes() {
     return {
-      src: {
-        default: null,
-        parseHTML: (element) => {
-          return (
-            element.getAttribute(EMBED_AUDIO_ATTRIBUTES.SRC) ||
-            element.querySelector('audio')?.getAttribute('src') ||
-            null
-          );
-        },
-        renderHTML: (attributes) => {
-          if (!attributes.src) {
-            return {};
-          }
-          return {
-            [EMBED_AUDIO_ATTRIBUTES.SRC]: attributes.src,
-          };
-        },
-      },
-      width: {
-        default: AUDIO_WIDTH_DEFAULT,
-        parseHTML: (element) => {
-          const width =
-            element.getAttribute(EMBED_AUDIO_ATTRIBUTES.WIDTH) ||
-            element.querySelector('audio')?.getAttribute('width');
-          return width ? parseInt(width, 10) : AUDIO_WIDTH_DEFAULT;
-        },
-        renderHTML: (attributes) => {
-          return {
-            [EMBED_AUDIO_ATTRIBUTES.WIDTH]:
-              attributes.width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
-          };
-        },
-      },
+      src: { default: null },
     };
   },
 
@@ -79,43 +38,27 @@ export const EmbedAudio = Node.create({
     return [
       {
         tag: `div[${EMBED_AUDIO_ATTRIBUTES.CONTAINER}]`,
-      },
-      {
-        tag: `div.${EMBED_AUDIO_CLASSES.WRAPPER}`,
+        getAttrs: (element) => {
+          const text = element.textContent?.trim() || '';
+          const match = text.match(
+            /^\{\{\s*attachment\('([^']+)'(?:,\s*(\{[\s\S]*\}))?\s*\)\s*\}\}$/,
+          );
+          if (!match) return false;
+
+          return { src: match[1] };
+        },
       },
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
-    const { src, width } = node.attrs;
+  renderHTML({ node }) {
+    const { src } = node.attrs;
 
-    const audioElement = [
-      'div',
-      {
-        class: EMBED_AUDIO_CLASSES.AUDIO_CONTAINER,
-      },
-      [
-        'audio',
-        {
-          src,
-          controls: true,
-          class: EMBED_AUDIO_CLASSES.AUDIO_CONTENT,
-        },
-      ],
-    ];
+    if (!src) {
+      return ['div', {}];
+    }
 
-    const elements = [audioElement];
-
-    return [
-      'div',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true',
-        [EMBED_AUDIO_ATTRIBUTES.SRC]: src,
-        [EMBED_AUDIO_ATTRIBUTES.WIDTH]: width?.toString() || AUDIO_WIDTH_DEFAULT.toString(),
-      }),
-      ...elements,
-    ];
+    return ['div', { [EMBED_AUDIO_ATTRIBUTES.CONTAINER]: 'true' }, `{{ attachment('${src}') }}`];
   },
 
   addNodeView() {
@@ -130,19 +73,10 @@ export const EmbedAudio = Node.create({
           if (!options.src) {
             return false;
           }
-
           return commands.insertContent({
             type: this.name,
-            attrs: {
-              src: options.src,
-              width: options.width || AUDIO_WIDTH_DEFAULT,
-            },
+            attrs: { src: options.src },
           });
-        },
-      updateEmbedAudio:
-        (options: Partial<EmbedAudioOptions>): Command =>
-        ({ commands }) => {
-          return commands.updateAttributes(this.name, options);
         },
     };
   },

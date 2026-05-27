@@ -26,4 +26,18 @@
  *
  * @property {string} openrouter_api_key
  * @property {string} openrouter_api_key_truncated
+ *
+ * @property {number|null} default_language_id
+ * @property {OrgLanguage|null} default_language
+ * @property {OrgLanguage[]} available_languages - Languages configured for this org's site
+ */
+
+/**
+ * A locale/language entry as returned by the organization API.
+ * Used in default_language and available_languages fields.
+ * @typedef OrgLanguage
+ * @property {number} id
+ * @property {string} name        - e.g. "English / English"
+ * @property {string} iso_code    - e.g. "en", "de", "zh_CN"
+ * @property {string|null} [emoji_flag]
  */

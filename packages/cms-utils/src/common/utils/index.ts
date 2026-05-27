@@ -15,11 +15,23 @@ export function getAttachmentUrl(backendHost: string, name: string): string {
 
 /**
  * Builds the relative URL for an attachment file (no host)
- * @param name - The attachment filename
+ * @param name - The attachment filename (AttachmentLocaleVersionModel.name)
  * @returns Relative URL to serve the attachment, or empty string if name is falsy
  */
 export function getAttachmentRelativeUrl(name: string): string {
   return name ? `/api/v1/attachment/serve/${name}` : '';
+}
+
+/**
+ * Builds the relative URL for an attachment by AttachmentModel.name with optional locale (no host)
+ * @param name - The attachment name (AttachmentModel.name)
+ * @param locale - Optional locale ISO code (e.g. "en", "fr"); defaults to org default on the backend
+ * @returns Relative URL to serve the attachment, or empty string if name is falsy
+ */
+export function getAttachmentByNameRelativeUrl(name: string, locale?: string): string {
+  if (!name) return '';
+  const base = `/api/v1/attachment/serve-by-name/${name}`;
+  return locale ? `${base}?locale=${locale}` : base;
 }
 
 /**
