@@ -3,8 +3,7 @@ import type { Editor } from '@tiptap/core';
 import { IconPhoto } from '@tabler/icons-react';
 import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelectorModal } from '../../../../../ui/EnhancedImageSelector';
+import { EnhancedImageSelectorModal } from '../../../../../ui';
 import type { User } from '../../../../../types';
 
 interface EnhancedImageButtonProps {
@@ -14,10 +13,11 @@ interface EnhancedImageButtonProps {
   backendHost: string;
   user: User | null;
   setUser: (user: User | null) => void;
+  currentLocaleId?: number | null;
 }
 
 interface Attachment {
-  name: string;
+  name: string | null;
 }
 
 /**
@@ -31,6 +31,7 @@ const EnhancedImageButton = ({
   backendHost,
   user,
   setUser,
+  currentLocaleId,
   children,
 }: EnhancedImageButtonProps) => {
   const { t } = useTranslation();
@@ -55,17 +56,18 @@ const EnhancedImageButton = ({
         setUser={setUser}
         opened={enhanceImageSelectorModalOpened}
         setOpened={setEnhanceImageSelectorModalOpened}
+        currentLocaleId={currentLocaleId}
         onSelect={(attachment: Attachment) => {
-          const attachUrl = getAttachmentRelativeUrl(attachment.name);
+          const attachmentName = attachment.name ?? '';
 
-          onAddImageOverride(attachUrl);
+          onAddImageOverride(attachmentName);
 
           if (editor) {
             editor
               .chain()
               .focus()
               .setEnhancedImage({
-                src: attachUrl,
+                src: attachmentName,
               })
               .run();
 

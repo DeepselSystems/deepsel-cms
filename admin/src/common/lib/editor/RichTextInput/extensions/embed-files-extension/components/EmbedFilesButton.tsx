@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import { IconFileText } from '@tabler/icons-react';
-import { Box, Tooltip } from '@mantine/core';
+import { Tooltip } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { MAX_FILES_COUNT } from '../utils';
 import FilesSelectorModal from './FilesSelectorModal';
@@ -35,31 +35,29 @@ const EmbedFilesButton = ({
 
   return (
     <>
-      <Box>
-        <Tooltip label={t(`Insert files (max ${MAX_FILES_COUNT})`)}>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedFiles([]);
-              setIsFilesSelectorModalOpened(true);
-            }}
-            className="w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
-          >
-            {children || <IconFileText size={22} className="text-[#808496]" />}
-          </button>
-        </Tooltip>
+      <Tooltip label={t(`Insert files (max ${MAX_FILES_COUNT})`)}>
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedFiles([]);
+            setIsFilesSelectorModalOpened(true);
+          }}
+          className="w-8 h-8 flex justify-center items-center rounded p-1 font-thin cursor-pointer hover:bg-[#e4e6ed]"
+        >
+          {children || <IconFileText size={22} className="text-[#808496]" />}
+        </button>
+      </Tooltip>
 
-        <FilesSelectorModal
-          backendHost={backendHost}
-          user={user}
-          setUser={setUser}
-          editor={editor}
-          opened={isFilesSelectorModalOpened}
-          setOpened={setIsFilesSelectorModalOpened}
-          selectedFiles={selectedFiles}
-          setSelectedFiles={setSelectedFiles}
-        />
-      </Box>
+      <FilesSelectorModal
+        backendHost={backendHost}
+        user={user}
+        setUser={setUser}
+        editor={editor}
+        opened={isFilesSelectorModalOpened}
+        setOpened={setIsFilesSelectorModalOpened}
+        selectedFiles={selectedFiles}
+        setSelectedFiles={setSelectedFiles}
+      />
     </>
   );
 };

@@ -1,9 +1,8 @@
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Node } from '@tiptap/core';
 import type { Command } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import EditorNodeView from './components/EditorNodeView';
-import { EMBED_FILES_ATTRIBUTES, EMBED_FILES_CLASSES, MAX_FILES_COUNT } from './utils';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils';
+import { EMBED_FILES_ATTRIBUTES, MAX_FILES_COUNT, formatJinjaSyntax } from './utils';
 import type { EmbedFileItem } from './types';
 
 interface EmbedFilesOptions {
@@ -14,33 +13,15 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     embedFiles: {
       setEmbedFiles: (options: EmbedFilesOptions) => ReturnType;
-      updateEmbedFiles: (options: Partial<EmbedFilesOptions>) => ReturnType;
     };
   }
 }
 
 /**
- * Embed Files extension for TipTap
- * Allows embedding multiple files with download links
- *
- * Paste Handler extension for TipTap
- * Temporarily displays pasted files in the editor before they are uploaded
- * This is a transient node that should not be persisted to database
- *
- * @example
- * ```typescript
- * import { EmbedFiles } from './extensions/embed-files-extension';
- *
- * const editor = useEditor({
- *   extensions: [
- *     EmbedFiles.configure({
- *       backendHost: 'https://api.example.com',
- *       user: user,
- *       setUser: setUser,
- *     }),
- *   ],
- * });
- * ```
+ * Embed Files extension for TipTap.
+ * Each file reference is stored as {{ attachment('name') }} Jinja syntax in the rendered HTML.
+ * The backend resolves this at page-render time to a locale-appropriate download link.
+ * backendHost, user, and setUser are read from the pasteHandler extension options at runtime.
  */
 export const EmbedFiles = Node.create({
   name: 'embedFiles',
@@ -49,41 +30,10 @@ export const EmbedFiles = Node.create({
 
   atom: true,
 
-  addOptions() {
-    return {
-      HTMLAttributes: {
-        class: EMBED_FILES_CLASSES.WRAPPER,
-      },
-      backendHost: '',
-      user: null,
-      setUser: () => {},
-    };
-  },
-
   addAttributes() {
     return {
       files: {
         default: [],
-        parseHTML: (element) => {
-          const filesAttr = element.getAttribute(EMBED_FILES_ATTRIBUTES.FILES);
-          if (filesAttr) {
-            try {
-              return JSON.parse(filesAttr);
-            } catch (e) {
-              console.error(e);
-              return [];
-            }
-          }
-          return [];
-        },
-        renderHTML: (attributes) => {
-          if (!attributes.files || attributes.files.length === 0) {
-            return {};
-          }
-          return {
-            [EMBED_FILES_ATTRIBUTES.FILES]: JSON.stringify(attributes.files),
-          };
-        },
       },
     };
   },
@@ -92,68 +42,31 @@ export const EmbedFiles = Node.create({
     return [
       {
         tag: `div[${EMBED_FILES_ATTRIBUTES.CONTAINER}]`,
-      },
-      {
-        tag: `div.${EMBED_FILES_CLASSES.WRAPPER}`,
+        getAttrs: (element) => {
+          const text = element.textContent?.trim() || '';
+          const attachmentPattern = /\{\{\s*attachment\('([^']+)'\)\s*\}\}/g;
+          const files: EmbedFileItem[] = [];
+          let match: RegExpExecArray | null;
+          while ((match = attachmentPattern.exec(text)) !== null) {
+            files.push({ attachmentName: match[1], displayName: match[1] });
+          }
+          if (files.length === 0) return false;
+          return { files };
+        },
       },
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
-    const { files } = node.attrs;
+  renderHTML({ node }) {
+    const { files } = node.attrs as { files: EmbedFileItem[] };
 
     if (!files || files.length === 0) {
       return ['div', {}];
     }
 
-    const fileItems = files.map((file: EmbedFileItem) => {
-      const relativeUrl = getAttachmentRelativeUrl(file.name);
-      return [
-        'div',
-        {
-          class: EMBED_FILES_CLASSES.FILE_ITEM,
-        },
-        [
-          'a',
-          {
-            href: relativeUrl,
-            download: file.name,
-            class: EMBED_FILES_CLASSES.FILE_CONTENT,
-            title: file.name,
-          },
-          [
-            'span',
-            {
-              class: EMBED_FILES_CLASSES.FILE_ICON,
-            },
-            '📄',
-          ],
-          [
-            'span',
-            {
-              class: EMBED_FILES_CLASSES.FILE_LINK,
-            },
-            file.name,
-          ],
-        ],
-      ];
-    });
+    const jinjaContent = files.map((f) => formatJinjaSyntax(f.attachmentName)).join('\n');
 
-    return [
-      'div',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true',
-        [EMBED_FILES_ATTRIBUTES.FILES]: JSON.stringify(files),
-      }),
-      [
-        'div',
-        {
-          class: EMBED_FILES_CLASSES.FILES_CONTAINER,
-        },
-        ...fileItems,
-      ],
-    ];
+    return ['div', { [EMBED_FILES_ATTRIBUTES.CONTAINER]: 'true' }, jinjaContent];
   },
 
   addNodeView() {
@@ -169,19 +82,10 @@ export const EmbedFiles = Node.create({
             return false;
           }
 
-          const limitedFiles = options.files.slice(0, MAX_FILES_COUNT);
-
           return commands.insertContent({
             type: this.name,
-            attrs: {
-              files: limitedFiles,
-            },
+            attrs: { files: options.files.slice(0, MAX_FILES_COUNT) },
           });
-        },
-      updateEmbedFiles:
-        (options: Partial<EmbedFilesOptions>): Command =>
-        ({ commands }) => {
-          return commands.updateAttributes(this.name, options);
         },
     };
   },

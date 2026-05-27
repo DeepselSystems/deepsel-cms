@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import useModel from '../../../common/api/useModel.jsx';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 import ShowHeaderBackButtonState from '../../../common/stores/ShowHeaderBackButtonState.js';
 import HideHeaderItemsState from '../../../common/stores/HideHeaderItemsState.js';
@@ -19,7 +18,6 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import RichTextInput from '../../../common/ui/RichTextInput.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
-import { getAttachmentUrl } from '../../../common/utils/index.js';
 import DateTimePickerInput from '../../../common/ui/DateTimePickerInput.jsx';
 import useMultiLangContent from '../../../common/hooks/useMultiLangContent.js';
 import SeoMetadataForm from '../../../common/ui/SeoMetadata/SeoMetadataForm.jsx';
@@ -50,6 +48,7 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 
 const BLOG_POST_DRAFT_FIELDS = [
   'title',
@@ -89,7 +88,6 @@ export default function BlogPostEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { notify } = NotificationState((state) => state);
-  const { backendHost } = BackendHostURLState((state) => state);
   const siteSettings = SitePublicSettingsState((state) => state.settings);
   const { setShowBackButton } = ShowHeaderBackButtonState();
   const { setHideNotifications, setHideSiteSelector, setHideGoToSite } = HideHeaderItemsState();
@@ -673,7 +671,10 @@ export default function BlogPostEdit() {
                     {content.featured_image ? (
                       <div className="w-full my-4 relative group cursor-pointer">
                         <img
-                          src={getAttachmentUrl(backendHost, content.featured_image.name)}
+                          src={getAttachmentByNameRelativeUrl(
+                            content.featured_image.name,
+                            activeContent?.locale.iso_code,
+                          )}
                           alt={content.title || 'Featured image'}
                           className="w-full h-auto object-cover rounded-md max-h-[400px]"
                         />
@@ -725,6 +726,7 @@ export default function BlogPostEdit() {
                         key={`editor-${content.id}-${editorKey}`}
                         variant="subtle"
                         content={content.content || ''}
+                        locale={content.locale}
                         onChange={(value) => {
                           updateContentField(content.id, 'content', value);
                         }}

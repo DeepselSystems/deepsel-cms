@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Group, Modal, Text, TextInput } from '@mantine/core';
 import { IconArrowDown, IconArrowUp, IconEdit, IconPhoto, IconTrash } from '@tabler/icons-react';
-import { Button } from '../../../ui/Button';
-import { Checkbox } from '../../../ui/Checkbox';
-import { getAttachmentUrl } from '@deepsel/cms-utils';
-import { EnhancedImageSelector } from '../../../ui/EnhancedImageSelector';
+import { Button } from '../../../ui';
+import { Checkbox } from '../../../ui';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
+import { EnhancedImageSelector } from '../../../ui';
 import type { User } from '../../../types';
 
 /**
@@ -73,6 +73,9 @@ export interface GalleryModalProps {
    * Typically sourced from UserState.
    */
   setUser: (user: User | null) => void;
+
+  /** ISO code of the active editor localeISOCode (e.g. "en", "fr"). Passed to getAttachmentByNameRelativeUrl. */
+  localeISOCode?: string;
 }
 
 /**
@@ -101,6 +104,7 @@ export function GalleryModal({
   backendHost,
   user,
   setUser,
+  localeISOCode,
 }: GalleryModalProps) {
   const { t } = useTranslation();
 
@@ -182,6 +186,7 @@ export function GalleryModal({
           </div>
         }
         size="100%"
+        zIndex={11000}
       >
         <div className="pt-2">
           <div className="flex flex-col md:flex-row gap-4">
@@ -274,7 +279,7 @@ export function GalleryModal({
                         {/* Image container with hover effects */}
                         <div className="relative group">
                           <img
-                            src={getAttachmentUrl(backendHost, attachment.name)}
+                            src={getAttachmentByNameRelativeUrl(attachment.name, localeISOCode)}
                             alt={attachment.alt_text || ''}
                             className="group-hover:blur-xs transition-all duration-200"
                             style={{
@@ -366,6 +371,7 @@ export function GalleryModal({
         opened={!!editingCaption}
         onClose={() => setEditingCaption(null)}
         title={t('Edit Caption')}
+        zIndex={11000}
       >
         <TextInput
           value={newCaption}

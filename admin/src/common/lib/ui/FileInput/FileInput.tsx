@@ -112,7 +112,7 @@ export function FileInput({
    * Handle file selection from the attachment modal
    */
   function handleFileChange(file: FileInputValue) {
-    setAttachUrl(file?.name);
+    setAttachUrl(file?.name ?? '');
     if (onChange) {
       onChange({
         ...file,

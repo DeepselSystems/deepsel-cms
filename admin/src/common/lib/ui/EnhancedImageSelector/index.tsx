@@ -29,6 +29,10 @@ export interface EnhancedImageSelectorProps {
    * (e.g. `NotificationState.getState().notify`).
    */
   notify?: NotifyFn;
+  /** Active editor locale ID — forwarded to dropzone uploads in InternalImages */
+  currentLocaleId?: number | null;
+  /** Called after a successful dropzone upload to close the parent modal */
+  onClose?: () => void;
 }
 
 /**
@@ -44,6 +48,8 @@ export function EnhancedImageSelector({
   setUser,
   organizationId,
   notify,
+  currentLocaleId,
+  onClose,
 }: EnhancedImageSelectorProps) {
   const { t } = useTranslation();
 
@@ -59,7 +65,7 @@ export function EnhancedImageSelector({
       autoFetch: false,
       filters: [
         {
-          field: 'content_type',
+          field: 'locale_versions.content_type',
           operator: 'like',
           value: 'image%',
         },
@@ -130,6 +136,8 @@ export function EnhancedImageSelector({
             setUser={setUser}
             organizationId={organizationId}
             notify={notify}
+            currentLocaleId={currentLocaleId}
+            onClose={onClose}
           />
         </Tabs.Panel>
 
@@ -177,8 +185,9 @@ export function EnhancedImageSelectorModal({
         closeOnClickOutside={false}
         onClose={() => setOpened(false)}
         title={t('Select image')}
+        zIndex={11000}
       >
-        <EnhancedImageSelector {...props} />
+        <EnhancedImageSelector {...props} onClose={() => setOpened(false)} />
       </Modal>
     </>
   );

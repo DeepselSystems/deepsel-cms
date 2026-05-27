@@ -7,6 +7,7 @@ from ..types.blog import AuthorData, LanguageAlternative
 from ..types.public_settings import PublicSettings
 from apps.core.utils.models_pool import models_pool
 from .domain_detection import detect_domain_from_request
+from .render_wysiwyg_content import render_wysiwyg_content
 from fastapi import Request
 import logging
 
@@ -162,11 +163,19 @@ def get_blog_post(
         and content.locale.iso_code != matching_content.locale.iso_code
     ]
 
+    # Render Jinja2 syntax in content (e.g. {{ attachment(...) }}, {{ gallery(...) }})
+    rendered_content = render_wysiwyg_content(
+        matching_content,
+        org_settings.id,
+        db,
+        default_lang_id=org_settings.default_language_id,
+    )
+
     # Return blog post data
     return BlogPostResponse(
         id=blog_post.id,
         title=matching_content.title,
-        content=matching_content.content,
+        content=rendered_content or matching_content.content,
         lang=target_lang,
         public_settings=settings,
         seo_metadata=seo_metadata,
