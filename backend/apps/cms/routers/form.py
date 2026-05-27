@@ -31,7 +31,6 @@ router = CRUDRouter(
     create_schema=CRUDSchemas.Create,
     update_schema=CRUDSchemas.Update,
     table_name=table_name,
-    dependencies=[Depends(get_current_user)],
     bulk_delete_route=True,
     export_route=False,
     import_route=False,
@@ -179,10 +178,8 @@ def get_form_statistics_by_slug(
     db: Session = Depends(get_db),
     user: Optional[UserModel] = Depends(get_current_user_optional),
 ):
-    # Get form content data
     form_content = _get_form_content_by_slug(lang, slug, db, user)
 
-    # Check view permission — unauthenticated users can only view public statistics
     if not form_content.get("enable_public_statistics"):
         if user is None:
             raise HTTPException(
@@ -191,15 +188,8 @@ def get_form_statistics_by_slug(
             )
         user_roles = user.get_user_roles()
         has_permission = any(
-            [
-                role.string_id
-                in [
-                    "admin_role",
-                    "super_admin_role",
-                    "website_admin_role",
-                ]
-                for role in user_roles
-            ]
+            role.string_id in ["admin_role", "super_admin_role", "website_admin_role"]
+            for role in user_roles
         )
         if not has_permission:
             raise HTTPException(
@@ -207,7 +197,6 @@ def get_form_statistics_by_slug(
                 detail="Form statistics is not published",
             )
 
-    # Get form submissions
     FormSubmissionModel = models_pool["form_submission"]
     form_submissions = (
         db.query(FormSubmissionModel)
@@ -215,20 +204,20 @@ def get_form_statistics_by_slug(
         .all()
     )
 
-    # Return
     return {**form_content, "submissions": form_submissions}
 
 
-def _get_form_content_by_slug(lang: str, slug: str, db: Session, user: UserModel):
+def _get_form_content_by_slug(
+    lang: str, slug: str, db: Session, user: Optional[UserModel]
+):
     """
-    Get a form by slug and language for public rendering.
-    Used for rendering forms at: {site domain}/{lang}/forms/{form slug}/{...}
+    Fetch form content by language and slug for public rendering.
+    Normalises the slug to always have a leading '/'.
     """
     FormContentModel = models_pool["form_content"]
     LocaleModel = models_pool["locale"]
 
     try:
-        # Get locale by language code
         locale = db.query(LocaleModel).filter(LocaleModel.iso_code == lang).first()
         if not locale:
             raise HTTPException(
@@ -236,12 +225,12 @@ def _get_form_content_by_slug(lang: str, slug: str, db: Session, user: UserModel
                 detail=f"Language '{lang}' is not supported",
             )
 
-        # Find form content by slug and locale
-        slug = "/" + slug.lstrip("/")
+        normalized_slug = "/" + slug.lstrip("/")
         form_content = (
             db.query(FormContentModel)
             .filter(
-                FormContentModel.slug == slug, FormContentModel.locale_id == locale.id
+                FormContentModel.slug == normalized_slug,
+                FormContentModel.locale_id == locale.id,
             )
             .first()
         )
@@ -249,16 +238,15 @@ def _get_form_content_by_slug(lang: str, slug: str, db: Session, user: UserModel
         if not form_content:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Form with slug '{slug}' not found in language '{lang}'",
+                detail=f"Form with slug '{normalized_slug}' not found in language '{lang}'",
             )
 
-        # Check if the parent form is published
         if not form_content.form.published:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Form is not published"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Form is not published",
             )
 
-        # Return form content with fields
         return {
             "id": form_content.id,
             "form_id": form_content.form_id,
@@ -297,12 +285,9 @@ def _get_form_content_by_slug(lang: str, slug: str, db: Session, user: UserModel
             ],
         }
     except HTTPException:
-        # Re-raise HTTPException to preserve intentional HTTP status codes (404, etc.)
         raise
     except Exception as e:
-        logger.error(
-            f"Error fetching form by slug {slug} for language {lang}: {str(e)}"
-        )
+        logger.error(f"Error fetching form slug='{slug}' lang='{lang}': {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error",
