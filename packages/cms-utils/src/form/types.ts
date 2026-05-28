@@ -63,6 +63,25 @@ export interface FormSubmissionFieldValue {
   value: unknown;
 }
 
+/** A single form submission record returned by the statistics endpoint */
+export interface FormSubmission {
+  id: number;
+  form_id: number;
+  form_content_id: number;
+  /** Map of field_id (as string key) → submission value object */
+  submission_data: Record<string, FormSubmissionFieldValue>;
+  submitter_user_id?: number | null;
+  submitter_ip?: string | null;
+  submitter_user_agent?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Response shape of GET /form/website/{lang}/{slug}/statistics */
+export interface FormStatisticsData extends FormData {
+  submissions: FormSubmission[];
+}
+
 /** The full response shape of GET /form/website/{lang}/{slug} */
 export interface FormData {
   /** form_content.id */

@@ -23,6 +23,9 @@ export function getPathType(path: string): { pathType: WebsiteDataType; paginati
   }
 
   if (path.startsWith('forms/') || path === 'forms') {
+    if (path.endsWith('/statistics')) {
+      return { pathType: WebsiteDataTypes.FormStatistics };
+    }
     return { pathType: WebsiteDataTypes.Form };
   }
 

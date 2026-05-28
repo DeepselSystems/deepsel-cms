@@ -67,6 +67,7 @@
     "vitest": "^4.0.8"
   },
   "peerDependencies": {
+    "@mantine/charts": ">=8.0.0",
     "@mantine/core": ">=8.0.0",
     "@mantine/dates": ">=8.0.0",
     "@mantine/dropzone": ">=8.0.0",
@@ -78,6 +79,7 @@
     "react-i18next": ">=13.0.0"
   },
   "peerDependenciesMeta": {
+    "@mantine/charts": { "optional": true },
     "@mantine/core": { "optional": true },
     "@mantine/dates": { "optional": true },
     "@mantine/dropzone": { "optional": true },

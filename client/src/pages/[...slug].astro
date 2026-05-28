@@ -8,12 +8,14 @@ import {
   fetchBlogPost,
   fetchSearchResults,
   fetchFormData,
+  fetchFormStatistics,
   WebsiteDataTypes,
   type PageData,
   type BlogListData,
   type BlogPostData,
   type SearchResultsData,
   type FormData,
+  type FormStatisticsData,
 } from '@deepsel/cms-utils';
 import {
   getHomeThemeComponent,
@@ -25,6 +27,7 @@ import {
   getBlogPostThemeComponent,
   getSearchThemeComponent,
   getFormThemeComponent,
+  getFormStatisticsThemeComponent,
   getNotFoundFallbackComponent,
   resolveThemeName,
 } from '../utils/getThemeComponent';
@@ -39,6 +42,7 @@ let blogListData: BlogListData | null = null;
 let blogPostData: BlogPostData | null = null;
 let searchData: SearchResultsData | null = null;
 let formData: FormData | null = null;
+let formStatisticsData: FormStatisticsData | null = null;
 
 if (pathType === WebsiteDataTypes.Home) {
   pageData = await fetchPageData({ path, lang, astroRequest: Astro.request, backendHost });
@@ -65,6 +69,9 @@ if (pathType === WebsiteDataTypes.Home) {
   const q = url.searchParams.get('q') || '';
   searchData = await fetchSearchResults({ lang, q, astroRequest: Astro.request, backendHost });
   ThemeComponent = getSearchThemeComponent(searchData, lang);
+} else if (pathType === WebsiteDataTypes.FormStatistics) {
+  formStatisticsData = await fetchFormStatistics({ path, lang, astroRequest: Astro.request, backendHost });
+  ThemeComponent = getFormStatisticsThemeComponent(formStatisticsData, lang);
 } else if (pathType === WebsiteDataTypes.Form) {
   formData = await fetchFormData({ path, lang, astroRequest: Astro.request, backendHost });
   ThemeComponent = getFormThemeComponent(formData, lang);
@@ -75,7 +82,7 @@ if (pathType === WebsiteDataTypes.Home) {
 
 // If theme component couldn't be resolved, fall back to theme's 404 page
 if (!ThemeComponent) {
-  const anyData = pageData || blogListData || blogPostData || searchData || formData;
+  const anyData = pageData || blogListData || blogPostData || searchData || formData || formStatisticsData;
   ThemeComponent = getNotFoundFallbackComponent(anyData, lang);
   if (!ThemeComponent) {
     return new Response('Not Found', { status: 404 });
@@ -91,4 +98,4 @@ if (!ThemeComponent) {
 }
 ---
 
-<ThemeComponent data={pageData || blogListData || blogPostData || searchData || formData} />
+<ThemeComponent data={pageData || blogListData || blogPostData || searchData || formData || formStatisticsData} />

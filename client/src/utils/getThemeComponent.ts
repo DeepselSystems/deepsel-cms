@@ -6,6 +6,7 @@ import type {
   SearchResultsData,
   SiteSettings,
   FormData,
+  FormStatisticsData,
 } from '@deepsel/cms-utils';
 
 const systemKeys = new Set(Object.values(themeSystemKeys));
@@ -191,6 +192,23 @@ export function getNotFoundFallbackComponent(
   return (
     (langPrefix && themeMap[selectedTheme]?.[`${langPrefix}${themeSystemKeys.NotFound}`]) ||
     themeMap[selectedTheme]?.[themeSystemKeys.NotFound] ||
+    null
+  );
+}
+
+/**
+ * Resolves the FormStatistics Astro component for the active theme.
+ */
+export function getFormStatisticsThemeComponent(data: FormStatisticsData, lang?: string): any {
+  const { selectedTheme, defaultLangIsoCode } = getSelectedThemeSettings(
+    data as unknown as PageData,
+  );
+  const isNonDefaultLang = lang && defaultLangIsoCode && lang !== defaultLangIsoCode;
+  const langPrefix = isNonDefaultLang ? `${lang}:` : '';
+
+  return (
+    (langPrefix && themeMap[selectedTheme]?.[`${langPrefix}${themeSystemKeys.FormStatistics}`]) ||
+    themeMap[selectedTheme]?.[themeSystemKeys.FormStatistics] ||
     null
   );
 }

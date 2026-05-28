@@ -4,3 +4,6 @@ export * from './CustomCodeRenderer.js';
 export * from './FieldTypeRenderer.js';
 export * from './RenderedForm.js';
 export * from './SubmittedFormViewer.js';
+export * from './OptionsControlStatistics.js';
+export * from './NumberControlStatistics.js';
+export * from './FormFieldsStatistics.js';
