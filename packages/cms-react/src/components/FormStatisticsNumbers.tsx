@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react';
+import clsx from 'clsx';
 import { Box, Paper, Text, Grid, Tooltip, ActionIcon } from '@mantine/core';
 import { CompositeChart, ChartTooltip } from '@mantine/charts';
 import { useTranslation } from 'react-i18next';
@@ -52,10 +53,33 @@ const StatisticItem = memo(({ label, value, description }: StatisticItemProps) =
 ));
 StatisticItem.displayName = 'StatisticItem';
 
+/** CSS slot names for FormStatisticsNumbers */
+export interface FormStatisticsNumbersClassNames {
+  /** Root Paper wrapper */
+  root?: string;
+  /** Wrapper around label and description */
+  header?: string;
+  /** Field label text */
+  label?: string;
+  /** Field description text */
+  description?: string;
+  /** Wrapper around statistical summary title and grid */
+  statsSection?: string;
+  /** Statistical summary section title */
+  statsSectionTitle?: string;
+  /** Grid containing the stat cards */
+  statsGrid?: string;
+  /** Wrapper around chart title and CompositeChart */
+  chart?: string;
+  /** Chart section title */
+  chartTitle?: string;
+}
+
 interface FormStatisticsNumbersProps {
   formField: FormField;
   formSubmissions: FormSubmission[];
   className?: string;
+  classNames?: FormStatisticsNumbersClassNames;
 }
 
 /**
@@ -65,6 +89,7 @@ export function FormStatisticsNumbers({
   formField,
   formSubmissions,
   className,
+  classNames,
 }: FormStatisticsNumbersProps) {
   const { t } = useTranslation();
   const { fieldSubmissions } = useSubmissionStatisticsData(formField, formSubmissions);
@@ -216,23 +241,23 @@ export function FormStatisticsNumbers({
   );
 
   return (
-    <Paper className={`p-4 bg-gray-50 rounded-lg border space-y-4 ${className ?? ''}`}>
-      <Box>
-        <Text component="h2" size="xl" fw={700} className="text-black break-words">
+    <Paper className={clsx('FormStatisticsNumbers-root', 'p-4 bg-gray-50 rounded-lg border space-y-4', className, classNames?.root)}>
+      <Box className={clsx('FormStatisticsNumbers-header', classNames?.header)}>
+        <Text component="h2" size="xl" fw={700} className={clsx('FormStatisticsNumbers-label', 'text-black break-words', classNames?.label)}>
           {formField.label}
         </Text>
         {formField.description && (
-          <Text size="sm" c="dimmed">
+          <Text size="sm" c="dimmed" className={clsx('FormStatisticsNumbers-description', classNames?.description)}>
             {formField.description}
           </Text>
         )}
       </Box>
 
-      <Box>
-        <Box component="h3" className="font-bold mb-3">
+      <Box className={clsx('FormStatisticsNumbers-statsSection', classNames?.statsSection)}>
+        <Box component="h3" className={clsx('FormStatisticsNumbers-statsSectionTitle', 'font-bold mb-3', classNames?.statsSectionTitle)}>
           {t('Statistical Summary')}
         </Box>
-        <Grid gutter="md">
+        <Grid gutter="md" className={clsx('FormStatisticsNumbers-statsGrid', classNames?.statsGrid)}>
           {statsItems.map((item, i) => (
             <Grid.Col key={i} span={4}>
               <StatisticItem label={item.label} value={item.value} description={item.description} />
@@ -241,8 +266,8 @@ export function FormStatisticsNumbers({
         </Grid>
       </Box>
 
-      <Box>
-        <Box component="h3" className="font-bold mb-2 text-center my-3">
+      <Box className={clsx('FormStatisticsNumbers-chart', classNames?.chart)}>
+        <Box component="h3" className={clsx('FormStatisticsNumbers-chartTitle', 'font-bold mb-2 text-center my-3', classNames?.chartTitle)}>
           {t('Response Count Chart')}
         </Box>
         <CompositeChart

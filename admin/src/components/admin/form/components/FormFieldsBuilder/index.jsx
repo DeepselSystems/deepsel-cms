@@ -1,10 +1,10 @@
-import {useCallback} from 'react';
-import {Box, Group, Text, Stack, Center} from '@mantine/core';
-import {DragDropContext, Droppable, Draggable} from '@hello-pangea/dnd';
-import {useTranslation} from 'react-i18next';
+import { useCallback } from 'react';
+import { Box, Group, Text, Stack, Center } from '@mantine/core';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useTranslation } from 'react-i18next';
 import FieldEditor from './FieldEditor.jsx';
 import AddFieldButton from './AddFieldButton.jsx';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import H3 from '../../../../../common/ui/H3.jsx';
 
 /**
@@ -22,12 +22,8 @@ import H3 from '../../../../../common/ui/H3.jsx';
  * @param {(value: Array<FormField>) => void} setFields - Function to update fields
  * @returns {JSX.Element}
  */
-const FormFieldsBuilder = ({
-  fields = [],
-  fieldErrors = {},
-  setFields = () => {},
-}) => {
-  const {t} = useTranslation();
+const FormFieldsBuilder = ({ fields = [], fieldErrors = {}, setFields = () => {} }) => {
+  const { t } = useTranslation();
 
   /**
    * Creates a new field with default values
@@ -47,7 +43,7 @@ const FormFieldsBuilder = ({
         field_config: {},
       };
     },
-    [fields.length]
+    [fields.length],
   );
 
   /**
@@ -59,7 +55,7 @@ const FormFieldsBuilder = ({
       const newField = createNewField(fieldType);
       setFields([...fields, newField]);
     },
-    [createNewField, fields, setFields]
+    [createNewField, fields, setFields],
   );
 
   /**
@@ -73,7 +69,7 @@ const FormFieldsBuilder = ({
       newFields[index] = updatedField;
       setFields(newFields);
     },
-    [fields, setFields]
+    [fields, setFields],
   );
 
   /**
@@ -87,10 +83,10 @@ const FormFieldsBuilder = ({
         newFields.map((field, i) => ({
           ...field,
           sort_order: i,
-        }))
+        })),
       );
     },
-    [fields, setFields]
+    [fields, setFields],
   );
 
   /**
@@ -109,7 +105,7 @@ const FormFieldsBuilder = ({
       };
       setFields([...fields, duplicatedField]);
     },
-    [fields, setFields]
+    [fields, setFields],
   );
 
   /**
@@ -120,7 +116,7 @@ const FormFieldsBuilder = ({
     (result) => {
       if (!result.destination) return;
 
-      const {source, destination} = result;
+      const { source, destination } = result;
       if (source.index === destination.index) return;
 
       const newFields = Array.from(fields);
@@ -132,10 +128,10 @@ const FormFieldsBuilder = ({
         newFields.map((field, index) => ({
           ...field,
           sort_order: index,
-        }))
+        })),
       );
     },
-    [fields, setFields]
+    [fields, setFields],
   );
 
   return (
@@ -145,9 +141,7 @@ const FormFieldsBuilder = ({
         <Box>
           <H3>{t('Form Fields')}</H3>
           <Text size="sm" c="dimmed">
-            {t(
-              'Create and manage form fields with drag and drop functionality'
-            )}
+            {t('Create and manage form fields with drag and drop functionality')}
           </Text>
         </Box>
       </Group>
@@ -158,9 +152,7 @@ const FormFieldsBuilder = ({
         {fields.length === 0 ? (
           <Center>
             <Stack align="center" gap="md">
-              <Box className="text-center text-gray-pale-sky">
-                {t('No fields yet')}
-              </Box>
+              <Box className="text-center text-gray-pale-sky">{t('No fields yet')}</Box>
             </Stack>
           </Center>
         ) : (
@@ -193,7 +185,7 @@ const FormFieldsBuilder = ({
                               index={index}
                               onUpdate={(idx, updatedField) => {
                                 // Remove _errors from the field when updating
-                                const {...cleanField} = updatedField;
+                                const { ...cleanField } = updatedField;
                                 updateField(idx, cleanField);
                               }}
                               onDelete={deleteField}

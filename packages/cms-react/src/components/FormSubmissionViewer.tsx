@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Badge, Box, Group, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
 import { IconInfoCircle } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import {
@@ -18,6 +19,26 @@ interface SubmissionFieldSnapshot extends Record<string, unknown> {
   _isDeleted: boolean;
 }
 
+/** CSS slot names for FormSubmissionViewer */
+export interface FormSubmissionViewerClassNames {
+  /** Root wrapper */
+  root?: string;
+  /** Wrapper around title + description */
+  titleSection?: string;
+  /** Form title text */
+  title?: string;
+  /** Form description text */
+  description?: string;
+  /** Wrapper around the list of field responses */
+  fieldList?: string;
+  /** Wrapper around each individual field response */
+  fieldItem?: string;
+  /** Field label text */
+  fieldLabel?: string;
+  /** Closing remarks text */
+  closingRemarks?: string;
+}
+
 export interface FormSubmissionViewerProps {
   formContent: FormData;
   submissionData: Record<number, FormSubmissionFieldValue>;
@@ -28,6 +49,8 @@ export interface FormSubmissionViewerProps {
    * When omitted a simple name + metadata row is shown.
    */
   renderFile?: (file: UploadedFileRecord, index: number) => React.ReactNode;
+  className?: string;
+  classNames?: FormSubmissionViewerClassNames;
 }
 
 /**
@@ -39,6 +62,8 @@ export function FormSubmissionViewer({
   submissionData,
   showTitle = true,
   renderFile,
+  className,
+  classNames,
 }: FormSubmissionViewerProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -61,26 +86,26 @@ export function FormSubmissionViewer({
   }
 
   return (
-    <Box className="container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4">
+    <Box className={clsx('FormSubmissionViewer-root', 'container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4', className, classNames?.root)}>
       {showTitle && (
-        <Box className="space-y-3">
-          <Text size="xl" fw={700} className="text-black break-words text-center">
+        <Box className={clsx('FormSubmissionViewer-titleSection', 'space-y-3', classNames?.titleSection)}>
+          <Text size="xl" fw={700} className={clsx('FormSubmissionViewer-title', 'text-black break-words text-center', classNames?.title)}>
             {formContent.title}
           </Text>
           {formContent.description && (
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="dimmed" className={clsx('FormSubmissionViewer-description', classNames?.description)}>
               {formContent.description}
             </Text>
           )}
         </Box>
       )}
 
-      <Box className="space-y-3">
+      <Box className={clsx('FormSubmissionViewer-fieldList', 'space-y-3', classNames?.fieldList)}>
         {submissionFields.map((field, index) => (
-          <Box key={index} className="p-4 bg-gray-50 rounded-lg border">
+          <Box key={index} className={clsx('FormSubmissionViewer-fieldItem', 'p-4 bg-gray-50 rounded-lg border', classNames?.fieldItem)}>
             <Stack gap="xs">
               <Group gap="xs">
-                <Text size="sm" fw={600}>
+                <Text size="sm" fw={600} className={clsx('FormSubmissionViewer-fieldLabel', classNames?.fieldLabel)}>
                   {typeof field.label === 'string' ? field.label : ''}
                   {Boolean(field.required) && (
                     <Text component="span" c="red">
@@ -115,7 +140,7 @@ export function FormSubmissionViewer({
       </Box>
 
       {formContent.closing_remarks && (
-        <Text size="sm" c="dimmed">
+        <Text size="sm" c="dimmed" className={clsx('FormSubmissionViewer-closingRemarks', classNames?.closingRemarks)}>
           {formContent.closing_remarks}
         </Text>
       )}

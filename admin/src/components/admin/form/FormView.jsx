@@ -1,8 +1,8 @@
 import React from 'react';
-import {Tabs, Box, CopyButton} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams, Link} from 'react-router-dom';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { Tabs, Box, CopyButton } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStickyNote,
   faExternalLinkAlt,
@@ -26,14 +26,14 @@ import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
  * @returns {JSX.Element}
  */
 const FormView = () => {
-  const {id} = useParams();
-  const {organizationId} = OrganizationIdState();
-  const {t} = useTranslation();
+  const { id } = useParams();
+  const { organizationId } = OrganizationIdState();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
 
   // Form query hooks
-  const {get: getForm, put: updateForm} = useFetch(`form/${id}`, {
+  const { get: getForm, put: updateForm } = useFetch(`form/${id}`, {
     autoFetch: false,
   });
 
@@ -43,19 +43,16 @@ const FormView = () => {
   const [form, setForm] = React.useState(/**@type {Form | null}*/ null);
 
   // Selected locale ID for tabs
-  const [selectedLocaleId, setSelectedLocaleId] = React.useState(
-    /**@type {string|null}*/ null
-  );
+  const [selectedLocaleId, setSelectedLocaleId] = React.useState(/**@type {string|null}*/ null);
 
   // Form content map with localeId
   const [formContentsMap, setFormContentMap] = React.useState(
-    /**@type {Record<number, FormContent>}*/ {}
+    /**@type {Record<number, FormContent>}*/ {},
   );
 
   // Memoize the form URL to avoid recalculation
   const formUrl = React.useMemo(() => {
-    if (!selectedLocaleId || !formContentsMap[selectedLocaleId]?.slug)
-      return '';
+    if (!selectedLocaleId || !formContentsMap[selectedLocaleId]?.slug) return '';
     return `${window.origin}/${formContentsMap[selectedLocaleId].locale.iso_code}/forms${formContentsMap[selectedLocaleId].slug}`;
   }, [selectedLocaleId, formContentsMap]);
 
@@ -84,8 +81,7 @@ const FormView = () => {
 
   // Memoize the statistics URL
   const statisticsUrl = React.useMemo(() => {
-    if (!selectedLocaleId || !formContentsMap[selectedLocaleId]?.slug)
-      return '';
+    if (!selectedLocaleId || !formContentsMap[selectedLocaleId]?.slug) return '';
     return `${formUrl}/statistics`;
   }, [formUrl, selectedLocaleId, formContentsMap]);
 
@@ -107,11 +103,7 @@ const FormView = () => {
 
         setForm(updatedForm);
         notify({
-          message: t(
-            published
-              ? 'Form published successfully!'
-              : 'Form unpublished successfully!'
-          ),
+          message: t(published ? 'Form published successfully!' : 'Form unpublished successfully!'),
           type: 'success',
         });
       } catch (error) {
@@ -123,7 +115,7 @@ const FormView = () => {
         setPublishLoading(false);
       }
     },
-    [form, formContentsMap, updateForm, notify, t]
+    [form, formContentsMap, updateForm, notify, t],
   );
 
   /**
@@ -143,7 +135,7 @@ const FormView = () => {
         .then((data) => {
           setForm(data);
           const contentsMap = fromPairs(
-            data?.contents?.map((content) => [content.locale_id, content]) || []
+            data?.contents?.map((content) => [content.locale_id, content]) || [],
           );
           setFormContentMap(contentsMap);
 
@@ -189,53 +181,51 @@ const FormView = () => {
         <>
           {/* Action Bar */}
           <Box className="flex justify-end items-center gap-6">
-            {form?.published &&
-              selectedLocaleId &&
-              formContentsMap[selectedLocaleId]?.slug && (
-                <Box className="flex gap-2">
-                  <CopyButton value={formUrl}>
-                    {({copied, copy}) => (
-                      <Button
-                        disabled={!formContentsMap[selectedLocaleId]}
-                        variant="light"
-                        onClick={copy}
-                        leftSection={<FontAwesomeIcon icon={faCopy} />}
-                      >
-                        {copied ? t('Copied!') : t('Copy share link')}
-                      </Button>
-                    )}
-                  </CopyButton>
-                  <Button
-                    disabled={!formContentsMap[selectedLocaleId]}
-                    component={Link}
-                    to={formUrl}
-                    target="_blank"
-                    leftSection={<FontAwesomeIcon icon={faExternalLinkAlt} />}
-                    variant="light"
-                  >
-                    {t('Go to page')}
-                  </Button>
-                  <Button
-                    disabled={!formContentsMap[selectedLocaleId]}
-                    component={Link}
-                    to={statisticsUrl}
-                    target="_blank"
-                    leftSection={<FontAwesomeIcon icon={faChartBar} />}
-                    variant="light"
-                  >
-                    {t('View statistics')}
-                  </Button>
-                  <Button
-                    disabled={!formContentsMap[selectedLocaleId]}
-                    component={Link}
-                    to={submissionsUrl}
-                    leftSection={<FontAwesomeIcon icon={faNewspaper} />}
-                    variant="filled"
-                  >
-                    {t('View submissions')}
-                  </Button>
-                </Box>
-              )}
+            {form?.published && selectedLocaleId && formContentsMap[selectedLocaleId]?.slug && (
+              <Box className="flex gap-2">
+                <CopyButton value={formUrl}>
+                  {({ copied, copy }) => (
+                    <Button
+                      disabled={!formContentsMap[selectedLocaleId]}
+                      variant="light"
+                      onClick={copy}
+                      leftSection={<FontAwesomeIcon icon={faCopy} />}
+                    >
+                      {copied ? t('Copied!') : t('Copy share link')}
+                    </Button>
+                  )}
+                </CopyButton>
+                <Button
+                  disabled={!formContentsMap[selectedLocaleId]}
+                  component={Link}
+                  to={formUrl}
+                  target="_blank"
+                  leftSection={<FontAwesomeIcon icon={faExternalLinkAlt} />}
+                  variant="light"
+                >
+                  {t('Go to page')}
+                </Button>
+                <Button
+                  disabled={!formContentsMap[selectedLocaleId]}
+                  component={Link}
+                  to={statisticsUrl}
+                  target="_blank"
+                  leftSection={<FontAwesomeIcon icon={faChartBar} />}
+                  variant="light"
+                >
+                  {t('View statistics')}
+                </Button>
+                <Button
+                  disabled={!formContentsMap[selectedLocaleId]}
+                  component={Link}
+                  to={submissionsUrl}
+                  leftSection={<FontAwesomeIcon icon={faNewspaper} />}
+                  variant="filled"
+                >
+                  {t('View submissions')}
+                </Button>
+              </Box>
+            )}
             <Switch
               checked={!!form?.published}
               onLabel={t('Published')}
@@ -245,9 +235,7 @@ const FormView = () => {
               classNames={{
                 track: 'px-2',
               }}
-              onChange={({currentTarget: {checked}}) =>
-                handlePublishToggle(checked)
-              }
+              onChange={({ currentTarget: { checked } }) => handlePublishToggle(checked)}
             />
             <Button
               variant="filled"
@@ -272,9 +260,7 @@ const FormView = () => {
                 .map((localeId, index) => (
                   <Tabs.Tab key={index} value={String(localeId)}>
                     <Box className="flex gap-3">
-                      <span>
-                        {formContentsMap[localeId].locale?.emoji_flag}
-                      </span>
+                      <span>{formContentsMap[localeId].locale?.emoji_flag}</span>
                       <span>{formContentsMap[localeId].locale?.name}</span>
                     </Box>
                   </Tabs.Tab>
@@ -286,9 +272,7 @@ const FormView = () => {
               <Box className=" bg-gray-zumthor rounded-xl shadow p-20 h-full overflow-auto">
                 {Object.keys(formContentsMap).map((localeId, index) => (
                   <Tabs.Panel key={index} value={String(localeId)}>
-                    <FormFieldsPreview
-                      formContent={formContentsMap[localeId]}
-                    />
+                    <FormFieldsPreview formContent={formContentsMap[localeId]} />
                   </Tabs.Panel>
                 ))}
               </Box>
@@ -299,11 +283,7 @@ const FormView = () => {
         <Box className="text-gray-pale-sky h-full">
           <Box className="text-center space-y-4 my-20">
             <Box>
-              <FontAwesomeIcon
-                icon={faStickyNote}
-                size="2xl"
-                className="rotate-180"
-              />
+              <FontAwesomeIcon icon={faStickyNote} size="2xl" className="rotate-180" />
             </Box>
             <Box>{t('This form has no content in any language')}</Box>
           </Box>

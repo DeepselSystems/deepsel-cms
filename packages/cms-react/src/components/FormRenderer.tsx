@@ -20,6 +20,20 @@ interface InternalFieldData extends Partial<FormSubmissionFieldValue> {
 /** Shape received by the RenderedForm onSubmit callback */
 export type FormSubmitData = Record<number, Record<string, unknown>>;
 
+/** CSS slot names for FormRenderer */
+export interface FormRendererClassNames {
+  /** Root wrapper */
+  root?: string;
+  /** The form element containing all fields */
+  form?: string;
+  /** Wrapper around each individual field */
+  fieldItem?: string;
+  /** Wrapper around the submit button */
+  submitWrapper?: string;
+  /** The submit button itself */
+  submitButton?: string;
+}
+
 export interface FormRendererProps {
   formContent: FormData;
   onSubmit?: (data: FormSubmitData) => void;
@@ -32,8 +46,8 @@ export interface FormRendererProps {
   onDeleteAttachment?: (id: string | number) => Promise<void>;
   /** Max upload size in MB shown in file field hint (default: 5) */
   uploadSizeLimit?: number;
-  /** Additional class names applied to the root wrapper */
   className?: string;
+  classNames?: FormRendererClassNames;
 }
 
 /**
@@ -52,6 +66,7 @@ export const FormRenderer = ({
   onDeleteAttachment,
   uploadSizeLimit,
   className,
+  classNames,
 }: FormRendererProps) => {
   const { t } = useTranslation();
 
@@ -148,15 +163,15 @@ export const FormRenderer = ({
   }, [fields, initialFieldsData, setFormFieldsData]);
 
   return (
-    <Box className={clsx('space-y-3', className)}>
+    <Box className={clsx('FormRenderer-root', 'space-y-3', className, classNames?.root)}>
       <Box
         component="form"
-        className={clsx('space-y-3', {
+        className={clsx('FormRenderer-form', 'space-y-3', classNames?.form, {
           'pointer-events-none': submitted || reachedSubmissionLimit,
         })}
       >
         {fields.map((field, index) => (
-          <Box key={index}>
+          <Box key={index} className={clsx('FormRenderer-fieldItem', classNames?.fieldItem)}>
             <FormFieldTypeRenderer
               field={field}
               value={formFieldsData[field.id]?.value}
@@ -171,12 +186,13 @@ export const FormRenderer = ({
       </Box>
 
       {!submitted && (
-        <Box className="text-end">
+        <Box className={clsx('FormRenderer-submitWrapper', 'text-end', classNames?.submitWrapper)}>
           <Button
             fullWidth
             loading={loading}
             disabled={submitted || reachedSubmissionLimit}
             onClick={handleSubmit}
+            className={clsx('FormRenderer-submitButton', classNames?.submitButton)}
           >
             {t('Submit')}
           </Button>

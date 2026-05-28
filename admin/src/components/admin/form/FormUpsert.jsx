@@ -1,27 +1,21 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import fromPairs from 'lodash/fromPairs';
 import head from 'lodash/head';
 import clsx from 'clsx';
-import {Tabs, Menu, Tooltip} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { Tabs, Menu, Tooltip } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import FormFieldsBuilder from './components/FormFieldsBuilder/index.jsx';
-import {useElementSize} from '@mantine/hooks';
+import { useElementSize } from '@mantine/hooks';
 import FormFieldsPreview from './components/FormFieldsPreview/index.jsx';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faGear,
-  faPlus,
-  faSave,
-  faStickyNote,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
-import {Box} from '@mantine/core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear, faPlus, faSave, faStickyNote, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { Box } from '@mantine/core';
 import LanguageSelectorModal from './components/LanguageSelectorModal/index.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import Switch from '../../../common/ui/Switch.jsx';
 import useFetch from '../../../common/api/useFetch.js';
-import {useParams} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import useEffectOnce from '../../../common/hooks/useEffectOnce.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
@@ -35,19 +29,19 @@ import SettingDrawer from './components/SettingDrawer/index.jsx';
 import SitePublicSettingsState from '../../../common/stores/SitePublicSettingsState.js';
 
 const FormUpsert = () => {
-  const {id} = useParams();
-  const {t} = useTranslation();
+  const { id } = useParams();
+  const { t } = useTranslation();
   const backWithRedirect = useBackWithRedirect();
-  const {notify} = NotificationState((state) => state);
+  const { notify } = NotificationState((state) => state);
   const [loading, setLoading] = useState(false);
-  const {organizationId} = OrganizationIdState();
+  const { organizationId } = OrganizationIdState();
   const [settingDrawerOpened, setSettingDrawerOpened] = useState(false);
 
   // Get the default language ID from site settings
-  const {settings: siteSettings} = SitePublicSettingsState();
+  const { settings: siteSettings } = SitePublicSettingsState();
 
   // Locale query
-  const {post: getLocales} = useFetch('locale/search', {autoFetch: false});
+  const { post: getLocales } = useFetch('locale/search', { autoFetch: false });
   const [locales, setLocales] = useState(/**@type {Array<Locale>}*/ []);
 
   /** @type {Locale || null} */
@@ -57,7 +51,7 @@ const FormUpsert = () => {
       head(siteSettings.available_languages) ||
       head(locales) ||
       null,
-    [locales, siteSettings.available_languages, siteSettings.default_language]
+    [locales, siteSettings.available_languages, siteSettings.default_language],
   );
 
   // Init default form content
@@ -73,8 +67,8 @@ const FormUpsert = () => {
   });
 
   // Element sizes
-  const {ref: tabsListRef, ...tabsListSize} = useElementSize();
-  const {ref: actionBarRef, ...actionBarSize} = useElementSize();
+  const { ref: tabsListRef, ...tabsListSize } = useElementSize();
+  const { ref: actionBarRef, ...actionBarSize } = useElementSize();
 
   // Modals ref
   const languageSelectorModalRef = useRef({
@@ -90,19 +84,17 @@ const FormUpsert = () => {
       contents: [],
       published: true,
       form_custom_code: '',
-    }
+    },
   );
 
   // Selected localedId (as well as the select form content)
-  const [selectedLocaleId, setSelectedLocaledId] = useState(
-    /**@type {string|null}*/ null
-  );
+  const [selectedLocaleId, setSelectedLocaledId] = useState(/**@type {string|null}*/ null);
 
   // Form content map with localeId
   const [formContentsMap, setFormContentMap] = useState(
     /**@type {Record<number, FormContent>}*/ fromPairs(
-      form?.contents?.map((content) => [content.locale_id, content])
-    )
+      form?.contents?.map((content) => [content.locale_id, content]),
+    ),
   );
 
   /**
@@ -138,7 +130,7 @@ const FormUpsert = () => {
    */
   const handleDeleteFormContent = useCallback((localeId) => {
     setFormContentMap((prevState) => {
-      const newState = {...prevState};
+      const newState = { ...prevState };
       delete newState[localeId];
       return newState;
     });
@@ -164,7 +156,7 @@ const FormUpsert = () => {
         isValid = false;
       } else if (!/^\/?[a-z0-9-]+(?:\/[a-z0-9-]+)*$/.test(content.slug)) {
         errors.slug = t(
-          'Slug must start with a forward slash (/) and can only contain lowercase letters, numbers, and hyphens'
+          'Slug must start with a forward slash (/) and can only contain lowercase letters, numbers, and hyphens',
         );
         isValid = false;
       }
@@ -195,9 +187,9 @@ const FormUpsert = () => {
         }
       }
 
-      return {isValid, errors};
+      return { isValid, errors };
     },
-    [t]
+    [t],
   );
 
   /**
@@ -205,13 +197,13 @@ const FormUpsert = () => {
    */
   const handleSubmit = useCallback(() => {
     // Reset all errors first
-    const updatedFormContentsMap = {...formContentsMap};
+    const updatedFormContentsMap = { ...formContentsMap };
     let hasValidationErrors = false;
 
     // Validate each form content
     Object.keys(updatedFormContentsMap).forEach((localeId) => {
       const content = updatedFormContentsMap[localeId];
-      const {isValid, errors} = validateFormContent(content);
+      const { isValid, errors } = validateFormContent(content);
 
       if (!isValid) {
         hasValidationErrors = true;
@@ -221,7 +213,7 @@ const FormUpsert = () => {
         };
       } else if (content._errors) {
         // Remove errors if validation passes
-        const {...cleanContent} = content;
+        const { ...cleanContent } = content;
         updatedFormContentsMap[localeId] = cleanContent;
       }
     });
@@ -239,30 +231,24 @@ const FormUpsert = () => {
       ...form,
       contents: Object.values(updatedFormContentsMap).map((content) => ({
         ...content,
-        enable_submitter_email_notifications:
-          !!content.enable_submitter_email_notifications,
+        enable_submitter_email_notifications: !!content.enable_submitter_email_notifications,
         enable_edit_submission: !!content.enable_edit_submission,
-        enable_admin_email_notifications:
-          !!content.enable_admin_email_notifications,
+        enable_admin_email_notifications: !!content.enable_admin_email_notifications,
         max_submissions: ['', null, undefined].includes(content.max_submissions)
           ? null
           : Number(content.max_submissions),
         enable_public_statistics: !!content.enable_public_statistics,
       })),
-      ...(!id && {organization_id: organizationId}),
+      ...(!id && { organization_id: organizationId }),
     };
 
-    const submitFun = id
-      ? () => updateForm(payload)
-      : () => createForm(payload);
+    const submitFun = id ? () => updateForm(payload) : () => createForm(payload);
 
     setLoading(true);
     submitFun()
       .then(() => {
         notify({
-          message: t(
-            id ? 'Form updated successfully!' : 'Form created successfully!'
-          ),
+          message: t(id ? 'Form updated successfully!' : 'Form created successfully!'),
           type: 'success',
         });
         backWithRedirect();
@@ -270,9 +256,7 @@ const FormUpsert = () => {
       .catch((error) => {
         console.error('Form submission error:', error);
         notify({
-          message: t(
-            error.message || 'An error occurred while saving the form'
-          ),
+          message: t(error.message || 'An error occurred while saving the form'),
           type: 'error',
         });
       })
@@ -323,9 +307,7 @@ const FormUpsert = () => {
         .then((data) => {
           setForm(data);
           setFormContentMap(
-            fromPairs(
-              data?.contents?.map((content) => [content.locale_id, content])
-            )
+            fromPairs(data?.contents?.map((content) => [content.locale_id, content])),
           );
         })
         .finally(() => {
@@ -338,7 +320,7 @@ const FormUpsert = () => {
    * Use effect once to fetch all locales
    */
   useEffectOnce(() => {
-    getLocales().then(({data}) => {
+    getLocales().then(({ data }) => {
       setLocales(data);
     });
   });
@@ -373,12 +355,8 @@ const FormUpsert = () => {
                           <Menu.Target>
                             <Tabs.Tab value={String(localeId)}>
                               <Box className="flex gap-3">
-                                <span>
-                                  {formContentsMap[localeId].locale?.emoji_flag}
-                                </span>
-                                <span>
-                                  {formContentsMap[localeId].locale?.name}
-                                </span>
+                                <span>{formContentsMap[localeId].locale?.emoji_flag}</span>
+                                <span>{formContentsMap[localeId].locale?.name}</span>
                               </Box>
                             </Tabs.Tab>
                           </Menu.Target>
@@ -417,11 +395,7 @@ const FormUpsert = () => {
                 className="overflow-auto space-y-4"
               >
                 {Object.keys(formContentsMap).map((localeId, index) => (
-                  <Tabs.Panel
-                    key={index}
-                    value={String(localeId)}
-                    className="space-y-4"
-                  >
+                  <Tabs.Panel key={index} value={String(localeId)} className="space-y-4">
                     <TextInput
                       required
                       label={t('Form title')}
@@ -429,7 +403,7 @@ const FormUpsert = () => {
                       maxLength={255}
                       value={formContentsMap[localeId].title || ''}
                       error={formContentsMap[localeId]?._errors?.title}
-                      onChange={({target: {value}}) =>
+                      onChange={({ target: { value } }) =>
                         setFormContentMap((prevState) => ({
                           ...prevState,
                           [localeId]: {
@@ -459,9 +433,7 @@ const FormUpsert = () => {
                               fields: value.map((field, index) => ({
                                 ...field,
                                 // Clear field errors when field is updated
-                                _errors: prevState[localeId]?._errors?.fields?.[
-                                  index
-                                ]
+                                _errors: prevState[localeId]?._errors?.fields?.[index]
                                   ? undefined
                                   : field._errors,
                               })),
@@ -492,13 +464,10 @@ const FormUpsert = () => {
             <div
               className={clsx(
                 'col-span-6',
-                'min-h-[calc(100vh-var(--app-shell-header-height)-3rem)] '
+                'min-h-[calc(100vh-var(--app-shell-header-height)-3rem)] ',
               )}
             >
-              <div
-                ref={actionBarRef}
-                className="flex justify-end items-end gap-6 pb-6"
-              >
+              <div ref={actionBarRef} className="flex justify-end items-end gap-6 pb-6">
                 <Tooltip label={t('Settings')}>
                   <Button
                     size="sm"
@@ -519,7 +488,7 @@ const FormUpsert = () => {
                   classNames={{
                     track: 'px-2',
                   }}
-                  onChange={({currentTarget: {checked}}) =>
+                  onChange={({ currentTarget: { checked } }) =>
                     setForm((prevState) => ({
                       ...prevState,
                       published: checked,
@@ -545,11 +514,7 @@ const FormUpsert = () => {
                   <Box className="text-gray-pale-sky h-full">
                     <Box className="text-center space-y-4 my-20">
                       <Box>
-                        <FontAwesomeIcon
-                          icon={faStickyNote}
-                          size="2xl"
-                          className="rotate-180"
-                        />
+                        <FontAwesomeIcon icon={faStickyNote} size="2xl" className="rotate-180" />
                       </Box>
                       <Box>{t('Add at least one language to this form')}</Box>
                     </Box>
@@ -558,9 +523,7 @@ const FormUpsert = () => {
 
                 {Object.keys(formContentsMap).map((localeId, index) => (
                   <Tabs.Panel key={index} value={String(localeId)}>
-                    <FormFieldsPreview
-                      formContent={formContentsMap[localeId]}
-                    />
+                    <FormFieldsPreview formContent={formContentsMap[localeId]} />
                   </Tabs.Panel>
                 ))}
               </div>

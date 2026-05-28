@@ -1,12 +1,8 @@
-import {useCallback} from 'react';
-import {useTranslation} from 'react-i18next';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {
-  faExternalLinkAlt,
-  faCopy,
-  faChartBar,
-} from '@fortawesome/free-solid-svg-icons';
-import {CopyButton, ActionIcon, Tooltip, Menu} from '@mantine/core';
+import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExternalLinkAlt, faCopy, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { CopyButton, ActionIcon, Tooltip, Menu } from '@mantine/core';
 import NotificationState from '../../../../../common/stores/NotificationState.js';
 
 /**
@@ -16,9 +12,9 @@ import NotificationState from '../../../../../common/stores/NotificationState.js
  * @param {Form} props.form - The form object
  * @returns {JSX.Element}
  */
-const FormActionsCell = ({form}) => {
-  const {t} = useTranslation();
-  const {notify} = NotificationState((state) => state);
+const FormActionsCell = ({ form }) => {
+  const { t } = useTranslation();
+  const { notify } = NotificationState((state) => state);
 
   /**
    * Generate form URL for sharing with specific locale
@@ -29,9 +25,7 @@ const FormActionsCell = ({form}) => {
   const generateFormUrl = (form, localeId) => {
     if (!form?.published || !form?.contents?.length) return '';
 
-    const selectedContent = form.contents.find(
-      (content) => content.locale_id === localeId
-    );
+    const selectedContent = form.contents.find((content) => content.locale_id === localeId);
 
     if (!selectedContent?.slug || !selectedContent?.locale?.iso_code) return '';
 
@@ -47,9 +41,7 @@ const FormActionsCell = ({form}) => {
   const generateStatisticsUrl = (form, localeId) => {
     if (!form?.published || !form?.contents?.length) return '';
 
-    const selectedContent = form.contents.find(
-      (content) => content.locale_id === localeId
-    );
+    const selectedContent = form.contents.find((content) => content.locale_id === localeId);
 
     if (!selectedContent?.slug || !selectedContent?.locale?.iso_code) return '';
 
@@ -66,12 +58,12 @@ const FormActionsCell = ({form}) => {
       copyFn();
       notify({
         message: localeName
-          ? t('Form link copied for {{locale}}', {locale: localeName})
+          ? t('Form link copied for {{locale}}', { locale: localeName })
           : t('Form link copied successfully'),
         type: 'success',
       });
     },
-    [notify, t]
+    [notify, t],
   );
 
   const isPublished = form.published;
@@ -113,13 +105,9 @@ const FormActionsCell = ({form}) => {
           </Tooltip>
 
           <CopyButton value={generateFormUrl(form, contents[0].locale_id)}>
-            {({copied, copy}) => (
+            {({ copied, copy }) => (
               <Tooltip label={copied ? t('Copied') : t('Copy share link')}>
-                <ActionIcon
-                  onClick={() => handleCopy(copy)}
-                  variant="subtle"
-                  size="sm"
-                >
+                <ActionIcon onClick={() => handleCopy(copy)} variant="subtle" size="sm">
                   <FontAwesomeIcon icon={faCopy} size="sm" />
                 </ActionIcon>
               </Tooltip>
@@ -147,9 +135,7 @@ const FormActionsCell = ({form}) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   leftSection={
-                    <span className="text-lg">
-                      {content.locale?.emoji_flag || '🏳️'}
-                    </span>
+                    <span className="text-lg">{content.locale?.emoji_flag || '🏳️'}</span>
                   }
                 >
                   {content.locale?.name || 'Unknown'}
@@ -176,9 +162,7 @@ const FormActionsCell = ({form}) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   leftSection={
-                    <span className="text-lg">
-                      {content.locale?.emoji_flag || '🏳️'}
-                    </span>
+                    <span className="text-lg">{content.locale?.emoji_flag || '🏳️'}</span>
                   }
                 >
                   {content.locale?.name || 'Unknown'}
@@ -202,19 +186,13 @@ const FormActionsCell = ({form}) => {
                   key={content.locale_id}
                   value={generateFormUrl(form, content.locale_id)}
                 >
-                  {({copied, copy}) => (
+                  {({ copied, copy }) => (
                     <Menu.Item
                       onClick={() => handleCopy(copy, content.locale?.name)}
                       leftSection={
-                        <span className="text-lg">
-                          {content.locale?.emoji_flag || '🏳️'}
-                        </span>
+                        <span className="text-lg">{content.locale?.emoji_flag || '🏳️'}</span>
                       }
-                      rightSection={
-                        copied ? (
-                          <span className=" text-xs">{t('Copied')}</span>
-                        ) : null
-                      }
+                      rightSection={copied ? <span className=" text-xs">{t('Copied')}</span> : null}
                     >
                       {content.locale?.name || 'Unknown'}
                     </Menu.Item>

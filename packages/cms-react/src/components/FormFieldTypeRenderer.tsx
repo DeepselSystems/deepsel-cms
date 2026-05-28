@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import clsx from 'clsx';
 import {
   Box,
   Button,
@@ -66,6 +67,14 @@ interface RuntimeFieldConfig {
   precision?: number | null;
 }
 
+/** CSS slot names for FormFieldTypeRenderer */
+export interface FormFieldTypeRendererClassNames {
+  /** Root Box wrapper */
+  root?: string;
+  /** Passed directly to the classNames prop of the inner Mantine input component */
+  control?: Partial<Record<string, string>>;
+}
+
 export interface FormFieldTypeRendererProps {
   field: FormField;
   value?: unknown;
@@ -77,6 +86,8 @@ export interface FormFieldTypeRendererProps {
   onDeleteAttachment?: (id: string | number) => Promise<void>;
   /** Max upload size in MB shown in file field hint (default: 5) */
   uploadSizeLimit?: number;
+  className?: string;
+  classNames?: FormFieldTypeRendererClassNames;
 }
 
 /**
@@ -91,6 +102,8 @@ export function FormFieldTypeRenderer({
   onUploadFiles,
   onDeleteAttachment,
   uploadSizeLimit = DEFAULT_UPLOAD_SIZE_LIMIT_MB,
+  className,
+  classNames,
 }: FormFieldTypeRendererProps): React.ReactElement {
   const { t } = useTranslation();
   const { field_type, label, description, placeholder, required } = field;
@@ -102,168 +115,179 @@ export function FormFieldTypeRenderer({
     placeholder: placeholder ?? undefined,
     required,
     size: 'md' as const,
+    classNames: classNames?.control,
   };
 
-  switch (field_type) {
-    case FormFieldType.ShortAnswer:
-      return (
-        <TextInput
-          {...commonProps}
-          maxLength={fc.max_length ?? undefined}
-          minLength={fc.min_length ?? undefined}
-          value={(value as string) || ''}
-          onChange={({ target: { value: v } }) => onChange(v)}
-          error={error}
-        />
-      );
+  const control = (() => {
+    switch (field_type) {
+      case FormFieldType.ShortAnswer:
+        return (
+          <TextInput
+            {...commonProps}
+            maxLength={fc.max_length ?? undefined}
+            minLength={fc.min_length ?? undefined}
+            value={(value as string) || ''}
+            onChange={({ target: { value: v } }) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Paragraph:
-      return (
-        <Textarea
-          {...commonProps}
-          minRows={3}
-          maxRows={6}
-          autosize
-          maxLength={fc.max_length ?? undefined}
-          minLength={fc.min_length ?? undefined}
-          value={(value as string) || ''}
-          onChange={({ target: { value: v } }) => onChange(v)}
-          error={error}
-        />
-      );
+      case FormFieldType.Paragraph:
+        return (
+          <Textarea
+            {...commonProps}
+            minRows={3}
+            maxRows={6}
+            autosize
+            maxLength={fc.max_length ?? undefined}
+            minLength={fc.min_length ?? undefined}
+            value={(value as string) || ''}
+            onChange={({ target: { value: v } }) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Number:
-      return (
-        <NumberInput
-          {...commonProps}
-          min={fc.min_value != null ? Number(fc.min_value) : undefined}
-          max={fc.max_value != null ? Number(fc.max_value) : undefined}
-          step={fc.step || 1}
-          decimalScale={fc.precision || 0}
-          value={(value as number) ?? ''}
-          onChange={(v) => onChange(v)}
-          error={error}
-        />
-      );
+      case FormFieldType.Number:
+        return (
+          <NumberInput
+            {...commonProps}
+            min={fc.min_value != null ? Number(fc.min_value) : undefined}
+            max={fc.max_value != null ? Number(fc.max_value) : undefined}
+            step={fc.step || 1}
+            decimalScale={fc.precision || 0}
+            value={(value as number) ?? ''}
+            onChange={(v) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.MultipleChoice:
-      return (
-        <Radio.Group
-          name={`field_${field.id}`}
-          label={label}
-          description={description ?? undefined}
-          withAsterisk={required}
-          value={(value as string) || null}
-          onChange={(v) => onChange(v)}
-          error={error}
-        >
-          <Stack mt="xs" gap="xs" mb="sm">
-            {(fc.options || []).map((option, index) => (
-              <Radio key={option.id || index} value={option.value} label={option.label} />
-            ))}
-          </Stack>
-        </Radio.Group>
-      );
+      case FormFieldType.MultipleChoice:
+        return (
+          <Radio.Group
+            name={`field_${field.id}`}
+            label={label}
+            description={description ?? undefined}
+            withAsterisk={required}
+            value={(value as string) || null}
+            onChange={(v) => onChange(v)}
+            error={error}
+            classNames={classNames?.control}
+          >
+            <Stack mt="xs" gap="xs" mb="sm">
+              {(fc.options || []).map((option, index) => (
+                <Radio key={option.id || index} value={option.value} label={option.label} />
+              ))}
+            </Stack>
+          </Radio.Group>
+        );
 
-    case FormFieldType.Checkboxes:
-      return (
-        <Checkbox.Group
-          label={label}
-          description={description ?? undefined}
-          withAsterisk={required}
-          value={(value as string[]) || []}
-          onChange={(v) => onChange(v || [])}
-          error={error}
-        >
-          <Stack mt="xs" gap="xs" mb="sm">
-            {(fc.options || []).map((option, index) => (
-              <Checkbox key={option.id || index} value={option.value} label={option.label} />
-            ))}
-          </Stack>
-        </Checkbox.Group>
-      );
+      case FormFieldType.Checkboxes:
+        return (
+          <Checkbox.Group
+            label={label}
+            description={description ?? undefined}
+            withAsterisk={required}
+            value={(value as string[]) || []}
+            onChange={(v) => onChange(v || [])}
+            error={error}
+            classNames={classNames?.control}
+          >
+            <Stack mt="xs" gap="xs" mb="sm">
+              {(fc.options || []).map((option, index) => (
+                <Checkbox key={option.id || index} value={option.value} label={option.label} />
+              ))}
+            </Stack>
+          </Checkbox.Group>
+        );
 
-    case FormFieldType.Dropdown:
-      return (
-        <Select
-          {...commonProps}
-          data={(fc.options || []).map((option) => ({
-            value: option.value,
-            label: option.label,
-          }))}
-          searchable
-          clearable={!required}
-          value={(value as string) || null}
-          onChange={(v) => onChange(v)}
-          error={error}
-        />
-      );
+      case FormFieldType.Dropdown:
+        return (
+          <Select
+            {...commonProps}
+            data={(fc.options || []).map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+            searchable
+            clearable={!required}
+            value={(value as string) || null}
+            onChange={(v) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Date:
-      return (
-        <DateInput
-          {...commonProps}
-          valueFormat="YYYY-MM-DD"
-          minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
-          maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
-          value={value as Date}
-          onChange={(v) => onChange(v)}
-          error={error}
-        />
-      );
+      case FormFieldType.Date:
+        return (
+          <DateInput
+            {...commonProps}
+            valueFormat="YYYY-MM-DD"
+            minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
+            maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
+            value={value as Date}
+            onChange={(v) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Time:
-      return (
-        <TimePicker
-          {...commonProps}
-          withDropdown
-          format={fc.time_format === TimeFormat.TWELVE_HOUR ? '12h' : '24h'}
-          withSeconds={false}
-          minutesStep={fc.step || 15}
-          min={fc.min_value != null ? String(fc.min_value) : undefined}
-          max={fc.max_value != null ? String(fc.max_value) : undefined}
-          value={value as string}
-          onChange={onChange as (v: string) => void}
-          error={error}
-        />
-      );
+      case FormFieldType.Time:
+        return (
+          <TimePicker
+            {...commonProps}
+            withDropdown
+            format={fc.time_format === TimeFormat.TWELVE_HOUR ? '12h' : '24h'}
+            withSeconds={false}
+            minutesStep={fc.step || 15}
+            min={fc.min_value != null ? String(fc.min_value) : undefined}
+            max={fc.max_value != null ? String(fc.max_value) : undefined}
+            value={value as string}
+            onChange={onChange as (v: string) => void}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Datetime:
-      return (
-        <DateTimePicker
-          {...commonProps}
-          valueFormat={
-            fc.time_format === TimeFormat.TWELVE_HOUR ? 'YYYY-MM-DD hh:mm' : 'YYYY-MM-DD HH:mm'
-          }
-          minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
-          maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
-          withSeconds={false}
-          value={value as Date}
-          onChange={(v) => onChange(v)}
-          error={error}
-        />
-      );
+      case FormFieldType.Datetime:
+        return (
+          <DateTimePicker
+            {...commonProps}
+            valueFormat={
+              fc.time_format === TimeFormat.TWELVE_HOUR ? 'YYYY-MM-DD hh:mm' : 'YYYY-MM-DD HH:mm'
+            }
+            minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
+            maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
+            withSeconds={false}
+            value={value as Date}
+            onChange={(v) => onChange(v)}
+            error={error}
+          />
+        );
 
-    case FormFieldType.Files:
-      return (
-        <FilesUploadField
-          field={field}
-          value={value as UploadedFileRecord[]}
-          error={error}
-          onChange={onChange}
-          onUploadFiles={onUploadFiles}
-          onDeleteAttachment={onDeleteAttachment}
-          uploadSizeLimit={uploadSizeLimit}
-        />
-      );
+      case FormFieldType.Files:
+        return (
+          <FilesUploadField
+            field={field}
+            value={value as UploadedFileRecord[]}
+            error={error}
+            onChange={onChange}
+            onUploadFiles={onUploadFiles}
+            onDeleteAttachment={onDeleteAttachment}
+            uploadSizeLimit={uploadSizeLimit}
+          />
+        );
 
-    default:
-      return (
-        <Text c="dimmed" fs="italic">
-          {t('Unsupported field type: {{field_type}}', { field_type })}
-        </Text>
-      );
-  }
+      default:
+        return (
+          <Text c="dimmed" fs="italic">
+            {t('Unsupported field type: {{field_type}}', { field_type })}
+          </Text>
+        );
+    }
+  })();
+
+  return (
+    <Box className={clsx('FormFieldTypeRenderer-root', className, classNames?.root)}>
+      {control}
+    </Box>
+  );
 }
 
 interface FilesUploadFieldProps {

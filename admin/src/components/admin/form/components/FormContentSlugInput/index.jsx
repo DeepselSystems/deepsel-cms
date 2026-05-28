@@ -1,9 +1,9 @@
 import React from 'react';
 import TextInput from '../../../../../common/ui/TextInput.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import useFetch from '../../../../../common/api/useFetch.js';
-import {useDebouncedCallback} from '@mantine/hooks';
-import {generateSlugFromStr} from '../../../../../common/utils/index.js';
+import { useDebouncedCallback } from '@mantine/hooks';
+import { generateSlugFromStr } from '../../../../../common/utils/index.js';
 
 /**
  * Slug input with suggestion for form content
@@ -17,15 +17,15 @@ import {generateSlugFromStr} from '../../../../../common/utils/index.js';
  * }> & React.RefAttributes<unknown>>}
  */
 const FormContentSlugInput = React.forwardRef(
-  ({contentId, localeId, title, value, onChange = () => {}}, ref) => {
+  ({ contentId, localeId, title, value, onChange = () => {} }, ref) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // Query to generate slug
-    const {post: generateSlug} = useFetch('form_content/generate-slug', {
+    const { post: generateSlug } = useFetch('form_content/generate-slug', {
       autoFetch: false,
     });
-    const {post: getSlugValidation} = useFetch('form_content/validate-slug', {
+    const { post: getSlugValidation } = useFetch('form_content/validate-slug', {
       autoFetch: false,
     });
 
@@ -94,7 +94,7 @@ const FormContentSlugInput = React.forwardRef(
         onChange?.(newSlug);
         checkValidSlug();
       },
-      [checkValidSlug, onChange]
+      [checkValidSlug, onChange],
     );
 
     /**
@@ -114,7 +114,7 @@ const FormContentSlugInput = React.forwardRef(
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [contentId, hasEditedSlug, localeId, title]
+      [contentId, hasEditedSlug, localeId, title],
     );
 
     return (
@@ -125,10 +125,10 @@ const FormContentSlugInput = React.forwardRef(
           label={t('Language-specific slug')}
           placeholder={t('Enter URL slug for this language')}
           description={t(
-            'URL path for this language version. Will be auto-generated from title if left empty.'
+            'URL path for this language version. Will be auto-generated from title if left empty.',
           )}
           value={value || ''}
-          onChange={({target: {value}}) => handleSlugChange(value)}
+          onChange={({ target: { value } }) => handleSlugChange(value)}
           error={
             !!validationSlug &&
             !validationSlug.is_valid &&
@@ -139,7 +139,7 @@ const FormContentSlugInput = React.forwardRef(
         />
       </>
     );
-  }
+  },
 );
 
 FormContentSlugInput.displayName = 'FormContentSlugInput';
