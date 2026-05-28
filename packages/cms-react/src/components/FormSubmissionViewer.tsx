@@ -10,7 +10,7 @@ import {
   type FormField,
   type FormSubmissionFieldValue,
 } from '@deepsel/cms-utils';
-import type { UploadedFileRecord } from './FieldTypeRenderer.js';
+import type { UploadedFileRecord } from './FormFieldTypeRenderer.js';
 
 /** A snapshot of a field merged with its submitted value — for internal use only */
 interface SubmissionFieldSnapshot extends Record<string, unknown> {
@@ -18,7 +18,7 @@ interface SubmissionFieldSnapshot extends Record<string, unknown> {
   _isDeleted: boolean;
 }
 
-export interface SubmittedFormViewerProps {
+export interface FormSubmissionViewerProps {
   formContent: FormData;
   submissionData: Record<number, FormSubmissionFieldValue>;
   /** Whether to render the form title and description (default: true) */
@@ -34,12 +34,12 @@ export interface SubmittedFormViewerProps {
  * Read-only view of a submitted form response.
  * Pass `renderFile` to customise how uploaded files are displayed (e.g. to show image previews).
  */
-export function SubmittedFormViewer({
+export function FormSubmissionViewer({
   formContent,
   submissionData,
   showTitle = true,
   renderFile,
-}: SubmittedFormViewerProps): React.ReactElement {
+}: FormSubmissionViewerProps): React.ReactElement {
   const { t } = useTranslation();
 
   const submissionFields = React.useMemo<SubmissionFieldSnapshot[]>(() => {

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import {
   WebsiteDataProvider,
   useWebsiteData,
-  RenderedForm,
+  FormRenderer,
   CustomCodeRenderer,
   type FormSubmitData,
 } from "@deepsel/cms-react";
@@ -178,7 +178,7 @@ function FormContent() {
               )}
           </div>
 
-          <RenderedForm
+          <FormRenderer
             formContent={formData}
             initialFieldsData={initialFieldsData}
             loading={isSubmitting}

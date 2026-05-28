@@ -66,7 +66,7 @@ interface RuntimeFieldConfig {
   precision?: number | null;
 }
 
-export interface FieldTypeRendererProps {
+export interface FormFieldTypeRendererProps {
   field: FormField;
   value?: unknown;
   error?: string;
@@ -83,7 +83,7 @@ export interface FieldTypeRendererProps {
  * Renders the appropriate input component based on field type.
  * Pass `onUploadFiles` / `onDeleteAttachment` / `uploadSizeLimit` when the form has a Files field.
  */
-export function FieldTypeRenderer({
+export function FormFieldTypeRenderer({
   field,
   value,
   error = '',
@@ -91,7 +91,7 @@ export function FieldTypeRenderer({
   onUploadFiles,
   onDeleteAttachment,
   uploadSizeLimit = DEFAULT_UPLOAD_SIZE_LIMIT_MB,
-}: FieldTypeRendererProps): React.ReactElement {
+}: FormFieldTypeRendererProps): React.ReactElement {
   const { t } = useTranslation();
   const { field_type, label, description, placeholder, required } = field;
   const fc = (field.field_config || {}) as unknown as RuntimeFieldConfig;

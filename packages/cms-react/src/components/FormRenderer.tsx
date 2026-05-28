@@ -8,7 +8,7 @@ import {
   type FormField,
   type FormSubmissionFieldValue,
 } from '@deepsel/cms-utils';
-import { FieldTypeRenderer, type UploadedFileRecord } from './FieldTypeRenderer.js';
+import { FormFieldTypeRenderer, type UploadedFileRecord } from './FormFieldTypeRenderer.js';
 import { useFormFieldsData } from '../hooks/useFormFieldsData.js';
 
 /** Per-field state with internal UI tracking keys stripped before submission */
@@ -20,7 +20,7 @@ interface InternalFieldData extends Partial<FormSubmissionFieldValue> {
 /** Shape received by the RenderedForm onSubmit callback */
 export type FormSubmitData = Record<number, Record<string, unknown>>;
 
-export interface RenderedFormProps {
+export interface FormRendererProps {
   formContent: FormData;
   onSubmit?: (data: FormSubmitData) => void;
   loading?: boolean;
@@ -42,7 +42,7 @@ export interface RenderedFormProps {
  * intentionally omitted — render those in the consuming theme component.
  * Pass `onUploadFiles` / `onDeleteAttachment` / `uploadSizeLimit` when the form has a Files field.
  */
-export const RenderedForm = ({
+export const FormRenderer = ({
   formContent,
   onSubmit = () => {},
   loading = false,
@@ -52,7 +52,7 @@ export const RenderedForm = ({
   onDeleteAttachment,
   uploadSizeLimit,
   className,
-}: RenderedFormProps) => {
+}: FormRendererProps) => {
   const { t } = useTranslation();
 
   const fields = useMemo(() => formContent.fields || [], [formContent.fields]);
@@ -157,7 +157,7 @@ export const RenderedForm = ({
       >
         {fields.map((field, index) => (
           <Box key={index}>
-            <FieldTypeRenderer
+            <FormFieldTypeRenderer
               field={field}
               value={formFieldsData[field.id]?.value}
               onChange={(v) => setFieldData(field.id, { value: v })}
