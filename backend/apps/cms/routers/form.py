@@ -232,6 +232,8 @@ def _get_form_content_by_slug(
             )
 
         normalized_slug = "/" + slug.lstrip("/")
+        # Intentional: slug uniqueness is enforced globally across the platform,
+        # so (slug, locale_id) is sufficient to identify a form without org filtering.
         form_content = (
             db.query(FormContentModel)
             .filter(
