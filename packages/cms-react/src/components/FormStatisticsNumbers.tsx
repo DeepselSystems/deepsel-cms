@@ -52,7 +52,7 @@ const StatisticItem = memo(({ label, value, description }: StatisticItemProps) =
 ));
 StatisticItem.displayName = 'StatisticItem';
 
-interface NumberControlStatisticsProps {
+interface FormStatisticsNumbersProps {
   formField: FormField;
   formSubmissions: FormSubmission[];
   className?: string;
@@ -61,11 +61,11 @@ interface NumberControlStatisticsProps {
 /**
  * Composite bar+density chart and statistical summary for number fields.
  */
-export function NumberControlStatistics({
+export function FormStatisticsNumbers({
   formField,
   formSubmissions,
   className,
-}: NumberControlStatisticsProps) {
+}: FormStatisticsNumbersProps) {
   const { t } = useTranslation();
   const { fieldSubmissions } = useSubmissionStatisticsData(formField, formSubmissions);
 

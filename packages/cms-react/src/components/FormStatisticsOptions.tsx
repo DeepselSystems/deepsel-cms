@@ -14,7 +14,7 @@ const SUPPORTED_TYPES = [
 
 const COUNT_KEY = 'Count';
 
-interface OptionsControlStatisticsProps {
+interface FormStatisticsOptionsProps {
   formField: FormField;
   formSubmissions: FormSubmission[];
   className?: string;
@@ -23,11 +23,11 @@ interface OptionsControlStatisticsProps {
 /**
  * Bar-chart statistics for selection-type fields (checkboxes, multiple choice, dropdown).
  */
-export function OptionsControlStatistics({
+export function FormStatisticsOptions({
   formField,
   formSubmissions,
   className,
-}: OptionsControlStatisticsProps) {
+}: FormStatisticsOptionsProps) {
   const { t } = useTranslation();
   const { fieldSubmissions } = useSubmissionStatisticsData(formField, formSubmissions);
 

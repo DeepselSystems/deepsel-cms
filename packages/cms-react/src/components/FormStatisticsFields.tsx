@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box } from '@mantine/core';
 import { FORM_FIELD_TYPE, type FormField, type FormStatisticsData } from '@deepsel/cms-utils';
-import { OptionsControlStatistics } from './OptionsControlStatistics.js';
-import { NumberControlStatistics } from './NumberControlStatistics.js';
+import { FormStatisticsOptions } from './FormStatisticsOptions.js';
+import { FormStatisticsNumbers } from './FormStatisticsNumbers.js';
 
-interface FormFieldsStatisticsProps {
+interface FormStatisticsFieldsProps {
   fields: FormField[];
   submissions: FormStatisticsData['submissions'];
   className?: string;
@@ -15,11 +15,11 @@ interface FormFieldsStatisticsProps {
  * Does NOT render page layout, title, or overview counters — those belong in the theme.
  * Accepts className for theme-level CSS overrides.
  */
-export function FormFieldsStatistics({
+export function FormStatisticsFields({
   fields,
   submissions,
   className,
-}: FormFieldsStatisticsProps) {
+}: FormStatisticsFieldsProps) {
   return (
     <Box className={`space-y-4 ${className ?? ''}`}>
       {fields.map((field, i) => (
@@ -34,9 +34,9 @@ function renderFieldStats(field: FormField, submissions: FormStatisticsData['sub
     case FORM_FIELD_TYPE.Checkboxes:
     case FORM_FIELD_TYPE.MultipleChoice:
     case FORM_FIELD_TYPE.Dropdown:
-      return <OptionsControlStatistics formField={field} formSubmissions={submissions} />;
+      return <FormStatisticsOptions formField={field} formSubmissions={submissions} />;
     case FORM_FIELD_TYPE.Number:
-      return <NumberControlStatistics formField={field} formSubmissions={submissions} />;
+      return <FormStatisticsNumbers formField={field} formSubmissions={submissions} />;
     default:
       return null;
   }
