@@ -1,7 +1,6 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react';
-import { Alert, Box, Button, Text } from '@mantine/core';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { Box, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { IconCircleCheck } from '@tabler/icons-react';
 import clsx from 'clsx';
 import {
   FORM_FIELD_TYPE as FormFieldType,
@@ -33,10 +32,14 @@ export interface RenderedFormProps {
   onDeleteAttachment?: (id: string | number) => Promise<void>;
   /** Max upload size in MB shown in file field hint (default: 5) */
   uploadSizeLimit?: number;
+  /** Additional class names applied to the root wrapper */
+  className?: string;
 }
 
 /**
- * Renders a Deepsel CMS form with client-side validation and submission handling.
+ * Renders only the interactive fields and submit button of a Deepsel CMS form.
+ * Informational content (title, description, closing remarks, success message) is
+ * intentionally omitted — render those in the consuming theme component.
  * Pass `onUploadFiles` / `onDeleteAttachment` / `uploadSizeLimit` when the form has a Files field.
  */
 export const RenderedForm = ({
@@ -48,6 +51,7 @@ export const RenderedForm = ({
   onUploadFiles,
   onDeleteAttachment,
   uploadSizeLimit,
+  className,
 }: RenderedFormProps) => {
   const { t } = useTranslation();
 
@@ -144,22 +148,7 @@ export const RenderedForm = ({
   }, [fields, initialFieldsData, setFormFieldsData]);
 
   return (
-    <Box className="container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4">
-      <Box className="space-y-3">
-        <h1 className="text-3xl font-bold text-black break-words text-center">
-          {formContent.title}
-        </h1>
-        {formContent.description && (
-          <Text size="xs" c="dimmed">
-            {formContent.description}
-          </Text>
-        )}
-        <SubmissionLimitHint
-          formContent={formContent}
-          submissionsRemaining={submissionsRemaining}
-        />
-      </Box>
-
+    <Box className={clsx('space-y-3', className)}>
       <Box
         component="form"
         className={clsx('space-y-3', {
@@ -181,28 +170,6 @@ export const RenderedForm = ({
         ))}
       </Box>
 
-      {formContent.closing_remarks && <Text c="dark">{formContent.closing_remarks}</Text>}
-
-      {submitted && (
-        <Alert
-          color="blue"
-          title={
-            <Box>
-              <Box component="span">{formContent.success_message}</Box>
-              {formContent.enable_public_statistics && typeof window !== 'undefined' && (
-                <Box component="span">
-                  {' '}
-                  <a className="underline" href={`${window.location.href}/statistics`}>
-                    {t('Click here to see statistics for this form.')}
-                  </a>
-                </Box>
-              )}
-            </Box>
-          }
-          icon={<IconCircleCheck size={16} />}
-        />
-      )}
-
       {!submitted && (
         <Box className="text-end">
           <Button
@@ -218,37 +185,3 @@ export const RenderedForm = ({
     </Box>
   );
 };
-
-interface SubmissionLimitHintProps {
-  formContent: FormData;
-  submissionsRemaining: number | null;
-}
-
-/** Shows remaining-submissions hint when the form has a submission cap */
-const SubmissionLimitHint = memo(
-  ({ formContent, submissionsRemaining = null }: SubmissionLimitHintProps) => {
-    const { t } = useTranslation();
-    if (!formContent.show_remaining_submissions || submissionsRemaining === null) return null;
-
-    return (
-      <Box>
-        {submissionsRemaining === 0 ? (
-          <Text size="xs" c="red">
-            {t('This form has reached its submission limit and is no longer accepting responses.')}
-          </Text>
-        ) : (
-          <Text size="xs" c="dimmed">
-            {t(
-              'Limited availability: {{submissions_remaining}}/{{max_submissions}} submissions remaining.',
-              {
-                submissions_remaining: submissionsRemaining,
-                max_submissions: formContent.max_submissions || 0,
-              },
-            )}
-          </Text>
-        )}
-      </Box>
-    );
-  },
-);
-SubmissionLimitHint.displayName = 'SubmissionLimitHint';

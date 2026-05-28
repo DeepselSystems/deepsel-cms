@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { MantineProvider } from "@mantine/core";
+import { Alert, Box, MantineProvider, Text } from "@mantine/core";
+import { IconCircleCheck } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import {
   WebsiteDataProvider,
   useWebsiteData,
@@ -60,6 +62,7 @@ function FormNotFound() {
 function FormContent() {
   const { websiteData } = useWebsiteData();
   const formData = websiteData.data as FormData;
+  const { t } = useTranslation();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -72,6 +75,15 @@ function FormContent() {
       formData.latest_user_submission.map((v) => [v.field_id, v]),
     );
   }, [formData.latest_user_submission]);
+
+  /** Remaining submissions before the cap is hit, or null when there is no cap */
+  const submissionsRemaining = useMemo(() => {
+    const max = formData.max_submissions;
+    if (max === null || max === undefined) return null;
+    return Math.max(0, Number(max) - (formData.submissions_count || 0));
+  }, [formData.max_submissions, formData.submissions_count]);
+
+  const reachedSubmissionLimit = submissionsRemaining === 0;
 
   /** Increment view counter once, 3s after mount */
   useEffect(() => {
@@ -132,17 +144,82 @@ function FormContent() {
       <HeaderBar />
 
       <div className="py-10 xl:py-20 grow">
-        <RenderedForm
-          formContent={formData}
-          initialFieldsData={initialFieldsData}
-          loading={isSubmitting}
-          submitted={submitted}
-          onSubmit={handleSubmit}
-        />
+        <div className="container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4">
+          <div className="space-y-3 mb-9">
+            <h1 className="text-3xl font-bold text-black break-words text-center">
+              {formData.title}
+            </h1>
+            {formData.description && (
+              <Text size="xs" c="dimmed">
+                {formData.description}
+              </Text>
+            )}
+            {formData.show_remaining_submissions &&
+              submissionsRemaining !== null && (
+                <Box>
+                  {reachedSubmissionLimit ? (
+                    <Text size="xs" c="red">
+                      {t(
+                        "This form has reached its submission limit and is no longer accepting responses.",
+                      )}
+                    </Text>
+                  ) : (
+                    <Text size="xs" c="dimmed">
+                      {t(
+                        "Limited availability: {{submissions_remaining}}/{{max_submissions}} submissions remaining.",
+                        {
+                          submissions_remaining: submissionsRemaining,
+                          max_submissions: formData.max_submissions || 0,
+                        },
+                      )}
+                    </Text>
+                  )}
+                </Box>
+              )}
+          </div>
 
-        {submitError && (
-          <p className="text-red-600 text-center mt-4 text-sm">{submitError}</p>
-        )}
+          <RenderedForm
+            formContent={formData}
+            initialFieldsData={initialFieldsData}
+            loading={isSubmitting}
+            submitted={submitted}
+            onSubmit={handleSubmit}
+          />
+
+          {!submitted && formData.closing_remarks && (
+            <Text c="dark">{formData.closing_remarks}</Text>
+          )}
+
+          {submitted && (
+            <Alert
+              color="blue"
+              title={
+                <Box>
+                  <Box component="span">{formData.success_message}</Box>
+                  {formData.enable_public_statistics &&
+                    typeof window !== "undefined" && (
+                      <Box component="span">
+                        {" "}
+                        <a
+                          className="underline"
+                          href={`${window.location.href}/statistics`}
+                        >
+                          {t("Click here to see statistics for this form.")}
+                        </a>
+                      </Box>
+                    )}
+                </Box>
+              }
+              icon={<IconCircleCheck size={16} />}
+            />
+          )}
+
+          {submitError && (
+            <p className="text-red-600 text-center mt-4 text-sm">
+              {submitError}
+            </p>
+          )}
+        </div>
 
         <CustomCodeRenderer
           pageData={{ form_custom_code: formData.form_custom_code }}
