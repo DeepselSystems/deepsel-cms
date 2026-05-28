@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Body, Path, Request, status
 from sqlalchemy.orm import Session
 
 from apps.cms.routers.form_content import FormContentSchemaRead
+from apps.cms.schemas.form_submission import FormSubmissionPublicRead
 from apps.cms.utils.form_submission import get_lasted_user_submission
 from deepsel.utils.crud_router import CRUDRouter
 from deepsel.utils.generate_crud_schemas import generate_CRUD_schemas
@@ -204,7 +205,12 @@ def get_form_statistics_by_slug(
         .all()
     )
 
-    return {**form_content, "submissions": form_submissions}
+    safe_submissions = [
+        FormSubmissionPublicRead.model_validate(s).model_dump()
+        for s in form_submissions
+    ]
+
+    return {**form_content, "submissions": safe_submissions}
 
 
 def _get_form_content_by_slug(

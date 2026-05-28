@@ -394,10 +394,7 @@ function FilesUploadField({
                 {t('Drag files here or click to select')}
               </Text>
               <Text size="xs" c="dimmed">
-                {t('Maximum {{maxFiles}} files, {{maxSize}}MB each', {
-                  maxFiles,
-                  maxSize: maxFileSizeMB,
-                })}
+                {`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}
               </Text>
             </Box>
           </Group>
@@ -439,10 +436,7 @@ function FilesUploadField({
       )}
 
       <Text size="xs" c="dimmed" mt="xs">
-        {t('{{current}} of {{max}} files uploaded', {
-          current: current.length,
-          max: maxFiles,
-        })}
+        {`${current.length} of ${maxFiles} files uploaded`}
       </Text>
 
       {(error || uploadError) && (
