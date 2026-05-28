@@ -63,22 +63,19 @@ class FormModel(Base, ActivityMixin, BaseModel):
         Get a single form by ID with proper access control.
         Public users can only see published forms.
         """
-        res = db.query(cls).get(item_id)
-        if not res:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Form not found",
-            )
-
-        # Check if user is public user
-        # If yes, filter by published=True
         if user.is_public_user():
-            if not res.published:
+            # Public path: skip role/org checks, enforce published filter directly.
+            res = db.query(cls).filter(cls.id == item_id, cls.published == True).first()
+            if not res:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Form not found",
                 )
-        return res
+            return res
+
+        # Authenticated path: delegate to base so _check_has_permission and
+        # org-scope filtering are applied normally.
+        return super().get_one(db, user, item_id, *args, **kwargs)
 
     @classmethod
     def search(

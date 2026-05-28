@@ -16,6 +16,11 @@ class FormSubmissionModel(Base, ORMBaseMixin):
     """
     Form submission model that stores user submissions for forms.
     Each submission contains the submitted data, metadata, and tracking information.
+
+    Intentionally extends ORMBaseMixin only (not BaseModel) — no organization_id column.
+    Submissions are created by authenticated users or anonymous visitors, not scoped to an
+    organization. The owning organization is derived indirectly via the form → form_content
+    relationship. :org permission scope therefore fails closed on this model by design.
     """
 
     __tablename__ = "form_submission"
