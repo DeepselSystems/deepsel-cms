@@ -2,7 +2,7 @@ import SubmissionInformation from '../submission-infomation/index.jsx';
 import { Box, Paper, Stack } from '@mantine/core';
 import H3 from '../../../../../common/ui/H3.jsx';
 import { useTranslation } from 'react-i18next';
-import { SubmittedFormViewer } from '@deepsel/cms-react';
+import { FormSubmissionViewer } from '@deepsel/cms-react';
 
 /**
  * Current submission
@@ -28,7 +28,7 @@ const SubmissionCurrent = ({ submission }) => {
 
             {/* Submitted form data */}
             <Box className="py-6">
-              <SubmittedFormViewer
+              <FormSubmissionViewer
                 showTitle
                 formContent={submission.form_content}
                 submissionData={submission.submission_data}

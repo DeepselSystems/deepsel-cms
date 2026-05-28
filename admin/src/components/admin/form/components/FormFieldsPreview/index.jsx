@@ -1,5 +1,5 @@
 import React from 'react';
-import { RenderedForm } from '@deepsel/cms-react';
+import { FormRenderer } from '@deepsel/cms-react';
 import { Box, Center, Stack } from '@mantine/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,7 @@ const FormFieldsPreview = ({ formContent }) => {
   return (
     <>
       {hasContent ? (
-        <RenderedForm
+        <FormRenderer
           formContent={formContent}
           uploadSizeLimit={uploadSizeLimit}
           onUploadFiles={handleUploadFiles}

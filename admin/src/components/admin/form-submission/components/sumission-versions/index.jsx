@@ -7,7 +7,7 @@ import SubmissionInformation from '../submission-infomation/index.jsx';
 import orderBy from 'lodash/orderBy';
 import H3 from '../../../../../common/ui/H3.jsx';
 import { useTranslation } from 'react-i18next';
-import { SubmittedFormViewer } from '@deepsel/cms-react';
+import { FormSubmissionViewer } from '@deepsel/cms-react';
 
 /**
  * Submission versions list component
@@ -81,7 +81,7 @@ const SubmissionVersions = ({ submission }) => {
                       <Stack gap="md">
                         <H3>{t('Submitted Form Data')}</H3>
 
-                        <SubmittedFormViewer
+                        <FormSubmissionViewer
                           showTitle
                           formContent={submission.form_content}
                           submissionData={versionsMap[versionKey].submission_data}
