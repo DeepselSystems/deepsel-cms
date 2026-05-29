@@ -4,7 +4,7 @@ import type { NodeViewProps } from '@tiptap/react';
 import { IconTrash } from '@tabler/icons-react';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
 import { EMBED_VIDEO_ATTRIBUTES, EMBED_VIDEO_CLASSES } from '../utils';
 import clsx from 'clsx';
 
