@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Group,
-  NumberInput,
-  Radio,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-} from '@mantine/core';
-import { DateInput, DateTimePicker, TimePicker } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
 import { useTranslation } from 'react-i18next';
 import { IconAlertTriangle, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
 import {
   FORM_FIELD_TYPE as FormFieldType,
-  TIME_FORMAT as TimeFormat,
   formatFileSize,
   type FormField,
 } from '@deepsel/cms-utils';
@@ -47,9 +32,7 @@ interface OptionObj {
 }
 
 /**
- * Runtime field_config — the FormFieldConfig type has narrow types for some keys
- * (e.g. options typed as string[] but stored as OptionObj[]).
- * Cast to this for safe property access.
+ * Runtime field_config — cast to this for safe property access.
  */
 interface RuntimeFieldConfig {
   options?: OptionObj[];
@@ -67,14 +50,6 @@ interface RuntimeFieldConfig {
   precision?: number | null;
 }
 
-/** CSS slot names for FormFieldTypeRenderer */
-export interface FormFieldTypeRendererClassNames {
-  /** Root Box wrapper */
-  root?: string;
-  /** Passed directly to the classNames prop of the inner Mantine input component */
-  control?: Partial<Record<string, string>>;
-}
-
 export interface FormFieldTypeRendererProps {
   field: FormField;
   value?: unknown;
@@ -87,12 +62,48 @@ export interface FormFieldTypeRendererProps {
   /** Max upload size in MB shown in file field hint (default: 5) */
   uploadSizeLimit?: number;
   className?: string;
-  classNames?: FormFieldTypeRendererClassNames;
+}
+
+/** Renders label, description, the field control, and error message */
+function FieldWrapper({
+  label,
+  description,
+  required,
+  error,
+  className,
+  children,
+}: {
+  label: string;
+  description?: string | null;
+  required?: boolean;
+  error?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={clsx('form-field-root', className)}>
+      <label className="form-field-label">
+        {label}
+        {required && (
+          <span className="form-field-required" aria-hidden="true">
+            {' *'}
+          </span>
+        )}
+      </label>
+      {description && <p className="form-field-description">{description}</p>}
+      {children}
+      {error && (
+        <p className="form-field-error" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
 }
 
 /**
- * Renders the appropriate input component based on field type.
- * Pass `onUploadFiles` / `onDeleteAttachment` / `uploadSizeLimit` when the form has a Files field.
+ * Renders the appropriate native HTML input for a given form field type.
+ * Date/Time/Datetime use native browser inputs. File upload uses Dropzone.
  */
 export function FormFieldTypeRenderer({
   field,
@@ -103,191 +114,194 @@ export function FormFieldTypeRenderer({
   onDeleteAttachment,
   uploadSizeLimit = DEFAULT_UPLOAD_SIZE_LIMIT_MB,
   className,
-  classNames,
 }: FormFieldTypeRendererProps): React.ReactElement {
   const { t } = useTranslation();
   const { field_type, label, description, placeholder, required } = field;
   const fc = (field.field_config || {}) as unknown as RuntimeFieldConfig;
 
-  const commonProps = {
-    label,
-    description: description ?? undefined,
-    placeholder: placeholder ?? undefined,
-    required,
-    size: 'md' as const,
-    classNames: classNames?.control,
-  };
+  const wrapperProps = { label, description, required, error, className };
 
-  const control = (() => {
-    switch (field_type) {
-      case FormFieldType.ShortAnswer:
-        return (
-          <TextInput
-            {...commonProps}
+  switch (field_type) {
+    case FormFieldType.ShortAnswer:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <input
+            type="text"
+            placeholder={placeholder ?? undefined}
+            required={required}
             maxLength={fc.max_length ?? undefined}
             minLength={fc.min_length ?? undefined}
             value={(value as string) || ''}
             onChange={({ target: { value: v } }) => onChange(v)}
-            error={error}
           />
-        );
+        </FieldWrapper>
+      );
 
-      case FormFieldType.Paragraph:
-        return (
-          <Textarea
-            {...commonProps}
-            minRows={3}
-            maxRows={6}
-            autosize
+    case FormFieldType.Paragraph:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <textarea
+            placeholder={placeholder ?? undefined}
+            required={required}
             maxLength={fc.max_length ?? undefined}
             minLength={fc.min_length ?? undefined}
             value={(value as string) || ''}
             onChange={({ target: { value: v } }) => onChange(v)}
-            error={error}
+            rows={3}
           />
-        );
+        </FieldWrapper>
+      );
 
-      case FormFieldType.Number:
-        return (
-          <NumberInput
-            {...commonProps}
+    case FormFieldType.Number:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <input
+            type="number"
+            placeholder={placeholder ?? undefined}
+            required={required}
             min={fc.min_value != null ? Number(fc.min_value) : undefined}
             max={fc.max_value != null ? Number(fc.max_value) : undefined}
             step={fc.step || 1}
-            decimalScale={fc.precision || 0}
             value={(value as number) ?? ''}
-            onChange={(v) => onChange(v)}
-            error={error}
+            onChange={({ target: { value: v } }) => onChange(v === '' ? '' : Number(v))}
           />
-        );
+        </FieldWrapper>
+      );
 
-      case FormFieldType.MultipleChoice:
-        return (
-          <Radio.Group
-            name={`field_${field.id}`}
-            label={label}
-            description={description ?? undefined}
-            withAsterisk={required}
-            value={(value as string) || null}
-            onChange={(v) => onChange(v)}
-            error={error}
-            classNames={classNames?.control}
+    case FormFieldType.MultipleChoice:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <div className="form-field-options">
+            {(fc.options || []).map((option, index) => (
+              <label key={option.id || index} className="form-field-option">
+                <input
+                  type="radio"
+                  name={`field_${field.id}`}
+                  value={option.value}
+                  checked={(value as string) === option.value}
+                  onChange={() => onChange(option.value)}
+                  required={required}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+        </FieldWrapper>
+      );
+
+    case FormFieldType.Checkboxes:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <div className="form-field-options">
+            {(fc.options || []).map((option, index) => (
+              <label key={option.id || index} className="form-field-option">
+                <input
+                  type="checkbox"
+                  value={option.value}
+                  checked={((value as string[]) || []).includes(option.value)}
+                  onChange={({ target: { checked } }) => {
+                    const current = (value as string[]) || [];
+                    onChange(
+                      checked
+                        ? [...current, option.value]
+                        : current.filter((v) => v !== option.value),
+                    );
+                  }}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+        </FieldWrapper>
+      );
+
+    case FormFieldType.Dropdown:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <select
+            required={required}
+            value={(value as string) || ''}
+            onChange={({ target: { value: v } }) => onChange(v)}
           >
-            <Stack mt="xs" gap="xs" mb="sm">
-              {(fc.options || []).map((option, index) => (
-                <Radio key={option.id || index} value={option.value} label={option.label} />
-              ))}
-            </Stack>
-          </Radio.Group>
-        );
+            {!required && <option value="">—</option>}
+            {(fc.options || []).map((option, index) => (
+              <option key={option.id || index} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </FieldWrapper>
+      );
 
-      case FormFieldType.Checkboxes:
-        return (
-          <Checkbox.Group
-            label={label}
-            description={description ?? undefined}
-            withAsterisk={required}
-            value={(value as string[]) || []}
-            onChange={(v) => onChange(v || [])}
-            error={error}
-            classNames={classNames?.control}
-          >
-            <Stack mt="xs" gap="xs" mb="sm">
-              {(fc.options || []).map((option, index) => (
-                <Checkbox key={option.id || index} value={option.value} label={option.label} />
-              ))}
-            </Stack>
-          </Checkbox.Group>
-        );
-
-      case FormFieldType.Dropdown:
-        return (
-          <Select
-            {...commonProps}
-            data={(fc.options || []).map((option) => ({
-              value: option.value,
-              label: option.label,
-            }))}
-            searchable
-            clearable={!required}
-            value={(value as string) || null}
-            onChange={(v) => onChange(v)}
-            error={error}
-          />
-        );
-
-      case FormFieldType.Date:
-        return (
-          <DateInput
-            {...commonProps}
-            valueFormat="YYYY-MM-DD"
-            minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
-            maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
-            value={value as Date}
-            onChange={(v) => onChange(v)}
-            error={error}
-          />
-        );
-
-      case FormFieldType.Time:
-        return (
-          <TimePicker
-            {...commonProps}
-            withDropdown
-            format={fc.time_format === TimeFormat.TWELVE_HOUR ? '12h' : '24h'}
-            withSeconds={false}
-            minutesStep={fc.step || 15}
+    case FormFieldType.Date:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <input
+            type="date"
+            required={required}
             min={fc.min_value != null ? String(fc.min_value) : undefined}
             max={fc.max_value != null ? String(fc.max_value) : undefined}
-            value={value as string}
-            onChange={onChange as (v: string) => void}
-            error={error}
-          />
-        );
-
-      case FormFieldType.Datetime:
-        return (
-          <DateTimePicker
-            {...commonProps}
-            valueFormat={
-              fc.time_format === TimeFormat.TWELVE_HOUR ? 'YYYY-MM-DD hh:mm' : 'YYYY-MM-DD HH:mm'
+            value={
+              value instanceof Date ? value.toISOString().split('T')[0] : (value as string) || ''
             }
-            minDate={fc.min_value != null ? new Date(String(fc.min_value)) : undefined}
-            maxDate={fc.max_value != null ? new Date(String(fc.max_value)) : undefined}
-            withSeconds={false}
-            value={value as Date}
-            onChange={(v) => onChange(v)}
-            error={error}
+            onChange={({ target: { value: v } }) => onChange(v)}
           />
-        );
+        </FieldWrapper>
+      );
 
-      case FormFieldType.Files:
-        return (
-          <FilesUploadField
-            field={field}
-            value={value as UploadedFileRecord[]}
-            error={error}
-            onChange={onChange}
-            onUploadFiles={onUploadFiles}
-            onDeleteAttachment={onDeleteAttachment}
-            uploadSizeLimit={uploadSizeLimit}
+    case FormFieldType.Time:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <input
+            type="time"
+            required={required}
+            /** step is in seconds for native time input; fc.step is in minutes */
+            step={(fc.step || 15) * 60}
+            min={fc.min_value != null ? String(fc.min_value) : undefined}
+            max={fc.max_value != null ? String(fc.max_value) : undefined}
+            value={(value as string) || ''}
+            onChange={({ target: { value: v } }) => onChange(v)}
           />
-        );
+        </FieldWrapper>
+      );
 
-      default:
-        return (
-          <Text c="dimmed" fs="italic">
-            {t('Unsupported field type: {{field_type}}', { field_type })}
-          </Text>
-        );
-    }
-  })();
+    case FormFieldType.Datetime:
+      return (
+        <FieldWrapper {...wrapperProps}>
+          <input
+            type="datetime-local"
+            required={required}
+            min={fc.min_value != null ? String(fc.min_value) : undefined}
+            max={fc.max_value != null ? String(fc.max_value) : undefined}
+            value={
+              value instanceof Date ? value.toISOString().slice(0, 16) : (value as string) || ''
+            }
+            onChange={({ target: { value: v } }) => onChange(v)}
+          />
+        </FieldWrapper>
+      );
 
-  return (
-    <Box className={clsx('FormFieldTypeRenderer-root', className, classNames?.root)}>
-      {control}
-    </Box>
-  );
+    case FormFieldType.Files:
+      return (
+        <FilesUploadField
+          field={field}
+          value={value as UploadedFileRecord[]}
+          error={error}
+          onChange={onChange}
+          onUploadFiles={onUploadFiles}
+          onDeleteAttachment={onDeleteAttachment}
+          uploadSizeLimit={uploadSizeLimit}
+          className={className}
+        />
+      );
+
+    default:
+      return (
+        <p className={clsx('form-field-unsupported', className)}>
+          {t('Unsupported field type: {{field_type}}', { field_type })}
+        </p>
+      );
+  }
 }
 
 interface FilesUploadFieldProps {
@@ -298,6 +312,7 @@ interface FilesUploadFieldProps {
   onUploadFiles?: (files: File[]) => Promise<UploadedFileRecord[]>;
   onDeleteAttachment?: (id: string | number) => Promise<void>;
   uploadSizeLimit: number;
+  className?: string;
 }
 
 /**
@@ -312,6 +327,7 @@ function FilesUploadField({
   onUploadFiles,
   onDeleteAttachment,
   uploadSizeLimit,
+  className,
 }: FilesUploadFieldProps): React.ReactElement {
   const { t } = useTranslation();
   const [uploading, setUploading] = useState(false);
@@ -359,7 +375,7 @@ function FilesUploadField({
         await onDeleteAttachment(file.id);
       }
     } catch {
-      // still remove from UI
+      // still remove from UI on failure
     } finally {
       setDeleteLoading(false);
     }
@@ -375,21 +391,17 @@ function FilesUploadField({
   const canAddMore = current.length < maxFiles;
 
   return (
-    <Box>
-      <Text size="sm" fw={500} mb="xs">
+    <div className={clsx('form-field-root', className)}>
+      <label className="form-field-label">
         {label}
         {required && (
-          <Text component="span" c="red">
+          <span className="form-field-required" aria-hidden="true">
             {' *'}
-          </Text>
+          </span>
         )}
-      </Text>
+      </label>
 
-      {description && (
-        <Text size="xs" c="dimmed" mb="sm">
-          {description}
-        </Text>
-      )}
+      {description && <p className="form-field-description">{description}</p>}
 
       {canAddMore && (
         <Dropzone
@@ -399,11 +411,10 @@ function FilesUploadField({
           maxSize={maxFileSizeBytes}
           accept={allowedTypes === '*' ? undefined : [allowedTypes]}
           multiple={maxFiles > 1}
-          mb="sm"
           loading={uploading}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors"
+          className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors mb-2"
         >
-          <Group gap="sm" style={{ pointerEvents: 'none' }}>
+          <div className="flex items-center gap-2" style={{ pointerEvents: 'none' }}>
             <Dropzone.Accept>
               <IconUpload size={16} />
             </Dropzone.Accept>
@@ -413,61 +424,51 @@ function FilesUploadField({
             <Dropzone.Idle>
               <IconUpload size={16} />
             </Dropzone.Idle>
-            <Box>
-              <Text size="sm" fw={500}>
-                {t('Drag files here or click to select')}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}
-              </Text>
-            </Box>
-          </Group>
+            <div>
+              <p className="text-sm font-medium">{t('Drag files here or click to select')}</p>
+              <p className="text-xs text-gray-500">{`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}</p>
+            </div>
+          </div>
         </Dropzone>
       )}
 
       {current.length > 0 && (
-        <Stack gap="xs">
+        <div className="flex flex-col gap-2">
           {current.map((file, index) => (
-            <Group
+            <div
               key={String(file.id ?? index)}
-              justify="space-between"
-              p="sm"
-              className="border rounded"
+              className="flex items-center justify-between p-3 border rounded"
             >
-              <Group gap="sm">
+              <div className="flex items-center gap-2">
                 <IconFile size={16} />
-                <Box>
-                  <Text size="sm" fw={500}>
-                    {getFileName(file)}
-                  </Text>
-                  <Text size="xs" c="dimmed">
+                <div>
+                  <p className="text-sm font-medium">{getFileName(file)}</p>
+                  <p className="text-xs text-gray-500">
                     {file.contentType && `${file.contentType}`}
                     {file.filesize != null && ` • ${formatFileSize(file.filesize)}`}
-                  </Text>
-                </Box>
-              </Group>
-              <Button
-                variant="subtle"
-                size="xs"
-                loading={deleteLoading}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={deleteLoading}
                 onClick={() => void handleRemoveFile(index)}
+                className="p-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
               >
                 <IconTrash size={16} />
-              </Button>
-            </Group>
+              </button>
+            </div>
           ))}
-        </Stack>
+        </div>
       )}
 
-      <Text size="xs" c="dimmed" mt="xs">
-        {`${current.length} of ${maxFiles} files uploaded`}
-      </Text>
+      <p className="text-xs text-gray-400 mt-1">{`${current.length} of ${maxFiles} files uploaded`}</p>
 
       {(error || uploadError) && (
-        <Text size="sm" c="red" mt="xs">
+        <p className="form-field-error" role="alert">
           {error || uploadError}
-        </Text>
+        </p>
       )}
-    </Box>
+    </div>
   );
 }
