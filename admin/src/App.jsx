@@ -82,6 +82,7 @@ import '@mantine/tiptap/styles.css';
 import '@mantine/charts/styles.css';
 import './assets/css/global.css';
 import '@deepsel/cms-utils/styles.css';
+import "@deepsel/cms-react/styles/form.css";
 import { LocalstorageKey } from './constants/localstorage.js';
 import useBrowserLanguages from './common/hooks/useBrowserLanguages.js';
 import useEffectOnce from './common/hooks/useEffectOnce.js';

@@ -148,7 +148,7 @@ export const FormRenderer = ({
   return (
     <div className={clsx('space-y-3', 'form-renderer', className)}>
       <form
-        className={clsx('space-y-3', 'form-renderer__form', {
+        className={clsx('form-renderer__form', {
           'pointer-events-none': submitted || reachedSubmissionLimit,
         })}
         onSubmit={(e) => {

@@ -20,19 +20,23 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": ["**/*.css"],
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./styles/form.css": {
+      "source": "./src/styles/form.css",
+      "default": "./dist/styles/form.css"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && rm -rf dist/styles && cp -r src/styles dist/styles",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
