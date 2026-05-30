@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Box, Button } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import {
@@ -20,20 +19,6 @@ interface InternalFieldData extends Partial<FormSubmissionFieldValue> {
 /** Shape received by the RenderedForm onSubmit callback */
 export type FormSubmitData = Record<number, Record<string, unknown>>;
 
-/** CSS slot names for FormRenderer */
-export interface FormRendererClassNames {
-  /** Root wrapper */
-  root?: string;
-  /** The form element containing all fields */
-  form?: string;
-  /** Wrapper around each individual field */
-  fieldItem?: string;
-  /** Wrapper around the submit button */
-  submitWrapper?: string;
-  /** The submit button itself */
-  submitButton?: string;
-}
-
 export interface FormRendererProps {
   formContent: FormData;
   onSubmit?: (data: FormSubmitData) => void;
@@ -47,7 +32,6 @@ export interface FormRendererProps {
   /** Max upload size in MB shown in file field hint (default: 5) */
   uploadSizeLimit?: number;
   className?: string;
-  classNames?: FormRendererClassNames;
 }
 
 /**
@@ -66,7 +50,6 @@ export const FormRenderer = ({
   onDeleteAttachment,
   uploadSizeLimit,
   className,
-  classNames,
 }: FormRendererProps) => {
   const { t } = useTranslation();
 
@@ -163,15 +146,18 @@ export const FormRenderer = ({
   }, [fields, initialFieldsData, setFormFieldsData]);
 
   return (
-    <Box className={clsx('FormRenderer-root', 'space-y-3', className, classNames?.root)}>
-      <Box
-        component="form"
-        className={clsx('FormRenderer-form', 'space-y-3', classNames?.form, {
+    <div className={clsx('form-renderer-root', 'space-y-3', className)}>
+      <form
+        className={clsx('form-renderer-form', 'space-y-3', {
           'pointer-events-none': submitted || reachedSubmissionLimit,
         })}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
       >
         {fields.map((field, index) => (
-          <Box key={index} className={clsx('FormRenderer-fieldItem', classNames?.fieldItem)}>
+          <div key={index} className="form-renderer-field-item">
             <FormFieldTypeRenderer
               field={field}
               value={formFieldsData[field.id]?.value}
@@ -181,23 +167,21 @@ export const FormRenderer = ({
               onDeleteAttachment={onDeleteAttachment}
               uploadSizeLimit={uploadSizeLimit}
             />
-          </Box>
+          </div>
         ))}
-      </Box>
 
-      {!submitted && (
-        <Box className={clsx('FormRenderer-submitWrapper', 'text-end', classNames?.submitWrapper)}>
-          <Button
-            fullWidth
-            loading={loading}
-            disabled={submitted || reachedSubmissionLimit}
-            onClick={handleSubmit}
-            className={clsx('FormRenderer-submitButton', classNames?.submitButton)}
-          >
-            {t('Submit')}
-          </Button>
-        </Box>
-      )}
-    </Box>
+        {!submitted && (
+          <div className="form-renderer-submit-wrapper">
+            <button
+              type="submit"
+              disabled={loading || submitted || reachedSubmissionLimit}
+              className={clsx('form-renderer-submit-button', { 'is-loading': loading })}
+            >
+              {t('Submit')}
+            </button>
+          </div>
+        )}
+      </form>
+    </div>
   );
 };
