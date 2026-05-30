@@ -255,6 +255,13 @@ def _get_form_content_by_slug(
                 detail="Form is not published",
             )
 
+        organization_id = form_content.form.organization_id
+        public_settings = CMSSettingsModel.get_public_settings(
+            organization_id=organization_id,
+            db=db,
+            lang=lang,
+        )
+
         return {
             "id": form_content.id,
             "form_id": form_content.form_id,
@@ -291,6 +298,7 @@ def _get_form_content_by_slug(
                 }
                 for field in sorted(form_content.fields, key=lambda f: f.sort_order)
             ],
+            "public_settings": public_settings,
         }
     except HTTPException:
         raise
