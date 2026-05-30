@@ -1,23 +1,13 @@
 import React from 'react';
-import { Box } from '@mantine/core';
 import clsx from 'clsx';
 import { FORM_FIELD_TYPE, type FormField, type FormStatisticsData } from '@deepsel/cms-utils';
 import { FormStatisticsOptions } from './FormStatisticsOptions.js';
 import { FormStatisticsNumbers } from './FormStatisticsNumbers.js';
 
-/** CSS slot names for FormStatisticsFields */
-export interface FormStatisticsFieldsClassNames {
-  /** Root wrapper */
-  root?: string;
-  /** Each field chart wrapper */
-  fieldItem?: string;
-}
-
 export interface FormStatisticsFieldsProps {
   fields: FormField[];
   submissions: FormStatisticsData['submissions'];
   className?: string;
-  classNames?: FormStatisticsFieldsClassNames;
 }
 
 /**
@@ -28,16 +18,15 @@ export function FormStatisticsFields({
   fields,
   submissions,
   className,
-  classNames,
 }: FormStatisticsFieldsProps) {
   return (
-    <Box className={clsx('FormStatisticsFields-root', 'space-y-4', className, classNames?.root)}>
+    <div className={clsx('space-y-4', 'form-statistics-fields', className)}>
       {fields.map((field, i) => (
-        <Box key={i} className={clsx('FormStatisticsFields-fieldItem', classNames?.fieldItem)}>
+        <div key={i} className="form-statistics-fields__field-item">
           {renderFieldStats(field, submissions)}
-        </Box>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 

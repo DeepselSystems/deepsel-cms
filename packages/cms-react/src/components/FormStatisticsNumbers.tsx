@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import clsx from 'clsx';
-import { Box, Paper, Text, Grid, Tooltip, ActionIcon } from '@mantine/core';
+import { Tooltip } from '@mantine/core';
 import { CompositeChart, ChartTooltip } from '@mantine/charts';
 import { useTranslation } from 'react-i18next';
 import { FORM_FIELD_TYPE, type FormField, type FormSubmission } from '@deepsel/cms-utils';
@@ -31,55 +31,28 @@ interface StatisticItemProps {
 
 /** Single stat card (label + value + optional tooltip) */
 const StatisticItem = memo(({ label, value, description }: StatisticItemProps) => (
-  <Paper className="px-3 py-2 border relative">
-    <Box className="flex items-start justify-between gap-2">
-      <Box className="flex-1">
-        <Text size="xs" c="dimmed" className="mb-0.5">
-          {label}
-        </Text>
-        <Text size="md" fw={600}>
-          {value}
-        </Text>
-      </Box>
+  <div className="p-3 border rounded stat-item">
+    <div className="flex items-start justify-between gap-2 stat-item__inner">
+      <div className="flex-1 stat-item__content">
+        <p className="stat-item__label">{label}</p>
+        <p className="stat-item__value">{value}</p>
+      </div>
       {description && (
         <Tooltip label={description} multiline maw={300} withArrow>
-          <ActionIcon variant="subtle" color="gray" size="xs" className="flex-shrink-0">
-            <span style={{ fontSize: 12 }}>ⓘ</span>
-          </ActionIcon>
+          <button type="button" className="flex-shrink-0 stat-item__info-btn">
+            ⓘ
+          </button>
         </Tooltip>
       )}
-    </Box>
-  </Paper>
+    </div>
+  </div>
 ));
 StatisticItem.displayName = 'StatisticItem';
-
-/** CSS slot names for FormStatisticsNumbers */
-export interface FormStatisticsNumbersClassNames {
-  /** Root Paper wrapper */
-  root?: string;
-  /** Wrapper around label and description */
-  header?: string;
-  /** Field label text */
-  label?: string;
-  /** Field description text */
-  description?: string;
-  /** Wrapper around statistical summary title and grid */
-  statsSection?: string;
-  /** Statistical summary section title */
-  statsSectionTitle?: string;
-  /** Grid containing the stat cards */
-  statsGrid?: string;
-  /** Wrapper around chart title and CompositeChart */
-  chart?: string;
-  /** Chart section title */
-  chartTitle?: string;
-}
 
 interface FormStatisticsNumbersProps {
   formField: FormField;
   formSubmissions: FormSubmission[];
   className?: string;
-  classNames?: FormStatisticsNumbersClassNames;
 }
 
 /**
@@ -89,7 +62,6 @@ export function FormStatisticsNumbers({
   formField,
   formSubmissions,
   className,
-  classNames,
 }: FormStatisticsNumbersProps) {
   const { t } = useTranslation();
   const { fieldSubmissions } = useSubmissionStatisticsData(formField, formSubmissions);
@@ -241,35 +213,34 @@ export function FormStatisticsNumbers({
   );
 
   return (
-    <Paper className={clsx('FormStatisticsNumbers-root', 'p-4 bg-gray-50 rounded-lg border space-y-4', className, classNames?.root)}>
-      <Box className={clsx('FormStatisticsNumbers-header', classNames?.header)}>
-        <Text component="h2" size="xl" fw={700} className={clsx('FormStatisticsNumbers-label', 'text-black break-words', classNames?.label)}>
-          {formField.label}
-        </Text>
+    <div className={clsx('p-4 rounded-lg border space-y-4', 'form-statistics-numbers', className)}>
+      <div className="form-statistics-numbers__header">
+        <h2 className="break-words form-statistics-numbers__label">{formField.label}</h2>
         {formField.description && (
-          <Text size="sm" c="dimmed" className={clsx('FormStatisticsNumbers-description', classNames?.description)}>
-            {formField.description}
-          </Text>
+          <p className="form-statistics-numbers__description">{formField.description}</p>
         )}
-      </Box>
+      </div>
 
-      <Box className={clsx('FormStatisticsNumbers-statsSection', classNames?.statsSection)}>
-        <Box component="h3" className={clsx('FormStatisticsNumbers-statsSectionTitle', 'font-bold mb-3', classNames?.statsSectionTitle)}>
+      <div className="form-statistics-numbers__stats-section">
+        <h3 className="mb-3 form-statistics-numbers__stats-section-title">
           {t('Statistical Summary')}
-        </Box>
-        <Grid gutter="md" className={clsx('FormStatisticsNumbers-statsGrid', classNames?.statsGrid)}>
+        </h3>
+        <div className="grid grid-cols-3 gap-4 form-statistics-numbers__stats-grid">
           {statsItems.map((item, i) => (
-            <Grid.Col key={i} span={4}>
-              <StatisticItem label={item.label} value={item.value} description={item.description} />
-            </Grid.Col>
+            <StatisticItem
+              key={i}
+              label={item.label}
+              value={item.value}
+              description={item.description}
+            />
           ))}
-        </Grid>
-      </Box>
+        </div>
+      </div>
 
-      <Box className={clsx('FormStatisticsNumbers-chart', classNames?.chart)}>
-        <Box component="h3" className={clsx('FormStatisticsNumbers-chartTitle', 'font-bold mb-2 text-center my-3', classNames?.chartTitle)}>
+      <div className="form-statistics-numbers__chart">
+        <h3 className="mb-2 my-3 form-statistics-numbers__chart-title">
           {t('Response Count Chart')}
-        </Box>
+        </h3>
         <CompositeChart
           withLegend
           withRightYAxis
@@ -292,7 +263,7 @@ export function FormStatisticsNumbers({
             ),
           }}
         />
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 }

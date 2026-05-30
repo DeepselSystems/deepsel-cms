@@ -146,9 +146,9 @@ export const FormRenderer = ({
   }, [fields, initialFieldsData, setFormFieldsData]);
 
   return (
-    <div className={clsx('form-renderer-root', 'space-y-3', className)}>
+    <div className={clsx('space-y-3', 'form-renderer', className)}>
       <form
-        className={clsx('form-renderer-form', 'space-y-3', {
+        className={clsx('space-y-3', 'form-renderer__form', {
           'pointer-events-none': submitted || reachedSubmissionLimit,
         })}
         onSubmit={(e) => {
@@ -157,7 +157,7 @@ export const FormRenderer = ({
         }}
       >
         {fields.map((field, index) => (
-          <div key={index} className="form-renderer-field-item">
+          <div key={index} className="form-renderer__field-item">
             <FormFieldTypeRenderer
               field={field}
               value={formFieldsData[field.id]?.value}
@@ -171,11 +171,13 @@ export const FormRenderer = ({
         ))}
 
         {!submitted && (
-          <div className="form-renderer-submit-wrapper">
+          <div className="form-renderer__submit-wrapper">
             <button
               type="submit"
               disabled={loading || submitted || reachedSubmissionLimit}
-              className={clsx('form-renderer-submit-button', { 'is-loading': loading })}
+              className={clsx('form-renderer__submit-button', {
+                'form-renderer__submit-button--loading': loading,
+              })}
             >
               {t('Submit')}
             </button>

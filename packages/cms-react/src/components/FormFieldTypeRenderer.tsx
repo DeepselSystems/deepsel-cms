@@ -81,19 +81,19 @@ function FieldWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <div className={clsx('form-field-root', className)}>
-      <label className="form-field-label">
+    <div className={clsx('form-field', className)}>
+      <label className="form-field__label">
         {label}
         {required && (
-          <span className="form-field-required" aria-hidden="true">
+          <span className="form-field__required" aria-hidden="true">
             {' *'}
           </span>
         )}
       </label>
-      {description && <p className="form-field-description">{description}</p>}
+      {description && <p className="form-field__description">{description}</p>}
       {children}
       {error && (
-        <p className="form-field-error" role="alert">
+        <p className="form-field__error" role="alert">
           {error}
         </p>
       )}
@@ -127,6 +127,7 @@ export function FormFieldTypeRenderer({
         <FieldWrapper {...wrapperProps}>
           <input
             type="text"
+            className="form-field__control"
             placeholder={placeholder ?? undefined}
             required={required}
             maxLength={fc.max_length ?? undefined}
@@ -141,6 +142,7 @@ export function FormFieldTypeRenderer({
       return (
         <FieldWrapper {...wrapperProps}>
           <textarea
+            className="form-field__control"
             placeholder={placeholder ?? undefined}
             required={required}
             maxLength={fc.max_length ?? undefined}
@@ -157,6 +159,7 @@ export function FormFieldTypeRenderer({
         <FieldWrapper {...wrapperProps}>
           <input
             type="number"
+            className="form-field__control"
             placeholder={placeholder ?? undefined}
             required={required}
             min={fc.min_value != null ? Number(fc.min_value) : undefined}
@@ -171,18 +174,19 @@ export function FormFieldTypeRenderer({
     case FormFieldType.MultipleChoice:
       return (
         <FieldWrapper {...wrapperProps}>
-          <div className="form-field-options">
+          <div className="form-field__options">
             {(fc.options || []).map((option, index) => (
-              <label key={option.id || index} className="form-field-option">
+              <label key={option.id || index} className="form-field__option">
                 <input
                   type="radio"
+                  className="form-field__option-control"
                   name={`field_${field.id}`}
                   value={option.value}
                   checked={(value as string) === option.value}
                   onChange={() => onChange(option.value)}
                   required={required}
                 />
-                {option.label}
+                <span className="form-field__option-label">{option.label}</span>
               </label>
             ))}
           </div>
@@ -192,11 +196,12 @@ export function FormFieldTypeRenderer({
     case FormFieldType.Checkboxes:
       return (
         <FieldWrapper {...wrapperProps}>
-          <div className="form-field-options">
+          <div className="form-field__options">
             {(fc.options || []).map((option, index) => (
-              <label key={option.id || index} className="form-field-option">
+              <label key={option.id || index} className="form-field__option">
                 <input
                   type="checkbox"
+                  className="form-field__option-control"
                   value={option.value}
                   checked={((value as string[]) || []).includes(option.value)}
                   onChange={({ target: { checked } }) => {
@@ -208,7 +213,7 @@ export function FormFieldTypeRenderer({
                     );
                   }}
                 />
-                {option.label}
+                <span className="form-field__option-label">{option.label}</span>
               </label>
             ))}
           </div>
@@ -219,6 +224,7 @@ export function FormFieldTypeRenderer({
       return (
         <FieldWrapper {...wrapperProps}>
           <select
+            className="form-field__control"
             required={required}
             value={(value as string) || ''}
             onChange={({ target: { value: v } }) => onChange(v)}
@@ -238,6 +244,7 @@ export function FormFieldTypeRenderer({
         <FieldWrapper {...wrapperProps}>
           <input
             type="date"
+            className="form-field__control"
             required={required}
             min={fc.min_value != null ? String(fc.min_value) : undefined}
             max={fc.max_value != null ? String(fc.max_value) : undefined}
@@ -254,6 +261,7 @@ export function FormFieldTypeRenderer({
         <FieldWrapper {...wrapperProps}>
           <input
             type="time"
+            className="form-field__control"
             required={required}
             /** step is in seconds for native time input; fc.step is in minutes */
             step={(fc.step || 15) * 60}
@@ -270,6 +278,7 @@ export function FormFieldTypeRenderer({
         <FieldWrapper {...wrapperProps}>
           <input
             type="datetime-local"
+            className="form-field__control"
             required={required}
             min={fc.min_value != null ? String(fc.min_value) : undefined}
             max={fc.max_value != null ? String(fc.max_value) : undefined}
@@ -297,7 +306,7 @@ export function FormFieldTypeRenderer({
 
     default:
       return (
-        <p className={clsx('form-field-unsupported', className)}>
+        <p className={clsx('form-field--unsupported', className)}>
           {t('Unsupported field type: {{field_type}}', { field_type })}
         </p>
       );
@@ -360,6 +369,7 @@ function FilesUploadField({
       }));
       onChange([...current, ...fileObjects]);
     } catch {
+      // still remove from UI on failure
       setUploadError(t('File upload failed'));
     } finally {
       setUploading(false);
@@ -391,17 +401,17 @@ function FilesUploadField({
   const canAddMore = current.length < maxFiles;
 
   return (
-    <div className={clsx('form-field-root', className)}>
-      <label className="form-field-label">
+    <div className={clsx('form-field', className)}>
+      <label className="form-field__label">
         {label}
         {required && (
-          <span className="form-field-required" aria-hidden="true">
+          <span className="form-field__required" aria-hidden="true">
             {' *'}
           </span>
         )}
       </label>
 
-      {description && <p className="form-field-description">{description}</p>}
+      {description && <p className="form-field__description">{description}</p>}
 
       {canAddMore && (
         <Dropzone
@@ -412,9 +422,12 @@ function FilesUploadField({
           accept={allowedTypes === '*' ? undefined : [allowedTypes]}
           multiple={maxFiles > 1}
           loading={uploading}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors mb-2"
+          className="border-2 border-dashed rounded-lg p-4 mb-2 form-field__dropzone"
         >
-          <div className="flex items-center gap-2" style={{ pointerEvents: 'none' }}>
+          <div
+            className="flex items-center gap-2 form-field__dropzone-content"
+            style={{ pointerEvents: 'none' }}
+          >
             <Dropzone.Accept>
               <IconUpload size={16} />
             </Dropzone.Accept>
@@ -425,25 +438,25 @@ function FilesUploadField({
               <IconUpload size={16} />
             </Dropzone.Idle>
             <div>
-              <p className="text-sm font-medium">{t('Drag files here or click to select')}</p>
-              <p className="text-xs text-gray-500">{`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}</p>
+              <p className="form-field__dropzone-hint">{t('Drag files here or click to select')}</p>
+              <p className="form-field__dropzone-meta">{`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}</p>
             </div>
           </div>
         </Dropzone>
       )}
 
       {current.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 form-field__file-list">
           {current.map((file, index) => (
             <div
               key={String(file.id ?? index)}
-              className="flex items-center justify-between p-3 border rounded"
+              className="flex items-center justify-between p-3 border rounded form-field__file-item"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 form-field__file-info">
                 <IconFile size={16} />
                 <div>
-                  <p className="text-sm font-medium">{getFileName(file)}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="form-field__file-name">{getFileName(file)}</p>
+                  <p className="form-field__file-meta">
                     {file.contentType && `${file.contentType}`}
                     {file.filesize != null && ` • ${formatFileSize(file.filesize)}`}
                   </p>
@@ -453,7 +466,7 @@ function FilesUploadField({
                 type="button"
                 disabled={deleteLoading}
                 onClick={() => void handleRemoveFile(index)}
-                className="p-1 text-gray-500 hover:text-red-500 disabled:opacity-50"
+                className="p-1 disabled:opacity-50 form-field__file-remove"
               >
                 <IconTrash size={16} />
               </button>
@@ -462,10 +475,10 @@ function FilesUploadField({
         </div>
       )}
 
-      <p className="text-xs text-gray-400 mt-1">{`${current.length} of ${maxFiles} files uploaded`}</p>
+      <p className="form-field__file-count">{`${current.length} of ${maxFiles} files uploaded`}</p>
 
       {(error || uploadError) && (
-        <p className="form-field-error" role="alert">
+        <p className="form-field__error" role="alert">
           {error || uploadError}
         </p>
       )}
