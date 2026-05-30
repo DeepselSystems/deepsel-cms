@@ -30,6 +30,7 @@ export function FormStatisticsFields({
   );
 }
 
+/** Renders the appropriate statistics chart for a given field type */
 function renderFieldStats(field: FormField, submissions: FormStatisticsData['submissions']) {
   switch (field.field_type) {
     case FORM_FIELD_TYPE.Checkboxes:

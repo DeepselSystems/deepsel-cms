@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import clsx from 'clsx';
-import { Paper, Text, Box, Group, Badge } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
 import { useTranslation } from 'react-i18next';
 import { FORM_FIELD_TYPE, type FormField, type FormSubmission } from '@deepsel/cms-utils';
@@ -15,29 +14,10 @@ const SUPPORTED_TYPES = [
 
 const COUNT_KEY = 'Count';
 
-/** CSS slot names for FormStatisticsOptions */
-export interface FormStatisticsOptionsClassNames {
-  /** Root Paper wrapper */
-  root?: string;
-  /** Wrapper around label, description and option badges */
-  header?: string;
-  /** Field label text */
-  label?: string;
-  /** Field description text */
-  description?: string;
-  /** Group containing the option badges */
-  optionBadges?: string;
-  /** Wrapper around chart title and BarChart */
-  chart?: string;
-  /** Chart section title */
-  chartTitle?: string;
-}
-
 interface FormStatisticsOptionsProps {
   formField: FormField;
   formSubmissions: FormSubmission[];
   className?: string;
-  classNames?: FormStatisticsOptionsClassNames;
 }
 
 /**
@@ -47,7 +27,6 @@ export function FormStatisticsOptions({
   formField,
   formSubmissions,
   className,
-  classNames,
 }: FormStatisticsOptionsProps) {
   const { t } = useTranslation();
   const { fieldSubmissions } = useSubmissionStatisticsData(formField, formSubmissions);
@@ -77,29 +56,25 @@ export function FormStatisticsOptions({
   );
 
   return (
-    <Paper className={clsx('FormStatisticsOptions-root', 'p-4 bg-gray-50 rounded-lg border space-y-4', className, classNames?.root)}>
-      <Box className={clsx('FormStatisticsOptions-header', classNames?.header)}>
-        <Text component="h2" size="xl" fw={700} className={clsx('FormStatisticsOptions-label', 'text-black break-words', classNames?.label)}>
-          {formField.label}
-        </Text>
+    <div className={clsx('p-4 rounded-lg border space-y-4', 'form-statistics-options', className)}>
+      <div className="form-statistics-options__header">
+        <h2 className="break-words form-statistics-options__label">{formField.label}</h2>
         {formField.description && (
-          <Text size="sm" c="dimmed" className={clsx('FormStatisticsOptions-description', classNames?.description)}>
-            {formField.description}
-          </Text>
+          <p className="form-statistics-options__description">{formField.description}</p>
         )}
-        <Group gap="xs" mt="lg" className={clsx('FormStatisticsOptions-optionBadges', classNames?.optionBadges)}>
+        <div className="flex flex-wrap gap-2 mt-6 form-statistics-options__option-badges">
           {options.map(({ label }, i) => (
-            <Badge key={i} variant="outline" size="sm">
+            <span key={i} className="form-statistics-options__option-badge">
               {label}
-            </Badge>
+            </span>
           ))}
-        </Group>
-      </Box>
+        </div>
+      </div>
 
-      <Box className={clsx('FormStatisticsOptions-chart', classNames?.chart)}>
-        <Box component="h3" className={clsx('FormStatisticsOptions-chartTitle', 'font-bold mb-2 text-center my-3', classNames?.chartTitle)}>
+      <div className="form-statistics-options__chart">
+        <h3 className="mb-2 my-3 form-statistics-options__chart-title">
           {t('Response Count Chart')}
-        </Box>
+        </h3>
         <BarChart
           className="mx-auto"
           h={300}
@@ -111,7 +86,7 @@ export function FormStatisticsOptions({
           dataKey="label"
           maxBarWidth={40}
         />
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 }

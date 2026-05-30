@@ -1,5 +1,4 @@
 import React from 'react';
-import { Alert, Badge, Box, Group, Stack, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { IconInfoCircle } from '@tabler/icons-react';
@@ -19,26 +18,6 @@ interface SubmissionFieldSnapshot extends Record<string, unknown> {
   _isDeleted: boolean;
 }
 
-/** CSS slot names for FormSubmissionViewer */
-export interface FormSubmissionViewerClassNames {
-  /** Root wrapper */
-  root?: string;
-  /** Wrapper around title + description */
-  titleSection?: string;
-  /** Form title text */
-  title?: string;
-  /** Form description text */
-  description?: string;
-  /** Wrapper around the list of field responses */
-  fieldList?: string;
-  /** Wrapper around each individual field response */
-  fieldItem?: string;
-  /** Field label text */
-  fieldLabel?: string;
-  /** Closing remarks text */
-  closingRemarks?: string;
-}
-
 export interface FormSubmissionViewerProps {
   formContent: FormData;
   submissionData: Record<number, FormSubmissionFieldValue>;
@@ -50,7 +29,6 @@ export interface FormSubmissionViewerProps {
    */
   renderFile?: (file: UploadedFileRecord, index: number) => React.ReactNode;
   className?: string;
-  classNames?: FormSubmissionViewerClassNames;
 }
 
 /**
@@ -63,7 +41,6 @@ export function FormSubmissionViewer({
   showTitle = true,
   renderFile,
   className,
-  classNames,
 }: FormSubmissionViewerProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -79,72 +56,68 @@ export function FormSubmissionViewer({
 
   if (!formContent) {
     return (
-      <Box className="text-center py-8">
-        <Text c="dimmed">{t('No form data available')}</Text>
-      </Box>
+      <div className="py-8 form-submission-viewer--empty">
+        <p className="form-submission-viewer__empty-message">{t('No form data available')}</p>
+      </div>
     );
   }
 
   return (
-    <Box className={clsx('FormSubmissionViewer-root', 'container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4', className, classNames?.root)}>
+    <div className={clsx('container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4', 'form-submission-viewer', className)}>
       {showTitle && (
-        <Box className={clsx('FormSubmissionViewer-titleSection', 'space-y-3', classNames?.titleSection)}>
-          <Text size="xl" fw={700} className={clsx('FormSubmissionViewer-title', 'text-black break-words text-center', classNames?.title)}>
-            {formContent.title}
-          </Text>
+        <div className="space-y-3 form-submission-viewer__title-section">
+          <h2 className="break-words form-submission-viewer__title">{formContent.title}</h2>
           {formContent.description && (
-            <Text size="sm" c="dimmed" className={clsx('FormSubmissionViewer-description', classNames?.description)}>
-              {formContent.description}
-            </Text>
+            <p className="form-submission-viewer__description">{formContent.description}</p>
           )}
-        </Box>
+        </div>
       )}
 
-      <Box className={clsx('FormSubmissionViewer-fieldList', 'space-y-3', classNames?.fieldList)}>
+      <div className="space-y-3 form-submission-viewer__field-list">
         {submissionFields.map((field, index) => (
-          <Box key={index} className={clsx('FormSubmissionViewer-fieldItem', 'p-4 bg-gray-50 rounded-lg border', classNames?.fieldItem)}>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <Text size="sm" fw={600} className={clsx('FormSubmissionViewer-fieldLabel', classNames?.fieldLabel)}>
-                  {typeof field.label === 'string' ? field.label : ''}
-                  {Boolean(field.required) && (
-                    <Text component="span" c="red">
-                      {' *'}
-                    </Text>
-                  )}
-                </Text>
-              </Group>
-
-              {Boolean(field.description) && (
-                <Text size="xs" c="dimmed">
-                  {String(field.description)}
-                </Text>
+          <div key={index} className="p-4 rounded-lg border flex flex-col gap-2 form-submission-viewer__field-item">
+            <p className="form-submission-viewer__field-label">
+              {typeof field.label === 'string' ? field.label : ''}
+              {Boolean(field.required) && (
+                <span className="form-submission-viewer__field-required" aria-hidden="true">
+                  {' *'}
+                </span>
               )}
+            </p>
 
-              <Box className="mt-2">
-                <SubmittedValueDisplay
-                  field={field as unknown as FormField}
-                  value={field._submittedValue}
-                  renderFile={renderFile}
-                />
-              </Box>
+            {Boolean(field.description) && (
+              <p className="form-submission-viewer__field-description">
+                {String(field.description)}
+              </p>
+            )}
 
-              {field._isDeleted && (
-                <Alert color="orange" variant="light" icon={<IconInfoCircle size={16} />}>
-                  <Text size="xs">{t('This field has been removed from the current form')}</Text>
-                </Alert>
-              )}
-            </Stack>
-          </Box>
+            <div className="form-submission-viewer__field-value">
+              <SubmittedValueDisplay
+                field={field as unknown as FormField}
+                value={field._submittedValue}
+                renderFile={renderFile}
+              />
+            </div>
+
+            {field._isDeleted && (
+              <div
+                role="alert"
+                className="flex items-center gap-2 p-3 border rounded form-submission-viewer__deleted-warning"
+              >
+                <IconInfoCircle size={16} className="form-submission-viewer__deleted-warning-icon" />
+                <p className="form-submission-viewer__deleted-warning-text">
+                  {t('This field has been removed from the current form')}
+                </p>
+              </div>
+            )}
+          </div>
         ))}
-      </Box>
+      </div>
 
       {formContent.closing_remarks && (
-        <Text size="sm" c="dimmed" className={clsx('FormSubmissionViewer-closingRemarks', classNames?.closingRemarks)}>
-          {formContent.closing_remarks}
-        </Text>
+        <p className="form-submission-viewer__closing-remarks">{formContent.closing_remarks}</p>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -164,9 +137,7 @@ function SubmittedValueDisplay({
 
   if (value === null || value === undefined || value === '') {
     return (
-      <Text size="sm" c="dimmed" fs="italic">
-        {t('No answer provided')}
-      </Text>
+      <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>
     );
   }
 
@@ -174,13 +145,13 @@ function SubmittedValueDisplay({
     case FormFieldType.Checkboxes:
       if (Array.isArray(value) && value.length > 0) {
         return (
-          <Group gap="xs">
+          <div className="flex flex-wrap gap-2 form-submission-viewer__option-badges">
             {value.map((item, i) => (
-              <Badge key={i} variant="outline" size="sm">
+              <span key={i} className="form-submission-viewer__option-badge">
                 {String(item)}
-              </Badge>
+              </span>
             ))}
-          </Group>
+          </div>
         );
       }
       break;
@@ -188,105 +159,85 @@ function SubmittedValueDisplay({
     case FormFieldType.MultipleChoice:
     case FormFieldType.Dropdown:
       return (
-        <Badge variant="outline" size="sm">
-          {value as string}
-        </Badge>
+        <span className="form-submission-viewer__option-badge">{value as string}</span>
       );
 
     case FormFieldType.Date:
       return (
-        <Text size="sm" fw={500}>
+        <p className="form-submission-viewer__value">
           {dayjs(value as string).format('DD MMM YYYY')}
-        </Text>
+        </p>
       );
 
     case FormFieldType.Datetime:
       return (
-        <Text size="sm" fw={500}>
+        <p className="form-submission-viewer__value">
           {dayjs(value as string).format('DD MMM YYYY HH:mm')}
-        </Text>
+        </p>
       );
 
     case FormFieldType.Time:
       return (
-        <Text size="sm" fw={500}>
+        <p className="form-submission-viewer__value">
           {dayjs(value as string, 'HH:mm:ss').format('HH:mm')}
-        </Text>
+        </p>
       );
 
     case FormFieldType.Number:
       return (
-        <Text size="sm" fw={500} className="font-mono">
+        <p className="form-submission-viewer__value form-submission-viewer__value--number">
           {Number(value).toLocaleString()}
-        </Text>
+        </p>
       );
 
     case FormFieldType.Paragraph:
       return (
-        <Text size="sm" fw={500} className="break-words whitespace-pre-wrap">
+        <p className="break-words whitespace-pre-wrap form-submission-viewer__value form-submission-viewer__value--multiline">
           {value as string}
-        </Text>
+        </p>
       );
 
     case FormFieldType.Files:
       if (Array.isArray(value) && value.length > 0) {
         return (
-          <Stack gap="md">
+          <div className="flex flex-col gap-4 form-submission-viewer__file-list">
             {(value as UploadedFileRecord[]).map((file, i) => {
               if (renderFile) return <React.Fragment key={i}>{renderFile(file, i)}</React.Fragment>;
               return <DefaultFileRow key={i} file={file} />;
             })}
-          </Stack>
+          </div>
         );
       }
       break;
 
     default:
       return (
-        <Text size="sm" fw={500} className="break-words">
-          {value as string}
-        </Text>
+        <p className="break-words form-submission-viewer__value">{value as string}</p>
       );
   }
 
   return (
-    <Text size="sm" c="dimmed" fs="italic">
-      {t('No answer provided')}
-    </Text>
+    <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>
   );
 }
 
-/** Fallback file row when no renderFile DI is provided */
+/** Fallback file row when no renderFile prop is provided */
 function DefaultFileRow({ file }: { file: UploadedFileRecord }): React.ReactElement {
   const contentType = file.contentType ?? file.content_type;
   const fileSize = file.filesize != null ? formatFileSize(file.filesize) : null;
 
   return (
-    <Box className="p-3 bg-white rounded border border-gray-200 shadow-sm">
-      <Group gap="md">
-        <Box className="flex-1">
-          <Text size="sm" fw={500} className="text-gray-900">
-            {String(file.name)}
-          </Text>
-          <Group gap="xs">
-            {contentType && (
-              <Text size="xs" c="dimmed">
-                {contentType}
-              </Text>
-            )}
-            {fileSize && (
-              <>
-                <Text size="xs" c="dimmed">
-                  •
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {fileSize}
-                </Text>
-              </>
-            )}
-          </Group>
-        </Box>
-      </Group>
-    </Box>
+    <div className="p-3 border rounded file-row">
+      <p className="file-row__name">{String(file.name)}</p>
+      <div className="flex items-center gap-2 file-row__meta">
+        {contentType && <span className="file-row__meta-type">{contentType}</span>}
+        {fileSize && (
+          <>
+            <span aria-hidden="true">•</span>
+            <span className="file-row__meta-size">{fileSize}</span>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

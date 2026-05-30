@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useWebsiteData } from '../contexts/index.js';
+import { useWebsiteData } from '../contexts';
 import {
   fetchPageData,
   fetchBlogList,
