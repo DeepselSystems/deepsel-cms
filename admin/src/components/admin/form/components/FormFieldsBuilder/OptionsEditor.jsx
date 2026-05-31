@@ -27,7 +27,7 @@ const OptionsEditor = ({ options = [], onChange, fieldType }) => {
   const [newOptionLabel, setNewOptionLabel] = useState('');
 
   /**
-   * Generates option value from label
+   * Generates option value slug from label
    * @param {string} label - Option label
    * @returns {string}
    */
@@ -40,20 +40,39 @@ const OptionsEditor = ({ options = [], onChange, fieldType }) => {
   }, []);
 
   /**
+   * Ensures the value is unique among current options.
+   * If a collision exists, appends _2, _3, etc.
+   * @param {string} baseValue - Generated slug value
+   * @param {number} excludeIndex - Index to exclude from collision check (when updating)
+   * @returns {string}
+   */
+  const ensureUniqueValue = useCallback(
+    (baseValue, excludeIndex = -1) => {
+      const existing = options.filter((_, i) => i !== excludeIndex).map((o) => o.value);
+      if (!existing.includes(baseValue)) return baseValue;
+      let i = 2;
+      while (existing.includes(`${baseValue}_${i}`)) i++;
+      return `${baseValue}_${i}`;
+    },
+    [options],
+  );
+
+  /**
    * Adds a new option
    */
   const addOption = useCallback(() => {
     if (!newOptionLabel.trim()) return;
 
+    const baseValue = generateOptionValue(newOptionLabel.trim());
     const newOption = {
       id: generateOptionId(),
       label: newOptionLabel.trim(),
-      value: generateOptionValue(newOptionLabel.trim()),
+      value: ensureUniqueValue(baseValue),
     };
 
     onChange([...options, newOption]);
     setNewOptionLabel('');
-  }, [generateOptionValue, newOptionLabel, onChange, options]);
+  }, [ensureUniqueValue, generateOptionValue, newOptionLabel, onChange, options]);
 
   /**
    * Updates an option
@@ -62,14 +81,15 @@ const OptionsEditor = ({ options = [], onChange, fieldType }) => {
    */
   const updateOption = useCallback(
     (index, updatedOption) => {
+      const baseValue = generateOptionValue(updatedOption.label);
       const newOptions = [...options];
       newOptions[index] = {
         ...updatedOption,
-        value: generateOptionValue(updatedOption.label),
+        value: ensureUniqueValue(baseValue, index),
       };
       onChange(newOptions);
     },
-    [generateOptionValue, onChange, options],
+    [ensureUniqueValue, generateOptionValue, onChange, options],
   );
 
   /**
