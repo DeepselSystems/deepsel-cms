@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Alert, Box, MantineProvider, Text } from "@mantine/core";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
+import "../i18n";
 import {
   WebsiteDataProvider,
   useWebsiteData,
