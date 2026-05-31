@@ -272,7 +272,19 @@ const FormView = () => {
               <Box className=" bg-gray-zumthor rounded-xl shadow p-20 h-full overflow-auto">
                 {Object.keys(formContentsMap).map((localeId, index) => (
                   <Tabs.Panel key={index} value={String(localeId)}>
-                    <FormFieldsPreview formContent={formContentsMap[localeId]} />
+                    <Box className="container">
+                      {formContentsMap[localeId].title && (
+                        <Box className="mb-2 text-2xl font-semibold text-center">
+                          {formContentsMap[localeId].title}
+                        </Box>
+                      )}
+                      {formContentsMap[localeId].description && (
+                        <Box className="mb-4 text-gray-500 text-sm text-center">
+                          {formContentsMap[localeId].description}
+                        </Box>
+                      )}
+                      <FormFieldsPreview formContent={formContentsMap[localeId]} />
+                    </Box>
                   </Tabs.Panel>
                 ))}
               </Box>

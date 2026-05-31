@@ -50,14 +50,10 @@
   background-color: #fff;
   color: var(--form-color-text);
   outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: border-color 0.15s;
 }
 
 .form-renderer .form-field__control:focus {
-  border-color: var(--form-color-primary);
-  box-shadow: 0 0 0 3px var(--form-color-primary-focus);
 }
 
 .form-renderer .form-field__control:disabled {
