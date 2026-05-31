@@ -101,7 +101,7 @@ const FormSubmissionList = () => {
       ),
     },
     {
-      field: 'locale',
+      field: 'form_content.locale.name',
       headerName: t('Locale'),
       width: 350,
       renderCell: (params) => (
