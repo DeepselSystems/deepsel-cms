@@ -102,7 +102,6 @@ const FieldEditor = ({ field, index, onUpdate, onDelete, onDuplicate, dragHandle
           <ActionIcon
             variant="subtle"
             size="sm"
-            c="red"
             onClick={() => onDelete(index)}
             title={t('Delete Field')}
           >

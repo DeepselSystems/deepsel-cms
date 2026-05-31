@@ -175,7 +175,6 @@ const OptionsEditor = ({ options = [], onChange, fieldType }) => {
                           <ActionIcon
                             variant="subtle"
                             size="sm"
-                            c="red"
                             onClick={() => removeOption(index)}
                             title={t('Remove option')}
                           >
