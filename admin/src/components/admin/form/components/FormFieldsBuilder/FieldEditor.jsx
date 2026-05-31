@@ -175,6 +175,8 @@ const FieldEditor = ({ field, index, onUpdate, onDelete, onDuplicate, dragHandle
         <Button
           className="px-0"
           variant="transparent"
+          fw={600}
+          fz="lg"
           onClick={() => setShowAdvanced(!showAdvanced)}
           title={t('Advanced Settings')}
           rightSection={
