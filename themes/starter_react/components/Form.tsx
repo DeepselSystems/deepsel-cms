@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Alert, Box, MantineProvider, Text } from "@mantine/core";
-import { IconCircleCheck } from "@tabler/icons-react";
+import { MantineProvider } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import "../i18n";
 import {
@@ -33,24 +32,20 @@ export default function Form({ data }: { data: FormData }) {
 }
 
 /**
- * Form not found component
+ * Form not found state
  */
 function FormNotFound() {
+  const { t } = useTranslation();
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="sr-form__page">
       <HeaderBar />
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center grow flex flex-col justify-center">
-        <h1 className="text-6xl font-bold mb-4">404</h1>
-        <h2 className="text-3xl font-semibold mb-6">Form Not Found</h2>
-        <p className="text-lg mb-8 text-gray-600">
-          The form you are looking for doesn&apos;t exist or has been removed.
+      <div className="sr-form__not-found sr-form__page-body">
+        <h1>404</h1>
+        <h2>{t("Form Not Found")}</h2>
+        <p>
+          {t("The form you are looking for doesn't exist or has been removed.")}
         </p>
-        <a
-          href="/"
-          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mx-auto"
-        >
-          Go Back Home
-        </a>
+        <a href="/">{t("Go Back Home")}</a>
       </div>
       <Footer />
     </main>
@@ -58,7 +53,7 @@ function FormNotFound() {
 }
 
 /**
- * Form content component
+ * Form content component — handles submission logic and renders FormRenderer
  */
 function FormContent() {
   const { websiteData } = useWebsiteData();
@@ -132,50 +127,48 @@ function FormContent() {
         })
         .catch((err: unknown) => {
           setSubmitError(
-            err instanceof Error ? err.message : "Failed to submit form",
+            err instanceof Error ? err.message : t("Failed to submit form"),
           );
         })
         .finally(() => setIsSubmitting(false));
     },
-    [formData.form_id, formData.id],
+    [formData.form_id, formData.id, t],
   );
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="sr-form__page">
       <HeaderBar />
 
-      <div className="py-10 xl:py-20 grow">
-        <div className="container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4">
-          <div className="space-y-3 mb-9">
-            <h1 className="text-3xl font-bold text-black break-words text-center">
-              {formData.title}
-            </h1>
+      <div className="sr-form__page-body">
+        <div className="sr-form">
+          <div>
+            <h1 className="sr-form__title">{formData.title}</h1>
+
             {formData.description && (
-              <Text size="xs" c="dimmed">
-                {formData.description}
-              </Text>
+              <p className="sr-form__description">{formData.description}</p>
             )}
+
             {formData.show_remaining_submissions &&
               submissionsRemaining !== null && (
-                <Box>
-                  {reachedSubmissionLimit ? (
-                    <Text size="xs" c="red">
-                      {t(
+                <div
+                  className={
+                    reachedSubmissionLimit
+                      ? "sr-form__availability sr-form__availability--limit-reached"
+                      : "sr-form__availability sr-form__availability--remaining"
+                  }
+                >
+                  {reachedSubmissionLimit
+                    ? t(
                         "This form has reached its submission limit and is no longer accepting responses.",
-                      )}
-                    </Text>
-                  ) : (
-                    <Text size="xs" c="dimmed">
-                      {t(
+                      )
+                    : t(
                         "Limited availability: {{submissions_remaining}}/{{max_submissions}} submissions remaining.",
                         {
                           submissions_remaining: submissionsRemaining,
                           max_submissions: formData.max_submissions || 0,
                         },
                       )}
-                    </Text>
-                  )}
-                </Box>
+                </div>
               )}
           </div>
 
@@ -187,67 +180,52 @@ function FormContent() {
             onSubmit={handleSubmit}
           />
 
-          {!submitted && formData.closing_remarks && (
-            <Text c="dark">{formData.closing_remarks}</Text>
-          )}
-
           {submitted && (
-            <Alert
-              color="blue"
-              title={
-                <Box>
-                  <Box component="span">{formData.success_message}</Box>
-                  {formData.enable_public_statistics &&
-                    typeof window !== "undefined" && (
-                      <Box component="span">
-                        {" "}
-                        <a
-                          className="underline"
-                          href={`${window.location.href}/statistics`}
-                        >
-                          {t("Click here to see statistics for this form.")}
-                        </a>
-                      </Box>
-                    )}
-                </Box>
-              }
-              icon={<IconCircleCheck size={16} />}
-            />
+            <div className="sr-form__success">
+              <span>{formData.success_message}</span>
+              {formData.enable_public_statistics &&
+                typeof window !== "undefined" && (
+                  <a
+                    className="sr-form__success-stats-link"
+                    href={`${window.location.href}/statistics`}
+                  >
+                    {t("Click here to see statistics for this form.")}
+                  </a>
+                )}
+            </div>
           )}
 
-          {submitError && (
-            <p className="text-red-600 text-center mt-4 text-sm">
-              {submitError}
+          {!submitted && formData.closing_remarks && (
+            <p className="sr-form__closing-remarks">
+              {formData.closing_remarks}
             </p>
           )}
-        </div>
 
-        <CustomCodeRenderer
-          pageData={{ form_custom_code: formData.form_custom_code }}
-          contentData={formData as unknown as Record<string, unknown>}
-          type="form"
-          isPreviewMode={false}
-        />
+          {submitError && <p className="sr-form__error">{submitError}</p>}
+        </div>
       </div>
 
       <Footer />
+
+      <CustomCodeRenderer
+        pageData={{ form_custom_code: formData.form_custom_code }}
+        contentData={formData as unknown as Record<string, unknown>}
+        type="form"
+        isPreviewMode={false}
+      />
     </main>
   );
 }
 
-/** Shared header used by both the form view and the 404 fallback */
+/**
+ * Header bar with navigation
+ */
 function HeaderBar() {
   return (
-    <header className="shadow px-3 backdrop-blur bg-white/90">
-      <div className="flex justify-between items-center gap-6 max-w-[1200px] mx-auto">
-        <a
-          href="/"
-          className="flex items-center gap-2 text-2xl font-bold no-underline text-black"
-        >
-          My Website
-        </a>
-        <div className="flex items-center gap-6">
-          <Menu />
+    <header className="sr-form__navbar">
+      <div className="sr-form__navbar-inner">
+        <Menu />
+        <div className="sr-form__navbar-actions">
           <SearchForm />
           <LangSwitcher />
         </div>
