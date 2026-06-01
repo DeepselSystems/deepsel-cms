@@ -9,7 +9,11 @@ import {
   CustomCodeRenderer,
   type FormSubmitData,
 } from "@deepsel/cms-react";
-import { WebsiteDataTypes, type FormData } from "@deepsel/cms-utils";
+import {
+  WebsiteDataTypes,
+  FORM_FIELD_TYPE,
+  type FormData,
+} from "@deepsel/cms-utils";
 import Menu from "./Menu";
 import Footer from "./Footer";
 import LangSwitcher from "./LangSwitcher";
@@ -96,10 +100,30 @@ function FormContent() {
       setIsSubmitting(true);
       setSubmitError(null);
 
-      // Strip internal tracking keys (_error, _field) before sending to backend
+      // Collect files from deferred file fields before stripping internal keys
+      const filesByField: Record<number, File[]> = {};
+      Object.entries(rawData).forEach(([fieldId, fd]) => {
+        const meta = (fd as Record<string, unknown>)._field as
+          | { field_type?: string }
+          | undefined;
+        if (meta?.field_type === FORM_FIELD_TYPE.Files) {
+          const files =
+            ((fd as Record<string, unknown>).value as unknown[]) || [];
+          const localFiles = files.filter((f): f is File => f instanceof File);
+          if (localFiles.length > 0) filesByField[Number(fieldId)] = localFiles;
+        }
+      });
+
+      // Strip internal tracking keys; replace File[] values with null so submission_data
+      // remains JSON-serializable — backend will inject attachment IDs at these positions.
       const submissionData = Object.fromEntries(
         Object.entries(rawData).map(
-          ([fieldId, { _error, _field, ...clean }]) => [fieldId, clean],
+          ([fieldId, { _error, _field, ...clean }]) => {
+            if (filesByField[Number(fieldId)]) {
+              return [fieldId, { ...clean, value: null }];
+            }
+            return [fieldId, clean];
+          },
         ),
       );
 
@@ -109,6 +133,20 @@ function FormContent() {
       body.append("submission_data", JSON.stringify(submissionData));
       if (typeof navigator !== "undefined") {
         body.append("submitter_user_agent", navigator.userAgent);
+      }
+
+      // Append files per field with key pattern file_{fieldId}_{index}
+      Object.entries(filesByField).forEach(([fieldId, files]) => {
+        files.forEach((file, index) => {
+          body.append(`file_${fieldId}_${index}`, file, file.name);
+        });
+      });
+
+      if (Object.keys(filesByField).length > 0) {
+        body.append(
+          "file_field_ids",
+          JSON.stringify(Object.keys(filesByField).map(Number)),
+        );
       }
 
       fetch("/api/v1/form_submission/", {
