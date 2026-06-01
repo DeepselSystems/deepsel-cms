@@ -56,13 +56,13 @@ export function FormStatisticsOptions({
   );
 
   return (
-    <div className={clsx('p-4 rounded-lg border space-y-4', 'form-statistics-options', className)}>
+    <div className={clsx('form-statistics-options', className)}>
       <div className="form-statistics-options__header">
-        <h2 className="break-words form-statistics-options__label">{formField.label}</h2>
+        <h2 className="form-statistics-options__label">{formField.label}</h2>
         {formField.description && (
           <p className="form-statistics-options__description">{formField.description}</p>
         )}
-        <div className="flex flex-wrap gap-2 mt-6 form-statistics-options__option-badges">
+        <div className="form-statistics-options__option-badges">
           {options.map(({ label }, i) => (
             <span key={i} className="form-statistics-options__option-badge">
               {label}
@@ -72,20 +72,17 @@ export function FormStatisticsOptions({
       </div>
 
       <div className="form-statistics-options__chart">
-        <h3 className="mb-2 my-3 form-statistics-options__chart-title">
-          {t('Response Count Chart')}
-        </h3>
-        <BarChart
-          className="mx-auto"
-          h={300}
-          maw={500}
-          miw={300}
-          data={barChartData}
-          series={barChartSeries}
-          tickLine="y"
-          dataKey="label"
-          maxBarWidth={40}
-        />
+        <h3 className="form-statistics-options__chart-title">{t('Response Count Chart')}</h3>
+        <div className="form-statistics-options__chart-area">
+          <BarChart
+            h={300}
+            data={barChartData}
+            series={barChartSeries}
+            dataKey="label"
+            tickLine="y"
+            maxBarWidth={40}
+          />
+        </div>
       </div>
     </div>
   );

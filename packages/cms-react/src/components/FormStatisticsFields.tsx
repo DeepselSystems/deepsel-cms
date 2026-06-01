@@ -20,7 +20,7 @@ export function FormStatisticsFields({
   className,
 }: FormStatisticsFieldsProps) {
   return (
-    <div className={clsx('space-y-4', 'form-statistics-fields', className)}>
+    <div className={clsx('form-statistics-fields', className)}>
       {fields.map((field, i) => (
         <div key={i} className="form-statistics-fields__field-item">
           {renderFieldStats(field, submissions)}

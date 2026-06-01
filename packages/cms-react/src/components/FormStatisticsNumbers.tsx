@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import clsx from 'clsx';
-import { Tooltip } from '@mantine/core';
-import { CompositeChart, ChartTooltip } from '@mantine/charts';
+import { alpha, Tooltip } from '@mantine/core';
+import { CompositeChart } from '@mantine/charts';
 import { useTranslation } from 'react-i18next';
 import { FORM_FIELD_TYPE, type FormField, type FormSubmission } from '@deepsel/cms-utils';
 import { useSubmissionStatisticsData } from '../hooks/useSubmissionStatisticsData.js';
@@ -29,17 +29,46 @@ interface StatisticItemProps {
   description?: string;
 }
 
+/** Custom tooltip for the composite chart */
+const ChartTooltip = memo(
+  ({
+    label,
+    payload,
+  }: {
+    label: string;
+    payload?: { name: string; value: number; color: string }[];
+  }) => {
+    if (!payload) return null;
+    return (
+      <div className="form-statistics-numbers__chart-tooltip">
+        <div className="form-statistics-numbers__chart-tooltip-label">{label}</div>
+        {payload.map((item) => (
+          <div
+            key={item.name}
+            className="form-statistics-numbers__chart-tooltip-row"
+            style={{ color: alpha(item.color, 1) }}
+          >
+            <span>{item.name}: </span>
+            <span>{item.name === DENSITY_KEY ? item.value.toFixed(4) : item.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  },
+);
+ChartTooltip.displayName = 'ChartTooltip';
+
 /** Single stat card (label + value + optional tooltip) */
 const StatisticItem = memo(({ label, value, description }: StatisticItemProps) => (
-  <div className="p-3 border rounded stat-item">
-    <div className="flex items-start justify-between gap-2 stat-item__inner">
-      <div className="flex-1 stat-item__content">
+  <div className="stat-item">
+    <div className="stat-item__inner">
+      <div className="stat-item__content">
         <p className="stat-item__label">{label}</p>
         <p className="stat-item__value">{value}</p>
       </div>
       {description && (
         <Tooltip label={description} multiline maw={300} withArrow>
-          <button type="button" className="flex-shrink-0 stat-item__info-btn">
+          <button type="button" className="stat-item__info-btn">
             ⓘ
           </button>
         </Tooltip>
@@ -213,19 +242,17 @@ export function FormStatisticsNumbers({
   );
 
   return (
-    <div className={clsx('p-4 rounded-lg border space-y-4', 'form-statistics-numbers', className)}>
+    <div className={clsx('form-statistics-numbers', className)}>
       <div className="form-statistics-numbers__header">
-        <h2 className="break-words form-statistics-numbers__label">{formField.label}</h2>
+        <h2 className="form-statistics-numbers__label">{formField.label}</h2>
         {formField.description && (
           <p className="form-statistics-numbers__description">{formField.description}</p>
         )}
       </div>
 
       <div className="form-statistics-numbers__stats-section">
-        <h3 className="mb-3 form-statistics-numbers__stats-section-title">
-          {t('Statistical Summary')}
-        </h3>
-        <div className="grid grid-cols-3 gap-4 form-statistics-numbers__stats-grid">
+        <h3 className="form-statistics-numbers__stats-section-title">{t('Statistical Summary')}</h3>
+        <div className="form-statistics-numbers__stats-grid">
           {statsItems.map((item, i) => (
             <StatisticItem
               key={i}
@@ -238,31 +265,31 @@ export function FormStatisticsNumbers({
       </div>
 
       <div className="form-statistics-numbers__chart">
-        <h3 className="mb-2 my-3 form-statistics-numbers__chart-title">
-          {t('Response Count Chart')}
-        </h3>
-        <CompositeChart
-          withLegend
-          withRightYAxis
-          h={300}
-          maw={500}
-          miw={300}
-          className="mx-auto"
-          tickLine="y"
-          dataKey="label"
-          maxBarWidth={30}
-          data={barChartData}
-          series={barChartSeries}
-          curveType="natural"
-          tooltipAnimationDuration={200}
-          rightYAxisLabel={DENSITY_KEY}
-          yAxisLabel={COUNT_KEY}
-          tooltipProps={{
-            content: ({ label, payload }) => (
-              <ChartTooltip label={`${formField.label}: ${label}`} payload={payload} />
-            ),
-          }}
-        />
+        <h3 className="form-statistics-numbers__chart-title">{t('Response Count Chart')}</h3>
+        <div className="form-statistics-numbers__chart-area">
+          <CompositeChart
+            withLegend
+            withRightYAxis
+            h={300}
+            dataKey="label"
+            data={barChartData}
+            series={barChartSeries}
+            curveType="natural"
+            tickLine="y"
+            maxBarWidth={30}
+            tooltipAnimationDuration={200}
+            rightYAxisLabel={DENSITY_KEY}
+            yAxisLabel={COUNT_KEY}
+            tooltipProps={{
+              content: ({ label, payload }) => (
+                <ChartTooltip
+                  label={`${formField.label}: ${label}`}
+                  payload={payload as { name: string; value: number; color: string }[]}
+                />
+              ),
+            }}
+          />
+        </div>
       </div>
     </div>
   );
