@@ -212,6 +212,7 @@ function FormContent() {
           </div>
 
           <FormRenderer
+            enablePrefill
             formContent={formData}
             initialFieldsData={initialFieldsData}
             loading={isSubmitting}

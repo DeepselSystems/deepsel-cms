@@ -9,6 +9,7 @@ import {
 } from '@deepsel/cms-utils';
 import { FormFieldTypeRenderer, type UploadedFileRecord } from './FormFieldTypeRenderer.js';
 import { useFormFieldsData } from '../hooks/useFormFieldsData.js';
+import useFormPrefill from '../hooks/useFormPrefill.js';
 
 /** Per-field state with internal UI tracking keys stripped before submission */
 interface InternalFieldData extends Partial<FormSubmissionFieldValue> {
@@ -21,10 +22,18 @@ export type FormSubmitData = Record<number, Record<string, unknown>>;
 
 export interface FormRendererProps {
   formContent: FormData;
-  onSubmit?: (data: FormSubmitData) => void;
+  /** May return a Promise — prefill is saved only after the Promise resolves */
+  onSubmit?: (data: FormSubmitData) => Promise<void> | void;
   loading?: boolean;
   submitted?: boolean;
   initialFieldsData?: Record<number, Partial<FormSubmissionFieldValue>>;
+  /**
+   * When true, form data is read from and saved to localStorage for prefill on next visit.
+   * Prefill is only saved after a successful submission (resolved Promise or synchronous return).
+   * `initialFieldsData` takes priority over localStorage when provided.
+   * @default false
+   */
+  enablePrefill?: boolean;
   /** Upload handler — required only when the form has a Files field */
   onUploadFiles?: (files: File[]) => Promise<UploadedFileRecord[]>;
   /** Delete handler — required only when the form has a Files field */
@@ -46,6 +55,7 @@ export const FormRenderer = ({
   loading = false,
   submitted = false,
   initialFieldsData = {},
+  enablePrefill = false,
   onUploadFiles,
   onDeleteAttachment,
   uploadSizeLimit,
@@ -80,6 +90,16 @@ export const FormRenderer = ({
   const { formFieldsData, setFieldData, setFormFieldsData } =
     useFormFieldsData<InternalFieldData>(initialData);
 
+  const { getFormPrefillData, saveFormPrefillData } = useFormPrefill();
+
+  /** Prefill key = current pathname (no domain, no query params). Unique per locale + slug. */
+  const prefillKey =
+    typeof window !== 'undefined' ? window.location.pathname : (formContent.slug ?? null);
+
+  /**
+   * Validate the form.
+   * Returns true if the form is valid, false otherwise.
+   */
   const validate = useCallback(() => {
     let valid = true;
     Object.keys(formFieldsData).forEach((key) => {
@@ -113,11 +133,56 @@ export const FormRenderer = ({
     return valid;
   }, [formFieldsData, setFieldData, t]);
 
+  /**
+   * Handle form submission.
+   * Validates the form and saves prefill data if enabled.
+   */
   const handleSubmit = useCallback(() => {
-    if (validate()) {
-      onSubmit(formFieldsData as unknown as FormSubmitData);
+    if (!validate()) return;
+
+    const submitData = formFieldsData as unknown as FormSubmitData;
+    const result = onSubmit(submitData);
+
+    if (result instanceof Promise) {
+      result
+        .then(() => {
+          if (enablePrefill && prefillKey) {
+            saveFormPrefillData(prefillKey, submitData);
+          }
+        })
+        .catch(() => {});
+    } else {
+      if (enablePrefill && prefillKey) {
+        saveFormPrefillData(prefillKey, submitData);
+      }
     }
-  }, [formFieldsData, onSubmit, validate]);
+  }, [enablePrefill, prefillKey, formFieldsData, onSubmit, saveFormPrefillData, validate]);
+
+  /**
+   * Set form fields data from localStorage on mount.
+   * This is a one-time effect to ensure the form is pre-filled with saved data.
+   */
+  useEffect(() => {
+    if (!enablePrefill || !prefillKey) return;
+    const prefillData = getFormPrefillData(prefillKey, fields);
+    if (Object.keys(prefillData).length === 0) return;
+
+    setFormFieldsData((prev) => ({
+      ...prev,
+      ...Object.fromEntries(
+        fields
+          .filter((field) => !!prev[field.id])
+          .map((field) => [
+            field.id,
+            {
+              ...prev[field.id],
+              value: prev[field.id]?.value || prefillData[String(field.id)]?.value,
+            },
+          ]),
+      ),
+    }));
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     if (Object.keys(initialFieldsData).length === 0) return;
