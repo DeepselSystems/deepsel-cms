@@ -113,6 +113,9 @@
 /* File upload */
 
 .form-renderer .form-field__dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   border: 2px dashed var(--form-color-border);
   border-radius: 8px;
   padding: 16px;
@@ -120,11 +123,33 @@
   transition:
     border-color 0.15s,
     background-color 0.15s;
+  user-select: none;
 }
 
-.form-renderer .form-field__dropzone:hover {
+.form-renderer .form-field__dropzone:hover,
+.form-renderer .form-field__dropzone--active {
   border-color: var(--form-color-primary);
   background-color: var(--form-color-primary-hover-bg);
+}
+
+.form-renderer .form-field__dropzone--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Hidden native file input — triggered programmatically */
+.form-renderer .form-field__dropzone-input {
+  display: none;
+}
+
+.form-renderer .form-field__dropzone-icon {
+  color: var(--form-color-text-muted);
+  flex-shrink: 0;
+}
+
+.form-renderer .form-field__file-icon {
+  color: var(--form-color-text-subtle);
+  flex-shrink: 0;
 }
 
 .form-renderer .form-field__dropzone-hint {

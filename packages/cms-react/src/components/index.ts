@@ -2,6 +2,7 @@ export * from './PageTransition.js';
 export * from './ContentRenderer.js';
 export * from './CustomCodeRenderer.js';
 export * from './FormFieldTypeRenderer.js';
+export * from './FilesUploadField.js';
 export * from './FormRenderer.js';
 export * from './FormSubmissionViewer.js';
 export * from './FormStatisticsOptions.js';

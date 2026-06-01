@@ -1,7 +1,8 @@
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
-from fastapi import Depends, BackgroundTasks
+from fastapi import Depends, BackgroundTasks, Form, File, UploadFile
 from datetime import datetime
+import json
 
 from sqlalchemy.orm import Session
 
@@ -63,16 +64,32 @@ class FormSubmissionStatsSchema(BaseModel):
 
 @router.post("", response_model=CRUDSchemas.Read)
 def create_form_submission(
-    data: CreateSchema,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user: Optional[UserModel] = Depends(get_current_user_optional),
+    form_id: int = Form(...),
+    form_content_id: int = Form(...),
+    submission_data: str = Form(...),  # JSON string
+    submitter_user_agent: Optional[str] = Form(None),
+    submitter_info: Optional[str] = Form(None),  # JSON string, optional
+    # Files accepted but not yet processed — placeholder for D4 file upload logic
+    files: list[UploadFile] = File(default=[]),
 ):
     """
-    Create a new form submission and send notification email in background.
+    Create a new form submission (multipart/form-data).
+    submission_data and submitter_info are JSON strings.
+    files are accepted in the request but not yet processed (D4 pending).
     """
+    payload = {
+        "form_id": form_id,
+        "form_content_id": form_content_id,
+        "submission_data": json.loads(submission_data),
+        "submitter_user_agent": submitter_user_agent,
+        "submitter_info": json.loads(submitter_info) if submitter_info else None,
+    }
+
     FormSubmissionModel = models_pool["form_submission"]
-    instance = FormSubmissionModel.create(db, user, data.dict())
+    instance = FormSubmissionModel.create(db, user, payload)
 
     # Get organization from form
     organization_id = instance.form.organization_id

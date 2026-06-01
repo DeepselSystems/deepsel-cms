@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import clsx from 'clsx';
-import { Dropzone } from '@mantine/dropzone';
 import { useTranslation } from 'react-i18next';
-import { IconAlertTriangle, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
-import {
-  FORM_FIELD_TYPE as FormFieldType,
-  formatFileSize,
-  type FormField,
-} from '@deepsel/cms-utils';
+import { FORM_FIELD_TYPE as FormFieldType, type FormField } from '@deepsel/cms-utils';
+import { FilesUploadField } from './FilesUploadField.js';
 
 /** Default upload size limit in MB */
 const DEFAULT_UPLOAD_SIZE_LIMIT_MB = 5;
@@ -294,9 +289,9 @@ export function FormFieldTypeRenderer({
       return (
         <FilesUploadField
           field={field}
-          value={value as UploadedFileRecord[]}
+          value={value as File[] | UploadedFileRecord[]}
           error={error}
-          onChange={onChange}
+          onChange={onChange as (v: File[] | UploadedFileRecord[]) => void}
           onUploadFiles={onUploadFiles}
           onDeleteAttachment={onDeleteAttachment}
           uploadSizeLimit={uploadSizeLimit}
@@ -311,177 +306,4 @@ export function FormFieldTypeRenderer({
         </p>
       );
   }
-}
-
-interface FilesUploadFieldProps {
-  field: FormField;
-  value?: UploadedFileRecord[];
-  error?: string;
-  onChange: (value: unknown) => void;
-  onUploadFiles?: (files: File[]) => Promise<UploadedFileRecord[]>;
-  onDeleteAttachment?: (id: string | number) => Promise<void>;
-  uploadSizeLimit: number;
-  className?: string;
-}
-
-/**
- * File upload field with drag-and-drop support.
- * Delegates upload/delete to the injected handlers.
- */
-function FilesUploadField({
-  field,
-  value = [],
-  error,
-  onChange,
-  onUploadFiles,
-  onDeleteAttachment,
-  uploadSizeLimit,
-  className,
-}: FilesUploadFieldProps): React.ReactElement {
-  const { t } = useTranslation();
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const { label, description, required } = field;
-  const fc = (field.field_config || {}) as unknown as RuntimeFieldConfig;
-
-  const maxFiles = fc.max_files || 3;
-  const maxFileSizeMB = fc.max_file_size || uploadSizeLimit;
-  const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-  const allowedTypes = fc.allowed_file_types || 'image/*';
-
-  const handleFileDrop = async (files: File[]) => {
-    const current = Array.isArray(value) ? value : [];
-    if (current.length + files.length > maxFiles) {
-      setUploadError(t('Maximum {{maxFiles}} files allowed', { maxFiles }));
-      return;
-    }
-    if (!onUploadFiles) return;
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const uploaded = await onUploadFiles(files);
-      const fileObjects = uploaded.map((f) => ({
-        ...f,
-        contentType: f.content_type ?? f.contentType,
-        createdAt: f.created_at ?? f.createdAt,
-      }));
-      onChange([...current, ...fileObjects]);
-    } catch {
-      // still remove from UI on failure
-      setUploadError(t('File upload failed'));
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleRemoveFile = async (index: number) => {
-    const current = Array.isArray(value) ? value : [];
-    const file = current[index];
-    setDeleteLoading(true);
-    try {
-      if (file?.id && onDeleteAttachment) {
-        await onDeleteAttachment(file.id);
-      }
-    } catch {
-      // still remove from UI on failure
-    } finally {
-      setDeleteLoading(false);
-    }
-    onChange(current.filter((_, i) => i !== index));
-  };
-
-  const getFileName = (file: UploadedFileRecord): string => {
-    if (file.name) return String(file.name);
-    return t('Unknown file');
-  };
-
-  const current = Array.isArray(value) ? value : [];
-  const canAddMore = current.length < maxFiles;
-
-  return (
-    <div className={clsx('form-field', className)}>
-      <label className="form-field__label">
-        {label}
-        {required && (
-          <span className="form-field__required" aria-hidden="true">
-            {' *'}
-          </span>
-        )}
-      </label>
-
-      {description && <p className="form-field__description">{description}</p>}
-
-      {canAddMore && (
-        <Dropzone
-          onDrop={(files) => {
-            void handleFileDrop(files);
-          }}
-          maxSize={maxFileSizeBytes}
-          accept={allowedTypes === '*' ? undefined : [allowedTypes]}
-          multiple={maxFiles > 1}
-          loading={uploading}
-          className="border-2 border-dashed rounded-lg p-4 mb-2 form-field__dropzone"
-        >
-          <div
-            className="flex items-center gap-2 form-field__dropzone-content"
-            style={{ pointerEvents: 'none' }}
-          >
-            <Dropzone.Accept>
-              <IconUpload size={16} />
-            </Dropzone.Accept>
-            <Dropzone.Reject>
-              <IconAlertTriangle size={16} />
-            </Dropzone.Reject>
-            <Dropzone.Idle>
-              <IconUpload size={16} />
-            </Dropzone.Idle>
-            <div>
-              <p className="form-field__dropzone-hint">{t('Drag files here or click to select')}</p>
-              <p className="form-field__dropzone-meta">{`Maximum ${maxFiles} files, ${maxFileSizeMB}MB each`}</p>
-            </div>
-          </div>
-        </Dropzone>
-      )}
-
-      {current.length > 0 && (
-        <div className="flex flex-col gap-2 form-field__file-list">
-          {current.map((file, index) => (
-            <div
-              key={String(file.id ?? index)}
-              className="flex items-center justify-between p-3 border rounded form-field__file-item"
-            >
-              <div className="flex items-center gap-2 form-field__file-info">
-                <IconFile size={16} />
-                <div>
-                  <p className="form-field__file-name">{getFileName(file)}</p>
-                  <p className="form-field__file-meta">
-                    {file.contentType && `${file.contentType}`}
-                    {file.filesize != null && ` • ${formatFileSize(file.filesize)}`}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                disabled={deleteLoading}
-                onClick={() => void handleRemoveFile(index)}
-                className="p-1 disabled:opacity-50 form-field__file-remove"
-              >
-                <IconTrash size={16} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="form-field__file-count">{`${current.length} of ${maxFiles} files uploaded`}</p>
-
-      {(error || uploadError) && (
-        <p className="form-field__error" role="alert">
-          {error || uploadError}
-        </p>
-      )}
-    </div>
-  );
 }

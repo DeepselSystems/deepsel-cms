@@ -103,16 +103,17 @@ function FormContent() {
         ),
       );
 
+      const body = new FormData();
+      body.append("form_id", String(formData.form_id));
+      body.append("form_content_id", String(formData.id));
+      body.append("submission_data", JSON.stringify(submissionData));
+      if (typeof navigator !== "undefined") {
+        body.append("submitter_user_agent", navigator.userAgent);
+      }
+
       fetch("/api/v1/form_submission/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: formData.form_id,
-          form_content_id: formData.id,
-          submission_data: submissionData,
-          submitter_user_agent:
-            typeof navigator !== "undefined" ? navigator.userAgent : null,
-        }),
+        body,
       })
         .then((res) => {
           if (!res.ok) {
