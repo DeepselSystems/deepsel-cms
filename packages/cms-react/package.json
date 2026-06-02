@@ -30,6 +30,10 @@
     "./styles/form.css": {
       "source": "./src/styles/form.css",
       "default": "./dist/styles/form.css"
+    },
+    "./styles/form-statistics.css": {
+      "source": "./src/styles/form-statistics.css",
+      "default": "./dist/styles/form-statistics.css"
     }
   },
   "files": [

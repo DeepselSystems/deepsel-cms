@@ -95,6 +95,7 @@ export interface FormData {
   form_custom_code?: string | null;
   lang?: string;
   locale_id: number;
+  locale?: { iso_code: string; name?: string } | null;
   max_submissions?: number | null;
   show_remaining_submissions?: boolean | null;
   submissions_count: number;

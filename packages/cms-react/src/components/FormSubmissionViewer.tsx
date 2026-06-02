@@ -1,11 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { IconInfoCircle } from '@tabler/icons-react';
+import { IconInfoCircle, IconDownload } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import {
   FORM_FIELD_TYPE as FormFieldType,
   formatFileSize,
+  getAttachmentByNameRelativeUrl,
   type FormData,
   type FormField,
   type FormSubmissionFieldValue,
@@ -63,7 +64,13 @@ export function FormSubmissionViewer({
   }
 
   return (
-    <div className={clsx('container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4', 'form-submission-viewer', className)}>
+    <div
+      className={clsx(
+        'container px-3 xl:px-6 mx-auto max-w-xl xl:max-w-2xl 2xl:max-w-3xl space-y-4',
+        'form-submission-viewer',
+        className,
+      )}
+    >
       {showTitle && (
         <div className="space-y-3 form-submission-viewer__title-section">
           <h2 className="break-words form-submission-viewer__title">{formContent.title}</h2>
@@ -75,7 +82,10 @@ export function FormSubmissionViewer({
 
       <div className="space-y-3 form-submission-viewer__field-list">
         {submissionFields.map((field, index) => (
-          <div key={index} className="p-4 rounded-lg border flex flex-col gap-2 form-submission-viewer__field-item">
+          <div
+            key={index}
+            className="p-4 rounded-lg border flex flex-col gap-2 form-submission-viewer__field-item"
+          >
             <p className="form-submission-viewer__field-label">
               {typeof field.label === 'string' ? field.label : ''}
               {Boolean(field.required) && (
@@ -96,6 +106,7 @@ export function FormSubmissionViewer({
                 field={field as unknown as FormField}
                 value={field._submittedValue}
                 renderFile={renderFile}
+                locale={formContent.locale?.iso_code}
               />
             </div>
 
@@ -104,7 +115,10 @@ export function FormSubmissionViewer({
                 role="alert"
                 className="flex items-center gap-2 p-3 border rounded form-submission-viewer__deleted-warning"
               >
-                <IconInfoCircle size={16} className="form-submission-viewer__deleted-warning-icon" />
+                <IconInfoCircle
+                  size={16}
+                  className="form-submission-viewer__deleted-warning-icon"
+                />
                 <p className="form-submission-viewer__deleted-warning-text">
                   {t('This field has been removed from the current form')}
                 </p>
@@ -125,6 +139,7 @@ interface SubmittedValueDisplayProps {
   field: FormField;
   value: unknown;
   renderFile?: (file: UploadedFileRecord, index: number) => React.ReactNode;
+  locale?: string;
 }
 
 /** Renders the submitted value in the appropriate format for each field type */
@@ -132,13 +147,12 @@ function SubmittedValueDisplay({
   field,
   value,
   renderFile,
+  locale,
 }: SubmittedValueDisplayProps): React.ReactElement {
   const { t } = useTranslation();
 
   if (value === null || value === undefined || value === '') {
-    return (
-      <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>
-    );
+    return <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>;
   }
 
   switch (field.field_type) {
@@ -158,9 +172,7 @@ function SubmittedValueDisplay({
 
     case FormFieldType.MultipleChoice:
     case FormFieldType.Dropdown:
-      return (
-        <span className="form-submission-viewer__option-badge">{value as string}</span>
-      );
+      return <span className="form-submission-viewer__option-badge">{value as string}</span>;
 
     case FormFieldType.Date:
       return (
@@ -203,7 +215,7 @@ function SubmittedValueDisplay({
           <div className="flex flex-col gap-4 form-submission-viewer__file-list">
             {(value as UploadedFileRecord[]).map((file, i) => {
               if (renderFile) return <React.Fragment key={i}>{renderFile(file, i)}</React.Fragment>;
-              return <DefaultFileRow key={i} file={file} />;
+              return <DefaultFileRow key={i} file={file} locale={locale} />;
             })}
           </div>
         );
@@ -211,33 +223,48 @@ function SubmittedValueDisplay({
       break;
 
     default:
-      return (
-        <p className="break-words form-submission-viewer__value">{value as string}</p>
-      );
+      return <p className="break-words form-submission-viewer__value">{value as string}</p>;
   }
 
-  return (
-    <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>
-  );
+  return <p className="form-submission-viewer__empty-answer">{t('No answer provided')}</p>;
 }
 
 /** Fallback file row when no renderFile prop is provided */
-function DefaultFileRow({ file }: { file: UploadedFileRecord }): React.ReactElement {
+function DefaultFileRow({
+  file,
+  locale,
+}: {
+  file: UploadedFileRecord;
+  locale?: string;
+}): React.ReactElement {
   const contentType = file.contentType ?? file.content_type;
   const fileSize = file.filesize != null ? formatFileSize(file.filesize) : null;
+  const downloadUrl = getAttachmentByNameRelativeUrl(String(file.name), locale);
 
   return (
-    <div className="p-3 border rounded file-row">
-      <p className="file-row__name">{String(file.name)}</p>
-      <div className="flex items-center gap-2 file-row__meta">
-        {contentType && <span className="file-row__meta-type">{contentType}</span>}
-        {fileSize && (
-          <>
-            <span aria-hidden="true">•</span>
-            <span className="file-row__meta-size">{fileSize}</span>
-          </>
-        )}
+    <div className="flex items-center justify-between gap-3 p-3 border rounded file-row">
+      <div className="flex-1 min-w-0 file-row__info">
+        <p className="truncate file-row__name">{String(file.name)}</p>
+        <div className="flex items-center gap-2 file-row__meta">
+          {contentType && <span className="file-row__meta-type">{contentType}</span>}
+          {fileSize && (
+            <>
+              <span aria-hidden="true">•</span>
+              <span className="file-row__meta-size">{fileSize}</span>
+            </>
+          )}
+        </div>
       </div>
+      <a
+        href={downloadUrl}
+        download
+        target="_blank"
+        rel="noreferrer"
+        className="file-row__download-btn"
+        aria-label="Download file"
+      >
+        <IconDownload size={18} />
+      </a>
     </div>
   );
 }
