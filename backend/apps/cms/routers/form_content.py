@@ -42,7 +42,6 @@ router = CRUDRouter(
 class FormFieldCreateSchema(BaseModel):
     """Schema for creating form fields"""
 
-    field_id: str
     field_type: str
     label: str
     description: Optional[str] = None
@@ -55,7 +54,6 @@ class FormFieldCreateSchema(BaseModel):
 class FormFieldUpdateSchema(BaseModel):
     """Schema for updating form fields"""
 
-    field_id: Optional[str] = None
     field_type: Optional[str] = None
     label: Optional[str] = None
     description: Optional[str] = None
@@ -255,29 +253,12 @@ async def create_form_field(
                 detail=f"Invalid field type: {field_data.field_type}",
             )
 
-        # Check for duplicate field_id within the same form content
-        existing_field = (
-            db.query(FormFieldModel)
-            .filter(
-                FormFieldModel.form_content_id == form_content_id,
-                FormFieldModel.field_id == field_data.field_id,
-            )
-            .first()
-        )
-
-        if existing_field:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Field ID '{field_data.field_id}' already exists in this form",
-            )
-
         # Create the field
         field = FormFieldModel.create(
             db=db,
             user=user,
             values={
                 "form_content_id": form_content_id,
-                "field_id": field_data.field_id,
                 "field_type": field_type_enum,
                 "label": field_data.label,
                 "description": field_data.description,
@@ -290,7 +271,6 @@ async def create_form_field(
 
         return {
             "id": field.id,
-            "field_id": field.field_id,
             "field_type": field.field_type.value,
             "label": field.label,
             "description": field.description,
@@ -343,26 +323,6 @@ async def update_form_field(
         # Prepare update values
         update_values = {}
 
-        if field_data.field_id is not None:
-            # Check for duplicate field_id if changing it
-            if field_data.field_id != field.field_id:
-                existing_field = (
-                    db.query(FormFieldModel)
-                    .filter(
-                        FormFieldModel.form_content_id == form_content_id,
-                        FormFieldModel.field_id == field_data.field_id,
-                        FormFieldModel.id != field_id,
-                    )
-                    .first()
-                )
-
-                if existing_field:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Field ID '{field_data.field_id}' already exists in this form",
-                    )
-            update_values["field_id"] = field_data.field_id
-
         if field_data.field_type is not None:
             try:
                 field_type_enum = FormFieldTypeEnum(field_data.field_type)
@@ -391,7 +351,6 @@ async def update_form_field(
 
         return {
             "id": updated_field.id,
-            "field_id": updated_field.field_id,
             "field_type": updated_field.field_type.value,
             "label": updated_field.label,
             "description": updated_field.description,
@@ -487,7 +446,6 @@ async def get_form_fields(
         return [
             {
                 "id": field.id,
-                "field_id": field.field_id,
                 "field_type": field.field_type.value,
                 "label": field.label,
                 "description": field.description,

@@ -150,7 +150,6 @@ async def get_public_form(
                     "fields": [
                         {
                             "id": field.id,
-                            "field_id": field.field_id,
                             "field_type": (
                                 field.field_type.value
                                 if hasattr(field.field_type, "value")
