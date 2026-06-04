@@ -55,6 +55,28 @@ class FormPublicReadSchema(BaseModel):
     contents: List[Dict[str, Any]]
 
 
+# Field types that produce meaningful aggregate statistics and contain no PII.
+# Text-like types (short_answer, paragraph, date, time, files) are excluded
+# because their values are user-entered data that can identify individuals.
+#
+# IMPORTANT — keep in sync with `renderFieldStats()` in cms-react.
+# Whenever you add a new field type to that switch, add its string value
+# here as well, and vice-versa.
+_STATISTICS_SAFE_FIELD_TYPES = {"checkboxes", "multiple_choice", "dropdown", "number"}
+
+
+def _strip_pii_from_submission(submission: dict) -> dict:
+    """Return submission with submission_data filtered to non-PII field types only."""
+    safe_data = {
+        field_id: entry
+        for field_id, entry in submission.get("submission_data", {}).items()
+        if isinstance(entry, dict)
+        and entry.get("field_snap_short", {}).get("field_type")
+        in _STATISTICS_SAFE_FIELD_TYPES
+    }
+    return {**submission, "submission_data": safe_data}
+
+
 @router.post("/translate")
 async def translate_form_content(
     request: TranslationRequest = Body(...),
@@ -209,6 +231,12 @@ def get_form_statistics_by_slug(
         FormSubmissionPublicRead.model_validate(s).model_dump()
         for s in form_submissions
     ]
+
+    # Anonymous public access: strip PII-containing field types from submission_data.
+    # Only option/number fields are needed for aggregate charts; text/file fields
+    # contain user-entered data that should not be exposed to unauthenticated requests.
+    if user is None:
+        safe_submissions = [_strip_pii_from_submission(s) for s in safe_submissions]
 
     return {**form_content, "submissions": safe_submissions}
 

@@ -30,7 +30,14 @@ export function FormStatisticsFields({
   );
 }
 
-/** Renders the appropriate statistics chart for a given field type */
+/**
+ * Renders the appropriate statistics chart for a given field type.
+ *
+ * IMPORTANT — keep in sync with `_STATISTICS_SAFE_FIELD_TYPES` in the backend
+ * form router. That list controls which field types are included in the public
+ * statistics API response (PII stripping). Whenever you add a new case here,
+ * add the corresponding field_type string to that constant as well, and vice-versa.
+ */
 function renderFieldStats(field: FormField, submissions: FormStatisticsData['submissions']) {
   switch (field.field_type) {
     case FORM_FIELD_TYPE.Checkboxes:
