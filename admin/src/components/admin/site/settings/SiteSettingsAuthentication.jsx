@@ -1,13 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select } from '@mantine/core';
-import {
-  IconBrandGoogle,
-  IconCopy,
-  IconKey,
-  IconRotate,
-  IconUsersGroup,
-} from '@tabler/icons-react';
+import { IconBrandGoogle, IconCopy, IconRotate, IconUsersGroup } from '@tabler/icons-react';
 import useModel from '../../../../common/api/useModel.jsx';
 import BackendHostURLState from '../../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../../common/stores/NotificationState.js';
@@ -21,12 +14,6 @@ import Switch from '../../../../common/ui/Switch.jsx';
 import TextArea from '../../../../common/ui/TextArea.jsx';
 import TextInput from '../../../../common/ui/TextInput.jsx';
 import useShowSiteSelector from '../../../../common/hooks/useShowSiteSelector.js';
-
-const DEFAULT_KEYCLOAK_ROLE_OPTIONS = [
-  { value: 'website_admin_role', label: 'Website Admin' },
-  { value: 'website_editor_role', label: 'Website Editor' },
-  { value: 'website_author_role', label: 'Website Author' },
-];
 
 export default function SiteSettingsAuthentication() {
   useShowSiteSelector();
@@ -62,16 +49,6 @@ export default function SiteSettingsAuthentication() {
     try {
       e.preventDefault();
 
-      if (record.is_enabled_keycloak && record.is_enabled_google_sign_in) {
-        notify({
-          message: t(
-            'Cannot enable Keycloak authentication when Google Sign-In is enabled. Please disable Google Sign-In first.',
-          ),
-          type: 'error',
-        });
-        return;
-      }
-
       const payload = { ...record };
 
       if (!payload.is_enabled_google_sign_in) {
@@ -87,13 +64,6 @@ export default function SiteSettingsAuthentication() {
         payload.saml_sp_entity_id = '';
         payload.saml_sp_acs_url = '';
         payload.saml_sp_sls_url = '';
-      }
-
-      if (!payload.is_enabled_keycloak) {
-        payload.keycloak_server_url = '';
-        payload.keycloak_realm_name = '';
-        payload.keycloak_client_id = '';
-        payload.keycloak_client_secret = '';
       }
 
       const updatedRecord = await update(payload);
@@ -411,117 +381,6 @@ MIICXjCCAcegAwIBAgIBADANBgkqhkiG9w0BAQ0FADBLMQswCQYDVQQGEwJ1czE...
                         http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Keycloak */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <IconKey size={16} className="text-gray-600" />
-                <H2>{t('Keycloak SSO')}</H2>
-              </div>
-
-              <Switch
-                className="my-2"
-                label={t('Enable Keycloak Authentication')}
-                checked={record.is_enabled_keycloak}
-                onChange={(e) =>
-                  setRecord({
-                    ...record,
-                    is_enabled_keycloak: e.currentTarget.checked,
-                  })
-                }
-              />
-
-              {record.is_enabled_keycloak && (
-                <div className="mt-2 space-y-4">
-                  <TextInput
-                    label={t('Keycloak Server URL')}
-                    value={record.keycloak_server_url || ''}
-                    onChange={(e) =>
-                      setRecord({
-                        ...record,
-                        keycloak_server_url: e.target.value,
-                      })
-                    }
-                    placeholder="https://your-keycloak-server.com"
-                  />
-                  <TextInput
-                    label={t('Realm Name')}
-                    value={record.keycloak_realm_name || ''}
-                    onChange={(e) =>
-                      setRecord({
-                        ...record,
-                        keycloak_realm_name: e.target.value,
-                      })
-                    }
-                    placeholder="master"
-                  />
-                  <TextInput
-                    label={t('Client ID')}
-                    value={record.keycloak_client_id || ''}
-                    onChange={(e) =>
-                      setRecord({
-                        ...record,
-                        keycloak_client_id: e.target.value,
-                      })
-                    }
-                  />
-                  <PasswordInput
-                    label={t('Client Secret')}
-                    size="md"
-                    value={record.keycloak_client_secret || ''}
-                    onChange={(e) =>
-                      setRecord({
-                        ...record,
-                        keycloak_client_secret: e.target.value,
-                      })
-                    }
-                  />
-                  <Select
-                    label={t('Default Role for New Users')}
-                    data={DEFAULT_KEYCLOAK_ROLE_OPTIONS}
-                    value={record.keycloak_default_role || 'website_editor_role'}
-                    onChange={(value) =>
-                      setRecord({
-                        ...record,
-                        keycloak_default_role: value,
-                      })
-                    }
-                  />
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">
-                      {t('Redirect URI Configuration')}
-                    </h4>
-                    <p className="text-blue-700 text-sm mb-2">
-                      {t('Add this URL to your Keycloak client valid redirect URIs:')}
-                    </p>
-                    <code className="block bg-white p-2 rounded border text-sm">
-                      {window.location.origin}/admin/keycloak-callback
-                    </code>
-                  </div>
-                  <div className="mt-4 p-4 bg-amber-50 rounded-lg">
-                    <h4 className="font-medium text-amber-900 mb-2">{t('Important Notes')}</h4>
-                    <ul className="text-amber-700 text-sm space-y-1">
-                      <li>
-                        {'\u2022'}{' '}
-                        {t(
-                          'Keycloak authentication cannot be enabled simultaneously with Google Sign-In',
-                        )}
-                      </li>
-                      <li>
-                        {'\u2022'}{' '}
-                        {t(
-                          'Make sure your Keycloak client has the proper scopes: openid, email, profile',
-                        )}
-                      </li>
-                      <li>
-                        {'\u2022'}{' '}
-                        {t('Client Access Type should be set to "confidential" in Keycloak')}
-                      </li>
-                    </ul>
                   </div>
                 </div>
               )}
