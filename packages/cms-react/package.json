@@ -67,8 +67,6 @@
     "@eslint/plugin-kit": "^0.4.1",
     "@mantine/charts": "^8.3.15",
     "@mantine/core": "^8.3.15",
-    "@mantine/dates": "^8.3.15",
-    "@mantine/dropzone": "^8.3.15",
     "@tabler/icons-react": "^3.41.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -87,39 +85,11 @@
   "peerDependencies": {
     "@mantine/charts": ">=8.0.0",
     "@mantine/core": ">=8.0.0",
-    "@mantine/dates": ">=8.0.0",
-    "@mantine/dropzone": ">=8.0.0",
     "@tabler/icons-react": ">=2.0.0",
     "clsx": ">=2.0.0",
     "dayjs": ">=1.11.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "react-i18next": ">=13.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@mantine/charts": {
-      "optional": true
-    },
-    "@mantine/core": {
-      "optional": true
-    },
-    "@mantine/dates": {
-      "optional": true
-    },
-    "@mantine/dropzone": {
-      "optional": true
-    },
-    "@tabler/icons-react": {
-      "optional": true
-    },
-    "clsx": {
-      "optional": true
-    },
-    "dayjs": {
-      "optional": true
-    },
-    "react-i18next": {
-      "optional": true
-    }
   }
 }
