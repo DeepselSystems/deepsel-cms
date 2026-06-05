@@ -10,7 +10,11 @@ admin_role,Admin,"[
     ""attachment_locale_version:*:org"",
     ""activity:*:*"",
     ""email_template:*:*"",
-    ""cron:*:*""
+    ""cron:*:*"",
+    ""form:*:*"",
+    ""form_content:*:*"",
+    ""form_field:*:*"",
+    ""form_submission:*:*""
 ]",true
 user_role,User,"[
     ""user:read:own"",

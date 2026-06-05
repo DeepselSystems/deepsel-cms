@@ -1,0 +1,152 @@
+/* ─── Form Page — starter_react theme ───────────────────────────────────── */
+
+/* Override form-renderer vars to match starter_react primary blue */
+.form-renderer {
+  --form-color-primary: var(--color-primary-600, #2563eb);
+  --form-color-primary-focus: rgba(37, 99, 235, 0.15);
+  --form-color-primary-hover-bg: #eff6ff;
+}
+
+/* ─── Page layout ────────────────────────────────────────────────────────── */
+
+.sr-form__page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sr-form__page-body {
+  flex: 1;
+}
+
+.sr-form__navbar {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sr-form__navbar-inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sr-form__navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ─── Form content wrapper ────────────────────────────────────────────────── */
+
+.sr-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.sr-form__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  word-break: break-word;
+}
+
+.sr-form__description {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.sr-form__availability {
+  font-size: 0.875rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.sr-form__availability--limit-reached {
+  color: #b91c1c;
+  background-color: #fef2f2;
+}
+
+.sr-form__availability--remaining {
+  color: #6b7280;
+  background-color: #f9fafb;
+}
+
+/* ─── Success ─────────────────────────────────────────────────────────────── */
+
+.sr-form__success {
+  padding: 16px;
+  border-radius: 6px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.9375rem;
+}
+
+.sr-form__success-stats-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* ─── Closing remarks ─────────────────────────────────────────────────────── */
+
+.sr-form__closing-remarks {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  margin: 0;
+}
+
+/* ─── Error ───────────────────────────────────────────────────────────────── */
+
+.sr-form__error {
+  font-size: 0.875rem;
+  color: #b91c1c;
+  text-align: center;
+}
+
+/* ─── Not found ───────────────────────────────────────────────────────────── */
+
+.sr-form__not-found {
+  text-align: center;
+  padding: 64px 16px;
+}
+
+.sr-form__not-found h1 {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sr-form__not-found h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.sr-form__not-found p {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.sr-form__not-found a {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #2563eb;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+}

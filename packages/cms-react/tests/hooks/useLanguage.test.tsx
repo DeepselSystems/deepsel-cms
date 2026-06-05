@@ -5,24 +5,23 @@ import { WebsiteDataProvider } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
-// Mock cms-utils
-vi.mock('@deepsel/cms-utils', () => ({
-  parseSlug: vi.fn((pathname: string) => {
-    const parts = pathname.split('/').filter(Boolean);
-    if (parts.length > 0 && parts[0].length === 2) {
-      return { lang: parts[0], path: '/' + parts.slice(1).join('/'), pathType: 'Page' };
-    }
-    return { lang: undefined, path: pathname, pathType: 'Page' };
-  }),
-  WebsiteDataTypes: {
-    Page: 'Page',
-    BlogList: 'BlogList',
-    BlogPost: 'BlogPost',
-  },
-  fetchPageData: vi.fn(() => Promise.resolve({ notFound: false })),
-  fetchBlogList: vi.fn(() => Promise.resolve({})),
-  fetchBlogPost: vi.fn(() => Promise.resolve({ notFound: false })),
-}));
+// Mock cms-utils — spread actual module so constants like FORM_FIELD_TYPE remain available
+vi.mock('@deepsel/cms-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@deepsel/cms-utils')>();
+  return {
+    ...actual,
+    parseSlug: vi.fn((pathname: string) => {
+      const parts = pathname.split('/').filter(Boolean);
+      if (parts.length > 0 && parts[0].length === 2) {
+        return { lang: parts[0], path: '/' + parts.slice(1).join('/'), pathType: 'Page' };
+      }
+      return { lang: undefined, path: pathname, pathType: 'Page' };
+    }),
+    fetchPageData: vi.fn(() => Promise.resolve({ notFound: false })),
+    fetchBlogList: vi.fn(() => Promise.resolve({})),
+    fetchBlogPost: vi.fn(() => Promise.resolve({ notFound: false })),
+  };
+});
 
 describe('useLanguage', () => {
   const mockPageData: PageData = {

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -13,11 +14,21 @@ class ORMBaseMixin(_ORMBaseMixin):
     """CMS-specific ORMBaseMixin with organization resolution on create."""
 
     @classmethod
-    def _resolve_organization_on_create(cls, db: Session, user, values: dict) -> dict:
+    def _resolve_organization_on_create(
+        cls,
+        db: Session,
+        user,
+        values: dict,
+        bypass_permission: Optional[bool] = False,
+    ) -> dict:
         if not hasattr(cls, "organization_id"):
             return values
 
         if cls.__tablename__ == "user":
+            return values
+
+        # When bypassing permission checks, organization_id is already resolved by the caller
+        if bypass_permission:
             return values
 
         [_, scope] = cls._check_has_permission(PermissionAction.create, user)

@@ -1,6 +1,6 @@
 {
   "name": "@deepsel/cms-react",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "React theme utilities for Deepsel CMS",
   "repository": {
     "type": "git",
@@ -20,19 +20,29 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./styles/form.css": {
+      "source": "./src/styles/form.css",
+      "default": "./dist/styles/form.css"
+    },
+    "./styles/form-statistics.css": {
+      "source": "./src/styles/form-statistics.css",
+      "default": "./dist/styles/form-statistics.css"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && rm -rf dist/styles && cp -r src/styles dist/styles",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -55,19 +65,31 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@eslint/plugin-kit": "^0.4.1",
+    "@mantine/charts": "^8.3.15",
+    "@mantine/core": "^8.3.15",
+    "@tabler/icons-react": "^3.41.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.0.0",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.19",
     "eslint": "^9.39.1",
     "eslint-plugin-vitest": "^0.5.4",
     "happy-dom": "^20.0.11",
     "prettier": "^3.6.2",
+    "react-i18next": "^13.5.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4",
     "vitest": "^4.0.8"
   },
   "peerDependencies": {
+    "@mantine/charts": ">=8.0.0",
+    "@mantine/core": ">=8.0.0",
+    "@tabler/icons-react": ">=2.0.0",
+    "clsx": ">=2.0.0",
+    "dayjs": ">=1.11.0",
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "react-i18next": ">=13.0.0"
   }
 }

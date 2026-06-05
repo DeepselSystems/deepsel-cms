@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useWebsiteData } from '../contexts/index.js';
+import { useWebsiteData } from '../contexts';
 import {
   fetchPageData,
   fetchBlogList,
@@ -71,7 +71,7 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
   useEffect(() => {
     // Update document title and meta tags when website data changes
     const data = websiteData.data;
-    if ('seo_metadata' in data) {
+    if (data && 'seo_metadata' in data) {
       const seoMetaData = data.seo_metadata;
 
       // Update title
@@ -215,7 +215,7 @@ export function PageTransition({ onPathChange, onNavigate }: PageTransitionProps
       }
 
       // Skip if current page is a theme-defined client page (static content outside React)
-      if ('clientPage' in websiteData.data && websiteData.data.clientPage) {
+      if (websiteData.data && 'clientPage' in websiteData.data && websiteData.data.clientPage) {
         return;
       }
 

@@ -5,22 +5,21 @@ import { WebsiteDataProvider } from '../../src/contexts/WebsiteDataContext';
 import type { PageData } from '@deepsel/cms-utils';
 import React from 'react';
 
-// Mock cms-utils
+// Mock cms-utils — spread actual module so constants like FORM_FIELD_TYPE remain available
 const mockFetchPageData = vi.fn();
 const mockParseSlug = vi.fn();
 const mockIsCrossingTemplateBoundary = vi.fn();
 
-vi.mock('@deepsel/cms-utils', () => ({
-  fetchPageData: (args: any) => mockFetchPageData(args),
-  parseSlug: (pathname: string) => mockParseSlug(pathname),
-  isCrossingTemplateBoundary: (from: string, to: string) =>
-    mockIsCrossingTemplateBoundary(from, to),
-  WebsiteDataTypes: {
-    Page: 'Page',
-    BlogList: 'BlogList',
-    BlogPost: 'BlogPost',
-  },
-}));
+vi.mock('@deepsel/cms-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@deepsel/cms-utils')>();
+  return {
+    ...actual,
+    fetchPageData: (args: any) => mockFetchPageData(args),
+    parseSlug: (pathname: string) => mockParseSlug(pathname),
+    isCrossingTemplateBoundary: (from: string, to: string) =>
+      mockIsCrossingTemplateBoundary(from, to),
+  };
+});
 
 describe('PageTransition', () => {
   const mockPageData: PageData = {

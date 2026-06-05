@@ -20,7 +20,11 @@ website_admin_role,Website Administrator,"[
     ""role:*:org"",
     ""implied_role:*:org"",
     ""organization:read:org"",
-    ""organization:write:org""
+    ""organization:write:org"",
+    ""form:*:org"",
+    ""form_content:*:org"",
+    ""form_field:*:org"",
+    ""form_submission:*:*""
 ]",true,"Manage website content and users within their own organizations."
 website_editor_role,Website Editor,"[
     ""blog_post:*:org"",
@@ -34,7 +38,11 @@ website_editor_role,Website Editor,"[
     ""menu:*:org"",
     ""openrouter_model:read:org"",
     ""locale:read:*"",
-    ""organization:read:org""
+    ""organization:read:org"",
+    ""form:*:org"",
+    ""form_content:*:org"",
+    ""form_field:*:org"",
+    ""form_submission:*:*""
 ]",true,"Can create, edit, delete all blog posts, pages, menus, components on this website."
 website_author_role,Website Author,"[
     ""blog_post:*:own"",
@@ -54,5 +62,9 @@ website_author_role,Website Author,"[
     ""menu:read:org"",
     ""openrouter_model:read:org"",
     ""locale:read:*"",
-    ""organization:read:org""
+    ""organization:read:org"",
+    ""form:*:org"",
+    ""form_content:*:org"",
+    ""form_field:*:org"",
+    ""form_submission:*:*""
 ]",true,"Can read all pages and posts in the website, and create/edit/delete their own."

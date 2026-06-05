@@ -30,10 +30,6 @@ import RoleCreate from './components/admin/role/RoleCreate.jsx';
 import OrganizationLayout from './components/layouts/OrganizationLayout.jsx';
 import ResetPassword from './components/admin/auth/ResetPassword.jsx';
 import OrganizationSettings from './components/admin/organization/OrganizationSettings.jsx';
-import EmailTemplateList from './components/admin/email_template/EmailTemplateList.jsx';
-import EmailTemplateView from './components/admin/email_template/EmailTemplateView.jsx';
-import EmailTemplateCreate from './components/admin/email_template/EmailTemplateCreate.jsx';
-import EmailTemplateEdit from './components/admin/email_template/EmailTemplateEdit.jsx';
 import SMTPSettings from './components/admin/organization/SMTPSettings.jsx';
 import GoogleAuth from './common/auth/GoogleAuth.jsx';
 import SamlAuth from './common/auth/SamlAuth.jsx';
@@ -48,6 +44,11 @@ import SiteCreate from './components/admin/site/SiteCreate.jsx';
 import Media from './components/admin/attachment/Media.jsx';
 import RequireAuth from './common/auth/RequireAuth.jsx';
 import PublicAuth from './common/auth/PublicAuth.jsx';
+import FormList from './components/admin/form/FormList.jsx';
+import FormUpsert from './components/admin/form/FormUpsert.jsx';
+import FormView from './components/admin/form/FormView.jsx';
+import FormSubmissionList from './components/admin/form-submission/FormSubmissionList.jsx';
+import FormSubmissionView from './components/admin/form-submission/FormSubmissionView.jsx';
 
 import { useCallback, useEffect, useMemo } from 'react';
 import { MantineProvider } from '@mantine/core';
@@ -79,6 +80,7 @@ import '@mantine/tiptap/styles.css';
 import '@mantine/charts/styles.css';
 import './assets/css/global.css';
 import '@deepsel/cms-utils/styles.css';
+import "@deepsel/cms-react/styles/form.css";
 import { LocalstorageKey } from './constants/localstorage.js';
 import useBrowserLanguages from './common/hooks/useBrowserLanguages.js';
 import useEffectOnce from './common/hooks/useEffectOnce.js';
@@ -285,6 +287,13 @@ export default function App(props) {
                       <Route path="/templates/:id/edit" element={<TemplateEdit />} />
                       <Route path="/themes" element={<ThemeList />} />
                       <Route path="/themes/edit/:themeName" element={<ThemeFileEdit />} />
+
+                      <Route path="/forms" element={<FormList />} />
+                      <Route path="/forms/create" element={<FormUpsert />} />
+                      <Route path="/forms/:id" element={<FormView />} />
+                      <Route path="/forms/:id/edit" element={<FormUpsert />} />
+                      <Route path="/form-submissions" element={<FormSubmissionList />} />
+                      <Route path="/form-submissions/:id" element={<FormSubmissionView />} />
 
                       <Route path="/blog_posts" element={<BlogPostList />} />
                       <Route path="/blog_posts/create" element={<BlogPostEdit />} />

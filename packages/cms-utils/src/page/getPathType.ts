@@ -1,4 +1,4 @@
-import { WebsiteDataTypes, type WebsiteDataType } from '../constants/index.js';
+import { WebsiteDataTypes, type WebsiteDataType } from '../constants';
 
 export interface Pagination {
   page?: number;
@@ -20,6 +20,13 @@ export function getPathType(path: string): { pathType: WebsiteDataType; paginati
 
   if (path === 'search' || path.startsWith('search?') || path.startsWith('search/')) {
     return { pathType: WebsiteDataTypes.SearchResults };
+  }
+
+  if (path.startsWith('forms/') || path === 'forms') {
+    if (path.endsWith('/statistics')) {
+      return { pathType: WebsiteDataTypes.FormStatistics };
+    }
+    return { pathType: WebsiteDataTypes.Form };
   }
 
   if (path.startsWith('blog')) {

@@ -1,3 +1,10 @@
+@import "@mantine/core/styles.css";
+@import "@mantine/charts/styles.css";
+@import "@deepsel/cms-utils/styles.css";
+@import "@deepsel/cms-react/styles/form.css";
+@import "@deepsel/cms-react/styles/form-statistics.css";
+@import "./assets/css/form.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,7 +27,7 @@ astro-island {
 }
 
 body {
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
 }
 
 /* Prose styles for user-defined page content */
