@@ -20,7 +20,9 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "sideEffects": ["**/*.css"],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
       "source": "./src/index.ts",
@@ -95,13 +97,29 @@
     "react-i18next": ">=13.0.0"
   },
   "peerDependenciesMeta": {
-    "@mantine/charts": { "optional": true },
-    "@mantine/core": { "optional": true },
-    "@mantine/dates": { "optional": true },
-    "@mantine/dropzone": { "optional": true },
-    "@tabler/icons-react": { "optional": true },
-    "clsx": { "optional": true },
-    "dayjs": { "optional": true },
-    "react-i18next": { "optional": true }
+    "@mantine/charts": {
+      "optional": true
+    },
+    "@mantine/core": {
+      "optional": true
+    },
+    "@mantine/dates": {
+      "optional": true
+    },
+    "@mantine/dropzone": {
+      "optional": true
+    },
+    "@tabler/icons-react": {
+      "optional": true
+    },
+    "clsx": {
+      "optional": true
+    },
+    "dayjs": {
+      "optional": true
+    },
+    "react-i18next": {
+      "optional": true
+    }
   }
 }

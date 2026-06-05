@@ -1,7 +1,7 @@
 /* Default styles for FormStatistics components.
    All rules use BEM class names. Themes can override with equal or higher specificity. */
 
-@import "@mantine/charts/styles.css";
+@import '@mantine/charts/styles.css';
 
 /* ─── Shared variables ───────────────────────────────────────────────────── */
 
