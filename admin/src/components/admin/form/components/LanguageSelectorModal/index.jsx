@@ -1,8 +1,8 @@
 import React from 'react';
-import {Modal} from '@mantine/core';
+import { Modal } from '@mantine/core';
 import RecordSelect from '../../../../../common/ui/RecordSelect.jsx';
 import Button from '../../../../../common/ui/Button.jsx';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Language selector modal
@@ -17,9 +17,9 @@ import {useTranslation} from 'react-i18next';
  * }>>}
  */
 const LanguageSelectorModal = React.forwardRef(
-  ({formContents = [], locales = [], onAdd = () => {}}, ref) => {
+  ({ formContents = [], locales = [], onAdd = () => {} }, ref) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // Visible state
     const [opened, setOpened] = React.useState(false);
@@ -32,9 +32,7 @@ const LanguageSelectorModal = React.forwardRef(
      * @type {(function(): void)|*}
      */
     const handleClickAdd = React.useCallback(() => {
-      const locale = locales.find(
-        (o) => String(o.id) === String(selectedLocaleId)
-      );
+      const locale = locales.find((o) => String(o.id) === String(selectedLocaleId));
       onAdd(selectedLocaleId, locale);
       setOpened(false);
     }, [locales, onAdd, selectedLocaleId]);
@@ -57,7 +55,7 @@ const LanguageSelectorModal = React.forwardRef(
           title={<div className="font-bold">{t('Add New Language')}</div>}
           size="md"
           radius={0}
-          transitionProps={{transition: 'fade', duration: 200}}
+          transitionProps={{ transition: 'fade', duration: 200 }}
         >
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-4">
@@ -94,11 +92,7 @@ const LanguageSelectorModal = React.forwardRef(
             />
 
             <div className="flex justify-end mt-4">
-              <Button
-                variant="outline"
-                onClick={() => setOpened(false)}
-                className="mr-2"
-              >
+              <Button variant="outline" onClick={() => setOpened(false)} className="mr-2">
                 {t('Cancel')}
               </Button>
               <Button disabled={!selectedLocaleId} onClick={handleClickAdd}>
@@ -109,7 +103,7 @@ const LanguageSelectorModal = React.forwardRef(
         </Modal>
       </>
     );
-  }
+  },
 );
 
 LanguageSelectorModal.displayName = 'LanguageSelectorModal';

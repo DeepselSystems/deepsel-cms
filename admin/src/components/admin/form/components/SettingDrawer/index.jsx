@@ -1,10 +1,10 @@
-import {forwardRef, useImperativeHandle, useState} from 'react';
-import {Box, Drawer, TagsInput, Textarea} from '@mantine/core';
-import {useTranslation} from 'react-i18next';
+import { forwardRef, useImperativeHandle, useState } from 'react';
+import { Box, Drawer, TagsInput, Textarea } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import FormContentSlugInput from '../FormContentSlugInput/index.jsx';
 import H3 from '../../../../../common/ui/H3.jsx';
 import Editor from 'react-simple-code-editor';
-import {highlight, languages} from 'prismjs/components/prism-core.js';
+import { highlight, languages } from 'prismjs/components/prism-core.js';
 import NumberInput from '../../../../../common/ui/NumberInput.jsx';
 import Switch from '../../../../../common/ui/Switch.jsx';
 
@@ -21,9 +21,9 @@ import Switch from '../../../../../common/ui/Switch.jsx';
  * }>>}
  */
 const SettingDrawer = forwardRef(
-  ({localeId, form, setForm, formContentsMap, setFormContentMap}, ref) => {
+  ({ localeId, form, setForm, formContentsMap, setFormContentMap }, ref) => {
     // Translation
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // Init states
     const [opened, setOpened] = useState(false);
@@ -45,7 +45,7 @@ const SettingDrawer = forwardRef(
         setEmailValidationError(
           t('Invalid email format: {{emails}}', {
             emails: invalidEmails.join(', '),
-          })
+          }),
         );
       } else {
         setEmailValidationError('');
@@ -85,7 +85,7 @@ const SettingDrawer = forwardRef(
           title={<Box className="font-bold text-xl">{t('Settings')}</Box>}
           size="md"
           position="right"
-          transitionProps={{transition: 'slide-left', duration: 200}}
+          transitionProps={{ transition: 'slide-left', duration: 200 }}
         >
           {formContentsMap[localeId] && (
             <Box className="space-y-6">
@@ -125,7 +125,7 @@ const SettingDrawer = forwardRef(
                   maxRows={5}
                   maxLength={1000}
                   value={formContentsMap[localeId].description || ''}
-                  onChange={({target: {value}}) =>
+                  onChange={({ target: { value } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -145,7 +145,7 @@ const SettingDrawer = forwardRef(
                   maxRows={5}
                   maxLength={1000}
                   value={formContentsMap[localeId].closing_remarks || ''}
-                  onChange={({target: {value}}) =>
+                  onChange={({ target: { value } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -165,7 +165,7 @@ const SettingDrawer = forwardRef(
                   maxRows={5}
                   maxLength={1000}
                   value={formContentsMap[localeId].success_message || ''}
-                  onChange={({target: {value}}) =>
+                  onChange={({ target: { value } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -190,7 +190,7 @@ const SettingDrawer = forwardRef(
                   allowNegative={false}
                   label={t('Maximum number of submissions')}
                   description={t(
-                    'Set a limit on how many responses this form can receive. Once the maximum is reached, the form will automatically close and no longer accept new submissions. Leave this field empty to allow unlimited submissions.'
+                    'Set a limit on how many responses this form can receive. Once the maximum is reached, the form will automatically close and no longer accept new submissions. Leave this field empty to allow unlimited submissions.',
                   )}
                   value={formContentsMap[localeId].max_submissions}
                   onChange={(value) =>
@@ -211,10 +211,10 @@ const SettingDrawer = forwardRef(
                   }}
                   label={t('Show remaining submissions')}
                   description={t(
-                    'Whether to display remaining submission count to visitors. Only applicable when max_submissions is set.'
+                    'Whether to display remaining submission count to visitors. Only applicable when max_submissions is set.',
                   )}
                   checked={formContentsMap[localeId].show_remaining_submissions}
-                  onChange={({currentTarget: {checked}}) =>
+                  onChange={({ currentTarget: { checked } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -232,10 +232,10 @@ const SettingDrawer = forwardRef(
                   }}
                   label={t('Allow edit submission')}
                   description={t(
-                    'Allow users to edit their submissions. Previous submissions will be saved in history.'
+                    'Allow users to edit their submissions. Previous submissions will be saved in history.',
                   )}
                   checked={formContentsMap[localeId].enable_edit_submission}
-                  onChange={({currentTarget: {checked}}) =>
+                  onChange={({ currentTarget: { checked } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -259,10 +259,8 @@ const SettingDrawer = forwardRef(
                       description: '!px-0 !my-0 !text-sm',
                       body: 'flex-col flex-col-reverse gap-1',
                     }}
-                    checked={
-                      formContentsMap[localeId].enable_admin_email_notifications
-                    }
-                    onChange={({currentTarget: {checked}}) =>
+                    checked={formContentsMap[localeId].enable_admin_email_notifications}
+                    onChange={({ currentTarget: { checked } }) =>
                       setFormContentMap((prevState) => ({
                         ...prevState,
                         [localeId]: {
@@ -272,22 +270,16 @@ const SettingDrawer = forwardRef(
                       }))
                     }
                     label={t('Notify to admin')}
-                    description={t(
-                      'Send notification to admin(s) when a submission is received.'
-                    )}
+                    description={t('Send notification to admin(s) when a submission is received.')}
                   />
-                  {!!formContentsMap[localeId]
-                    .enable_admin_email_notifications && (
+                  {!!formContentsMap[localeId].enable_admin_email_notifications && (
                     <TagsInput
                       label={t('Admin email(s)')}
                       description={t(
-                        'Enter email addresses to receive notifications when new form submissions are received.'
+                        'Enter email addresses to receive notifications when new form submissions are received.',
                       )}
                       placeholder={t('Enter email address and press Enter')}
-                      value={
-                        formContentsMap[localeId].notification_admin_emails ||
-                        []
-                      }
+                      value={formContentsMap[localeId].notification_admin_emails || []}
                       onChange={handleFormsNotificationEmailsChange}
                       className="mb-4"
                       clearable
@@ -304,11 +296,8 @@ const SettingDrawer = forwardRef(
                     description: '!px-0 !my-0 !text-sm',
                     body: 'flex-col flex-col-reverse gap-1',
                   }}
-                  checked={
-                    formContentsMap[localeId]
-                      .enable_submitter_email_notifications
-                  }
-                  onChange={({currentTarget: {checked}}) =>
+                  checked={formContentsMap[localeId].enable_submitter_email_notifications}
+                  onChange={({ currentTarget: { checked } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -319,7 +308,7 @@ const SettingDrawer = forwardRef(
                   }
                   label={t('Notify to submitter')}
                   description={t(
-                    'Send confirmation email to logged-in users only. Anonymous submissions will not receive notifications.'
+                    'Send confirmation email to logged-in users only. Anonymous submissions will not receive notifications.',
                   )}
                 />
               </div>
@@ -331,7 +320,7 @@ const SettingDrawer = forwardRef(
                   <H3>{t('Statistics')}</H3>
                   <p className="text-gray-pale-sky text-sm">
                     {t(
-                      'Form statistics such as number of views, submissions, and distribution of answers.'
+                      'Form statistics such as number of views, submissions, and distribution of answers.',
                     )}
                   </p>
                 </div>
@@ -342,7 +331,7 @@ const SettingDrawer = forwardRef(
                     body: 'flex-col flex-col-reverse gap-1',
                   }}
                   checked={formContentsMap[localeId].enable_public_statistics}
-                  onChange={({currentTarget: {checked}}) =>
+                  onChange={({ currentTarget: { checked } }) =>
                     setFormContentMap((prevState) => ({
                       ...prevState,
                       [localeId]: {
@@ -352,9 +341,7 @@ const SettingDrawer = forwardRef(
                     }))
                   }
                   label={t('Public')}
-                  description={t(
-                    'Public statistics will be visible to all users.'
-                  )}
+                  description={t('Public statistics will be visible to all users.')}
                 />
               </div>
               {/*endregion statistics*/}
@@ -368,7 +355,7 @@ const SettingDrawer = forwardRef(
                   </label>
                   <p className="text-xs text-gray-500 mb-2">
                     {t(
-                      'This code will be injected only for this language version of the form, after the form content.'
+                      'This code will be injected only for this language version of the form, after the form content.',
                     )}
                   </p>
                   <div className="bg-gray-50 border border-gray-300 rounded overflow-auto h-36">
@@ -384,9 +371,7 @@ const SettingDrawer = forwardRef(
                           },
                         }))
                       }
-                      highlight={(code) =>
-                        highlight(code, languages.markup, 'html')
-                      }
+                      highlight={(code) => highlight(code, languages.markup, 'html')}
                       padding={10}
                       textareaClassName="focus:outline-none"
                       placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
@@ -399,7 +384,7 @@ const SettingDrawer = forwardRef(
                   </label>
                   <p className="text-xs text-gray-500 mb-2">
                     {t(
-                      'This code will be injected in all language versions of this form, after the form content.'
+                      'This code will be injected in all language versions of this form, after the form content.',
                     )}
                   </p>
                   <div className="bg-gray-50 border border-gray-300 rounded overflow-auto h-36">
@@ -412,9 +397,7 @@ const SettingDrawer = forwardRef(
                           form_custom_code: code,
                         }))
                       }
-                      highlight={(code) =>
-                        highlight(code, languages.markup, 'html')
-                      }
+                      highlight={(code) => highlight(code, languages.markup, 'html')}
                       padding={10}
                       textareaClassName="focus:outline-none"
                       placeholder="<!-- Enter HTML, CSS, or JavaScript code here -->"
@@ -428,7 +411,7 @@ const SettingDrawer = forwardRef(
         </Drawer>
       </>
     );
-  }
+  },
 );
 
 SettingDrawer.displayName = 'SettingDrawer';
