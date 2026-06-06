@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
+import { LoadingOverlay, Modal, Switch, Tabs, Tooltip, Menu } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -27,6 +27,7 @@ import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import {
+  IconAi,
   IconCode,
   IconDeviceDesktop,
   IconDeviceFloppy,
@@ -36,6 +37,7 @@ import {
   IconQuestionMark,
   IconSettings,
   IconSparkles2,
+  IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -118,6 +120,14 @@ export default function TemplateEdit({ onSuccess }) {
 
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+  const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
+  const isAiFeatureAvailable =
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
+  const aiWritingAvailable =
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
+  const aiRequirementMessage = t(
+    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
+  );
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -781,17 +791,58 @@ export default function TemplateEdit({ onSuccess }) {
                 </Button>
               </div>
 
-              {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
+              {/* AI Writer, Settings, Save - Right Side */}
               <div className="flex items-center gap-3">
-                <Button
-                  variant={aiWriterSidebarOpened ? 'filled' : 'subtle'}
-                  size="sm"
-                  onClick={() => setAiWriterSidebarOpened((prev) => !prev)}
-                  className="px-2"
-                >
-                  <IconSparkles2 size={16} className="mr-1" />
-                  {t('AI Writer')}
-                </Button>
+                <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
+                  <Menu.Target>
+                    <Button variant="subtle" size="md" className="px-2">
+                      <IconAi size={40} />
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item closeMenuOnClick={false}>
+                      <Tooltip
+                        label={t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )}
+                        disabled={aiWritingAvailable}
+                      >
+                        <div className="inline-flex items-center">
+                          <Switch
+                            label={
+                              <span className="inline-flex items-center gap-1">
+                                <IconSparkles2 size={16} />
+                                {t('AI Writer')}
+                              </span>
+                            }
+                            checked={aiWriterSidebarOpened}
+                            onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
+                            disabled={!aiWritingAvailable}
+                            size="md"
+                          />
+                        </div>
+                      </Tooltip>
+                    </Menu.Item>
+                    <Menu.Item closeMenuOnClick={false}>
+                      <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
+                        <div className="inline-flex items-center">
+                          <Switch
+                            label={
+                              <span className="inline-flex items-center gap-1">
+                                <IconSubtitlesAi size={16} />
+                                {t('AI Autocomplete')}
+                              </span>
+                            }
+                            checked={aiAutocompleteEnabled && isAiFeatureAvailable}
+                            onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
+                            disabled={!isAiFeatureAvailable}
+                            size="md"
+                          />
+                        </div>
+                      </Tooltip>
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
                 <Button type="submit" variant="filled" size="sm" loading={loading}>
                   <IconDeviceFloppy size={16} className="mr-2" />
                   {t('Save')}
@@ -827,7 +878,14 @@ export default function TemplateEdit({ onSuccess }) {
                   borderRadius: '8px',
                 }}
               >
-                {previewSrcdoc ? (
+                {renderingError ? (
+                  <div className="flex items-center justify-center h-full p-6">
+                    <div className="text-center text-red-500">
+                      <p className="font-medium">{t('Rendering error')}</p>
+                      <p className="text-sm mt-1 font-mono break-all">{renderingError}</p>
+                    </div>
+                  </div>
+                ) : previewSrcdoc ? (
                   <iframe
                     srcDoc={previewSrcdoc}
                     className="w-full h-full !rounded-lg border border-gray-300 !shadow"
