@@ -16,6 +16,7 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
+import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
@@ -34,8 +35,10 @@ import {
   IconPlus,
   IconQuestionMark,
   IconSettings,
+  IconSparkles2,
   IconTrash,
 } from '@tabler/icons-react';
+import clsx from 'clsx';
 
 export default function TemplateEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -114,6 +117,7 @@ export default function TemplateEdit({ onSuccess }) {
   });
 
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -545,7 +549,12 @@ export default function TemplateEdit({ onSuccess }) {
 
   return (!loading && record) || isCreateMode ? (
     <>
-      <div className="h-screen w-full flex overflow-hidden">
+      <div
+        className={clsx(
+          'w-full flex',
+          'min-h-[calc(100vh-(var(--app-shell-header-offset, 0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
+        )}
+      >
         {/* Form Section - Left Side */}
         <form
           className="overflow-y-auto px-2 pb-2"
@@ -774,6 +783,15 @@ export default function TemplateEdit({ onSuccess }) {
 
               {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
               <div className="flex items-center gap-3">
+                <Button
+                  variant={aiWriterSidebarOpened ? 'filled' : 'subtle'}
+                  size="sm"
+                  onClick={() => setAiWriterSidebarOpened((prev) => !prev)}
+                  className="px-2"
+                >
+                  <IconSparkles2 size={16} className="mr-1" />
+                  {t('AI Writer')}
+                </Button>
                 <Button type="submit" variant="filled" size="sm" loading={loading}>
                   <IconDeviceFloppy size={16} className="mr-2" />
                   {t('Save')}
@@ -831,6 +849,18 @@ export default function TemplateEdit({ onSuccess }) {
             </div>
           </div>
         </form>
+
+        <AIWriterSidebar
+          className={clsx(
+            'border ms-2 rounded-lg shadow sticky top-[calc(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))]',
+            'min-h-[calc(100vh-(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
+          )}
+          opened={aiWriterSidebarOpened}
+          onClose={() => setAiWriterSidebarOpened(false)}
+          activeContent={activeContent}
+          updateContentField={updateContentField}
+          contentType="template"
+        />
       </div>
 
       {/* Add Language Modal */}
