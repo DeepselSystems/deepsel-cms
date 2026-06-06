@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are a professional content writer. Generate high-quality page content based on the user's request.
+_PAGE_SYSTEM_PROMPT = """You are a professional content writer. Generate high-quality page content based on the user's request.
 
 You MUST return a valid JSON object with exactly two fields:
 - "title": A concise, compelling title for the content
@@ -32,7 +32,7 @@ Example response:
 {"title": "Getting Started with Project Management", "content": "<p>Introduction paragraph with <strong>important points</strong>.</p><h2>Section Title</h2><ul><li>First point</li><li>Second point</li></ul>"}"""
 
 
-TEMPLATE_SYSTEM_PROMPT = r"""You are an expert front-end engineer specializing in server-side Jinja2 HTML templates for the DeepSel CMS. Your job is to generate complete, production-ready Jinja2 template code based on the user's request.
+_TEMPLATE_SYSTEM_PROMPT = r"""You are an expert front-end engineer specializing in server-side Jinja2 HTML templates for the DeepSel CMS. Your job is to generate complete, production-ready Jinja2 template code based on the user's request.
 
 ================================================================
 RESPONSE FORMAT (STRICT)
@@ -373,31 +373,13 @@ def _build_existing_templates_section(existing_templates: list) -> str:
     return "\n".join(lines)
 
 
-async def generate_template_content(
-    prompt: str,
+async def _call_openrouter(
     model_string_id: str,
     openrouter_api_key: str,
-    messages: list[dict] | None = None,
-    existing_templates: list | None = None,
-) -> dict:
-    """Call OpenRouter to generate a complete Jinja2 HTML template.
-
-    Mirrors generate_page_content but uses TEMPLATE_SYSTEM_PROMPT and returns
-    only a "content" field (template names are set separately by the user).
-    existing_templates is a list of ORM template objects fetched by the caller.
-    """
-    existing_section = _build_existing_templates_section(existing_templates or [])
-    system_prompt = TEMPLATE_SYSTEM_PROMPT + existing_section
-
-    if messages:
-        api_messages = [{"role": "system", "content": system_prompt}] + messages
-    else:
-        user_prompt = f"Create a Jinja2 template: {prompt}"
-        api_messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-
+    api_messages: list[dict],
+    max_tokens: int = 5000,
+) -> str:
+    """Send a chat completion request to OpenRouter and return the raw text response."""
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
@@ -412,7 +394,7 @@ async def generate_template_content(
                     "model": model_string_id,
                     "messages": api_messages,
                     "temperature": 0.7,
-                    "max_tokens": 8000,
+                    "max_tokens": max_tokens,
                 },
             )
             response.raise_for_status()
@@ -420,20 +402,13 @@ async def generate_template_content(
             result = response.json()
             if "choices" in result and len(result["choices"]) > 0:
                 raw = result["choices"][0]["message"]["content"].strip()
-                # Strip markdown code fences if present
                 if raw.startswith("```"):
                     lines = raw.split("\n")
-                    # Remove first line (```json) and last line (```)
                     lines = [
                         line for line in lines if not line.strip().startswith("```")
                     ]
                     raw = "\n".join(lines).strip()
-                try:
-                    parsed = json.loads(raw)
-                    return {"content": parsed.get("content", "")}
-                except json.JSONDecodeError:
-                    # Fallback: treat entire response as the template content
-                    return {"content": raw}
+                return raw
 
             logger.error("Unexpected AI API response format: %s", result)
             raise HTTPException(
@@ -458,11 +433,43 @@ async def generate_template_content(
         logger.error("AI API request error: %s", exc)
         raise HTTPException(status_code=500, detail="Failed to connect to AI API")
     except Exception as exc:
-        logger.error("AI template writing error: %s", exc)
+        logger.error("AI API error: %s", exc)
         raise HTTPException(
-            status_code=500,
-            detail="An error occurred while generating template content",
+            status_code=500, detail="An error occurred while calling AI API"
         )
+
+
+async def generate_template_content(
+    prompt: str,
+    model_string_id: str,
+    openrouter_api_key: str,
+    messages: list[dict] | None = None,
+    existing_templates: list | None = None,
+) -> dict:
+    """Call OpenRouter to generate a complete Jinja2 HTML template.
+
+    Returns only a "content" field — template names are set separately by the user.
+    existing_templates is a list of ORM template objects fetched by the caller.
+    """
+    existing_section = _build_existing_templates_section(existing_templates or [])
+    system_prompt = _TEMPLATE_SYSTEM_PROMPT + existing_section
+
+    if messages:
+        api_messages = [{"role": "system", "content": system_prompt}] + messages
+    else:
+        api_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Create a Jinja2 template: {prompt}"},
+        ]
+
+    raw = await _call_openrouter(
+        model_string_id, openrouter_api_key, api_messages, max_tokens=8000
+    )
+    try:
+        parsed = json.loads(raw)
+        return {"content": parsed.get("content", "")}
+    except json.JSONDecodeError:
+        return {"content": raw}
 
 
 async def generate_page_content(
@@ -473,79 +480,18 @@ async def generate_page_content(
 ) -> dict:
     """Call OpenRouter to generate page content HTML with title."""
     if messages:
-        api_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+        api_messages = [{"role": "system", "content": _PAGE_SYSTEM_PROMPT}] + messages
     else:
-        user_prompt = f"Create page content: {prompt}"
         api_messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
+            {"role": "system", "content": _PAGE_SYSTEM_PROMPT},
+            {"role": "user", "content": f"Create page content: {prompt}"},
         ]
 
+    raw = await _call_openrouter(
+        model_string_id, openrouter_api_key, api_messages, max_tokens=5000
+    )
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {openrouter_api_key}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://deepsel.com",
-                    "X-Title": "DeepSel CMS",
-                },
-                json={
-                    "model": model_string_id,
-                    "messages": api_messages,
-                    "temperature": 0.7,
-                    "max_tokens": 5000,
-                },
-            )
-            response.raise_for_status()
-
-            result = response.json()
-            if "choices" in result and len(result["choices"]) > 0:
-                raw = result["choices"][0]["message"]["content"].strip()
-                # Strip markdown code fences if present
-                if raw.startswith("```"):
-                    lines = raw.split("\n")
-                    # Remove first line (```json) and last line (```)
-                    lines = [
-                        line for line in lines if not line.strip().startswith("```")
-                    ]
-                    raw = "\n".join(lines).strip()
-                try:
-                    parsed = json.loads(raw)
-                    return {
-                        "title": parsed.get("title", ""),
-                        "content": parsed.get("content", ""),
-                    }
-                except json.JSONDecodeError:
-                    # Fallback: treat entire response as content
-                    return {"title": "", "content": raw}
-
-            logger.error("Unexpected AI API response format: %s", result)
-            raise HTTPException(
-                status_code=500, detail="Unexpected response from AI API"
-            )
-
-    except httpx.TimeoutException:
-        raise HTTPException(
-            status_code=504, detail="AI API request timed out. Please try again."
-        )
-    except httpx.HTTPStatusError as exc:
-        logger.error(
-            "AI API request failed: %s - %s",
-            exc.response.status_code if exc.response else "unknown",
-            exc.response.text if exc.response else "no response text",
-        )
-        raise HTTPException(
-            status_code=500,
-            detail=f"AI API request failed: {exc.response.status_code if exc.response else 'unknown'}",
-        )
-    except httpx.RequestError as exc:
-        logger.error("AI API request error: %s", exc)
-        raise HTTPException(status_code=500, detail="Failed to connect to AI API")
-    except Exception as exc:
-        logger.error("AI writing error: %s", exc)
-        raise HTTPException(
-            status_code=500,
-            detail="An error occurred while generating content",
-        )
+        parsed = json.loads(raw)
+        return {"title": parsed.get("title", ""), "content": parsed.get("content", "")}
+    except json.JSONDecodeError:
+        return {"title": "", "content": raw}
