@@ -3,7 +3,7 @@ from fastapi import Body, Depends, HTTPException, Path, Query, Request, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ..utils.ai_writing import generate_page_content
+from ..utils.ai_writing import generate_page_content, generate_template_content
 from ..schemas.ai_writing import (
     AIWritingContentType,
     AIWritingRequest,
@@ -131,19 +131,34 @@ async def ai_writing(
             {"role": m.role, "content": m.content} for m in request.messages
         ]
 
+    # Generate template content
     if request.content_type == AIWritingContentType.template:
-        # TODO: implement template-specific AI writing (Jinja2 template code generation)
-        raise HTTPException(
-            status_code=501,
-            detail="AI writing for templates is not yet implemented.",
+        TemplateModel = models_pool["template"]
+        existing_templates = (
+            db.query(TemplateModel)
+            .filter(
+                TemplateModel.organization_id == org_id,
+                TemplateModel.active.is_(True),
+            )
+            .order_by(TemplateModel.name)
+            .all()
+        )
+        generated_content = await generate_template_content(
+            prompt=request.prompt,
+            model_string_id=openrouter_model.string_id,
+            openrouter_api_key=openrouter_api_key,
+            messages=conversation_history,
+            existing_templates=existing_templates,
         )
 
-    generated_content = await generate_page_content(
-        prompt=request.prompt,
-        model_string_id=openrouter_model.string_id,
-        openrouter_api_key=openrouter_api_key,
-        messages=conversation_history,
-    )
+    # Generate page content, blog post content, etc.
+    else:
+        generated_content = await generate_page_content(
+            prompt=request.prompt,
+            model_string_id=openrouter_model.string_id,
+            openrouter_api_key=openrouter_api_key,
+            messages=conversation_history,
+        )
 
     return AIWritingResponse(
         title=generated_content.get("title", ""),
