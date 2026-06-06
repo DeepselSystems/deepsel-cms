@@ -83,6 +83,7 @@ export default function AIWriterSidebar({
           model_id: modelId,
           prompt: userMessage.text,
           messages: conversationHistory,
+          content_type: contentType,
         }),
       });
 
@@ -160,7 +161,7 @@ export default function AIWriterSidebar({
   };
 
   const placeholder =
-    contentType === 'blog_post'
+    contentType === 'blog'
       ? t('Describe what content you want to generate...')
       : t('Describe what content you want to generate...');
 

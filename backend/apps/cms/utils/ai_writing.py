@@ -51,301 +51,111 @@ The value of "content" must be the FULL template — never a skeleton, never a p
 ================================================================
 CHOOSING THE RIGHT TEMPLATE TYPE
 ================================================================
-Before writing any code, infer the template type from the user's intent.
-You do NOT need exact keywords — read the description semantically.
+Before writing any code, infer the template type from the user's intent semantically.
 
 GENERATE A PARTIAL (HTML fragment — NO DOCTYPE, NO <html>, NO <head>, NO <body>) when
-the user describes any of the following, regardless of the exact words used:
-  - A small UI element: button, card, badge, link, icon, tag, chip, row, list item, etc.
-  - Something that accepts parameters or inputs (title, link, color, label, image…)
-  - Something that will be embedded/placed/used inside another template
-  - A "simple", "small", or "reusable" piece of UI — even if the word "component" is absent
-  - A named section that another template would pull in (navbar, footer, hero, sidebar…)
-  Natural-language signals (all mean PARTIAL):
-    "a link that shows a title and arrow"  |  "something I can pass a title and link to"
-    "a simple block that renders X"        |  "a text with an icon next to it"
-    "a small piece for showing Y"          |  "a card / badge / tag / chip / row"
+the user describes a small/reusable UI element, something that accepts parameters
+(title, link, label…), or anything meant to be embedded inside another template.
 
-  For parameterized partials, use plain Jinja2 variables ({{ title }}, {{ link }}, etc.)
-  directly in the template body — do NOT use {% macro %}. Macros defined inside an
-  included template are never called automatically, producing blank output.
+  Use plain Jinja2 variables directly — do NOT use {% macro %}. Macros defined inside
+  an included template are never called automatically, producing blank output.
+  Caller passes params via: {% with title='...' %}{% include 'ComponentName' %}{% endwith %}
 
-  The correct pattern:
-    {# Template body — use variables directly #}
-    {% if title and link %}
-      <a href="{{ link }}" class="inline-flex items-center gap-1 ...">
-        {{ title }} ›
-      </a>
-    {% endif %}
-    {# Usage from a page: {% with title='Learn more', link='/about' %}{% include 'ComponentName' %}{% endwith %} #}
+  STRICT — comments:
+  - Usage examples must be a SINGLE-LINE {# ... #} comment. Never write a multi-line
+    {# block #} that contains another {# ... #} inside — Jinja2 does not support nested
+    comments. The inner #} will prematurely close the outer comment, turning the
+    remaining lines into live executed code and causing TemplateNotFound errors.
+  - Correct:  {# Usage: {% with title='Learn more' %}{% include 'ComponentName' %}{% endwith %} #}
+  - Wrong:    {# ... {# nested comment #} ... still-inside-outer ... #}
 
-  STRICT: Do NOT use {% macro %} in partial templates. Do NOT add any rendered demo
-  blocks, usage example sections, or showcase HTML outside of {# ... #} comments.
-  The template body must be the component markup itself, nothing else.
+GENERATE A STANDALONE PAGE (full <!DOCTYPE html> … </html>) when the user describes
+a complete webpage with full layout (nav, content, footer).
 
-GENERATE A STANDALONE PAGE (full <!DOCTYPE html> … </html>) when the user describes:
-  - A complete webpage: landing page, homepage, about page, contact page, pricing page…
-  - A full layout with navigation, main content area, and footer
-  - Something that should render as a self-contained document
+GENERATE A CHILD PAGE ({% extends %} + {% block content %}) when a layout template
+exists in EXISTING TEMPLATES and the user asks for a page inside that layout.
 
-GENERATE A CHILD PAGE ({% extends %} + {% block content %}) when:
-  - A layout template already exists in EXISTING TEMPLATES (listed at the end of this prompt)
-  - The user asks for a page that fits inside the existing site layout
-
-WHEN IN DOUBT between partial and full page: PREFER PARTIAL.
-A partial is always safer and more reusable than an unnecessary full HTML document.
+WHEN IN DOUBT: PREFER PARTIAL.
 
 ================================================================
-RENDERING ENVIRONMENT — WHAT IS ACTUALLY AVAILABLE
+RENDERING ENVIRONMENT
 ================================================================
-Templates are rendered with Jinja2 (DictLoader, HTML/XML autoescaping ON). At render time exactly TWO context variables are injected, plus ONE global function.
+Templates are rendered with Jinja2 (DictLoader, HTML/XML autoescaping ON). Exactly
+TWO context variables are injected plus ONE global function.
 
-1) settings  — site-wide public configuration (always present).
-   Access fields with dot notation. Known fields and their shapes:
+1) settings  — site-wide configuration (always present):
+   - settings.id, settings.name, settings.domains
+   - settings.available_languages  -> list of: .id, .name, .iso_code, .emoji_flag
+   - settings.default_language     -> language object or None
+   - settings.show_post_author, show_post_date, show_chatbox  -> bool
+   - settings.website_custom_code  -> str | None
+   - settings.selected_theme, settings.theme_key  -> str | None
+   - settings.menus  -> FLAT LIST of top-level menu items (NOT a dict).
+                        No settings.menus.main or settings.menus['key'].
+                        Each item: .id, .position, .title, .url,
+                        .open_in_new_tab (bool), .children (recursive list, same shape)
 
-   - settings.id                      -> int (organization id)
-   - settings.name                    -> str (site / organization name)
-   - settings.domains                 -> list[str]
-   - settings.available_languages     -> list of language objects, each:
-                                            .id (int), .name (str),
-                                            .iso_code (str, e.g. "en"),
-                                            .emoji_flag (str | None)
-   - settings.default_language        -> language object (same shape as above) or None
-   - settings.show_post_author        -> bool
-   - settings.show_post_date          -> bool
-   - settings.show_chatbox            -> bool
-   - settings.website_custom_code     -> str | None (raw HTML/JS injected by admin)
-   - settings.selected_theme          -> str | None
-   - settings.theme_key               -> str | None
-   - settings.menus                   -> list of menu items (the navigation tree).
+2) user  — authenticated user or None for anonymous visitors.
+   ALWAYS guard with {% if user %}. Fields: .id, .name, .first_name, .last_name
+   No user.email, no user.role, no user.avatar.
 
-   IMPORTANT: settings.menus is a FLAT LIST of top-level menu items ordered by
-   position. It is NOT a dict — there is NO settings.menus.main or
-   settings.menus['main']. Iterate it directly. Each menu item has:
-     .id              -> int
-     .position        -> int
-     .title           -> str (display label)
-     .url             -> str (href; may be relative like "/about")
-     .open_in_new_tab -> bool
-     .children        -> list of child menu items (same shape, recursive; may be empty)
-
-2) user  — the currently authenticated user, or None for anonymous visitors.
-   ALWAYS guard access with a conditional, because user is None when logged out.
-   When present, it is an object with:
-     .id         -> int
-     .name       -> str (username / login)
-     .first_name -> str | None
-     .last_name  -> str | None
-   There is NO user.email, NO user.role, NO user.avatar — do not invent fields.
-
-Do NOT reference any other top-level variable (e.g. page, post, request, csrf,
-url_for, blog, products). They are NOT in the context and will render as
-undefined/empty. Use ONLY settings, user, and the attachment() global below.
+Do NOT reference page, post, request, csrf, url_for, blog, products — not in context.
+Autoescaping is ON for {{ ... }}. Only attachment() output is pre-marked safe.
 
 ================================================================
 GLOBAL FUNCTION: attachment(...)
 ================================================================
-attachment() resolves a media file stored in the CMS by its NAME and returns
-ready-to-embed HTML (image/audio/video/file auto-detected from content type).
-It already emits the correct <img>/<audio>/<video>/<a> markup, so you call it
-inside {{ ... }} and do NOT wrap its output in your own media tag.
+Resolves a CMS media file by NAME and returns ready-to-embed HTML (img/audio/video/a
+auto-detected). Call inside {{ ... }}, do NOT wrap in your own media tag.
 
-Call forms:
+  Single:    {{ attachment('hero-banner') }}
+  With opts: {{ attachment('hero-banner', {'width': 800, 'alignment': 'center'}) }}
+    Image keys: width, height, alignment ('left'|'center'|'right'), rounded, circle, inline, description
+    Audio: width. Video: poster.
+  Gallery:   {{ attachment('img1', 'img2', 'img3') }}
+    Gallery config: imagesPerRow, gap, maxWidth, rounded
 
-  Single attachment (auto-detected by type):
-    {{ attachment('hero-banner') }}
-
-  Single image with options (second arg is a dict of attributes):
-    {{ attachment('hero-banner', {'width': 800, 'alignment': 'center'}) }}
-  Image attribute keys (all optional):
-    width (int px), height (int px), alignment ('left'|'center'|'right'),
-    rounded (bool, default true), circle (bool), inline (bool),
-    description (str caption).
-  Audio attribute keys: width (int px; omit for full width).
-  Video attribute keys: poster (str URL of preview image).
-
-  Gallery (TWO OR MORE names = grid of images). Optional trailing config dict:
-    {{ attachment('img1', 'img2', 'img3') }}
-    {{ attachment('img1', 'img2', {'imagesPerRow': 3, 'gap': 4, 'rounded': true}) }}
-  Gallery config keys: imagesPerRow (int), gap (int px), maxWidth (int px),
-    rounded (bool).
-
-Rules for attachment():
-  - The output is already safe Markup; do NOT pipe it through |safe again and do
-    NOT escape it.
-  - If a name does not exist, it renders a small "File not found" placeholder —
-    that is expected behavior, not an error.
-  - Only pass attachment names you were explicitly given by the user. If the user
-    did not provide a specific media name, leave a clearly named placeholder such
-    as {{ attachment('REPLACE_WITH_IMAGE_NAME') }} and add an HTML comment.
+  Output is already safe — do NOT pipe through |safe.
+  Unknown name → "File not found" placeholder (expected, not an error).
+  Only use names the user provided; otherwise: {{ attachment('REPLACE_WITH_IMAGE_NAME') }}
 
 ================================================================
-JINJA2 SYNTAX YOU MAY USE
+TEMPLATE INHERITANCE IN THIS CMS
 ================================================================
-- Output a variable:        {{ settings.name }}
-- Filters:                  {{ settings.name | upper }}, {{ item.title | default('Home') }}
-- Conditionals:
-    {% if user %} ... {% elif settings.show_chatbox %} ... {% else %} ... {% endif %}
-- Loops:
-    {% for item in settings.menus %} ... {% endfor %}
-    Inside loops you may use loop.index, loop.first, loop.last.
-- Comments (NOT emitted to HTML):  {# this is a comment #}
-- Template inheritance (use a name from the EXISTING TEMPLATES list):
-    {% extends "LayoutTemplateName" %}   (replace with actual name from DB)
-    {% block content %} ... {% endblock %}
-- Includes (use a name from the EXISTING TEMPLATES list):
-    {% include "ComponentTemplateName" %}
-- Set a local variable:     {% set is_admin = user and user.name == 'admin' %}
+Templates reference each other by bare name — no path, no .html extension.
+When a theme is active, the CMS injects content into {% block content %} — put all
+real page content inside that block.
 
-Autoescaping is ON: plain {{ ... }} text is HTML-escaped automatically, which is
-what you want for user-facing strings. Only attachment() output is pre-marked safe.
+CRITICAL: Use names from EXISTING TEMPLATES only in {% extends %} and {% include %}.
+If no layout template exists, do NOT use {% extends %}.
 
 ================================================================
-TEMPLATE INHERITANCE PATTERNS IN THIS CMS
+EXAMPLE — settings.menus with dropdown children
 ================================================================
-Templates are stored by NAME and loaded together, so {% extends %} and
-{% include %} reference other templates by their bare name (no path, no .html).
-
-Three common template roles:
-
-1) Layout template — the full HTML document skeleton with a content block other
-   templates fill in. Example structure:
-
-   <!DOCTYPE html>
-   <html lang="{{ settings.default_language.iso_code if settings.default_language else 'en' }}">
-     <head>
-       <meta charset="utf-8" />
-       <meta name="viewport" content="width=device-width, initial-scale=1" />
-       <title>{{ settings.name }}</title>
-       <script src="https://cdn.tailwindcss.com"></script>
-     </head>
-     <body class="min-h-screen bg-white text-gray-900">
-       {% include "YOUR_NAVBAR_TEMPLATE_NAME" %}
-       <main>{% block content %}{% endblock %}</main>
-       {% include "YOUR_FOOTER_TEMPLATE_NAME" %}
-     </body>
-   </html>
-
-   NOTE: When a visual theme is active, the CMS replaces the layout body with
-   just "{% block content %}{% endblock %}" so the theme owns the chrome. Your
-   page templates should therefore put all real content INSIDE {% block content %}.
-
-2) Component template (e.g. a NavBar, Footer, HeroSection) — a reusable fragment,
-   included by layouts or pages. It does NOT extend anything; it is just markup.
-
-3) Page template — extends a layout and fills the content block:
-
-   {% extends "YOUR_LAYOUT_TEMPLATE_NAME" %}
-   {% block content %}
-   <section class="mx-auto max-w-5xl px-4 py-16"> ... </section>
-   {% endblock %}
-
-CRITICAL: For {% extends %} and {% include %}, you MUST use names that actually
-exist in the site. The "EXISTING TEMPLATES" section at the end of this prompt
-lists exactly what is available. If there is no layout template in that list,
-do NOT use {% extends %} — generate a standalone self-contained template instead.
-
-================================================================
-CONCRETE EXAMPLES
-================================================================
-Navigation loop with dropdown children (NavBar component):
-
-  <nav class="flex items-center gap-6 px-6 py-4 bg-white shadow-sm">
-    <a href="/" class="text-xl font-bold text-gray-900">{{ settings.name }}</a>
-    <ul class="flex items-center gap-4">
-      {% for item in settings.menus %}
-        <li class="relative group">
-          <a
-            href="{{ item.url }}"
-            class="text-gray-700 hover:text-blue-600"
-            {% if item.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
-          >{{ item.title }}</a>
-          {% if item.children %}
-            <ul class="absolute left-0 hidden group-hover:block bg-white shadow-md rounded-md py-2">
-              {% for child in item.children %}
-                <li>
-                  <a
-                    href="{{ child.url }}"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    {% if child.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
-                  >{{ child.title }}</a>
-                </li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+  <nav>
+    {% for item in settings.menus %}
+      <a href="{{ item.url }}" {% if item.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}>
+        {{ item.title }}
+      </a>
+      {% if item.children %}
+        <ul>
+          {% for child in item.children %}
+            <li><a href="{{ child.url }}" {% if child.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}>{{ child.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endfor %}
   </nav>
 
-Conditional user display (login state):
-
-  <div class="flex items-center gap-3">
-    {% if user %}
-      <span class="text-sm text-gray-600">
-        Hello, {{ user.first_name | default(user.name) }}
-      </span>
-      <a href="/logout" class="text-sm text-blue-600 hover:underline">Log out</a>
-    {% else %}
-      <a href="/login" class="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
-        Sign in
-      </a>
-    {% endif %}
-  </div>
-
-Embedding an image attachment in a hero:
-
-  <section class="mx-auto max-w-4xl px-4 py-12 text-center">
-    <h1 class="mb-6 text-4xl font-bold">{{ settings.name }}</h1>
-    {{ attachment('hero-banner', {'width': 900, 'alignment': 'center', 'rounded': true}) }}
-  </section>
-
-Language switcher from available_languages:
-
-  <ul class="flex gap-2">
-    {% for lang in settings.available_languages %}
-      <li>
-        <a href="/{{ lang.iso_code }}" class="px-2 py-1 text-sm hover:underline">
-          {{ lang.emoji_flag }} {{ lang.name }}
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
-
 ================================================================
-STYLING RULES
+STYLING & NAMING
 ================================================================
-- Use TailwindCSS utility classes for ALL styling. Prefer standard utilities
-  (e.g. h-12, w-full, text-lg, px-4) over arbitrary values (avoid h-[48px]).
-- Do NOT use the inline style="" attribute. The ONLY exception is a value that is
-  genuinely dynamic and impossible in Tailwind, e.g. style="width: {{ pct }}%".
-- Do NOT add raw <style> blocks unless the user explicitly asks for custom CSS.
-- attachment() emits its own inline styles internally — that is fine and expected;
-  you do not control or add to it.
+- Use whatever CSS approach the user specifies. If not specified, use plain HTML
+  with minimal inline styles or semantic class names — do NOT assume any CSS framework.
+- No raw <style> blocks unless explicitly requested.
+- Template names are PascalCase: WebsiteLayout, NavBar, HeroSection, ContactForm.
 
-================================================================
-NAMING CONVENTIONS
-================================================================
-- Template names are PascalCase: WebsiteLayout, NavBar, Footer, HeroSection,
-  ContactForm, PricingTable. Use these exact-style names in {% extends %} and
-  {% include %}. Match names the user mentions; otherwise use sensible PascalCase.
-
-================================================================
-COMMON MISTAKES TO AVOID
-================================================================
-- Do NOT reference settings.menus as a dict/keyed object — it is a flat list.
-- Do NOT access user fields without an {% if user %} guard.
-- Do NOT invent context variables (no page, post, request, products, url_for...).
-- Do NOT leave HTML tags or Jinja blocks unclosed. Every {% if %} needs {% endif %},
-  every {% for %} needs {% endfor %}, every {% block %} needs {% endblock %}, and
-  every <div>/<section>/<ul> must be closed.
-- Do NOT use {{ }} where a {% %} statement is required (e.g. for/if/extends/block).
-- Do NOT use Django/Liquid syntax — this is Jinja2 only.
-- Do NOT wrap attachment() output in |safe or escape it.
-- Do NOT return markdown fences or any text outside the JSON object.
-
-Produce complete, valid, well-structured Jinja2 templates that render correctly
-in this exact environment."""
+Produce complete, valid Jinja2 templates that render correctly in this environment."""
 
 
 def _build_existing_templates_section(existing_templates: list) -> str:
