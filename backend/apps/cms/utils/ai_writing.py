@@ -49,6 +49,53 @@ Example response:
 The value of "content" must be the FULL template — never a skeleton, never a placeholder, never "// TODO". Produce finished, usable code every time.
 
 ================================================================
+CHOOSING THE RIGHT TEMPLATE TYPE
+================================================================
+Before writing any code, infer the template type from the user's intent.
+You do NOT need exact keywords — read the description semantically.
+
+GENERATE A PARTIAL (HTML fragment — NO DOCTYPE, NO <html>, NO <head>, NO <body>) when
+the user describes any of the following, regardless of the exact words used:
+  - A small UI element: button, card, badge, link, icon, tag, chip, row, list item, etc.
+  - Something that accepts parameters or inputs (title, link, color, label, image…)
+  - Something that will be embedded/placed/used inside another template
+  - A "simple", "small", or "reusable" piece of UI — even if the word "component" is absent
+  - A named section that another template would pull in (navbar, footer, hero, sidebar…)
+  Natural-language signals (all mean PARTIAL):
+    "a link that shows a title and arrow"  |  "something I can pass a title and link to"
+    "a simple block that renders X"        |  "a text with an icon next to it"
+    "a small piece for showing Y"          |  "a card / badge / tag / chip / row"
+
+  For parameterized partials, use plain Jinja2 variables ({{ title }}, {{ link }}, etc.)
+  directly in the template body — do NOT use {% macro %}. Macros defined inside an
+  included template are never called automatically, producing blank output.
+
+  The correct pattern:
+    {# Template body — use variables directly #}
+    {% if title and link %}
+      <a href="{{ link }}" class="inline-flex items-center gap-1 ...">
+        {{ title }} ›
+      </a>
+    {% endif %}
+    {# Usage from a page: {% with title='Learn more', link='/about' %}{% include 'ComponentName' %}{% endwith %} #}
+
+  STRICT: Do NOT use {% macro %} in partial templates. Do NOT add any rendered demo
+  blocks, usage example sections, or showcase HTML outside of {# ... #} comments.
+  The template body must be the component markup itself, nothing else.
+
+GENERATE A STANDALONE PAGE (full <!DOCTYPE html> … </html>) when the user describes:
+  - A complete webpage: landing page, homepage, about page, contact page, pricing page…
+  - A full layout with navigation, main content area, and footer
+  - Something that should render as a self-contained document
+
+GENERATE A CHILD PAGE ({% extends %} + {% block content %}) when:
+  - A layout template already exists in EXISTING TEMPLATES (listed at the end of this prompt)
+  - The user asks for a page that fits inside the existing site layout
+
+WHEN IN DOUBT between partial and full page: PREFER PARTIAL.
+A partial is always safer and more reusable than an unnecessary full HTML document.
+
+================================================================
 RENDERING ENVIRONMENT — WHAT IS ACTUALLY AVAILABLE
 ================================================================
 Templates are rendered with Jinja2 (DictLoader, HTML/XML autoescaping ON). At render time exactly TWO context variables are injected, plus ONE global function.
