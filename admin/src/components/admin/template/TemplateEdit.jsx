@@ -37,7 +37,6 @@ import {
   IconQuestionMark,
   IconSettings,
   IconSparkles2,
-  IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
 import clsx from 'clsx';
@@ -120,14 +119,8 @@ export default function TemplateEdit({ onSuccess }) {
 
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
-  const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
-  const isAiFeatureAvailable =
-    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_autocomplete_model_id;
   const aiWritingAvailable =
     !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
-  const aiRequirementMessage = t(
-    'Please specify an API key and autocomplete model in Site Settings to use this feature.',
-  );
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -213,7 +206,6 @@ export default function TemplateEdit({ onSuccess }) {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
   }, [record, activeContentTab]);
 
-  const hasTemplateName = Boolean(record?.name?.trim());
   const templateNameDescription = t(
     'Must start with a capital letter and contain only letters, numbers, and underscores',
   );
@@ -293,10 +285,6 @@ export default function TemplateEdit({ onSuccess }) {
   const insertTemplateInclude = (template) => {
     if (activeContent) {
       // Get the content that matches the current locale
-      const currentLocaleId = activeContent.locale_id;
-      const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId,
-      );
       const templateName = template.name;
       const includeText = `{% include '${templateName}' %}`;
       const currentContent = activeContent.content || '';
@@ -309,10 +297,6 @@ export default function TemplateEdit({ onSuccess }) {
   const insertTemplateExtends = (template) => {
     if (activeContent) {
       // Get the content that matches the current locale
-      const currentLocaleId = activeContent.locale_id;
-      const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId,
-      );
       const templateName = template.name;
       const extendsText = `{% extends '${templateName}' %}`;
       const currentContent = activeContent.content || '';
@@ -818,24 +802,6 @@ export default function TemplateEdit({ onSuccess }) {
                             checked={aiWriterSidebarOpened}
                             onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
                             disabled={!aiWritingAvailable}
-                            size="md"
-                          />
-                        </div>
-                      </Tooltip>
-                    </Menu.Item>
-                    <Menu.Item closeMenuOnClick={false}>
-                      <Tooltip label={aiRequirementMessage} disabled={isAiFeatureAvailable}>
-                        <div className="inline-flex items-center">
-                          <Switch
-                            label={
-                              <span className="inline-flex items-center gap-1">
-                                <IconSubtitlesAi size={16} />
-                                {t('AI Autocomplete')}
-                              </span>
-                            }
-                            checked={aiAutocompleteEnabled && isAiFeatureAvailable}
-                            onChange={(e) => setAiAutocompleteEnabled(e.currentTarget.checked)}
-                            disabled={!isAiFeatureAvailable}
                             size="md"
                           />
                         </div>
