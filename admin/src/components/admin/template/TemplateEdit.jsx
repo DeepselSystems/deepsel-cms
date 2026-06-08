@@ -127,6 +127,9 @@ export default function TemplateEdit({ onSuccess }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const originalRecordRef = useRef(null);
+
+  /** Last known cursor position in any editor tab — saved on blur so modal can insert at correct spot */
+  const savedCursorRef = useRef(null);
   const [renderedContent, setRenderedContent] = useState('');
   const [renderingError, setRenderingError] = useState(null);
 
@@ -309,12 +312,19 @@ export default function TemplateEdit({ onSuccess }) {
   };
 
   /**
-   * Insert a raw text snippet at the end of the active template content
+   * Insert a raw text snippet at the saved cursor position, falling back to end-of-content
    */
   const insertSnippet = (text) => {
     if (activeContent) {
       const currentContent = activeContent.content || '';
-      updateContentField(activeContent.id, 'content', currentContent + text);
+      const saved = savedCursorRef.current;
+      let newContent;
+      if (saved && saved.contentId === activeContent.id) {
+        newContent = currentContent.slice(0, saved.start) + text + currentContent.slice(saved.end);
+      } else {
+        newContent = currentContent + text;
+      }
+      updateContentField(activeContent.id, 'content', newContent);
     }
     setVariablesModalOpened(false);
   };
@@ -624,6 +634,13 @@ export default function TemplateEdit({ onSuccess }) {
                           className="w-full min-h-[400px]"
                           value={content.content || ''}
                           onValueChange={(code) => updateContentField(content.id, 'content', code)}
+                          onBlur={(e) => {
+                            savedCursorRef.current = {
+                              contentId: content.id,
+                              start: e.target.selectionStart,
+                              end: e.target.selectionEnd,
+                            };
+                          }}
                           highlight={(code) => {
                             // Use HTML/markup highlighting for templates
                             return highlight(code, languages.markup, 'markup');
