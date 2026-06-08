@@ -17,6 +17,7 @@ import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
+import VariablesModal from './components/VariablesModal.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
@@ -307,92 +308,16 @@ export default function TemplateEdit({ onSuccess }) {
     setTemplatesModalOpened(false);
   };
 
-  const insertVariable = (varPath) => {
+  /**
+   * Insert a raw text snippet at the end of the active template content
+   */
+  const insertSnippet = (text) => {
     if (activeContent) {
-      const variableText = `{{ ${varPath} }}`;
       const currentContent = activeContent.content || '';
-      const newContent = currentContent + variableText;
-      updateContentField(activeContent.id, 'content', newContent);
+      updateContentField(activeContent.id, 'content', currentContent + text);
     }
     setVariablesModalOpened(false);
   };
-
-  // Get public settings variables for the modal
-  const publicSettingsVariables = useMemo(() => {
-    if (!siteSettings) return [];
-
-    const variables = [];
-
-    // Basic organization info
-    variables.push({ name: 'Organization ID', path: 'settings.id' });
-    variables.push({ name: 'Organization Name', path: 'settings.name' });
-
-    // Language settings
-    if (siteSettings.default_language) {
-      variables.push({
-        name: 'Default Language Name',
-        path: 'settings.default_language.name',
-      });
-      variables.push({
-        name: 'Default Language Code',
-        path: 'settings.default_language.iso_code',
-      });
-      variables.push({
-        name: 'Default Language Flag',
-        path: 'settings.default_language.emoji_flag',
-      });
-    }
-
-    // Domain settings
-    if (siteSettings.domains) {
-      variables.push({ name: 'Domains', path: 'settings.domains' });
-    }
-
-    // Feature flags
-    variables.push({
-      name: 'Show Post Author',
-      path: 'settings.show_post_author',
-    });
-    variables.push({ name: 'Show Post Date', path: 'settings.show_post_date' });
-    variables.push({ name: 'Show Chatbox', path: 'settings.show_chatbox' });
-    variables.push({
-      name: 'Auto Translate Pages',
-      path: 'settings.auto_translate_pages',
-    });
-    variables.push({
-      name: 'Auto Translate Posts',
-      path: 'settings.auto_translate_posts',
-    });
-    variables.push({
-      name: 'Auto Translate Components',
-      path: 'settings.auto_translate_components',
-    });
-
-    // API keys availability
-    variables.push({
-      name: 'Has OpenAI API Key',
-      path: 'settings.has_openai_api_key',
-    });
-    variables.push({
-      name: 'Has OpenRouter API Key',
-      path: 'settings.has_openrouter_api_key',
-    });
-
-    // Custom code
-    if (siteSettings.website_custom_code) {
-      variables.push({
-        name: 'Website Custom Code',
-        path: 'settings.website_custom_code',
-      });
-    }
-
-    // Menus
-    if (siteSettings.menus?.main) {
-      variables.push({ name: 'Main Menu', path: 'settings.menus.main' });
-    }
-
-    return variables;
-  }, [siteSettings]);
 
   // Function to render template content
   const renderTemplateContent = useCallback(
@@ -1035,43 +960,11 @@ export default function TemplateEdit({ onSuccess }) {
         </div>
       </Modal>
 
-      {/* Variables Modal */}
-      <Modal
+      <VariablesModal
         opened={variablesModalOpened}
         onClose={() => setVariablesModalOpened(false)}
-        title={<div className="font-bold">{t('Available Variables')}</div>}
-        size="lg"
-        radius={0}
-        transitionProps={{ transition: 'fade', duration: 200 }}
-      >
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-4">
-            {t('Click on a variable to insert it into your template.')}
-          </p>
-
-          {publicSettingsVariables.length > 0 ? (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {publicSettingsVariables.map((variable, index) => (
-                <div
-                  key={index}
-                  className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
-                  onClick={() => insertVariable(variable.path)}
-                >
-                  <div className="font-medium">{variable.name}</div>
-                  <div className="text-sm text-gray-500 font-mono">{variable.path}</div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    {t('Click to insert')}: <code>{'{{ ' + variable.path + ' }}'}</code>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-gray-500">{t('No variables available')}</div>
-            </div>
-          )}
-        </div>
-      </Modal>
+        onInsert={insertSnippet}
+      />
     </>
   ) : (
     <FormViewSkeleton />
