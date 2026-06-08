@@ -6,6 +6,7 @@ import {
   IconArrowBackUp,
   IconChevronDown,
   IconExternalLink,
+  IconHistory,
   IconWorldOff,
   IconWorldUpload,
 } from '@tabler/icons-react';
@@ -25,6 +26,7 @@ export default function PublishStatusMenu({
   onAfterPublish,
   onAfterUnpublish,
   onAfterRevert,
+  onOpenRevisions,
 }) {
   const { t } = useTranslation();
   const { notify } = NotificationState();
@@ -190,6 +192,10 @@ export default function PublishStatusMenu({
             {t('Show public version')}
           </Menu.Item>
         )}
+        <Menu.Divider />
+        <Menu.Item leftSection={<IconHistory size={16} />} onClick={onOpenRevisions}>
+          {t('Revision history')}
+        </Menu.Item>
       </Menu.Dropdown>
     </Menu>
   );
