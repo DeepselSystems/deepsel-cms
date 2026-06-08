@@ -20,7 +20,7 @@ const JINJA2_SNIPPETS = [
   {
     name: 'Loop over main menu',
     snippet:
-      '{% for item in settings.menus.main %}\n  <a href="{{ item.url }}">{{ item.name }}</a>\n{% endfor %}',
+      '{% for item in settings.menus %}\n  <a href="{{ item.url }}">{{ item.title }}</a>\n{% endfor %}',
   },
   { name: 'Loop over list', snippet: '{% for item in list %}\n  {{ item }}\n{% endfor %}' },
   {
@@ -103,8 +103,8 @@ export default function VariablesModal({ opened, onClose, onInsert }) {
       variables.push({ name: 'Website Custom Code', path: 'settings.website_custom_code' });
     }
 
-    if (siteSettings.menus?.main) {
-      variables.push({ name: 'Main Menu', path: 'settings.menus.main' });
+    if (siteSettings.menus) {
+      variables.push({ name: 'Main Menu', path: 'settings.menus' });
     }
 
     return variables;
