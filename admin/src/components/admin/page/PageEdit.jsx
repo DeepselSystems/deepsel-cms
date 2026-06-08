@@ -637,31 +637,6 @@ export default function PageEdit({ onSuccess }) {
     setEditorKey((k) => k + 1);
   };
 
-  // Callback to trigger preview update when content changes in editor
-  const handleContentChange = useCallback(() => {
-    setPreviewTrigger((prev) => prev + 1);
-  }, []);
-
-  // Wrap setRecord to detect content changes
-  const wrappedSetRecord = useCallback(
-    (newRecordOrFunction) => {
-      // Handle both object and function updates
-      if (typeof newRecordOrFunction === 'function') {
-        setRecord((prevRecord) => {
-          const updatedRecord = newRecordOrFunction(prevRecord);
-          // Trigger preview update after state update
-          setTimeout(() => setPreviewTrigger((prev) => prev + 1), 0);
-          return updatedRecord;
-        });
-      } else {
-        setRecord(newRecordOrFunction);
-        // Trigger preview update when record changes
-        setPreviewTrigger((prev) => prev + 1);
-      }
-    },
-    [setRecord],
-  );
-
   // Create mode still uses the regular CRUD POST; draft autosave only runs in edit mode.
   const handleCreateSubmit = useCallback(
     async (e) => {
@@ -1199,7 +1174,6 @@ export default function PageEdit({ onSuccess }) {
             className={clsx('ms-3 border rounded-xl')}
             opened={revisionsSidebarOpened}
             onClose={() => setRevisionsSidebarOpened(false)}
-            revisions={currentContent?.revisions ?? []}
             contentType="page"
             contentId={currentContent?.id}
             hasWritePermission={true}
