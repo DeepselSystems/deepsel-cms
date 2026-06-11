@@ -1,5 +1,7 @@
-import { Modal, Text } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { Modal } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { ContentPreviewPanel } from './ContentPreviewPanel.jsx';
 import { RevisionListPanel } from './RevisionListPanel.jsx';
 
 /**
@@ -29,7 +31,23 @@ export default function RevisionsModal({
   hasWritePermission = false,
   onContentRestored,
 }) {
+  // Translation
   const { t } = useTranslation();
+
+  // Initialize state
+  const [selectedRevision, setSelectedRevision] = useState(
+    /** @type {import('../../../typedefs/Revision').ContentRevision|null} */ null,
+  );
+
+  /** Reset selection when modal closes or switches to a different content */
+  useEffect(() => {
+    if (!opened) setSelectedRevision(null);
+  }, [opened]);
+
+  /** Reset selection when contentId changes */
+  useEffect(() => {
+    setSelectedRevision(null);
+  }, [contentId]);
 
   return (
     <Modal
@@ -40,17 +58,8 @@ export default function RevisionsModal({
       size="100%"
       styles={MODAL_BODY_STYLES}
     >
-      {/* Content preview area (placeholder) */}
-      <div className="flex-1 overflow-y-auto p-8 flex items-center justify-center">
-        <div className="text-center">
-          <Text size="xl" fw={600} c="dimmed" mb="xs">
-            {t('Content Preview')}
-          </Text>
-          <Text size="sm" c="dimmed">
-            {t('Content diff preview coming soon.')}
-          </Text>
-        </div>
-      </div>
+      {/* Content preview panel */}
+      <ContentPreviewPanel selectedRevision={selectedRevision} />
 
       {/* Revision list panel */}
       <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col h-full overflow-hidden">
@@ -60,6 +69,8 @@ export default function RevisionsModal({
           hasWritePermission={hasWritePermission}
           onContentRestored={onContentRestored}
           opened={opened}
+          selectedRevision={selectedRevision}
+          onRevisionSelect={setSelectedRevision}
         />
       </div>
     </Modal>

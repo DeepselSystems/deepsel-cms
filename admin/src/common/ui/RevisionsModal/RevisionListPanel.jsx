@@ -69,6 +69,8 @@ function getRevisionConfig(contentType) {
  * @param {boolean} props.hasWritePermission - Whether the user can restore revisions
  * @param {Function} props.onContentRestored - Callback fired after a successful restore
  * @param {boolean} props.opened - Whether the parent modal is open (triggers fetch)
+ * @param {import('../../../typedefs/Revision').ContentRevision|null} props.selectedRevision - Currently selected revision (lifted state)
+ * @param {Function} props.onRevisionSelect - Called when the user clicks a revision row
  */
 export function RevisionListPanel({
   contentType,
@@ -76,11 +78,11 @@ export function RevisionListPanel({
   hasWritePermission = false,
   onContentRestored,
   opened,
+  selectedRevision,
+  onRevisionSelect,
 }) {
   const { t } = useTranslation();
 
-  /** @type {[import('../../../typedefs/Revision').ContentRevision|null, Function]} */
-  const [selectedRevision, setSelectedRevision] = useState(null);
   const selectedRevisionId = selectedRevision?.id ?? null;
   const [filter, setFilter] = useState(REVISION_FILTER_ALL);
 
@@ -118,6 +120,17 @@ export function RevisionListPanel({
       fetchRevisions();
     }
   }, [opened, contentId, fetchRevisions, revisionModel]);
+
+  /**
+   * Auto-select the first (newest) revision once revisions load,
+   * but only if nothing is already selected.
+   */
+  useEffect(() => {
+    if (revisions.length > 0 && !selectedRevision) {
+      onRevisionSelect(revisions[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revisions]);
 
   const filterOptions = [
     { value: REVISION_FILTER_ALL, label: t('All versions') },
@@ -176,7 +189,7 @@ export function RevisionListPanel({
                     key={revision.id}
                     revision={revision}
                     isSelected={revision.id === selectedRevisionId}
-                    onClick={() => setSelectedRevision(revision)}
+                    onClick={() => onRevisionSelect(revision)}
                     hasWritePermission={hasWritePermission}
                     onRestoreSuccess={handleRestoreSuccess}
                     contentType={contentType}
