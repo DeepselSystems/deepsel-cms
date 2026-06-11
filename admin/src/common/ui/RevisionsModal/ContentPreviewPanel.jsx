@@ -2,9 +2,6 @@ import { ScrollArea, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(utc);
 
 /**
  * Prose container class for rendering TipTap HTML output.
