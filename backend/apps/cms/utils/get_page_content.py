@@ -53,6 +53,18 @@ def get_page_content(
     # Use explicit org_id if provided (preview from admin), otherwise detect by domain
     if org_id:
         org_settings = db.query(OrganizationModel).get(org_id)
+        # Prevent cross-org draft leak: when preview mode is requested with an explicit
+        # org_id, the authenticated user must belong to that organization. Without this
+        # check, any authenticated session could read another org's unpublished pages.
+        if preview and current_user:
+            user_org_ids = {
+                org.id for org in getattr(current_user, "organizations", [])
+            }
+            if org_id not in user_org_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="No permission to preview this organization's content",
+                )
     else:
         domain = detect_domain_from_request(request)
         org_settings = OrganizationModel.find_organization_by_domain(domain, db)
