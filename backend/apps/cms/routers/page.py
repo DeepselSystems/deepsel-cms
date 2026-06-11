@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import Body, Depends, HTTPException, Path, Query, Request, status
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from ..utils.ai_writing import generate_page_content, generate_template_content
 from ..schemas.ai_writing import (
@@ -138,6 +138,7 @@ async def ai_writing(
         # user's own org, and template data is used only as AI context — never returned.
         existing_templates = (
             db.query(TemplateModel)
+            .options(joinedload(TemplateModel.contents))
             .filter(
                 TemplateModel.organization_id == org_id,
                 TemplateModel.active.is_(True),
