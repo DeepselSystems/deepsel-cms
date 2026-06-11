@@ -1,8 +1,8 @@
 import { fetchPublicSettings } from './fetchPublicSettings.js';
 import type { PageData } from './types.js';
 import type { SiteSettings } from '../types.js';
-import { getDefaultBackendHost } from '../common/utils/getDefaultBackendHost.js';
-import { getHostname } from '../common/utils/getHostname.js';
+import { getDefaultBackendHost } from '../common/utils';
+import { getHostname } from '../common/utils';
 
 interface FetchPageDataProps {
   path: string;
@@ -63,6 +63,14 @@ export async function fetchPageData({
     if (hostname) {
       fetchOptions.headers['X-Original-Host'] = hostname;
       fetchOptions.headers['X-Frontend-Host'] = hostname;
+    }
+
+    // Forward cookies from the browser request for session-based authentication
+    if (astroRequest) {
+      const cookieHeader = astroRequest.headers.get('cookie');
+      if (cookieHeader) {
+        fetchOptions.headers['Cookie'] = cookieHeader;
+      }
     }
 
     // Add authentication headers if token exists (for both preview and protected content)
