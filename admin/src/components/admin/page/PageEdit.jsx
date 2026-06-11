@@ -810,12 +810,12 @@ export default function PageEdit({ onSuccess }) {
       <form
         onSubmit={isCreateMode ? handleCreateSubmit : (e) => e.preventDefault()}
         className={clsx(
-          'w-full flex flex-col overflow-hidden',
+          'w-full flex flex-col',
           'min-h-[calc(100vh-(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
         )}
       >
         {/* Top Toolbar */}
-        <div className="flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
+        <div className="top-[var(--app-shell-header-offset,0rem)] z-10 bg-[var(--mantine-color-body)] flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
           <Menu shadow="md" width={180} position="bottom-end" withArrow radius="md">
             <Menu.Target>
               <Tooltip label={t('Preview')}>
@@ -991,13 +991,11 @@ export default function PageEdit({ onSuccess }) {
           </Tooltip>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1">
           {/* Form Section - Left Side */}
           <div
             className={
-              previewVisible
-                ? 'overflow-y-auto px-2 pb-2'
-                : 'overflow-y-auto pb-2 flex-1 max-w-screen-xl m-auto px-[24px]'
+              previewVisible ? 'px-2 pb-2' : 'pb-2 flex-1 max-w-screen-xl m-auto px-[24px]'
             }
             style={previewVisible ? { width: `${width}px`, flexShrink: 0 } : undefined}
           >
@@ -1171,7 +1169,11 @@ export default function PageEdit({ onSuccess }) {
           )}
 
           <RevisionsSidebar
-            className={clsx('ms-3 border rounded-xl')}
+            className={clsx(
+              'ms-3 border rounded-xl self-start sticky',
+              'top-[calc(var(--app-shell-header-offset,0rem)+1rem)]',
+              'h-[calc(100vh-var(--app-shell-header-offset,0rem)-1rem)]',
+            )}
             opened={revisionsSidebarOpened}
             onClose={() => setRevisionsSidebarOpened(false)}
             contentType="page"

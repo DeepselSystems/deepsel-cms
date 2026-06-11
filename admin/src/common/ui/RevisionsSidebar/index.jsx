@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { ActionIcon, Group, Loader, ScrollArea, Select, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { IconChevronDown, IconX } from '@tabler/icons-react';
-import clsx from 'clsx';
+import { RevisionItem } from './RevisionItem.jsx';
 import useModel from '../../api/useModel.jsx';
+import clsx from 'clsx';
+import dayjs from 'dayjs';
 
 /**
  * Filter options for the revision list.
@@ -14,6 +16,34 @@ const REVISION_FILTER_NAMED = 'named';
 
 /** Sort newest revision first */
 const REVISION_ORDER_BY = { field: 'created_at', direction: 'desc' };
+
+/**
+ * Groups an array of revisions (sorted newest-first) into date buckets.
+ * Returns an ordered array of { label, items } — Today first, then Yesterday, then older dates.
+ * @param {import('../../../typedefs/Revision').ContentRevision[]} revisions
+ * @returns {{ label: string, items: import('../../../typedefs/Revision').ContentRevision[] }[]}
+ */
+function groupRevisionsByDate(revisions) {
+  const today = dayjs().startOf('day');
+  const yesterday = today.subtract(1, 'day');
+  const groups = new Map();
+
+  revisions.forEach((revision) => {
+    const date = dayjs.utc(revision.created_at).local().startOf('day');
+    let label;
+    if (date.isSame(today)) {
+      label = 'Today';
+    } else if (date.isSame(yesterday)) {
+      label = 'Yesterday';
+    } else {
+      label = date.format('MMM D, YYYY');
+    }
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(revision);
+  });
+
+  return [...groups.entries()].map(([label, items]) => ({ label, items }));
+}
 
 /**
  * Resolves the backend revision model name and FK filter field for a given contentType.
@@ -103,6 +133,14 @@ export default function RevisionsSidebar({
   const visibleRevisions =
     filter === REVISION_FILTER_NAMED ? revisions.filter((r) => r.name) : revisions;
 
+  const dateGroups = groupRevisionsByDate(visibleRevisions);
+
+  /** Called by RevisionItem after a successful restore */
+  const handleRestoreSuccess = useCallback(() => {
+    fetchRevisions();
+    onContentRestored?.();
+  }, [fetchRevisions, onContentRestored]);
+
   // If the sidebar is not opened, return null
   if (!opened) return null;
 
@@ -140,7 +178,27 @@ export default function RevisionsSidebar({
               : t('No revisions yet. Revisions are created each time you publish.')}
           </Text>
         ) : (
-          <div className="py-2">{/* Revision items will be rendered here */}</div>
+          <div className="py-2">
+            {dateGroups.map(({ label, items }) => (
+              <div key={label} className="mb-3">
+                <Text size="xs" fw={600} c="dimmed" className="px-3 pb-1 uppercase tracking-wide">
+                  {t(label)}
+                </Text>
+                {items.map((revision, index) => (
+                  <RevisionItem
+                    key={index}
+                    revision={revision}
+                    isSelected={revision.id === selectedRevisionId}
+                    onClick={() => setSelectedRevision(revision)}
+                    hasWritePermission={hasWritePermission}
+                    onRestoreSuccess={handleRestoreSuccess}
+                    contentType={contentType}
+                    contentId={contentId}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         )}
       </ScrollArea>
     </div>
