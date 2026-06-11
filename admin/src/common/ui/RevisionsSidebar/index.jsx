@@ -1,18 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ActionIcon, Group, Loader, ScrollArea, Select, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { IconChevronDown, IconX } from '@tabler/icons-react';
 import clsx from 'clsx';
 import useModel from '../../api/useModel.jsx';
-
-/**
- * Maps the public contentType prop to the backend model/resource name.
- * Used to resolve which useModel endpoint to call.
- */
-const MODEL_BY_CONTENT_TYPE = {
-  page: 'page_content',
-  blog: 'blog_post_content',
-};
 
 /**
  * Filter options for the revision list.
@@ -21,9 +12,28 @@ const MODEL_BY_CONTENT_TYPE = {
 const REVISION_FILTER_ALL = 'all';
 const REVISION_FILTER_NAMED = 'named';
 
+/** Sort newest revision first */
+const REVISION_ORDER_BY = { field: 'created_at', direction: 'desc' };
+
+/**
+ * Resolves the backend revision model name and FK filter field for a given contentType.
+ * @param {'page'|'blog'|'template'} contentType
+ * @returns {{ revisionModel: string|null, filterField: string|null }}
+ */
+function getRevisionConfig(contentType) {
+  switch (contentType) {
+    case 'page':
+      return { revisionModel: 'page_content_revision', filterField: 'page_content_id' };
+    case 'blog':
+      return { revisionModel: 'blog_post_content_revision', filterField: 'blog_post_content_id' };
+    default:
+      return { revisionModel: null, filterField: null };
+  }
+}
+
 /**
  * Sidebar panel showing revision history for Pages and Blog Posts.
- * Fetches its own revision data via contentType + contentId — no revisions prop needed.
+ * Fetches revision records directly from the revision model filtered by contentId.
  * @param {object} props
  * @param {boolean} props.opened - Whether the sidebar is visible
  * @param {Function} props.onClose - Callback to close the sidebar
@@ -44,32 +54,56 @@ export default function RevisionsSidebar({
 }) {
   const { t } = useTranslation();
 
-  const [selectedRevisionId, setSelectedRevisionId] = useState(null);
+  /** @type {[import('../../../typedefs/Revision').ContentRevision|null, Function]} */
+  const [selectedRevision, setSelectedRevision] = useState(null);
+  const selectedRevisionId = selectedRevision?.id ?? null;
   const [filter, setFilter] = useState(REVISION_FILTER_ALL);
 
-  const modelName = MODEL_BY_CONTENT_TYPE[contentType];
-  const { record, loading, getOne } = useModel(modelName, {
-    id: contentId,
-    autoFetch: opened && !!contentId,
+  const { revisionModel, filterField } = getRevisionConfig(contentType);
+
+  /** Always call useModel unconditionally; guard fetching via autoFetch:false + manual get() */
+  const {
+    data: revisions,
+    loading,
+    get,
+  } = useModel(revisionModel ?? 'page_content_revision', {
+    autoFetch: false,
+    pageSize: null,
   });
 
-  /** @type {import('../../../typedefs/Revision').ContentRevision[]} */
-  const revisions = record?.revisions ?? [];
+  const fetchRevisions = useCallback(() => {
+    if (!contentId || !revisionModel || !filterField) return;
+    get({
+      order_by: REVISION_ORDER_BY,
+      search: {
+        AND: [{ field: filterField, operator: '=', value: contentId }],
+        OR: [],
+      },
+    });
+    // `get` is not useCallback-wrapped in useModel so its reference changes every render.
+    // We always pass a full queryObject so the stale closure is safe to ignore.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentId, revisionModel, filterField]);
+
+  /**
+   * Fetch revisions when the sidebar is opened and the contentId is available.
+   */
+  useEffect(() => {
+    if (opened && contentId && revisionModel) {
+      fetchRevisions();
+    }
+  }, [opened, contentId, fetchRevisions, revisionModel]);
 
   const filterOptions = [
     { value: REVISION_FILTER_ALL, label: t('All versions') },
     { value: REVISION_FILTER_NAMED, label: t('Named versions only') },
   ];
 
+  /** @type {import('../../../typedefs/Revision').ContentRevision[]} */
   const visibleRevisions =
     filter === REVISION_FILTER_NAMED ? revisions.filter((r) => r.name) : revisions;
 
-  /**
-   * Refreshes the revision list after a restore or rename without triggering
-   * a full parent refetch.
-   */
-  const refreshRevisions = () => getOne(contentId);
-
+  // If the sidebar is not opened, return null
   if (!opened) return null;
 
   return (
