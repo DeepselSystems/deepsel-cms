@@ -134,6 +134,8 @@ async def ai_writing(
     # Generate template content
     if request.content_type == AIWritingContentType.template:
         TemplateModel = models_pool["template"]
+        # No permission check needed: endpoint requires full auth, query is scoped to the
+        # user's own org, and template data is used only as AI context — never returned.
         existing_templates = (
             db.query(TemplateModel)
             .filter(
