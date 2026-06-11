@@ -65,7 +65,8 @@ export async function fetchPageData({
       fetchOptions.headers['X-Frontend-Host'] = hostname;
     }
 
-    // Forward cookies from the browser request for session-based authentication
+    // Forward cookies for session-based authentication (used to render user-specific
+    // template content). Preview access is gated in the backend by org membership.
     if (astroRequest) {
       const cookieHeader = astroRequest.headers.get('cookie');
       if (cookieHeader) {

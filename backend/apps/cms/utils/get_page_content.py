@@ -53,18 +53,6 @@ def get_page_content(
     # Use explicit org_id if provided (preview from admin), otherwise detect by domain
     if org_id:
         org_settings = db.query(OrganizationModel).get(org_id)
-        # Public SSR route — _check_has_permission is intentionally not used here
-        # (it gates admin CRUD, not public rendering). Org membership is the correct
-        # authorization boundary: only members of the org may preview its draft content.
-        if preview and current_user:
-            user_org_ids = {
-                org.id for org in getattr(current_user, "organizations", [])
-            }
-            if org_id not in user_org_ids:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="No permission to preview this organization's content",
-                )
     else:
         domain = detect_domain_from_request(request)
         org_settings = OrganizationModel.find_organization_by_domain(domain, db)
@@ -73,6 +61,17 @@ def get_page_content(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
         )
+
+    # Preview requires org membership — covers both org_id and domain-detected paths.
+    # Public SSR intentionally uses membership (not _check_has_permission) as the
+    # authorization boundary; the CRUD permission layer applies to admin routes only.
+    if preview and current_user:
+        user_org_ids = {org.id for org in getattr(current_user, "organizations", [])}
+        if org_settings.id not in user_org_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No permission to preview this organization's content",
+            )
 
     # Determine default language
     default_lang = org_settings.default_language.iso_code if org_settings else None
