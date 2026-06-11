@@ -35,7 +35,7 @@ import useDraftAutosave from '../../../common/hooks/useDraftAutosave.js';
 import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
 import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
-import ActivityContentRevision from '../../../common/ui/ActivityContentRevision.jsx';
+import RevisionsModal from '../../../common/ui/RevisionsModal/index.jsx';
 import {
   IconAi,
   IconCloudCheck,
@@ -192,6 +192,7 @@ export default function BlogPostEdit() {
   const draftOverlayAppliedForIdRef = useRef(null);
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+  const [revisionsModalOpened, setRevisionsModalOpened] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
   const [
     featuredImageModalOpened,
@@ -589,6 +590,7 @@ export default function BlogPostEdit() {
                     onAfterPublish={refetchAfterChange}
                     onAfterUnpublish={refetchAfterChange}
                     onAfterRevert={refetchAfterChange}
+                    onOpenRevisions={() => setRevisionsModalOpened(true)}
                   />
                   <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
                     <Menu.Target>
@@ -947,27 +949,6 @@ export default function BlogPostEdit() {
               </Accordion.Panel>
             </Accordion.Item>
           )}
-
-          {activeContent?.revisions?.length > 0 && (
-            <Accordion.Item value="revisions">
-              <Accordion.Control>
-                <H2>{t('Revisions')}</H2>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <ActivityContentRevision
-                  revisions={activeContent.revisions}
-                  contentType="blog_post_content"
-                  contentId={activeContent.id}
-                  currentLanguage={getLanguageName(activeContent.locale_id)}
-                  hasWritePermission={true}
-                  onContentRestored={async () => {
-                    await getOne(id);
-                    setEditorKey((k) => k + 1);
-                  }}
-                />
-              </Accordion.Panel>
-            </Accordion.Item>
-          )}
         </Accordion>
       </Drawer>
 
@@ -981,6 +962,18 @@ export default function BlogPostEdit() {
             updateContentField(activeContent.id, 'featured_image_id', file?.id);
           }
           closeFeaturedImageModal();
+        }}
+      />
+
+      <RevisionsModal
+        opened={revisionsModalOpened}
+        onClose={() => setRevisionsModalOpened(false)}
+        contentType="blog"
+        contentId={activeContent?.id}
+        hasWritePermission={true}
+        onContentRestored={async () => {
+          await getOne(id);
+          setEditorKey((k) => k + 1);
         }}
       />
     </>

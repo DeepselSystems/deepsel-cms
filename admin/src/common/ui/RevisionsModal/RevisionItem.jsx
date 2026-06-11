@@ -36,7 +36,7 @@ function getAuthorDotColor(ownerId) {
 }
 
 /**
- * Single revision row inside RevisionsSidebar.
+ * Single revision row inside RevisionsModal.
  * Google Docs style: author dot · name · time · context menu on hover.
  * @param {object} props
  * @param {import('../../../typedefs/Revision').ContentRevision} props.revision

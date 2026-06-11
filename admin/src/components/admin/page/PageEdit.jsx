@@ -20,7 +20,7 @@ import Button from '../../../common/ui/Button.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
-import RevisionsSidebar from '../../../common/ui/RevisionsSidebar/index.jsx';
+import RevisionsModal from '../../../common/ui/RevisionsModal/index.jsx';
 import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
 import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
 
@@ -815,7 +815,7 @@ export default function PageEdit({ onSuccess }) {
         )}
       >
         {/* Top Toolbar */}
-        <div className="top-[var(--app-shell-header-offset,0rem)] z-10 bg-[var(--mantine-color-body)] flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
+        <div className="flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
           <Menu shadow="md" width={180} position="bottom-end" withArrow radius="md">
             <Menu.Target>
               <Tooltip label={t('Preview')}>
@@ -995,7 +995,9 @@ export default function PageEdit({ onSuccess }) {
           {/* Form Section - Left Side */}
           <div
             className={
-              previewVisible ? 'px-2 pb-2' : 'pb-2 flex-1 max-w-screen-xl m-auto px-[24px]'
+              previewVisible
+                ? 'overflow-y-auto px-2 pb-2'
+                : 'overflow-y-auto pb-2 flex-1 max-w-screen-xl m-auto px-[24px]'
             }
             style={previewVisible ? { width: `${width}px`, flexShrink: 0 } : undefined}
           >
@@ -1168,20 +1170,6 @@ export default function PageEdit({ onSuccess }) {
             </>
           )}
 
-          <RevisionsSidebar
-            className={clsx(
-              'ms-3 border rounded-xl self-start sticky',
-              'top-[calc(var(--app-shell-header-offset,0rem)+1rem)]',
-              'h-[calc(100vh-var(--app-shell-header-offset,0rem)-1rem)]',
-            )}
-            opened={revisionsSidebarOpened}
-            onClose={() => setRevisionsSidebarOpened(false)}
-            contentType="page"
-            contentId={currentContent?.id}
-            hasWritePermission={true}
-            onContentRestored={refetchAfterChange}
-          />
-
           <AIWriterSidebar
             opened={aiWriterSidebarOpened}
             onClose={() => setAiWriterSidebarOpened(false)}
@@ -1191,6 +1179,15 @@ export default function PageEdit({ onSuccess }) {
           />
         </div>
       </form>
+
+      <RevisionsModal
+        opened={revisionsSidebarOpened}
+        onClose={() => setRevisionsSidebarOpened(false)}
+        contentType="page"
+        contentId={currentContent?.id}
+        hasWritePermission={true}
+        onContentRestored={refetchAfterChange}
+      />
 
       {/* Add Language Modal */}
       <Modal
