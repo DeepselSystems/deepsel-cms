@@ -149,6 +149,11 @@ export function RevisionListPanel({
     onContentRestored?.();
   }, [fetchRevisions, onContentRestored]);
 
+  /** Called by RevisionItem after a name is set, updated, or cleared */
+  const handleNameChanged = useCallback(() => {
+    fetchRevisions();
+  }, [fetchRevisions]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Filter */}
@@ -192,6 +197,7 @@ export function RevisionListPanel({
                     onClick={() => onRevisionSelect(revision)}
                     hasWritePermission={hasWritePermission}
                     onRestoreSuccess={handleRestoreSuccess}
+                    onNameChanged={handleNameChanged}
                     contentType={contentType}
                     contentId={contentId}
                   />

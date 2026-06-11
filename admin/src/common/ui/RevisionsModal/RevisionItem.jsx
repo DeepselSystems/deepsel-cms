@@ -1,11 +1,47 @@
-import { ActionIcon, Menu, Stack, Text } from '@mantine/core';
+import { ActionIcon, Menu, Stack, Text, TextInput, Button, Group } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { IconDotsVertical, IconHistoryToggle } from '@tabler/icons-react';
+import {
+  IconDotsVertical,
+  IconHistoryToggle,
+  IconTag,
+  IconPencil,
+  IconTagOff,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
 import useFetch from '../../api/useFetch.js';
 import NotificationState from '../../stores/NotificationState.js';
+
+/**
+ * Controlled name input rendered inside a Mantine modal.
+ * Uses a mutable ref to pass the current value back to the caller on confirm.
+ */
+function NameModalContent({ initialName, nameRef, onConfirm, onCancel }) {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <TextInput
+        defaultValue={initialName}
+        onChange={(e) => {
+          nameRef.current = e.currentTarget.value;
+        }}
+        placeholder={t('e.g. Before redesign')}
+        autoFocus
+        mb="md"
+      />
+      <Group justify="flex-end" gap="xs">
+        <Button variant="subtle" color="gray" size="sm" onClick={onCancel}>
+          {t('Cancel')}
+        </Button>
+        <Button size="sm" onClick={onConfirm}>
+          {t('Save')}
+        </Button>
+      </Group>
+    </div>
+  );
+}
 
 /** Maps contentType prop to the value expected by POST /revision/restore */
 const RESTORE_CONTENT_TYPE_MAP = {
@@ -44,6 +80,7 @@ function getAuthorDotColor(ownerId) {
  * @param {Function} props.onClick
  * @param {boolean} props.hasWritePermission
  * @param {Function} props.onRestoreSuccess - called after a successful restore
+ * @param {Function} props.onNameChanged - called after a successful name set/update/delete
  * @param {'page'|'blog'} props.contentType
  * @param {number} props.contentId
  */
@@ -53,16 +90,22 @@ export function RevisionItem({
   onClick,
   hasWritePermission,
   onRestoreSuccess,
+  onNameChanged,
   contentType,
   contentId,
 }) {
   const { t } = useTranslation();
   const { notify } = NotificationState();
   const { post: restoreAPI } = useFetch('revision/restore', { autoFetch: false });
+  const { post: nameAPI } = useFetch('revision/name', { autoFetch: false });
 
-  const displayName = revision.name || `Version ${revision.revision_number}`;
-  const timeLabel = dayjs.utc(revision.created_at).local().format('h:mm A');
+  /** Full timestamp shown as primary label for unnamed revisions (matches Google Docs style) */
+  const timeLabel = dayjs.utc(revision.created_at).local().format('h:mm A, MMM D');
   const dotColorClass = getAuthorDotColor(revision.owner_id);
+  const authorLabel = revision.owner
+    ? `${revision.owner.first_name ?? ''} ${revision.owner.last_name ?? ''}`.trim() ||
+      revision.owner.username
+    : null;
 
   const confirmRestore = () => {
     modals.openConfirmModal({
@@ -70,7 +113,7 @@ export function RevisionItem({
       children: (
         <Text size="sm">
           {t('The current draft will be replaced with the content from')}{' '}
-          <strong>{displayName}</strong>.
+          <strong>{revision.name ?? timeLabel}</strong>.
         </Text>
       ),
       labels: { confirm: t('Restore'), cancel: t('Cancel') },
@@ -91,6 +134,68 @@ export function RevisionItem({
     });
   };
 
+  const openNameModal = (initialName = '') => {
+    const nameRef = { current: initialName };
+    const isRename = Boolean(initialName);
+
+    modals.open({
+      title: (
+        <div className="font-semibold">
+          {isRename ? t('Rename version') : t('Name this version')}
+        </div>
+      ),
+      children: (
+        <NameModalContent
+          initialName={initialName}
+          nameRef={nameRef}
+          onCancel={() => modals.closeAll()}
+          onConfirm={async () => {
+            const trimmed = nameRef.current.trim();
+            if (!trimmed) return;
+            try {
+              await nameAPI({
+                content_type: RESTORE_CONTENT_TYPE_MAP[contentType],
+                revision_id: revision.id,
+                name: trimmed,
+              });
+              notify({ message: t('Version name saved.'), type: 'success' });
+              modals.closeAll();
+              onNameChanged?.();
+            } catch (error) {
+              notify({ message: error.message, type: 'error' });
+            }
+          }}
+        />
+      ),
+    });
+  };
+
+  const confirmDeleteName = () => {
+    modals.openConfirmModal({
+      title: <div className="font-semibold">{t('Delete version name?')}</div>,
+      children: (
+        <Text size="sm">
+          {t('This will remove the name from')} <strong>{revision.name}</strong>.
+        </Text>
+      ),
+      labels: { confirm: t('Delete'), cancel: t('Cancel') },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        try {
+          await nameAPI({
+            content_type: RESTORE_CONTENT_TYPE_MAP[contentType],
+            revision_id: revision.id,
+            name: null,
+          });
+          notify({ message: t('Version name removed.'), type: 'success' });
+          onNameChanged?.();
+        } catch (error) {
+          notify({ message: error.message, type: 'error' });
+        }
+      },
+    });
+  };
+
   return (
     <div
       role="button"
@@ -104,22 +209,29 @@ export function RevisionItem({
           : 'hover:bg-white border-l-2 border-transparent',
       )}
     >
-      {/* Author color dot */}
-      <div className={clsx('mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0', dotColorClass)} />
-
-      {/* Revision name + time */}
-      <Stack gap={1} className="flex-1 min-w-0">
-        <Text size="sm" fw={isSelected ? 600 : 400} className="leading-snug" truncate>
-          {displayName}
+      {/* Named: [name] / [timestamp] / [dot+author]. Unnamed: [timestamp] / [dot+author] */}
+      <Stack gap={2} className="flex-1 min-w-0">
+        <Text size="sm" fw={600} className="leading-snug" truncate>
+          {revision.name ?? timeLabel}
         </Text>
-        <Text size="xs" c="dimmed">
-          {timeLabel}
-        </Text>
+        {revision.name && (
+          <Text size="xs" c="dimmed" truncate>
+            {timeLabel}
+          </Text>
+        )}
+        {authorLabel && (
+          <Group gap={6} wrap="nowrap">
+            <div className={clsx('w-2 h-2 rounded-full flex-shrink-0', dotColorClass)} />
+            <Text size="xs" c="dimmed" truncate>
+              {authorLabel}
+            </Text>
+          </Group>
+        )}
       </Stack>
 
       {/* Context menu — visible on group hover */}
       {hasWritePermission && (
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-0.5">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
           <Menu shadow="sm" position="bottom-end" withinPortal>
             <Menu.Target>
               <ActionIcon
@@ -142,6 +254,40 @@ export function RevisionItem({
               >
                 {t('Restore this version')}
               </Menu.Item>
+              {!revision.name && (
+                <Menu.Item
+                  leftSection={<IconTag size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openNameModal('');
+                  }}
+                >
+                  {t('Name this version')}
+                </Menu.Item>
+              )}
+              {revision.name && (
+                <Menu.Item
+                  leftSection={<IconPencil size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openNameModal(revision.name);
+                  }}
+                >
+                  {t('Rename')}
+                </Menu.Item>
+              )}
+              {revision.name && (
+                <Menu.Item
+                  leftSection={<IconTagOff size={14} />}
+                  color="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirmDeleteName();
+                  }}
+                >
+                  {t('Delete name')}
+                </Menu.Item>
+              )}
             </Menu.Dropdown>
           </Menu>
         </div>

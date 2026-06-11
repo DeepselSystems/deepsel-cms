@@ -1,5 +1,6 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from db import get_db
@@ -81,3 +82,49 @@ async def restore_content_revision(
         db.commit()
 
     return {"message": "Content restored successfully"}
+
+
+class NameRevisionRequest(BaseModel):
+    content_type: str  # "page_content" or "blog_post_content"
+    revision_id: int
+    name: Optional[str] = None  # None = clear the name
+
+
+@router.post("/name")
+async def name_content_revision(
+    name_request: NameRevisionRequest,
+    db: Session = Depends(get_db),
+    user: UserModel = Depends(get_current_user),
+):
+    content_type = name_request.content_type
+    revision_id = name_request.revision_id
+    name = name_request.name
+
+    if content_type == "page_content":
+        RevisionModel = models_pool["page_content_revision"]
+        ContentModel = models_pool["page_content"]
+        content_field = "page_content_id"
+    elif content_type == "blog_post_content":
+        RevisionModel = models_pool["blog_post_content_revision"]
+        ContentModel = models_pool["blog_post_content"]
+        content_field = "blog_post_content_id"
+    else:
+        raise HTTPException(status_code=400, detail="Invalid content_type")
+
+    revision = db.query(RevisionModel).filter(RevisionModel.id == revision_id).first()
+    if not revision:
+        raise HTTPException(status_code=404, detail="Revision not found")
+
+    content_id = getattr(revision, content_field)
+    content = db.query(ContentModel).filter(ContentModel.id == content_id).first()
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+
+    [allowed, _] = content._check_has_permission(PermissionAction.write, user)
+    if not allowed:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    revision.name = name
+    db.commit()
+
+    return {"message": "Revision name updated successfully"}

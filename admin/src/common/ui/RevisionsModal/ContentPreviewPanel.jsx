@@ -46,7 +46,6 @@ export function ContentPreviewPanel({ selectedRevision }) {
     );
   }
 
-  const displayName = selectedRevision.name || `Version ${selectedRevision.revision_number}`;
   const authorName = selectedRevision.owner
     ? `${selectedRevision.owner.first_name ?? ''} ${selectedRevision.owner.last_name ?? ''}`.trim() ||
       selectedRevision.owner.username
@@ -58,13 +57,13 @@ export function ContentPreviewPanel({ selectedRevision }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Preview header */}
+      {/* Preview header: unnamed → timestamp as title; named → name as title + timestamp below */}
       <div className="flex-shrink-0 px-8 py-4 border-b border-gray-200 bg-white">
         <Text fw={700} size="md">
-          {displayName}
+          {selectedRevision.name ?? timestamp}
         </Text>
         <Text size="xs" c="dimmed" mt={2}>
-          {authorName} · {timestamp}
+          {selectedRevision.name ? `${authorName} · ${timestamp}` : authorName}
         </Text>
       </div>
 
