@@ -66,20 +66,31 @@ async def restore_content_revision(
     if not revision:
         raise HTTPException(status_code=404, detail="Revision not found")
 
-    # Restore to new_content (the published result of that revision) and clear draft_content
+    # Snapshot the current live content before overwriting it
+    old_content_text = content.content
+
+    # Restore: set live content to the chosen revision's published snapshot, clear any draft
     content.update(db, user, {"content": revision.new_content, "draft_content": None})
 
-    # Update the last revision name to indicate it was a restore
-    last_revision = (
+    # Create a new revision that records the restore as an auditable event.
+    # old_content = what was live just before the restore
+    # new_content = what is now live (= the restored snapshot)
+    revision_count = (
         db.query(RevisionModel)
         .filter(getattr(RevisionModel, content_field) == content_id)
-        .order_by(RevisionModel.created_at.desc())
-        .first()
+        .count()
     )
-
-    if last_revision:
-        last_revision.name = f"Restored from revision #{revision.revision_number} by {user.email or user.username or 'system'}"
-        db.commit()
+    RevisionModel.create(
+        db,
+        user,
+        {
+            content_field: content_id,
+            "old_content": old_content_text,
+            "new_content": revision.new_content,
+            "name": f"Restored from revision #{revision.revision_number} by {user.email or user.username or 'system'}",
+            "revision_number": revision_count + 1,
+        },
+    )
 
     return {"message": "Content restored successfully"}
 
