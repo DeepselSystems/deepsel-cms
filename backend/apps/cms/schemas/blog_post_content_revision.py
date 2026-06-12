@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from ._nested import UserNested
+from ._nested import ContentParentNested, UserNested
 
 
 class BlogPostContentRevisionRead(BaseModel):
@@ -23,6 +23,7 @@ class BlogPostContentRevisionRead(BaseModel):
     organization_id: Optional[int] = None
     owner_id: Optional[int] = None
     owner: Optional[UserNested] = None
+    blog_post_content: Optional[ContentParentNested] = None
 
 
 class BlogPostContentRevisionSearch(BaseModel):
