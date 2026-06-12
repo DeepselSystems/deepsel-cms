@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { ActionIcon, Modal, Text } from '@mantine/core';
+import { ActionIcon, Button, Modal, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import dayjs from 'dayjs';
 import { ContentPreviewPanel } from './ContentPreviewPanel.jsx';
 import { RevisionListPanel } from './RevisionListPanel.jsx';
-import dayjs from 'dayjs';
+import useFetch from '../../api/useFetch.js';
+import NotificationState from '../../stores/NotificationState.js';
 
 /**
  * Full-screen revision history modal for Pages and Blog Posts.
@@ -27,6 +30,8 @@ export default function RevisionsModal({
   onContentRestored,
 }) {
   const { t } = useTranslation();
+  const { notify } = NotificationState();
+  const { post: restoreAPI } = useFetch('revision/restore', { autoFetch: false });
 
   const [selectedRevision, setSelectedRevision] = useState(
     /** @type {import('../../../typedefs/Revision').ContentRevision|null} */ null,
@@ -50,6 +55,37 @@ export default function RevisionsModal({
       dayjs.utc(selectedRevision.created_at).local().format('h:mm A, MMM D, YYYY'))
     : null;
 
+  /** Maps contentType to the value expected by the restore API */
+  const CONTENT_TYPE_MAP = { page: 'page_content', blog: 'blog_post_content' };
+
+  const confirmRestore = () => {
+    if (!selectedRevision) return;
+    modals.openConfirmModal({
+      title: <div className="font-semibold">{t('Restore this version?')}</div>,
+      children: (
+        <Text size="sm">
+          {t('The current draft will be replaced with the content from')}{' '}
+          <strong>{revisionLabel}</strong>.
+        </Text>
+      ),
+      labels: { confirm: t('Restore'), cancel: t('Cancel') },
+      confirmProps: { color: 'blue' },
+      onConfirm: async () => {
+        try {
+          await restoreAPI({
+            content_type: CONTENT_TYPE_MAP[contentType],
+            content_id: contentId,
+            revision_id: selectedRevision.id,
+          });
+          notify({ message: t('Content restored successfully.'), type: 'success' });
+          onContentRestored?.();
+        } catch (error) {
+          notify({ message: error.message, type: 'error' });
+        }
+      },
+    });
+  };
+
   return (
     <Modal
       opened={opened}
@@ -64,15 +100,20 @@ export default function RevisionsModal({
     >
       {/* Left column */}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-        {/* Left header: back button + selected revision label */}
+        {/* Left header: back button + selected revision label + restore button */}
         <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
           <ActionIcon variant="subtle" color="gray" onClick={onClose} aria-label={t('Close')}>
             <FontAwesomeIcon icon={faArrowLeft} />
           </ActionIcon>
           {revisionLabel && (
-            <Text fw={600} size="sm" truncate>
+            <Text fw={600} size="sm" truncate className="flex-1">
               {revisionLabel}
             </Text>
+          )}
+          {hasWritePermission && selectedRevision && (
+            <Button size="xs" variant="light" onClick={confirmRestore}>
+              {t('Restore this version')}
+            </Button>
           )}
         </div>
         {/* Content preview — scrolls independently */}
