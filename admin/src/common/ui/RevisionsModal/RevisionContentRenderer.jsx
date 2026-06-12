@@ -45,8 +45,7 @@ const PROSE_CLASSES = clsx(
 
 /**
  * Resolves the BCP-47 locale code from a revision record for use with the Jinja2 render API.
- * @param {import('../../../typedefs/Revision').ContentRevision
- *   | import('../../../typedefs/Revision').CurrentVersionItem} revision
+ * @param {import('../../../typedefs/Revision').ContentRevision} revision
  * @param {'page'|'blog'} type
  * @returns {string|null}
  */
@@ -60,6 +59,67 @@ function resolveLang(revision, type) {
       console.warn(`RevisionContentRenderer: unknown contentType "${type}", lang will be null`);
       return null;
   }
+}
+
+/**
+ * Returns a function that renders a single HTML string through the Jinja2 API.
+ * Falls back to the raw input when the API call fails or returns no rendered_content.
+ * @param {Function} renderContentAPI
+ * @param {number|null} org
+ * @param {string|null} lang
+ * @returns {(content: string) => Promise<string>}
+ */
+function makeRenderOne(renderContentAPI, org, lang) {
+  return async (content) => {
+    const resp = await renderContentAPI({
+      content,
+      name: `${RENDER_PREVIEW_NAME_PREFIX}_${Date.now()}_${Math.random()}`,
+      organization_id: org,
+      lang,
+    });
+    return resp?.rendered_content != null ? resp.rendered_content : content;
+  };
+}
+
+/**
+ * Resolves what HTML to display for a revision, including optional diff highlighting.
+ * Returns the rendered content string and whether it contains diff markup.
+ * @param {import('../../../typedefs/Revision').ContentRevision} revision
+ * @param {boolean} showDiff
+ * @param {(content: string) => Promise<string>} renderOne
+ * @returns {Promise<{ content: string, isDiff: boolean }>}
+ */
+async function resolveRevisionContent(revision, showDiff, renderOne) {
+  const shouldDiff = showDiff && !revision.isCurrent && Boolean(revision.new_content);
+
+  if (!shouldDiff) {
+    const content = await renderOne(revision.new_content).catch(() => revision.new_content);
+    return { content, isDiff: false };
+  }
+
+  const oldRaw = revision.old_content ?? '';
+  const isFirstRevision = revision.revision_number === 1;
+
+  if (oldRaw === '' || isFirstRevision) {
+    // No baseline — treat everything as newly inserted (all green)
+    const renderedNew = await renderOne(revision.new_content).catch(() => revision.new_content);
+    return { content: htmlDiff('', renderedNew), isDiff: true };
+  }
+
+  const [oldResult, newResult] = await Promise.allSettled([
+    renderOne(oldRaw),
+    renderOne(revision.new_content),
+  ]);
+
+  if (newResult.status === 'rejected') {
+    console.error('Error rendering new_content:', newResult.reason);
+    return { content: revision.new_content, isDiff: false };
+  }
+  if (oldResult.status === 'rejected') {
+    console.error('Error rendering old_content:', oldResult.reason);
+    return { content: newResult.value, isDiff: false };
+  }
+  return { content: htmlDiff(oldResult.value, newResult.value), isDiff: true };
 }
 
 /**
@@ -99,7 +159,6 @@ export function RevisionContentRenderer({ selectedRevision, contentType, showDif
 
   /** Render the selected revision's content through the Jinja2 API (debounced, race-safe) */
   useEffect(() => {
-    // Nothing to render
     if (!selectedRevision?.new_content) {
       setRenderedContent(null);
       setIsRendering(false);
@@ -107,93 +166,26 @@ export function RevisionContentRenderer({ selectedRevision, contentType, showDif
       return undefined;
     }
 
-    // Show the spinner immediately on selection change
     setIsRendering(true);
-    // Clear stale content so renderedContent and isRendering are independently correct
     setRenderedContent(null);
     setIsDiff(false);
 
-    // Guard against out-of-order responses from rapid selection changes
     let cancelled = false;
 
     const timer = setTimeout(async () => {
-      const lang = resolveLang(selectedRevision, contentType);
-      const org = selectedRevision.organization_id ?? null;
-
-      /** Renders a single HTML string through the Jinja2 API; falls back to raw input on failure. */
-      const renderOne = async (content) => {
-        const resp = await renderContentAPI({
-          content,
-          name: `${RENDER_PREVIEW_NAME_PREFIX}_${Date.now()}_${Math.random()}`,
-          organization_id: org,
-          lang,
-        });
-        return resp?.rendered_content != null ? resp.rendered_content : content;
-      };
-
-      const shouldDiff =
-        showDiff && !selectedRevision.isCurrent && Boolean(selectedRevision.new_content);
-
-      if (!shouldDiff) {
-        // Existing behavior: render new_content only
-        let result = selectedRevision.new_content;
-        try {
-          result = await renderOne(selectedRevision.new_content);
-        } catch (error) {
-          console.error('Error rendering revision content:', error);
-        }
-        if (!cancelled) {
-          setRenderedContent(result);
-          setIsDiff(false);
-          setIsRendering(false);
-        }
-        return;
-      }
-
-      const oldRaw = selectedRevision.old_content ?? '';
-
-      // Revision #1 has no meaningful baseline: old_content is whatever the page
-      // had before the very first publish (often seed/default content that equals
-      // new_content). Treat it as "published from nothing" — show everything green.
-      const isFirstRevision = selectedRevision.revision_number === 1;
-
-      if (oldRaw === '' || isFirstRevision) {
-        // No baseline (or first ever publish) — render new only, diff '' vs renderedNew (all-<ins>)
-        let renderedNew = selectedRevision.new_content;
-        try {
-          renderedNew = await renderOne(selectedRevision.new_content);
-        } catch (error) {
-          console.error('Error rendering revision content:', error);
-        }
-        if (!cancelled) {
-          setRenderedContent(htmlDiff('', renderedNew));
-          setIsDiff(true);
-          setIsRendering(false);
-        }
-        return;
-      }
-
-      // Normal diff: render both in parallel, fallback gracefully on partial failure
-      const [oldResult, newResult] = await Promise.allSettled([
-        renderOne(oldRaw),
-        renderOne(selectedRevision.new_content),
-      ]);
-
+      const renderOne = makeRenderOne(
+        renderContentAPI,
+        selectedRevision.organization_id ?? null,
+        resolveLang(selectedRevision, contentType),
+      );
+      const { content, isDiff } = await resolveRevisionContent(
+        selectedRevision,
+        showDiff,
+        renderOne,
+      );
       if (!cancelled) {
-        if (newResult.status === 'rejected') {
-          // new render failed → raw fallback, no diff
-          console.error('Error rendering new_content:', newResult.reason);
-          setRenderedContent(selectedRevision.new_content);
-          setIsDiff(false);
-        } else if (oldResult.status === 'rejected') {
-          // old render failed → show plain new, no diff
-          console.error('Error rendering old_content:', oldResult.reason);
-          setRenderedContent(newResult.value);
-          setIsDiff(false);
-        } else {
-          setRenderedContent(htmlDiff(oldResult.value, newResult.value));
-          setIsDiff(true);
-        }
+        setRenderedContent(content);
+        setIsDiff(isDiff);
         setIsRendering(false);
       }
     }, RENDER_DEBOUNCE_MS);
