@@ -1,31 +1,18 @@
-import { Badge, ScrollArea, Text } from '@mantine/core';
+import { Badge, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
 import dayjs from 'dayjs';
-
-/**
- * Prose container class for rendering TipTap HTML output.
- * Mirrors the styles used in the public content renderer.
- */
-const PROSE_CLASSES = clsx(
-  'prose prose-sm max-w-none',
-  'prose-headings:font-semibold prose-headings:text-gray-900',
-  'prose-p:text-gray-700 prose-p:leading-relaxed',
-  'prose-a:text-blue-600 prose-a:underline',
-  'prose-ul:list-disc prose-ol:list-decimal',
-  'prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic',
-  'prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-code:text-sm',
-  'prose-img:rounded-md prose-img:max-w-full',
-);
+import { RevisionContentRenderer } from './RevisionContentRenderer.jsx';
 
 /**
  * Left panel of RevisionsModal.
- * Renders the `new_content` HTML of the selected revision as raw HTML.
+ * Shows the selected revision's header (name, timestamp, author) and delegates
+ * content rendering (Jinja2 render API + HTML output) to RevisionContentRenderer.
  * Shows a placeholder when no revision is selected.
  * @param {object} props
  * @param {import('../../../typedefs/Revision').ContentRevision|null} props.selectedRevision
+ * @param {'page'|'blog'} props.contentType - Content type, forwarded to the content renderer
  */
-export function ContentPreviewPanel({ selectedRevision }) {
+export function ContentPreviewPanel({ selectedRevision, contentType }) {
   // Translation
   const { t } = useTranslation();
 
@@ -76,23 +63,8 @@ export function ContentPreviewPanel({ selectedRevision }) {
         </Text>
       </div>
 
-      {/* Rendered HTML content */}
-      <ScrollArea className="flex-1">
-        <div className="px-8 py-6">
-          {selectedRevision.new_content ? (
-            <div
-              className={PROSE_CLASSES}
-              // Rendering trusted CMS content from the same origin
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: selectedRevision.new_content }}
-            />
-          ) : (
-            <Text size="sm" c="dimmed" ta="center" mt="xl">
-              {t('No content available for this revision.')}
-            </Text>
-          )}
-        </div>
-      </ScrollArea>
+      {/* Rendered content (Jinja2-processed HTML) */}
+      <RevisionContentRenderer selectedRevision={selectedRevision} contentType={contentType} />
     </div>
   );
 }

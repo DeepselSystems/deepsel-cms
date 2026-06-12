@@ -59,7 +59,7 @@ export default function RevisionsModal({
       styles={MODAL_BODY_STYLES}
     >
       {/* Content preview panel */}
-      <ContentPreviewPanel selectedRevision={selectedRevision} />
+      <ContentPreviewPanel selectedRevision={selectedRevision} contentType={contentType} />
 
       {/* Revision list panel */}
       <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col h-full overflow-hidden">

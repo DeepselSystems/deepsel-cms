@@ -65,6 +65,10 @@
  * Currently represents the last *published* version (content.content + last_modified_at).
  * To switch to unsaved draft: use draft_content / draft_last_modified_at / draft_updated_by.
  *
+ * page_content / blog_post_content are populated by buildParentNestedFields() in RevisionListPanel
+ * so ContentPreviewPanel can extract lang/org for Jinja2 rendering the same way it does for
+ * real ContentRevision records.
+ *
  * @typedef CurrentVersionItem
  * @property {true} isCurrent - Discriminant flag; always true
  * @property {null} id - No DB id
@@ -73,4 +77,7 @@
  * @property {RevisionOwner | null} owner - updated_by of the content record
  * @property {null} name
  * @property {null} revision_number
+ * @property {number | null} organization_id
+ * @property {ContentParentNested | null} page_content - Populated for page content type
+ * @property {ContentParentNested | null} blog_post_content - Populated for blog content type
  */
