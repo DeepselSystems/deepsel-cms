@@ -46,7 +46,7 @@ export function ContentPreviewPanel({ selectedRevision, contentType, showDiff })
     .format('MMM D, YYYY [at] h:mm A');
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
       {/* Preview header */}
       <div className="flex-shrink-0 px-8 py-4 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-2 mb-0.5">

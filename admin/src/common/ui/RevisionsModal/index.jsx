@@ -5,14 +5,6 @@ import { ContentPreviewPanel } from './ContentPreviewPanel.jsx';
 import { RevisionListPanel } from './RevisionListPanel.jsx';
 
 /**
- * Mantine Modal `styles` override so the body fills the full screen and lays out
- * its two panels side by side with no default padding.
- */
-const MODAL_BODY_STYLES = {
-  body: { padding: 0, display: 'flex', height: '100%', overflow: 'hidden' },
-};
-
-/**
  * Full-screen revision history modal for Pages and Blog Posts.
  * Left panel shows a content preview placeholder; right panel lists revisions.
  * @param {object} props
@@ -59,7 +51,12 @@ export default function RevisionsModal({
       title={<div className="font-bold">{t('Revision History')}</div>}
       fullScreen
       size="100%"
-      styles={MODAL_BODY_STYLES}
+      classNames={{
+        inner: '!overflow-hidden',
+        content: 'flex flex-col h-screen',
+        header: 'flex-shrink-0',
+        body: '!p-0 flex flex-1 overflow-hidden min-h-0',
+      }}
     >
       {/* Content preview panel */}
       <ContentPreviewPanel
@@ -69,7 +66,7 @@ export default function RevisionsModal({
       />
 
       {/* Revision list panel */}
-      <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col h-full overflow-hidden">
+      <div className="w-80 rounded-xl mr-3 border-l border-gray-200 bg-gray-50 flex flex-col overflow-hidden min-h-0">
         <RevisionListPanel
           contentType={contentType}
           contentId={contentId}
