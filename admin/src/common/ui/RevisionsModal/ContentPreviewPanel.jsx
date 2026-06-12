@@ -1,4 +1,4 @@
-import { ScrollArea, Text } from '@mantine/core';
+import { Badge, ScrollArea, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
@@ -26,8 +26,10 @@ const PROSE_CLASSES = clsx(
  * @param {import('../../../typedefs/Revision').ContentRevision|null} props.selectedRevision
  */
 export function ContentPreviewPanel({ selectedRevision }) {
+  // Translation
   const { t } = useTranslation();
 
+  // No revision selected
   if (!selectedRevision) {
     return (
       <div className="flex-1 overflow-y-auto p-8 flex items-center justify-center">
@@ -43,10 +45,13 @@ export function ContentPreviewPanel({ selectedRevision }) {
     );
   }
 
+  // Author name
   const authorName = selectedRevision.owner
     ? `${selectedRevision.owner.first_name ?? ''} ${selectedRevision.owner.last_name ?? ''}`.trim() ||
       selectedRevision.owner.username
     : t('Unknown');
+
+  // Timestamp
   const timestamp = dayjs
     .utc(selectedRevision.created_at)
     .local()
@@ -54,12 +59,19 @@ export function ContentPreviewPanel({ selectedRevision }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Preview header: unnamed → timestamp as title; named → name as title + timestamp below */}
+      {/* Preview header */}
       <div className="flex-shrink-0 px-8 py-4 border-b border-gray-200 bg-white">
-        <Text fw={700} size="md">
-          {selectedRevision.name ?? timestamp}
-        </Text>
-        <Text size="xs" c="dimmed" mt={2}>
+        <div className="flex items-center gap-2 mb-0.5">
+          <Text fw={700} size="md">
+            {selectedRevision.name ?? timestamp}
+          </Text>
+          {selectedRevision.isCurrent && (
+            <Badge size="xs" variant="light" color="blue">
+              {t('Current version')}
+            </Badge>
+          )}
+        </div>
+        <Text size="xs" c="dimmed">
           {selectedRevision.name ? `${authorName} · ${timestamp}` : authorName}
         </Text>
       </div>

@@ -3,7 +3,9 @@ import { Loader, ScrollArea, Select, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { IconChevronDown } from '@tabler/icons-react';
 import { RevisionItem } from './RevisionItem.jsx';
+import { CurrentVersionItem } from './CurrentVersionItem.jsx';
 import useModel from '../../api/useModel.jsx';
+import useFetch from '../../api/useFetch.js';
 import dayjs from 'dayjs';
 
 /**
@@ -45,18 +47,26 @@ function groupRevisionsByDate(revisions) {
 }
 
 /**
- * Resolves the backend revision model name and FK filter field for a given contentType.
+ * Resolves the backend model names and FK filter field for a given contentType.
  * @param {'page'|'blog'|'template'} contentType
- * @returns {{ revisionModel: string|null, filterField: string|null }}
+ * @returns {{ revisionModel: string|null, contentModel: string|null, filterField: string|null }}
  */
 function getRevisionConfig(contentType) {
   switch (contentType) {
     case 'page':
-      return { revisionModel: 'page_content_revision', filterField: 'page_content_id' };
+      return {
+        revisionModel: 'page_content_revision',
+        contentModel: 'page_content',
+        filterField: 'page_content_id',
+      };
     case 'blog':
-      return { revisionModel: 'blog_post_content_revision', filterField: 'blog_post_content_id' };
+      return {
+        revisionModel: 'blog_post_content_revision',
+        contentModel: 'blog_post_content',
+        filterField: 'blog_post_content_id',
+      };
     default:
-      return { revisionModel: null, filterField: null };
+      return { revisionModel: null, contentModel: null, filterField: null };
   }
 }
 
@@ -83,10 +93,11 @@ export function RevisionListPanel({
 }) {
   const { t } = useTranslation();
 
-  const selectedRevisionId = selectedRevision?.id ?? null;
+  /** null when nothing selected or when the current-version item is selected */
+  const selectedRevisionId = selectedRevision?.isCurrent ? null : (selectedRevision?.id ?? null);
   const [filter, setFilter] = useState(REVISION_FILTER_ALL);
 
-  const { revisionModel, filterField } = getRevisionConfig(contentType);
+  const { revisionModel, contentModel, filterField } = getRevisionConfig(contentType);
 
   /** Always call useModel unconditionally; guard fetching via autoFetch:false + manual get() */
   const {
@@ -97,6 +108,40 @@ export function RevisionListPanel({
     autoFetch: false,
     pageSize: null,
   });
+
+  /**
+   * Fetch the content record to derive the "Current version" item.
+   * useFetch URL must be stable — use a fallback so hook is always called unconditionally.
+   */
+  const { record: contentRecord, get: fetchContentRecord } = useFetch(
+    `${contentModel ?? 'page_content'}/${contentId ?? 0}`,
+    { autoFetch: false },
+  );
+
+  /**
+   * Normalized shape for the "Current version" row.
+   *
+   * Currently represents the last *published* version:
+   *   content   → contentRecord.content
+   *   timestamp → contentRecord.last_modified_at
+   *   author    → contentRecord.updated_by
+   *
+   * To switch to unsaved draft, replace with:
+   *   content   → contentRecord.draft_content
+   *   timestamp → contentRecord.draft_last_modified_at
+   *   author    → contentRecord.draft_updated_by
+   */
+  const currentVersionItem = contentRecord
+    ? {
+        isCurrent: true,
+        id: null,
+        new_content: contentRecord.content,
+        created_at: contentRecord.last_modified_at ?? contentRecord.updated_at,
+        owner: contentRecord.updated_by ?? null,
+        name: null,
+        revision_number: null,
+      }
+    : null;
 
   const fetchRevisions = useCallback(() => {
     if (!contentId || !revisionModel || !filterField) return;
@@ -113,24 +158,29 @@ export function RevisionListPanel({
   }, [contentId, revisionModel, filterField]);
 
   /**
-   * Fetch revisions when the modal is opened and the contentId is available.
+   * Fetch revisions and the content record when the modal opens.
    */
   useEffect(() => {
-    if (opened && contentId && revisionModel) {
+    if (opened && contentId && revisionModel && contentModel) {
       fetchRevisions();
+      fetchContentRecord();
     }
-  }, [opened, contentId, fetchRevisions, revisionModel]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, contentId, fetchRevisions, revisionModel, contentModel]);
 
   /**
-   * Auto-select the first (newest) revision once revisions load,
-   * but only if nothing is already selected.
+   * Auto-select the current version item once it loads, but only if nothing is selected yet.
+   * Falls back to the newest revision if the content record is unavailable.
    */
   useEffect(() => {
-    if (revisions.length > 0 && !selectedRevision) {
+    if (selectedRevision) return;
+    if (currentVersionItem) {
+      onRevisionSelect(currentVersionItem);
+    } else if (revisions.length > 0) {
       onRevisionSelect(revisions[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revisions]);
+  }, [currentVersionItem, revisions]);
 
   const filterOptions = [
     { value: REVISION_FILTER_ALL, label: t('All versions') },
@@ -176,34 +226,45 @@ export function RevisionListPanel({
           <div className="flex justify-center mt-8">
             <Loader size="sm" />
           </div>
-        ) : visibleRevisions.length === 0 ? (
-          <Text size="sm" c="dimmed" ta="center" className="mt-8">
-            {filter === REVISION_FILTER_NAMED
-              ? t('No named versions yet.')
-              : t('No revisions yet. Revisions are created each time you publish.')}
-          </Text>
         ) : (
           <div className="py-2">
-            {dateGroups.map(({ label, items }) => (
-              <div key={label} className="mb-3">
-                <Text size="xs" fw={600} c="dimmed" className="px-3 pb-1 uppercase tracking-wide">
-                  {t(label)}
-                </Text>
-                {items.map((revision) => (
-                  <RevisionItem
-                    key={revision.id}
-                    revision={revision}
-                    isSelected={revision.id === selectedRevisionId}
-                    onClick={() => onRevisionSelect(revision)}
-                    hasWritePermission={hasWritePermission}
-                    onRestoreSuccess={handleRestoreSuccess}
-                    onNameChanged={handleNameChanged}
-                    contentType={contentType}
-                    contentId={contentId}
-                  />
-                ))}
-              </div>
-            ))}
+            {/* Current version is always shown at the top, regardless of filter */}
+            {currentVersionItem && (
+              <CurrentVersionItem
+                currentVersionItem={currentVersionItem}
+                isSelected={selectedRevision?.isCurrent === true}
+                onClick={() => onRevisionSelect(currentVersionItem)}
+              />
+            )}
+
+            {visibleRevisions.length === 0 ? (
+              <Text size="sm" c="dimmed" ta="center" className="mt-4">
+                {filter === REVISION_FILTER_NAMED
+                  ? t('No named versions yet.')
+                  : t('No revisions yet. Revisions are created each time you publish.')}
+              </Text>
+            ) : (
+              dateGroups.map(({ label, items }) => (
+                <div key={label} className="mb-3">
+                  <Text size="xs" fw={600} c="dimmed" className="px-3 pb-1 uppercase tracking-wide">
+                    {t(label)}
+                  </Text>
+                  {items.map((revision) => (
+                    <RevisionItem
+                      key={revision.id}
+                      revision={revision}
+                      isSelected={revision.id === selectedRevisionId}
+                      onClick={() => onRevisionSelect(revision)}
+                      hasWritePermission={hasWritePermission}
+                      onRestoreSuccess={handleRestoreSuccess}
+                      onNameChanged={handleNameChanged}
+                      contentType={contentType}
+                      contentId={contentId}
+                    />
+                  ))}
+                </div>
+              ))
+            )}
           </div>
         )}
       </ScrollArea>
