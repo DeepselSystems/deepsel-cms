@@ -59,8 +59,12 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
   // Rendered HTML for the current selection
   const [renderedContent, setRenderedContent] = useState(/** @type {string|null} */ null);
 
-  // Whether a render request is pending for the current selection
-  const [isRendering, setIsRendering] = useState(false);
+  // Whether a render request is pending for the current selection.
+  // Initialized from the selection so the first paint shows the loader
+  // instead of flashing the empty state before the effect fires.
+  const [isRendering, setIsRendering] = useState(
+    /** @type {boolean} */ Boolean(selectedRevision?.new_content),
+  );
 
   /** Render the selected revision's content through the Jinja2 API (debounced, race-safe) */
   useEffect(() => {
@@ -73,6 +77,8 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
 
     // Show the spinner immediately on selection change
     setIsRendering(true);
+    // Clear stale content so renderedContent and isRendering are independently correct
+    setRenderedContent(null);
 
     // Guard against out-of-order responses from rapid selection changes
     let cancelled = false;
@@ -92,6 +98,10 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
           lang = selectedRevision.blog_post_content?.locale?.iso_code ?? null;
           break;
         default:
+          // eslint-disable-next-line no-console
+          console.warn(
+            `RevisionContentRenderer: unknown contentType "${contentType}", lang will be null`,
+          );
           lang = null;
       }
 
@@ -102,7 +112,11 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
           organization_id: selectedRevision.organization_id ?? null,
           lang,
         });
-        result = renderResponse?.rendered_content ?? result;
+        // != null catches null/undefined but NOT "" — an empty string is a valid
+        // render result ("template renders to nothing") and must be passed through.
+        // The raw-content fallback only applies when the response field is missing.
+        result =
+          renderResponse?.rendered_content != null ? renderResponse.rendered_content : result;
       } catch (error) {
         console.error('Error rendering revision content:', error);
       }
@@ -117,8 +131,11 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
       cancelled = true;
       clearTimeout(timer);
     };
+    // renderContentAPI: useFetch recreates the function on every render but the POST body
+    // is fully constructed from selectedRevision at call time — a stale reference is safe.
+    // contentType: it is a string literal at every call site and never changes at runtime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRevision]);
+  }, [selectedRevision?.id, selectedRevision?.new_content, selectedRevision?.isCurrent]);
 
   // Pending render request
   if (isRendering) {
@@ -132,7 +149,7 @@ export function RevisionContentRenderer({ selectedRevision, contentType }) {
   return (
     <ScrollArea className="flex-1">
       <div className="px-8 py-6">
-        {renderedContent ? (
+        {renderedContent !== null ? (
           <div
             className={PROSE_CLASSES}
             // Rendering trusted CMS content from the same origin
