@@ -146,3 +146,21 @@ body {
   background: #f3f4f6;
   font-weight: 600;
 }
+
+/* Diff highlighting for revision content (htmlDiff output).
+   Scoped to .revision-diff-content — htmlDiff emits bare <ins>/<del> tags
+   with no class attributes; Tailwind prose variants cannot reach them
+   because the admin has no @tailwindcss/typography plugin. */
+.revision-diff-content ins {
+  background-color: #dcfce7; /* green-100: inserted content */
+  text-decoration: none;
+  text-decoration-color: #16a34a; /* green-600 */
+  color: #166534; /* green-800 */
+}
+
+.revision-diff-content del {
+  background-color: #fee2e2; /* red-100: deleted content */
+  text-decoration: line-through;
+  text-decoration-color: #dc2626; /* red-600 */
+  color: #991b1b; /* red-800 */
+}

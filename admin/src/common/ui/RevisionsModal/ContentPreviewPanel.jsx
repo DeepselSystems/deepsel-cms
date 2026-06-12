@@ -1,4 +1,4 @@
-import { Badge, Text } from '@mantine/core';
+import { Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { RevisionContentRenderer } from './RevisionContentRenderer.jsx';
@@ -6,13 +6,14 @@ import { RevisionContentRenderer } from './RevisionContentRenderer.jsx';
 /**
  * Left panel of RevisionsModal.
  * Shows the selected revision's header (name, timestamp, author) and delegates
- * content rendering (Jinja2 render API + HTML output) to RevisionContentRenderer.
+ * content rendering (Jinja2 render API + HTML diff output) to RevisionContentRenderer.
  * Shows a placeholder when no revision is selected.
  * @param {object} props
- * @param {import('../../../typedefs/Revision').ContentRevision|null} props.selectedRevision
+ * @param {import('../../../typedefs/Revision').ContentRevision | null} props.selectedRevision
  * @param {'page'|'blog'} props.contentType - Content type, forwarded to the content renderer
+ * @param {boolean} props.showDiff - Whether diff highlighting is active (owned by RevisionsModal)
  */
-export function ContentPreviewPanel({ selectedRevision, contentType }) {
+export function ContentPreviewPanel({ selectedRevision, contentType, showDiff }) {
   // Translation
   const { t } = useTranslation();
 
@@ -52,19 +53,18 @@ export function ContentPreviewPanel({ selectedRevision, contentType }) {
           <Text fw={700} size="md">
             {selectedRevision.name ?? timestamp}
           </Text>
-          {selectedRevision.isCurrent && (
-            <Badge size="xs" variant="light" color="blue">
-              {t('Current version')}
-            </Badge>
-          )}
         </div>
         <Text size="xs" c="dimmed">
           {selectedRevision.name ? `${authorName} · ${timestamp}` : authorName}
         </Text>
       </div>
 
-      {/* Rendered content (Jinja2-processed HTML) */}
-      <RevisionContentRenderer selectedRevision={selectedRevision} contentType={contentType} />
+      {/* Rendered content (Jinja2-processed HTML, optionally with diff highlighting) */}
+      <RevisionContentRenderer
+        selectedRevision={selectedRevision}
+        contentType={contentType}
+        showDiff={showDiff}
+      />
     </div>
   );
 }

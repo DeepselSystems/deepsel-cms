@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader, ScrollArea, Select, Text } from '@mantine/core';
+import { Checkbox, Loader, ScrollArea, Select, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { IconChevronDown } from '@tabler/icons-react';
 import { RevisionItem } from './RevisionItem.jsx';
-import { CurrentVersionItem } from './CurrentVersionItem.jsx';
 import useModel from '../../api/useModel.jsx';
-import useFetch from '../../api/useFetch.js';
 import dayjs from 'dayjs';
 
 /**
@@ -58,55 +56,16 @@ function groupRevisionsByDate(revisions) {
  * To add a new content type, add a case here — all consumers derive their config from this.
  *
  * @param {'page'|'blog'} contentType
- * @returns {{ revisionModel: string|null, contentModel: string|null, filterField: string|null, contentField: string|null }}
+ * @returns {{ revisionModel: string|null, filterField: string|null }}
  */
 function getRevisionConfig(contentType) {
   switch (contentType) {
     case 'page':
-      return {
-        revisionModel: 'page_content_revision',
-        contentModel: 'page_content',
-        filterField: 'page_content_id',
-        contentField: 'page_content',
-      };
+      return { revisionModel: 'page_content_revision', filterField: 'page_content_id' };
     case 'blog':
-      return {
-        revisionModel: 'blog_post_content_revision',
-        contentModel: 'blog_post_content',
-        filterField: 'blog_post_content_id',
-        contentField: 'blog_post_content',
-      };
+      return { revisionModel: 'blog_post_content_revision', filterField: 'blog_post_content_id' };
     default:
-      return { revisionModel: null, contentModel: null, filterField: null, contentField: null };
-  }
-}
-
-/**
- * Builds the typed nested parent-content fields for a CurrentVersionItem.
- * Sets only the field that matches the contentType; all others are null.
- * This keeps the shape consistent with ContentRevision so consumers
- * (e.g. ContentPreviewPanel) can access lang/org the same way regardless of item source.
- *
- * To add a new content type, add a case here.
- *
- * @param {'page'|'blog'} contentType
- * @param {object} contentRecord - Raw API response from page_content / blog_post_content
- * @returns {{ page_content: object|null, blog_post_content: object|null }}
- */
-function buildParentNestedFields(contentType, contentRecord) {
-  const nested = {
-    id: contentRecord.id,
-    organization_id: contentRecord.organization_id,
-    locale: contentRecord.locale ?? null,
-  };
-
-  switch (contentType) {
-    case 'page':
-      return { page_content: nested, blog_post_content: null };
-    case 'blog':
-      return { page_content: null, blog_post_content: nested };
-    default:
-      return { page_content: null, blog_post_content: null };
+      return { revisionModel: null, filterField: null };
   }
 }
 
@@ -121,6 +80,8 @@ function buildParentNestedFields(contentType, contentRecord) {
  * @param {boolean} props.opened - Whether the parent modal is open (triggers fetch)
  * @param {import('../../../typedefs/Revision').ContentRevision|null} props.selectedRevision - Currently selected revision (lifted state)
  * @param {Function} props.onRevisionSelect - Called when the user clicks a revision row
+ * @param {boolean} props.showDiff - Whether diff highlighting is active (owned by RevisionsModal)
+ * @param {Function} props.onShowDiffChange - Called with new boolean when the checkbox is toggled
  */
 export function RevisionListPanel({
   contentType,
@@ -130,15 +91,15 @@ export function RevisionListPanel({
   opened,
   selectedRevision,
   onRevisionSelect,
+  showDiff,
+  onShowDiffChange,
 }) {
   const { t } = useTranslation();
 
-  /** null when nothing selected or when the current-version item is selected */
-  const selectedRevisionId = selectedRevision?.isCurrent ? null : (selectedRevision?.id ?? null);
+  const selectedRevisionId = selectedRevision?.id ?? null;
   const [filter, setFilter] = useState(REVISION_FILTER_ALL);
 
-  const { revisionModel, contentModel, filterField } = getRevisionConfig(contentType);
-  // contentField not needed here — used by ContentPreviewPanel via the revision shape
+  const { revisionModel, filterField } = getRevisionConfig(contentType);
 
   /** Always call useModel unconditionally; guard fetching via autoFetch:false + manual get() */
   const {
@@ -149,55 +110,6 @@ export function RevisionListPanel({
     autoFetch: false,
     pageSize: null,
   });
-
-  /**
-   * Fetch the content record to derive the "Current version" item.
-   * useFetch URL must be stable — use a fallback so hook is always called unconditionally.
-   */
-  const { record: contentRecord, get: fetchContentRecord } = useFetch(
-    `${contentModel ?? 'page_content'}/${contentId ?? 0}`,
-    { autoFetch: false },
-  );
-
-  /**
-   * Normalized shape for the "Current version" row.
-   *
-   * Currently represents the last *published* version:
-   *   content   → contentRecord.content
-   *   timestamp → contentRecord.last_modified_at
-   *   author    → contentRecord.updated_by
-   *
-   * To switch to unsaved draft, replace with:
-   *   content   → contentRecord.draft_content
-   *   timestamp → contentRecord.draft_last_modified_at
-   *   author    → contentRecord.draft_updated_by
-   */
-  /**
-   * Normalized shape for the "Current version" row.
-   *
-   * Currently represents the last *published* version:
-   *   content   → contentRecord.content
-   *   timestamp → contentRecord.last_modified_at
-   *   author    → contentRecord.updated_by
-   *
-   * To switch to unsaved draft, replace with:
-   *   content   → contentRecord.draft_content
-   *   timestamp → contentRecord.draft_last_modified_at
-   *   author    → contentRecord.draft_updated_by
-   */
-  const currentVersionItem = contentRecord
-    ? {
-        isCurrent: true,
-        id: null,
-        new_content: contentRecord.content,
-        created_at: contentRecord.last_modified_at ?? contentRecord.updated_at,
-        owner: contentRecord.updated_by ?? null,
-        name: null,
-        revision_number: null,
-        organization_id: contentRecord.organization_id,
-        ...buildParentNestedFields(contentType, contentRecord),
-      }
-    : null;
 
   const fetchRevisions = useCallback(() => {
     if (!contentId || !revisionModel || !filterField) return;
@@ -214,29 +126,25 @@ export function RevisionListPanel({
   }, [contentId, revisionModel, filterField]);
 
   /**
-   * Fetch revisions and the content record when the modal opens.
+   * Fetch revisions when the modal opens.
    */
   useEffect(() => {
-    if (opened && contentId && revisionModel && contentModel) {
+    if (opened && contentId && revisionModel) {
       fetchRevisions();
-      fetchContentRecord();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, contentId, fetchRevisions, revisionModel, contentModel]);
+  }, [opened, contentId, fetchRevisions, revisionModel]);
 
   /**
-   * Auto-select the current version item once it loads, but only if nothing is selected yet.
-   * Falls back to the newest revision if the content record is unavailable.
+   * Auto-select the newest revision once it loads, but only if nothing is selected yet.
    */
   useEffect(() => {
     if (selectedRevision) return;
-    if (currentVersionItem) {
-      onRevisionSelect(currentVersionItem);
-    } else if (revisions.length > 0) {
+    if (revisions.length > 0) {
       onRevisionSelect(revisions[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentVersionItem, revisions]);
+  }, [revisions]);
 
   const filterOptions = [
     { value: REVISION_FILTER_ALL, label: t('All versions') },
@@ -284,15 +192,6 @@ export function RevisionListPanel({
           </div>
         ) : (
           <div className="py-2">
-            {/* Current version is always shown at the top, regardless of filter */}
-            {currentVersionItem && (
-              <CurrentVersionItem
-                currentVersionItem={currentVersionItem}
-                isSelected={selectedRevision?.isCurrent === true}
-                onClick={() => onRevisionSelect(currentVersionItem)}
-              />
-            )}
-
             {visibleRevisions.length === 0 ? (
               <Text size="sm" c="dimmed" ta="center" className="mt-4">
                 {filter === REVISION_FILTER_NAMED
@@ -310,6 +209,7 @@ export function RevisionListPanel({
                       key={revision.id}
                       revision={revision}
                       isSelected={revision.id === selectedRevisionId}
+                      isLatest={revision.id === revisions[0]?.id}
                       onClick={() => onRevisionSelect(revision)}
                       hasWritePermission={hasWritePermission}
                       onRestoreSuccess={handleRestoreSuccess}
@@ -324,6 +224,16 @@ export function RevisionListPanel({
           </div>
         )}
       </ScrollArea>
+
+      {/* Highlight changes toggle — Google Docs style, always visible at panel bottom */}
+      <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200">
+        <Checkbox
+          checked={showDiff}
+          onChange={(e) => onShowDiffChange(e.currentTarget.checked)}
+          label={t('Highlight changes')}
+          size="sm"
+        />
+      </div>
     </div>
   );
 }

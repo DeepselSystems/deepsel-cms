@@ -39,6 +39,9 @@ export default function RevisionsModal({
     /** @type {import('../../../typedefs/Revision').ContentRevision|null} */ null,
   );
 
+  // Whether diff highlighting is active — owned here so both panels share the same value.
+  const [showDiff, setShowDiff] = useState(true);
+
   /** Reset selection when modal closes or switches to a different content */
   useEffect(() => {
     if (!opened) setSelectedRevision(null);
@@ -59,7 +62,11 @@ export default function RevisionsModal({
       styles={MODAL_BODY_STYLES}
     >
       {/* Content preview panel */}
-      <ContentPreviewPanel selectedRevision={selectedRevision} contentType={contentType} />
+      <ContentPreviewPanel
+        selectedRevision={selectedRevision}
+        contentType={contentType}
+        showDiff={showDiff}
+      />
 
       {/* Revision list panel */}
       <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col h-full overflow-hidden">
@@ -71,6 +78,8 @@ export default function RevisionsModal({
           opened={opened}
           selectedRevision={selectedRevision}
           onRevisionSelect={setSelectedRevision}
+          showDiff={showDiff}
+          onShowDiffChange={setShowDiff}
         />
       </div>
     </Modal>

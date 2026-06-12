@@ -1,4 +1,5 @@
-import { Stack, Text, Group } from '@mantine/core';
+import { Badge, Stack, Text, Group } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
 import { RevisionItemMenu } from './RevisionItemMenu.jsx';
@@ -37,6 +38,7 @@ function getAuthorDotColor(ownerId) {
  * @param {Function} props.onNameChanged
  * @param {'page'|'blog'} props.contentType
  * @param {number} props.contentId
+ * @param {boolean} [props.isLatest] - True for the most recent revision (replaces CurrentVersionItem)
  */
 export function RevisionItem({
   revision,
@@ -47,7 +49,9 @@ export function RevisionItem({
   onNameChanged,
   contentType,
   contentId,
+  isLatest = false,
 }) {
+  const { t } = useTranslation();
   /** Full timestamp shown as primary label for unnamed revisions (matches Google Docs style) */
   const timeLabel = dayjs.utc(revision.created_at).local().format('h:mm A, MMM D');
   const dotColorClass = getAuthorDotColor(revision.owner_id);
@@ -74,6 +78,11 @@ export function RevisionItem({
         <Text size="sm" fw={600} className="leading-snug" truncate>
           {revision.name ?? timeLabel}
         </Text>
+        {isLatest && (
+          <Badge size="xs" variant="light" color="blue" className="w-fit">
+            {t('Current version')}
+          </Badge>
+        )}
         {revision.name && (
           <Text size="xs" c="dimmed" truncate>
             {timeLabel}
