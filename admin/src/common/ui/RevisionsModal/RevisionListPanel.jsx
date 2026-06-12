@@ -47,9 +47,18 @@ function groupRevisionsByDate(revisions) {
 }
 
 /**
- * Resolves the backend model names and FK filter field for a given contentType.
- * @param {'page'|'blog'|'template'} contentType
- * @returns {{ revisionModel: string|null, contentModel: string|null, filterField: string|null }}
+ * All backend identifiers needed for a given contentType.
+ *
+ * revisionModel — model name for the revision search endpoint
+ * contentModel  — model name for the parent content fetch endpoint
+ * filterField   — FK field used to filter revisions by contentId
+ * contentField  — key on ContentRevision that holds the nested parent content object
+ *                 (used by ContentPreviewPanel to extract lang/org for Jinja2 rendering)
+ *
+ * To add a new content type, add a case here — all consumers derive their config from this.
+ *
+ * @param {'page'|'blog'} contentType
+ * @returns {{ revisionModel: string|null, contentModel: string|null, filterField: string|null, contentField: string|null }}
  */
 function getRevisionConfig(contentType) {
   switch (contentType) {
@@ -58,15 +67,46 @@ function getRevisionConfig(contentType) {
         revisionModel: 'page_content_revision',
         contentModel: 'page_content',
         filterField: 'page_content_id',
+        contentField: 'page_content',
       };
     case 'blog':
       return {
         revisionModel: 'blog_post_content_revision',
         contentModel: 'blog_post_content',
         filterField: 'blog_post_content_id',
+        contentField: 'blog_post_content',
       };
     default:
-      return { revisionModel: null, contentModel: null, filterField: null };
+      return { revisionModel: null, contentModel: null, filterField: null, contentField: null };
+  }
+}
+
+/**
+ * Builds the typed nested parent-content fields for a CurrentVersionItem.
+ * Sets only the field that matches the contentType; all others are null.
+ * This keeps the shape consistent with ContentRevision so consumers
+ * (e.g. ContentPreviewPanel) can access lang/org the same way regardless of item source.
+ *
+ * To add a new content type, add a case here.
+ *
+ * @param {'page'|'blog'} contentType
+ * @param {object} contentRecord - Raw API response from page_content / blog_post_content
+ * @returns {{ page_content: object|null, blog_post_content: object|null }}
+ */
+function buildParentNestedFields(contentType, contentRecord) {
+  const nested = {
+    id: contentRecord.id,
+    organization_id: contentRecord.organization_id,
+    locale: contentRecord.locale ?? null,
+  };
+
+  switch (contentType) {
+    case 'page':
+      return { page_content: nested, blog_post_content: null };
+    case 'blog':
+      return { page_content: null, blog_post_content: nested };
+    default:
+      return { page_content: null, blog_post_content: null };
   }
 }
 
@@ -98,6 +138,7 @@ export function RevisionListPanel({
   const [filter, setFilter] = useState(REVISION_FILTER_ALL);
 
   const { revisionModel, contentModel, filterField } = getRevisionConfig(contentType);
+  // contentField not needed here — used by ContentPreviewPanel via the revision shape
 
   /** Always call useModel unconditionally; guard fetching via autoFetch:false + manual get() */
   const {
@@ -131,6 +172,19 @@ export function RevisionListPanel({
    *   timestamp → contentRecord.draft_last_modified_at
    *   author    → contentRecord.draft_updated_by
    */
+  /**
+   * Normalized shape for the "Current version" row.
+   *
+   * Currently represents the last *published* version:
+   *   content   → contentRecord.content
+   *   timestamp → contentRecord.last_modified_at
+   *   author    → contentRecord.updated_by
+   *
+   * To switch to unsaved draft, replace with:
+   *   content   → contentRecord.draft_content
+   *   timestamp → contentRecord.draft_last_modified_at
+   *   author    → contentRecord.draft_updated_by
+   */
   const currentVersionItem = contentRecord
     ? {
         isCurrent: true,
@@ -141,12 +195,7 @@ export function RevisionListPanel({
         name: null,
         revision_number: null,
         organization_id: contentRecord.organization_id,
-        page_content: contentType === 'page'
-          ? { id: contentRecord.id, organization_id: contentRecord.organization_id, locale: contentRecord.locale }
-          : null,
-        blog_post_content: contentType === 'blog'
-          ? { id: contentRecord.id, organization_id: contentRecord.organization_id, locale: contentRecord.locale }
-          : null,
+        ...buildParentNestedFields(contentType, contentRecord),
       }
     : null;
 
