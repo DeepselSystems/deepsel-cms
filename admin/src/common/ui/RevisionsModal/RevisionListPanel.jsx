@@ -140,6 +140,13 @@ export function RevisionListPanel({
         owner: contentRecord.updated_by ?? null,
         name: null,
         revision_number: null,
+        organization_id: contentRecord.organization_id,
+        page_content: contentType === 'page'
+          ? { id: contentRecord.id, organization_id: contentRecord.organization_id, locale: contentRecord.locale }
+          : null,
+        blog_post_content: contentType === 'blog'
+          ? { id: contentRecord.id, organization_id: contentRecord.organization_id, locale: contentRecord.locale }
+          : null,
       }
     : null;
 
