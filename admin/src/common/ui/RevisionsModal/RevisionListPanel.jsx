@@ -169,8 +169,8 @@ export function RevisionListPanel({
   }, [fetchRevisions]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Filter */}
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Panel header: title + filter */}
       <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-200">
         <Text fw={700} size="lg" mb="sm">
           {t('Revision History')}

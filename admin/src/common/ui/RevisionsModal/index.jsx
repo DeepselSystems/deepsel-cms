@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Modal } from '@mantine/core';
+import { ActionIcon, Modal, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { ContentPreviewPanel } from './ContentPreviewPanel.jsx';
 import { RevisionListPanel } from './RevisionListPanel.jsx';
+import dayjs from 'dayjs';
 
 /**
  * Full-screen revision history modal for Pages and Blog Posts.
- * Left panel shows a content preview placeholder; right panel lists revisions.
+ * Left column: back header + content scroll. Right column: full-height revision list panel.
  * @param {object} props
  * @param {boolean} props.opened - Whether the modal is open
  * @param {Function} props.onClose - Callback to close the modal
@@ -23,10 +26,8 @@ export default function RevisionsModal({
   hasWritePermission = false,
   onContentRestored,
 }) {
-  // Translation
   const { t } = useTranslation();
 
-  // Initialize state
   const [selectedRevision, setSelectedRevision] = useState(
     /** @type {import('../../../typedefs/Revision').ContentRevision|null} */ null,
   );
@@ -34,39 +35,56 @@ export default function RevisionsModal({
   // Whether diff highlighting is active — owned here so both panels share the same value.
   const [showDiff, setShowDiff] = useState(true);
 
-  /** Reset selection when modal closes or switches to a different content */
+  /** Reset selection when modal closes */
   useEffect(() => {
     if (!opened) setSelectedRevision(null);
   }, [opened]);
 
-  /** Reset selection when contentId changes */
+  /** Reset selection when content switches */
   useEffect(() => {
     setSelectedRevision(null);
   }, [contentId]);
+
+  const revisionLabel = selectedRevision
+    ? (selectedRevision.name ??
+      dayjs.utc(selectedRevision.created_at).local().format('h:mm A, MMM D, YYYY'))
+    : null;
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
-      title={<div className="font-bold">{t('Revision History')}</div>}
+      withCloseButton={false}
       fullScreen
-      size="100%"
       classNames={{
         inner: '!overflow-hidden',
-        content: 'flex flex-col h-screen',
-        header: 'flex-shrink-0',
-        body: '!p-0 flex flex-1 overflow-hidden min-h-0',
+        content: 'h-screen',
+        body: '!p-0 flex h-full overflow-hidden',
       }}
     >
-      {/* Content preview panel */}
-      <ContentPreviewPanel
-        selectedRevision={selectedRevision}
-        contentType={contentType}
-        showDiff={showDiff}
-      />
+      {/* Left column */}
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        {/* Left header: back button + selected revision label */}
+        <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
+          <ActionIcon variant="subtle" color="gray" onClick={onClose} aria-label={t('Close')}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </ActionIcon>
+          {revisionLabel && (
+            <Text fw={600} size="sm" truncate>
+              {revisionLabel}
+            </Text>
+          )}
+        </div>
+        {/* Content preview — scrolls independently */}
+        <ContentPreviewPanel
+          selectedRevision={selectedRevision}
+          contentType={contentType}
+          showDiff={showDiff}
+        />
+      </div>
 
-      {/* Revision list panel */}
-      <div className="w-80 rounded-xl mr-3 border-l border-gray-200 bg-gray-50 flex flex-col overflow-hidden min-h-0">
+      {/* Right column — full height, owns title/filter/list/checkbox */}
+      <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col overflow-hidden min-h-0">
         <RevisionListPanel
           contentType={contentType}
           contentId={contentId}
