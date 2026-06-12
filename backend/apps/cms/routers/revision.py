@@ -66,8 +66,8 @@ async def restore_content_revision(
     if not revision:
         raise HTTPException(status_code=404, detail="Revision not found")
 
-    # Restore the content to the old_content of the revision
-    content.update(db, user, {"content": revision.old_content})
+    # Restore to new_content (the published result of that revision) and clear draft_content
+    content.update(db, user, {"content": revision.new_content, "draft_content": None})
 
     # Update the last revision name to indicate it was a restore
     last_revision = (
