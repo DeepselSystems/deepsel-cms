@@ -200,7 +200,7 @@ export function RevisionListPanel({
               </Text>
             ) : (
               dateGroups.map(({ label, items }) => (
-                <div key={label} className="mb-3">
+                <div key={label} className="mb-3 space-y-1">
                   <Text size="xs" fw={600} c="dimmed" className="px-3 pb-1 uppercase tracking-wide">
                     {t(label)}
                   </Text>
