@@ -362,6 +362,46 @@ def export_backup(
     )
 
 
+def _sync_attachment_string_ids(temp_dir: str, org_id: int, db):
+    from apps.core.utils.models_pool import models_pool
+
+    AttachmentModel = models_pool["attachment"]
+    AttachmentLocaleVersionModel = models_pool.get("attachment_locale_version")
+
+    attachment_csv = os.path.join(temp_dir, "attachment.csv")
+    if os.path.exists(attachment_csv):
+        with open(attachment_csv, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                name = row.get("name")
+                string_id = row.get("string_id")
+                if not name or not string_id:
+                    continue
+                existing = (
+                    db.query(AttachmentModel)
+                    .filter_by(name=name, organization_id=org_id)
+                    .first()
+                )
+                if existing and existing.string_id != string_id:
+                    existing.string_id = string_id
+
+    if not AttachmentLocaleVersionModel:
+        return
+
+    alv_csv = os.path.join(temp_dir, "attachment_locale_version.csv")
+    if os.path.exists(alv_csv):
+        with open(alv_csv, "r", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                name = row.get("name")
+                string_id = row.get("string_id")
+                if not name or not string_id:
+                    continue
+                existing = (
+                    db.query(AttachmentLocaleVersionModel).filter_by(name=name).first()
+                )
+                if existing and existing.string_id != string_id:
+                    existing.string_id = string_id
+
+
 @router.post("/import")
 def import_backup(
     file: UploadFile,
@@ -412,9 +452,16 @@ def import_backup(
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(temp_dir)
 
+            # Sync attachment string_ids to match CSV values before importing.
+            # When restoring to the same DB, existing records may have null or different
+            # string_ids. We update them to match the CSV so the import loop finds them
+            # by string_id and does UPDATE instead of INSERT, avoiding UniqueViolation.
+            _sync_attachment_string_ids(temp_dir, org_id, db)
+
             # Import order matters due to dependencies
             import_files = [
                 "attachment.csv",
+                "attachment_locale_version.csv",
                 "page.csv",
                 "page_content.csv",
                 "blog_post.csv",
