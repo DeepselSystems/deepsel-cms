@@ -21,6 +21,58 @@ router = create_api_router("backup", tags=["Backup"])
 UserModel = models_pool["user"]
 
 
+def _filter_attachment_rows_for_import(
+    rows: list[dict],
+    model_name: str,
+    org_id: int,
+    db,
+    skips: list,
+) -> list[dict]:
+    """
+    Filter attachment rows that already exist in the DB (matched by name + organization_id).
+
+    Rows with a matching record but a different string_id are dropped from the import
+    to avoid UniqueViolation. The existing record's string_id is updated in the current
+    DB session so that cross-table references (e.g. attachment/attachment_id in
+    attachment_locale_version.csv) can still resolve by string_id within the same
+    transaction.
+
+    Only intended for attachment and attachment_locale_version models.
+    Skipped rows are appended to the provided skips list.
+    """
+    AttachmentModel = models_pool[model_name]
+    kept_rows = []
+    for row in rows:
+        name = row.get("name")
+        string_id = row.get("string_id")
+        existing = (
+            db.query(AttachmentModel)
+            .filter_by(name=name, organization_id=org_id)
+            .first()
+        )
+        if existing and existing.string_id != string_id:
+            existing.string_id = string_id
+            reason = (
+                f"record with name='{name}' already exists "
+                f"in organization {org_id} with a different string_id"
+            )
+            logger.warning(
+                f"Skipping {model_name} '{name}' (string_id='{string_id}'): "
+                f"{reason} (existing string_id='{existing.string_id}')"
+            )
+            skips.append(
+                {
+                    "model": model_name,
+                    "string_id": string_id,
+                    "name": name,
+                    "reason": reason,
+                }
+            )
+        else:
+            kept_rows.append(row)
+    return kept_rows
+
+
 @router.get("/export")
 def export_backup(
     organization_id: int,
@@ -362,46 +414,6 @@ def export_backup(
     )
 
 
-def _sync_attachment_string_ids(temp_dir: str, org_id: int, db):
-    from apps.core.utils.models_pool import models_pool
-
-    AttachmentModel = models_pool["attachment"]
-    AttachmentLocaleVersionModel = models_pool.get("attachment_locale_version")
-
-    attachment_csv = os.path.join(temp_dir, "attachment.csv")
-    if os.path.exists(attachment_csv):
-        with open(attachment_csv, "r", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                name = row.get("name")
-                string_id = row.get("string_id")
-                if not name or not string_id:
-                    continue
-                existing = (
-                    db.query(AttachmentModel)
-                    .filter_by(name=name, organization_id=org_id)
-                    .first()
-                )
-                if existing and existing.string_id != string_id:
-                    existing.string_id = string_id
-
-    if not AttachmentLocaleVersionModel:
-        return
-
-    alv_csv = os.path.join(temp_dir, "attachment_locale_version.csv")
-    if os.path.exists(alv_csv):
-        with open(alv_csv, "r", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                name = row.get("name")
-                string_id = row.get("string_id")
-                if not name or not string_id:
-                    continue
-                existing = (
-                    db.query(AttachmentLocaleVersionModel).filter_by(name=name).first()
-                )
-                if existing and existing.string_id != string_id:
-                    existing.string_id = string_id
-
-
 @router.post("/import")
 def import_backup(
     file: UploadFile,
@@ -452,12 +464,6 @@ def import_backup(
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(temp_dir)
 
-            # Sync attachment string_ids to match CSV values before importing.
-            # When restoring to the same DB, existing records may have null or different
-            # string_ids. We update them to match the CSV so the import loop finds them
-            # by string_id and does UPDATE instead of INSERT, avoiding UniqueViolation.
-            _sync_attachment_string_ids(temp_dir, org_id, db)
-
             # Import order matters due to dependencies
             import_files = [
                 "attachment.csv",
@@ -469,7 +475,7 @@ def import_backup(
                 "menu.csv",
             ]
 
-            results = {"success": [], "errors": []}
+            results = {"success": [], "errors": [], "skips": []}
 
             # Wrap entire import in a transaction for data integrity
             # If any error occurs, all changes will be rolled back
@@ -518,6 +524,22 @@ def import_backup(
                                         row["author_id"] = user.id
                                         row["user/author_id"] = ""
 
+                                # Skip attachment rows that already exist in the DB to
+                                # avoid UniqueViolation on (name, organization_id).
+                                if filename in (
+                                    "attachment.csv",
+                                    "attachment_locale_version.csv",
+                                ):
+                                    rows = _filter_attachment_rows_for_import(
+                                        rows,
+                                        filename[:-4],
+                                        org_id,
+                                        db,
+                                        results["skips"],
+                                    )
+                                    if not rows:
+                                        fieldnames = []
+
                                 # Debug logging
                                 if rows:
                                     logger.info(
@@ -531,9 +553,13 @@ def import_backup(
                                 with open(
                                     csv_path, "w", encoding="utf-8", newline=""
                                 ) as f:
-                                    writer = csv.DictWriter(f, fieldnames=fieldnames)
-                                    writer.writeheader()
-                                    writer.writerows(rows)
+                                    if fieldnames:
+                                        writer = csv.DictWriter(
+                                            f, fieldnames=fieldnames
+                                        )
+                                        writer.writeheader()
+                                        writer.writerows(rows)
+                                    # else: write empty file so import_csv_data finds no rows
                         except Exception as e:
                             logger.error(f"Error preprocessing {filename}: {e}")
                             raise  # Re-raise to trigger rollback
