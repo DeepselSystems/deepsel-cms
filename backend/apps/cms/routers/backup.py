@@ -293,40 +293,66 @@ def export_backup(
         )
 
         # 4. Export Attachments
-        AttachmentModel = models_pool["attachment"]
+        AttachmentModel = models_pool.get("attachment")
+        AttachmentLocaleVersionModel = models_pool.get("attachment_locale_version")
         attachments = db.query(AttachmentModel).filter_by(organization_id=org_id).all()
 
+        # Export AttachmentModel containers (no file, just DB record)
         attachment_fields = [
+            "string_id",
+            "name",
+        ]
+        write_model_csv(zip_file, "attachment", attachments, attachment_fields)
+
+        # Collect all locale versions across all attachments
+        attachment_locale_versions = []
+        if AttachmentLocaleVersionModel:
+            for attachment in attachments:
+                attachment_locale_versions.extend(attachment.locale_versions)
+
+        # Export AttachmentLocaleVersionModel — one row per locale version
+        def get_attachment_string_id_for_version(record):
+            return ensure_string_id(record.attachment, "attachment")
+
+        def get_locale_string_id_for_version(record):
+            return record.locale.string_id if record.locale else ""
+
+        def get_version_zip_file_path(record):
+            filename = os.path.basename(record.name)
+            return f"attachments/{filename}"
+
+        alv_fields = [
             "string_id",
             "name",
             "alt_text",
             "content_type",
-            "file:file_path",  # Special column for file import
+            "attachment/attachment_id",
+            "locale/locale_id",
+            "file:file_path",
         ]
-
-        def get_zip_file_path(record):
-            # We'll store files in 'attachments/' folder in zip
-            # Use original filename or name
-            filename = os.path.basename(record.name)
-            return f"attachments/{filename}"
 
         write_model_csv(
             zip_file,
-            "attachment",
-            attachments,
-            attachment_fields,
-            extra_fields={"file:file_path": get_zip_file_path},
+            "attachment_locale_version",
+            attachment_locale_versions,
+            alv_fields,
+            extra_fields={
+                "attachment/attachment_id": get_attachment_string_id_for_version,
+                "locale/locale_id": get_locale_string_id_for_version,
+                "file:file_path": get_version_zip_file_path,
+            },
         )
 
-        # Add attachment files to ZIP
-        for attachment in attachments:
+        # Write actual files to ZIP using locale_version.name as storage key
+        for version in attachment_locale_versions:
             try:
-                file_data = attachment.get_data()
-                filename = os.path.basename(attachment.name)
+                file_data = version.get_data()
+                filename = os.path.basename(version.name)
                 zip_file.writestr(f"attachments/{filename}", file_data)
             except Exception as e:
-                logger.error(f"Failed to export attachment {attachment.id}: {e}")
-                # Continue even if one file fails? Yes.
+                logger.error(
+                    f"Failed to export attachment locale version {version.id}: {e}"
+                )
 
     zip_buffer.seek(0)
     return StreamingResponse(
