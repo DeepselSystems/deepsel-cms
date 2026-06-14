@@ -464,6 +464,34 @@ def import_backup(
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(temp_dir)
 
+            # Detect zip subfolder wrapper (some OS/tools wrap files in a subfolder
+            # named after the zip file). Use it as root only when:
+            # (1) no CSV exists directly in temp_dir,
+            # (2) exactly one subfolder exists (excluding hidden/metadata dirs starting with __),
+            # (3) that subfolder's name matches the uploaded zip filename (minus .zip).
+            zip_stem = os.path.splitext(file.filename)[0]
+            root_entries = [
+                e
+                for e in os.listdir(temp_dir)
+                if e != "backup.zip" and not e.startswith("__")
+            ]
+            has_csv_at_root = any(e.endswith(".csv") for e in root_entries)
+            if not has_csv_at_root:
+                subfolders = [
+                    e for e in root_entries if os.path.isdir(os.path.join(temp_dir, e))
+                ]
+                if len(subfolders) == 1 and subfolders[0] == zip_stem:
+                    temp_dir = os.path.join(temp_dir, subfolders[0])
+                    logger.info(
+                        f"Detected zip subfolder wrapper — using '{subfolders[0]}' as import root"
+                    )
+                else:
+                    logger.warning(
+                        f"No CSV files found at zip root and could not detect subfolder wrapper "
+                        f"(expected single subfolder named '{zip_stem}', found: {subfolders}). "
+                        "Import may find no files to process."
+                    )
+
             # Import order matters due to dependencies
             import_files = [
                 "attachment.csv",
