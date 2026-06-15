@@ -446,6 +446,10 @@ def import_backup(
 
     org_id = organization_id
 
+    logger.info(
+        f"[import] file.filename='{file.filename}', organization_id={organization_id}"
+    )
+
     if not file.filename.endswith(".zip"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -455,6 +459,8 @@ def import_backup(
     # Create temp directory
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
+            logger.info(f"[import] temp_dir='{temp_dir}'")
+
             # Save uploaded file
             zip_path = os.path.join(temp_dir, "backup.zip")
             with open(zip_path, "wb") as f:
@@ -462,7 +468,16 @@ def import_backup(
 
             # Extract ZIP
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                zip_namelist = zip_ref.namelist()
+                logger.info(
+                    f"[import] zip namelist ({len(zip_namelist)} entries): {zip_namelist}"
+                )
                 zip_ref.extractall(temp_dir)
+
+            all_entries_after_extract = os.listdir(temp_dir)
+            logger.info(
+                f"[import] temp_dir entries after extract: {all_entries_after_extract}"
+            )
 
             # Detect zip subfolder wrapper (some OS/tools wrap files in a subfolder
             # named after the zip file). Use it as root only when:
@@ -470,16 +485,20 @@ def import_backup(
             # (2) exactly one subfolder exists (excluding hidden/metadata dirs starting with __),
             # (3) that subfolder's name matches the uploaded zip filename (minus .zip).
             zip_stem = os.path.splitext(file.filename)[0]
+            logger.info(f"[import] zip_stem='{zip_stem}'")
             root_entries = [
                 e
                 for e in os.listdir(temp_dir)
                 if e != "backup.zip" and not e.startswith("__")
             ]
+            logger.info(f"[import] root_entries (filtered): {root_entries}")
             has_csv_at_root = any(e.endswith(".csv") for e in root_entries)
+            logger.info(f"[import] has_csv_at_root={has_csv_at_root}")
             if not has_csv_at_root:
                 subfolders = [
                     e for e in root_entries if os.path.isdir(os.path.join(temp_dir, e))
                 ]
+                logger.info(f"[import] subfolders found: {subfolders}")
                 if len(subfolders) == 1 and subfolders[0] == zip_stem:
                     temp_dir = os.path.join(temp_dir, subfolders[0])
                     logger.info(
@@ -491,6 +510,8 @@ def import_backup(
                         f"(expected single subfolder named '{zip_stem}', found: {subfolders}). "
                         "Import may find no files to process."
                     )
+
+            logger.info(f"[import] final import root: '{temp_dir}'")
 
             # Import order matters due to dependencies
             import_files = [
@@ -510,6 +531,9 @@ def import_backup(
             try:
                 for filename in import_files:
                     csv_path = os.path.join(temp_dir, filename)
+                    logger.info(
+                        f"[import] checking '{csv_path}' — exists={os.path.exists(csv_path)}"
+                    )
                     if os.path.exists(csv_path):
                         logger.info(f"Importing {filename}...")
 
@@ -572,9 +596,6 @@ def import_backup(
                                 if rows:
                                     logger.info(
                                         f"Preprocessing {filename}: user.id={user.id}, org_id={org_id}"
-                                    )
-                                    logger.info(
-                                        f"First row after preprocessing: {rows[0]}"
                                     )
                                     logger.info(f"Fieldnames: {fieldnames}")
 
