@@ -427,6 +427,10 @@ def import_backup(
     """
     # Increase CSV field size limit to handle large content fields
     # Default is 131072 (128KB), which is too small for rich page content
+    logger.info(
+        f"[import] 1 - file.filename='{file.filename}', organization_id={organization_id}"
+    )
+
     csv.field_size_limit(10485760)  # 10MB limit
 
     if not any(
@@ -447,7 +451,7 @@ def import_backup(
     org_id = organization_id
 
     logger.info(
-        f"[import] file.filename='{file.filename}', organization_id={organization_id}"
+        f"[import] 2 - file.filename='{file.filename}', organization_id={organization_id}"
     )
 
     if not file.filename.endswith(".zip"):
