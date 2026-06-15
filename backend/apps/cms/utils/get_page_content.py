@@ -62,6 +62,17 @@ def get_page_content(
             status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found"
         )
 
+    # Preview requires org membership — covers both org_id and domain-detected paths.
+    # Public SSR intentionally uses membership (not _check_has_permission) as the
+    # authorization boundary; the CRUD permission layer applies to admin routes only.
+    if preview and current_user:
+        user_org_ids = {org.id for org in getattr(current_user, "organizations", [])}
+        if org_settings.id not in user_org_ids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No permission to preview this organization's content",
+            )
+
     # Determine default language
     default_lang = org_settings.default_language.iso_code if org_settings else None
 

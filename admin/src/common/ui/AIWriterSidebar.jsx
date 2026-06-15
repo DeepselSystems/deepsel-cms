@@ -9,8 +9,10 @@ import OrganizationIdState from '../stores/OrganizationIdState.js';
 import RecordSelect from './RecordSelect.jsx';
 import Button from './Button.jsx';
 import { IconLoader2, IconSend, IconX } from '@tabler/icons-react';
+import clsx from 'clsx';
 
 export default function AIWriterSidebar({
+  className,
   opened,
   onClose,
   activeContent,
@@ -39,7 +41,7 @@ export default function AIWriterSidebar({
     if (orgSettings?.ai_default_writing_model_id && !modelId) {
       setModelId(orgSettings.ai_default_writing_model_id);
     }
-  }, [orgSettings]);
+  }, [modelId, orgSettings]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -81,6 +83,7 @@ export default function AIWriterSidebar({
           model_id: modelId,
           prompt: userMessage.text,
           messages: conversationHistory,
+          content_type: contentType,
         }),
       });
 
@@ -158,17 +161,14 @@ export default function AIWriterSidebar({
   };
 
   const placeholder =
-    contentType === 'blog_post'
+    contentType === 'blog'
       ? t('Describe what content you want to generate...')
       : t('Describe what content you want to generate...');
 
   if (!opened) return null;
 
   return (
-    <div
-      className="bg-white border-l flex flex-col flex-shrink-0 h-full"
-      style={{ width: '380px' }}
-    >
+    <div className={clsx('bg-white border-l flex flex-col flex-shrink-0 w-96 h-full', className)}>
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-3">
         <div className="flex items-center justify-between mb-3">

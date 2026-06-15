@@ -753,7 +753,7 @@ export default function BlogPostEdit() {
           activeContent={activeContent}
           updateContentField={updateContentField}
           onContentInserted={() => setEditorKey((k) => k + 1)}
-          contentType="blog_post"
+          contentType="blog"
         />
       </div>
 
