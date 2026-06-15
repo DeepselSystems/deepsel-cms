@@ -1,9 +1,15 @@
-from typing import Any, Optional
+from typing import Any
 from fastapi import Body, Depends, HTTPException, Path, Query, Request, status
-from pydantic import BaseModel, ConfigDict
-from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from sqlalchemy.orm import Session, joinedload
 
-from ..utils.ai_writing import generate_page_content
+from ..utils.ai_writing import generate_page_content, generate_template_content
+from ..schemas.ai_writing import (
+    AIWritingContentType,
+    AIWritingRequest,
+    AIWritingResponse,
+)
+from ..schemas.openrouter_model import OpenRouterModelRead
 from ..utils.get_page_content import get_page_content, PageContentResponse
 from ..utils.search import SearchResponse, search_pages_and_posts
 from ..utils.translate_page_content import translate_page_content
@@ -82,20 +88,7 @@ def get_page_by_lang_and_slug(
     )
 
 
-class AIWritingMessage(BaseModel):
-    role: str
-    content: str
-
-
-class AIWritingRequest(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-
-    model_id: int
-    prompt: str
-    messages: Optional[list[AIWritingMessage]] = None
-
-
-@router.post("/ai_writing")
+@router.post("/ai_writing", response_model=AIWritingResponse)
 async def ai_writing(
     request: AIWritingRequest = Body(...),
     user=Depends(get_current_user),
@@ -138,19 +131,45 @@ async def ai_writing(
             {"role": m.role, "content": m.content} for m in request.messages
         ]
 
-    generated_content = await generate_page_content(
-        prompt=request.prompt,
-        model_string_id=openrouter_model.string_id,
-        openrouter_api_key=openrouter_api_key,
-        messages=conversation_history,
-    )
+    # Generate template content
+    if request.content_type == AIWritingContentType.template:
+        TemplateModel = models_pool["template"]
+        # _check_has_permission intentionally skipped: caller is fully authenticated
+        # (get_current_user), query is hard-scoped to the user's own org, and template
+        # data is used as AI generation context only — never returned to the caller.
+        existing_templates = (
+            db.query(TemplateModel)
+            .options(joinedload(TemplateModel.contents))
+            .filter(
+                TemplateModel.organization_id == org_id,
+                TemplateModel.active.is_(True),
+            )
+            .order_by(TemplateModel.name)
+            .all()
+        )
+        generated_content = await generate_template_content(
+            prompt=request.prompt,
+            model_string_id=openrouter_model.string_id,
+            openrouter_api_key=openrouter_api_key,
+            messages=conversation_history,
+            existing_templates=existing_templates,
+        )
 
-    return {
-        "title": generated_content.get("title", ""),
-        "content": generated_content.get("content", ""),
-        "model": openrouter_model,
-        "prompt": request.prompt,
-    }
+    # Generate page content, blog post content, etc.
+    else:
+        generated_content = await generate_page_content(
+            prompt=request.prompt,
+            model_string_id=openrouter_model.string_id,
+            openrouter_api_key=openrouter_api_key,
+            messages=conversation_history,
+        )
+
+    return AIWritingResponse(
+        title=generated_content.get("title", ""),
+        content=generated_content.get("content", ""),
+        model=OpenRouterModelRead.model_validate(openrouter_model),
+        prompt=request.prompt,
+    )
 
 
 @router.get("/website_search/{lang}", response_model=SearchResponse)

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { LoadingOverlay, Modal, Tabs, Tooltip, Menu } from '@mantine/core';
+import { LoadingOverlay, Modal, Switch, Tabs, Tooltip, Menu } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,6 +16,8 @@ import FormViewSkeleton from '../../../common/ui/FormViewSkeleton.jsx';
 import RecordSelect from '../../../common/ui/RecordSelect.jsx';
 import TextInput from '../../../common/ui/TextInput.jsx';
 import Button from '../../../common/ui/Button.jsx';
+import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
+import VariablesModal from './components/VariablesModal.jsx';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-markup';
@@ -26,6 +28,7 @@ import 'prismjs/themes/prism.css';
 import { Preferences } from '@capacitor/preferences';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import {
+  IconAi,
   IconCode,
   IconDeviceDesktop,
   IconDeviceFloppy,
@@ -34,8 +37,10 @@ import {
   IconPlus,
   IconQuestionMark,
   IconSettings,
+  IconSparkles2,
   IconTrash,
 } from '@tabler/icons-react';
+import clsx from 'clsx';
 
 export default function TemplateEdit({ onSuccess }) {
   const { t } = useTranslation();
@@ -114,11 +119,17 @@ export default function TemplateEdit({ onSuccess }) {
   });
 
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+  const aiWritingAvailable =
+    !!siteSettings?.has_openrouter_api_key && !!siteSettings?.ai_default_writing_model_id;
   const initialSidebarStateRef = useRef(null);
   const sidebarInitializedRef = useRef(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const originalRecordRef = useRef(null);
+
+  /** Last known cursor position in any editor tab — saved on blur so modal can insert at correct spot */
+  const savedCursorRef = useRef(null);
   const [renderedContent, setRenderedContent] = useState('');
   const [renderingError, setRenderingError] = useState(null);
 
@@ -199,7 +210,6 @@ export default function TemplateEdit({ onSuccess }) {
     return record?.contents?.find((c) => String(c.id) === activeContentTab);
   }, [record, activeContentTab]);
 
-  const hasTemplateName = Boolean(record?.name?.trim());
   const templateNameDescription = t(
     'Must start with a capital letter and contain only letters, numbers, and underscores',
   );
@@ -279,10 +289,6 @@ export default function TemplateEdit({ onSuccess }) {
   const insertTemplateInclude = (template) => {
     if (activeContent) {
       // Get the content that matches the current locale
-      const currentLocaleId = activeContent.locale_id;
-      const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId,
-      );
       const templateName = template.name;
       const includeText = `{% include '${templateName}' %}`;
       const currentContent = activeContent.content || '';
@@ -295,10 +301,6 @@ export default function TemplateEdit({ onSuccess }) {
   const insertTemplateExtends = (template) => {
     if (activeContent) {
       // Get the content that matches the current locale
-      const currentLocaleId = activeContent.locale_id;
-      const matchingContent = template.contents?.find(
-        (content) => content.locale_id === currentLocaleId,
-      );
       const templateName = template.name;
       const extendsText = `{% extends '${templateName}' %}`;
       const currentContent = activeContent.content || '';
@@ -309,92 +311,23 @@ export default function TemplateEdit({ onSuccess }) {
     setTemplatesModalOpened(false);
   };
 
-  const insertVariable = (varPath) => {
+  /**
+   * Insert a raw text snippet at the saved cursor position, falling back to end-of-content
+   */
+  const insertSnippet = (text) => {
     if (activeContent) {
-      const variableText = `{{ ${varPath} }}`;
       const currentContent = activeContent.content || '';
-      const newContent = currentContent + variableText;
+      const saved = savedCursorRef.current;
+      let newContent;
+      if (saved && saved.contentId === activeContent.id) {
+        newContent = currentContent.slice(0, saved.start) + text + currentContent.slice(saved.end);
+      } else {
+        newContent = currentContent + text;
+      }
       updateContentField(activeContent.id, 'content', newContent);
     }
     setVariablesModalOpened(false);
   };
-
-  // Get public settings variables for the modal
-  const publicSettingsVariables = useMemo(() => {
-    if (!siteSettings) return [];
-
-    const variables = [];
-
-    // Basic organization info
-    variables.push({ name: 'Organization ID', path: 'settings.id' });
-    variables.push({ name: 'Organization Name', path: 'settings.name' });
-
-    // Language settings
-    if (siteSettings.default_language) {
-      variables.push({
-        name: 'Default Language Name',
-        path: 'settings.default_language.name',
-      });
-      variables.push({
-        name: 'Default Language Code',
-        path: 'settings.default_language.iso_code',
-      });
-      variables.push({
-        name: 'Default Language Flag',
-        path: 'settings.default_language.emoji_flag',
-      });
-    }
-
-    // Domain settings
-    if (siteSettings.domains) {
-      variables.push({ name: 'Domains', path: 'settings.domains' });
-    }
-
-    // Feature flags
-    variables.push({
-      name: 'Show Post Author',
-      path: 'settings.show_post_author',
-    });
-    variables.push({ name: 'Show Post Date', path: 'settings.show_post_date' });
-    variables.push({ name: 'Show Chatbox', path: 'settings.show_chatbox' });
-    variables.push({
-      name: 'Auto Translate Pages',
-      path: 'settings.auto_translate_pages',
-    });
-    variables.push({
-      name: 'Auto Translate Posts',
-      path: 'settings.auto_translate_posts',
-    });
-    variables.push({
-      name: 'Auto Translate Components',
-      path: 'settings.auto_translate_components',
-    });
-
-    // API keys availability
-    variables.push({
-      name: 'Has OpenAI API Key',
-      path: 'settings.has_openai_api_key',
-    });
-    variables.push({
-      name: 'Has OpenRouter API Key',
-      path: 'settings.has_openrouter_api_key',
-    });
-
-    // Custom code
-    if (siteSettings.website_custom_code) {
-      variables.push({
-        name: 'Website Custom Code',
-        path: 'settings.website_custom_code',
-      });
-    }
-
-    // Menus
-    if (siteSettings.menus?.main) {
-      variables.push({ name: 'Main Menu', path: 'settings.menus.main' });
-    }
-
-    return variables;
-  }, [siteSettings]);
 
   // Function to render template content
   const renderTemplateContent = useCallback(
@@ -545,7 +478,12 @@ export default function TemplateEdit({ onSuccess }) {
 
   return (!loading && record) || isCreateMode ? (
     <>
-      <div className="h-screen w-full flex overflow-hidden">
+      <div
+        className={clsx(
+          'w-full flex',
+          'min-h-[calc(100vh-(var(--app-shell-header-offset, 0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
+        )}
+      >
         {/* Form Section - Left Side */}
         <form
           className="overflow-y-auto px-2 pb-2"
@@ -696,6 +634,13 @@ export default function TemplateEdit({ onSuccess }) {
                           className="w-full min-h-[400px]"
                           value={content.content || ''}
                           onValueChange={(code) => updateContentField(content.id, 'content', code)}
+                          onBlur={(e) => {
+                            savedCursorRef.current = {
+                              contentId: content.id,
+                              start: e.target.selectionStart,
+                              end: e.target.selectionEnd,
+                            };
+                          }}
                           highlight={(code) => {
                             // Use HTML/markup highlighting for templates
                             return highlight(code, languages.markup, 'markup');
@@ -772,8 +717,40 @@ export default function TemplateEdit({ onSuccess }) {
                 </Button>
               </div>
 
-              {/* AI Writer, Settings, Publish Toggle, and Save - Right Side */}
+              {/* AI Writer, Settings, Save - Right Side */}
               <div className="flex items-center gap-3">
+                <Menu shadow="md" width={250} position="bottom-end" withArrow radius="md">
+                  <Menu.Target>
+                    <Button variant="subtle" size="md" className="px-2">
+                      <IconAi size={40} />
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item closeMenuOnClick={false}>
+                      <Tooltip
+                        label={t(
+                          'Please specify an API key and writing model in Site Settings to use this feature.',
+                        )}
+                        disabled={aiWritingAvailable}
+                      >
+                        <div className="inline-flex items-center">
+                          <Switch
+                            label={
+                              <span className="inline-flex items-center gap-1">
+                                <IconSparkles2 size={16} />
+                                {t('AI Writer')}
+                              </span>
+                            }
+                            checked={aiWriterSidebarOpened}
+                            onChange={(e) => setAiWriterSidebarOpened(e.currentTarget.checked)}
+                            disabled={!aiWritingAvailable}
+                            size="md"
+                          />
+                        </div>
+                      </Tooltip>
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
                 <Button type="submit" variant="filled" size="sm" loading={loading}>
                   <IconDeviceFloppy size={16} className="mr-2" />
                   {t('Save')}
@@ -809,7 +786,14 @@ export default function TemplateEdit({ onSuccess }) {
                   borderRadius: '8px',
                 }}
               >
-                {previewSrcdoc ? (
+                {renderingError ? (
+                  <div className="flex items-center justify-center h-full p-6">
+                    <div className="text-center text-red-500">
+                      <p className="font-medium">{t('Rendering error')}</p>
+                      <p className="text-sm mt-1 font-mono break-all">{renderingError}</p>
+                    </div>
+                  </div>
+                ) : previewSrcdoc ? (
                   <iframe
                     srcDoc={previewSrcdoc}
                     className="w-full h-full !rounded-lg border border-gray-300 !shadow"
@@ -831,6 +815,18 @@ export default function TemplateEdit({ onSuccess }) {
             </div>
           </div>
         </form>
+
+        <AIWriterSidebar
+          className={clsx(
+            'border ms-2 rounded-lg shadow sticky top-[calc(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))]',
+            'min-h-[calc(100vh-(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
+          )}
+          opened={aiWriterSidebarOpened}
+          onClose={() => setAiWriterSidebarOpened(false)}
+          activeContent={activeContent}
+          updateContentField={updateContentField}
+          contentType="template"
+        />
       </div>
 
       {/* Add Language Modal */}
@@ -981,43 +977,11 @@ export default function TemplateEdit({ onSuccess }) {
         </div>
       </Modal>
 
-      {/* Variables Modal */}
-      <Modal
+      <VariablesModal
         opened={variablesModalOpened}
         onClose={() => setVariablesModalOpened(false)}
-        title={<div className="font-bold">{t('Available Variables')}</div>}
-        size="lg"
-        radius={0}
-        transitionProps={{ transition: 'fade', duration: 200 }}
-      >
-        <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-4">
-            {t('Click on a variable to insert it into your template.')}
-          </p>
-
-          {publicSettingsVariables.length > 0 ? (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {publicSettingsVariables.map((variable, index) => (
-                <div
-                  key={index}
-                  className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
-                  onClick={() => insertVariable(variable.path)}
-                >
-                  <div className="font-medium">{variable.name}</div>
-                  <div className="text-sm text-gray-500 font-mono">{variable.path}</div>
-                  <div className="text-xs text-blue-600 mt-1">
-                    {t('Click to insert')}: <code>{'{{ ' + variable.path + ' }}'}</code>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-gray-500">{t('No variables available')}</div>
-            </div>
-          )}
-        </div>
-      </Modal>
+        onInsert={insertSnippet}
+      />
     </>
   ) : (
     <FormViewSkeleton />
