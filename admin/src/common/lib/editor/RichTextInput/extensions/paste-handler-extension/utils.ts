@@ -1,5 +1,4 @@
 import type { Editor } from '@tiptap/core';
-import { getAttachmentRelativeUrl } from '@deepsel/cms-utils/common/utils';
 
 /**
  * Constants for paste handler attributes
@@ -25,10 +24,8 @@ interface AttachmentFile {
 /**
  * Insert uploaded attachments into the editor
  * Handles different content types (image, video, audio)
- * @param {Array<AttachmentFile>} attachments - Array of uploaded attachment files
+ * @param {Array<AttachmentFile>} attachments - Array of uploaded attachment files with slug names
  * @param {Object} editor - TipTap editor instance
- *   When provided, image src is resolved via getAttachmentByNameRelativeUrl so
- *   the URL points to the locale-specific version of the attachment.
  */
 export const insertAttachmentsToEditor = async (
   attachments: AttachmentFile[],
@@ -63,12 +60,11 @@ export const insertAttachmentsToEditor = async (
 
       case 'video': {
         if (editor.can().setEmbedVideo({ src: '' })) {
-          const videoUrl = getAttachmentRelativeUrl(attachment.name);
           editor
             .chain()
             .focus()
             .setEmbedVideo({
-              src: videoUrl,
+              src: attachment.name,
             })
             .run();
         } else {
@@ -79,12 +75,11 @@ export const insertAttachmentsToEditor = async (
 
       case 'audio': {
         if (editor.can().setEmbedAudio({ src: '' })) {
-          const audioUrl = getAttachmentRelativeUrl(attachment.name);
           editor
             .chain()
             .focus()
             .setEmbedAudio({
-              src: audioUrl,
+              src: attachment.name,
             })
             .run();
         } else {
