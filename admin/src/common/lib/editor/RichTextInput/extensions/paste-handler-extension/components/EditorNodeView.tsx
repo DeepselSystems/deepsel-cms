@@ -53,13 +53,14 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
    * backendHost, token, organizationId, and notify are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.
    */
-  const { backendHost, token, organizationId, notify } = pasteHandlerExtension?.options || {
-    backendHost: '',
-    token: undefined,
-    organizationId: undefined,
-    notify: undefined,
-    locale: undefined,
-  };
+  const { backendHost, token, organizationId, notify, currentLocaleId } =
+    pasteHandlerExtension?.options || {
+      backendHost: '',
+      token: undefined,
+      organizationId: undefined,
+      notify: undefined,
+      currentLocaleId: undefined,
+    };
 
   const { uploadFileModel } = useUpload({ backendHost, token, organizationId });
 
@@ -72,7 +73,11 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
       type: 'info',
       duration: 100000,
     });
-    uploadFileModel('attachment', files)
+    uploadFileModel(
+      'attachment',
+      files,
+      currentLocaleId != null ? { locale_id: currentLocaleId } : undefined,
+    )
       .then((attachments) => {
         if (attachments && (attachments as AttachmentFile[]).length > 0 && editor && getPos) {
           const pos = getPos();
