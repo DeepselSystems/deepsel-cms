@@ -10,6 +10,7 @@ from apps.core.models.user import UserModel
 from deepsel.orm import PermissionAction
 from deepsel.utils.api_router import create_api_router
 from ..utils.edit_session_manager import edit_session_manager
+from .draft import _field_list
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +75,18 @@ async def restore_content_revision(
     # Snapshot the current live content before overwriting it
     old_content_text = content.content
 
-    # Restore: set live content to the chosen revision's published snapshot, clear any draft
-    content.update(db, user, {"content": revision.new_content, "draft_content": None})
+    # Restore live content and clear all draft fields, mirroring /draft/revert so that
+    # a later publish cannot apply stale draft title/SEO/custom-code over the restored body.
+    content.content = revision.new_content
+    for field in _field_list(record_type):
+        draft_attr = f"draft_{field}"
+        if hasattr(content, draft_attr):
+            setattr(content, draft_attr, None)
+    content.has_draft = False
+    content.draft_last_modified_at = None
+    content.draft_updated_by_id = None
+    db.commit()
+    db.refresh(content)
 
     # Create a new revision that records the restore as an auditable event.
     # old_content = what was live just before the restore
