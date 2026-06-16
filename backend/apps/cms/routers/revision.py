@@ -85,17 +85,16 @@ async def restore_content_revision(
     content.has_draft = False
     content.draft_last_modified_at = None
     content.draft_updated_by_id = None
-    db.commit()
-    db.refresh(content)
 
-    # Create a new revision that records the restore as an auditable event.
-    # old_content = what was live just before the restore
-    # new_content = what is now live (= the restored snapshot)
+    # Count before adding the new revision row (still in the same transaction).
     revision_count = (
         db.query(RevisionModel)
         .filter(getattr(RevisionModel, content_field) == content_id)
         .count()
     )
+
+    # Create the audit revision in the same transaction as the content update so that
+    # a failure in either step rolls back both — no orphaned restore without a record.
     RevisionModel.create(
         db,
         user,
@@ -107,6 +106,9 @@ async def restore_content_revision(
             "revision_number": revision_count + 1,
         },
     )
+
+    db.commit()
+    db.refresh(content)
 
     # Notify other editors so they reload the record and see the restored content.
     record_id = getattr(content, parent_id_attr)
