@@ -9,6 +9,7 @@ from apps.core.utils.get_current_user import get_current_user
 from apps.core.models.user import UserModel
 from deepsel.orm import PermissionAction
 from deepsel.utils.api_router import create_api_router
+from ..utils.edit_session_manager import edit_session_manager
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +38,14 @@ async def restore_content_revision(
         ContentModel = models_pool["page_content"]
         RevisionModel = models_pool["page_content_revision"]
         content_field = "page_content_id"
+        record_type = "page"
+        parent_id_attr = "page_id"
     elif content_type == "blog_post_content":
         ContentModel = models_pool["blog_post_content"]
         RevisionModel = models_pool["blog_post_content_revision"]
         content_field = "blog_post_content_id"
+        record_type = "blog_post"
+        parent_id_attr = "post_id"
     else:
         raise HTTPException(status_code=400, detail="Invalid content_type")
 
@@ -90,6 +95,20 @@ async def restore_content_revision(
             "name": f"Restored from revision #{revision.revision_number} by {user.email or user.username or 'system'}",
             "revision_number": revision_count + 1,
         },
+    )
+
+    # Notify other editors so they reload the record and see the restored content.
+    record_id = getattr(content, parent_id_attr)
+    await edit_session_manager.broadcast_to_editors(
+        record_type,
+        record_id,
+        {
+            "type": "published",
+            "origin_user_id": user.id,
+            "record_type": record_type,
+            "record_id": record_id,
+        },
+        exclude_user_id=user.id,
     )
 
     return {"message": "Content restored successfully"}
