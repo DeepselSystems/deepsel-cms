@@ -13,6 +13,19 @@ class LocaleNested(BaseModel):
     emoji_flag: Optional[str] = None
 
 
+class AttachmentLocaleVersionNested(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    type: Optional[str] = None
+    content_type: Optional[str] = None
+    filesize: Optional[int] = None
+    alt_text: Optional[str] = None
+    locale_id: Optional[int] = None
+    locale: Optional[LocaleNested] = None
+
+
 class AttachmentNested(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,6 +36,7 @@ class AttachmentNested(BaseModel):
     filesize: Optional[int] = None
     alt_text: Optional[str] = None
     string_id: Optional[str] = None
+    locale_versions: list[AttachmentLocaleVersionNested] = []
 
 
 class UserNested(BaseModel):
