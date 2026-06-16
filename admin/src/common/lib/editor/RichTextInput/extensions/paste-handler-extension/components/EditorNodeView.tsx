@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,26 @@ interface AttachmentFile {
 }
 
 /**
+ * Locale-specific version of an attachment, as returned by the upload endpoint.
+ * After the multilang refactor, content_type lives here rather than on the
+ * parent AttachmentReadResponse.
+ */
+interface AttachmentLocaleVersion {
+  content_type: string;
+}
+
+/**
+ * Shape of the raw upload response from useUpload / uploadFileModel.
+ * The parent model's content_type is null after the multilang refactor;
+ * the real content_type is on locale_versions[0].
+ */
+interface AttachmentReadResponse {
+  name: string;
+  content_type: string | null;
+  locale_versions: AttachmentLocaleVersion[];
+}
+
+/**
  * EditorNodeView component for paste handler
  * Displays pasted files with basic information
  */
@@ -23,7 +43,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
 
   const files = (node.attrs.files as File[]) || [];
 
-  const [hasUploaded, setHasUploaded] = useState(false);
+  const [hasUploaded, setHasUploaded] = React.useState(false);
 
   const pasteHandlerExtension = editor.extensionManager.extensions.find(
     (ext) => ext.name === 'pasteHandler',
@@ -33,7 +53,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
    * backendHost, token, organizationId, and notify are sourced from PasteHandler.configure() options,
    * which are set in RichTextInput and provided by the consuming app.
    */
-  const { backendHost, token, organizationId, notify, locale } = pasteHandlerExtension?.options || {
+  const { backendHost, token, organizationId, notify } = pasteHandlerExtension?.options || {
     backendHost: '',
     token: undefined,
     organizationId: undefined,
@@ -62,8 +82,17 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
             .deleteRange({ from: pos, to: pos + node.nodeSize })
             .run();
 
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          insertAttachmentsToEditor(attachments as AttachmentFile[], editor, locale).then();
+          // Map raw upload responses to AttachmentFile, resolving content_type
+          // from locale_versions[0] because the parent model's content_type is
+          // null after the multilang refactor.
+          const attachmentFiles: AttachmentFile[] = (
+            attachments as unknown as AttachmentReadResponse[]
+          ).map((att) => ({
+            name: att.name,
+            content_type: att.locale_versions?.[0]?.content_type ?? att.content_type ?? '',
+          }));
+
+          void insertAttachmentsToEditor(attachmentFiles, editor);
 
           notify({
             message: t('Uploaded successfully'),
@@ -91,6 +120,7 @@ const EditorNodeView = ({ node, editor, getPos }: NodeViewProps) => {
 
   return (
     <>
+      {/* @ts-expect-error — @types/react v18 vs v19 mismatch via @tiptap/react peer dep */}
       <NodeViewWrapper className={clsx('paste-handler-wrapper')}>
         <div className="space-y-2">
           {!hasUploaded &&
