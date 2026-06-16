@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ActionIcon, Button, Modal, Text } from '@mantine/core';
+import { ActionIcon, Button, Modal, Text, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -37,18 +37,28 @@ export default function RevisionsModal({
     /** @type {import('../../../typedefs/Revision').ContentRevision|null} */ null,
   );
 
+  /** ID of the most recent revision — used to disable "Restore" when the latest is selected */
+  const [latestRevisionId, setLatestRevisionId] = useState(/** @type {number|null} */ null);
+
   // Whether diff highlighting is active — owned here so both panels share the same value.
   const [showDiff, setShowDiff] = useState(true);
 
-  /** Reset selection when modal closes */
+  /** Reset selection and latest revision tracking when modal closes */
   useEffect(() => {
-    if (!opened) setSelectedRevision(null);
+    if (!opened) {
+      setSelectedRevision(null);
+      setLatestRevisionId(null);
+    }
   }, [opened]);
 
-  /** Reset selection when content switches */
+  /** Reset selection and latest revision tracking when content switches */
   useEffect(() => {
     setSelectedRevision(null);
+    setLatestRevisionId(null);
   }, [contentId]);
+
+  /** True when the selected revision is already the most recent one — restoring would be a no-op */
+  const isLatestSelected = selectedRevision?.id === latestRevisionId && latestRevisionId !== null;
 
   const revisionLabel = selectedRevision
     ? (selectedRevision.name ??
@@ -111,9 +121,21 @@ export default function RevisionsModal({
             </Text>
           )}
           {hasWritePermission && selectedRevision && (
-            <Button size="xs" variant="light" onClick={confirmRestore}>
-              {t('Restore this version')}
-            </Button>
+            <Tooltip
+              label={t('This is already the current version')}
+              disabled={!isLatestSelected}
+              withArrow
+              position="bottom"
+            >
+              <Button
+                size="xs"
+                variant="light"
+                disabled={isLatestSelected}
+                onClick={confirmRestore}
+              >
+                {t('Restore this version')}
+              </Button>
+            </Tooltip>
           )}
         </div>
         {/* Content preview — scrolls independently */}
@@ -136,6 +158,7 @@ export default function RevisionsModal({
           onRevisionSelect={setSelectedRevision}
           showDiff={showDiff}
           onShowDiffChange={setShowDiff}
+          onLatestRevisionChange={setLatestRevisionId}
         />
       </div>
     </Modal>

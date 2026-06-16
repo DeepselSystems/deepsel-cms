@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Checkbox, Loader, ScrollArea, Select, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { IconChevronDown } from '@tabler/icons-react';
 import { RevisionItem } from './RevisionItem.jsx';
 import useModel from '../../api/useModel.jsx';
 import dayjs from 'dayjs';
+import head from 'lodash/head';
 
 /**
  * Filter options for the revision list.
@@ -82,6 +83,7 @@ function getRevisionConfig(contentType) {
  * @param {Function} props.onRevisionSelect - Called when the user clicks a revision row
  * @param {boolean} props.showDiff - Whether diff highlighting is active (owned by RevisionsModal)
  * @param {Function} props.onShowDiffChange - Called with new boolean when the checkbox is toggled
+ * @param {Function} [props.onLatestRevisionChange] - Called with the latest revision ID (or null) when revisions load or change
  */
 export function RevisionListPanel({
   contentType,
@@ -93,6 +95,7 @@ export function RevisionListPanel({
   onRevisionSelect,
   showDiff,
   onShowDiffChange,
+  onLatestRevisionChange = undefined,
 }) {
   const { t } = useTranslation();
 
@@ -110,6 +113,9 @@ export function RevisionListPanel({
     autoFetch: false,
     pageSize: null,
   });
+
+  // Memoize the latest revision ID for easy access
+  const latestRevisionId = useMemo(() => head(revisions)?.id ?? null, [revisions]);
 
   const fetchRevisions = useCallback(() => {
     if (!contentId || !revisionModel || !filterField) return;
@@ -136,12 +142,14 @@ export function RevisionListPanel({
   }, [opened, contentId, fetchRevisions, revisionModel]);
 
   /**
-   * Auto-select the newest revision once it loads, but only if nothing is selected yet.
+   * Notify parent of the latest revision ID whenever the list loads or changes.
+   * Also auto-select the newest revision if nothing is selected yet.
    */
   useEffect(() => {
+    onLatestRevisionChange?.(latestRevisionId);
     if (selectedRevision) return;
     if (revisions.length > 0) {
-      onRevisionSelect(revisions[0]);
+      onRevisionSelect(head(revisions));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revisions]);
@@ -209,7 +217,7 @@ export function RevisionListPanel({
                       key={revision.id}
                       revision={revision}
                       isSelected={revision.id === selectedRevisionId}
-                      isLatest={revision.id === revisions[0]?.id}
+                      isLatest={revision.id === latestRevisionId}
                       onClick={() => onRevisionSelect(revision)}
                       hasWritePermission={hasWritePermission}
                       onRestoreSuccess={handleRestoreSuccess}

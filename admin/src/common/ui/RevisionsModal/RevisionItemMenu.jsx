@@ -1,4 +1,4 @@
-import { ActionIcon, Menu, Text, TextInput, Button, Group } from '@mantine/core';
+import { ActionIcon, Menu, Text, TextInput, Button, Group, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import {
   IconDotsVertical,
@@ -57,6 +57,7 @@ function NameModalContent({ initialName, nameRef, onConfirm, onCancel }) {
  * @param {number} props.contentId
  * @param {Function} props.onRestoreSuccess - called after a successful restore
  * @param {Function} props.onNameChanged - called after a name is set, updated, or cleared
+ * @param {boolean} [props.isLatest] - True when this is the most recent revision; disables the Restore action
  */
 export function RevisionItemMenu({
   revision,
@@ -64,6 +65,7 @@ export function RevisionItemMenu({
   contentId,
   onRestoreSuccess,
   onNameChanged,
+  isLatest = false,
 }) {
   const { t } = useTranslation();
   const { notify } = NotificationState();
@@ -176,15 +178,23 @@ export function RevisionItemMenu({
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          leftSection={<IconHistoryToggle size={14} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            confirmRestore();
-          }}
+        <Tooltip
+          label={t('This is already the current version')}
+          disabled={!isLatest}
+          withArrow
+          position="left"
         >
-          {t('Restore this version')}
-        </Menu.Item>
+          <Menu.Item
+            leftSection={<IconHistoryToggle size={14} />}
+            disabled={isLatest}
+            onClick={(e) => {
+              e.stopPropagation();
+              confirmRestore();
+            }}
+          >
+            {t('Restore this version')}
+          </Menu.Item>
+        </Tooltip>
         {!revision.name && (
           <Menu.Item
             leftSection={<IconTag size={14} />}

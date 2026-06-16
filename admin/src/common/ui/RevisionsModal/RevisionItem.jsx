@@ -107,6 +107,7 @@ export function RevisionItem({
             contentId={contentId}
             onRestoreSuccess={onRestoreSuccess}
             onNameChanged={onNameChanged}
+            isLatest={isLatest}
           />
         </div>
       )}
