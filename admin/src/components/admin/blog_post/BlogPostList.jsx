@@ -20,6 +20,7 @@ import VisibilityControl from '../../../common/auth/VisibilityControl.jsx';
 import { IconAlertTriangle, IconPhoto, IconPlus } from '@tabler/icons-react';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
 import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils/common/utils';
+import head from 'lodash/head';
 
 export default function BlogPostList() {
   useShowSiteSelector();
@@ -102,10 +103,15 @@ export default function BlogPostList() {
       renderCell: (params) => {
         const selectedContent = pickContent(params.row.contents);
         const image = selectedContent?.featured_image;
+        // Match content locale; fall back to first available version if no match.
+        const localeImage =
+          image?.locale_versions?.find(
+            (version) => version.locale?.id === selectedContent.locale_id,
+          )?.locale || head(image?.locale_versions)?.locale;
         if (image?.name) {
           return (
             <img
-              src={getAttachmentByNameRelativeUrl(image.name)}
+              src={getAttachmentByNameRelativeUrl(image.name, localeImage?.iso_code)}
               alt={image.alt_text || ''}
               className="w-28 h-20 object-cover rounded"
             />
