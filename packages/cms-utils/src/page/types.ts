@@ -1,5 +1,5 @@
 import type { SiteSettings } from '../types.js';
-import type { MenuItem } from '../menus/types.js';
+import type { MenuItem } from '../menus';
 
 export interface Language {
   id: number;
@@ -21,6 +21,7 @@ export interface SeoMetadata {
   description: string | null;
   featured_image_id: number | null;
   featured_image_name: string | null;
+  featured_image_version_name?: string | null;
   allow_indexing: boolean;
 }
 

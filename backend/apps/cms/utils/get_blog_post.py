@@ -146,7 +146,6 @@ def get_blog_post(
         ),
         allow_indexing=matching_content.seo_metadata_allow_indexing,
     )
-
     # Convert author to AuthorData if it exists
     author_data = None
     if blog_post.author:
