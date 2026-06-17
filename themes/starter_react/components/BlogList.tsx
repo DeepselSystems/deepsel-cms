@@ -1,5 +1,5 @@
 import { WebsiteDataProvider, useWebsiteData } from "@deepsel/cms-react";
-import { WebsiteDataTypes } from "@deepsel/cms-utils";
+import {getAttachmentByNameRelativeUrl, WebsiteDataTypes} from "@deepsel/cms-utils";
 import type { BlogListData, BlogPostListItem } from "@deepsel/cms-utils";
 import { Pagination, MantineProvider } from '@mantine/core';
 import Footer from "./Footer";
@@ -57,7 +57,7 @@ function BlogListContent() {
                   {post.featured_image_name && (
                     <div className="aspect-video bg-gray-200">
                       <img
-                        src={`/api/v1/attachment/serve/${post.featured_image_name}`}
+                        src={getAttachmentByNameRelativeUrl(post.featured_image_name)}
                         alt={post.title}
                         className="w-full h-full object-cover"
                       />
@@ -79,7 +79,7 @@ function BlogListContent() {
                           <>
                             {post.author.image && (
                               <img
-                                src={`/api/v1/attachment/serve/${post.author.image}`}
+                                src={getAttachmentByNameRelativeUrl(post.author.image)}
                                 alt={post.author.display_name || post.author.username}
                                 className="w-8 h-8 rounded-full"
                               />
