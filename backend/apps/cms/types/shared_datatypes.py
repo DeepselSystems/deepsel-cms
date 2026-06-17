@@ -23,6 +23,9 @@ class SEOMetadata(BaseModel):
     featured_image_name: Optional[str] = (
         None  # Featured image (attachment name) for social sharing
     )
+    featured_image_version_name: Optional[str] = (
+        None  # SEO-friendly locale version filename, used with /attachment/serve/{name}
+    )
     allow_indexing: bool = True  # Controls search engine indexing
 
 
