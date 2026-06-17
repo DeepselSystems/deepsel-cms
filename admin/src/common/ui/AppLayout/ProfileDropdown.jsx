@@ -1,15 +1,13 @@
 import { Menu, Avatar } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getAttachmentUrl } from '../../utils/index.js';
-import BackendHostURLState from '../../stores/BackendHostURLState.js';
+import { getAttachmentByNameRelativeUrl } from '../../utils/index.js';
 import useAuthentication from '../../api/useAuthentication.js';
 import { IconArrowLeft, IconUser } from '@tabler/icons-react';
 
 const ProfileDropdown = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { backendHost } = BackendHostURLState();
   const { user, logout } = useAuthentication();
 
   if (!user) return null;
@@ -21,7 +19,7 @@ const ProfileDropdown = () => {
           <Avatar
             name={user.name || user.email || user.username || ''}
             color="initials"
-            src={user?.image?.name ? getAttachmentUrl(backendHost, user.image.name) : null}
+            src={user?.image?.name ? getAttachmentByNameRelativeUrl(user.image.name) : null}
             size="md"
           />
           <div className="text-primary-main text-md font-semibold">
