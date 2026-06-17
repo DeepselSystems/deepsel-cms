@@ -1,6 +1,6 @@
 {
   "name": "@deepsel/cms-utils",
-  "version": "1.9.10",
+  "version": "1.9.11",
   "description": "Helper utilities for Deepsel CMS",
   "repository": {
     "type": "git",
