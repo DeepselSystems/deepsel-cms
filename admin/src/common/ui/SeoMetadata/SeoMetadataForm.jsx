@@ -61,6 +61,7 @@ const SeoMetadataForm = React.memo(({ pageContent, updateContentField }) => {
         <FileInput
           label={t('Social sharing image')}
           type="image"
+          locale={pageContent.locale}
           value={pageContent.seo_metadata_featured_image?.name}
           onChange={(file) => {
             updateContentField?.(pageContent.id, 'seo_metadata_featured_image', file);
