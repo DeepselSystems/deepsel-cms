@@ -21,6 +21,9 @@ class BlogPostContentRevisionModel(Base, BaseModel):
     blog_post_content = relationship(
         "BlogPostContentModel", foreign_keys=[blog_post_content_id]
     )
+    owner = relationship(
+        "UserModel", foreign_keys="BlogPostContentRevisionModel.owner_id", lazy="joined"
+    )
 
     old_content = Column(Text)
     new_content = Column(Text)

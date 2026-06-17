@@ -20,6 +20,7 @@ import Button from '../../../common/ui/Button.jsx';
 import { HOMEPAGE_DEFAULT_SLUG } from '../../../constants/slug.js';
 import PageContentSettingDrawer from './components/PageContentSettingDrawer.jsx';
 import AIWriterSidebar from '../../../common/ui/AIWriterSidebar.jsx';
+import RevisionsModal from '../../../common/ui/RevisionsModal/index.jsx';
 import ActiveEditorsAvatars from '../../../common/ui/ActiveEditorsAvatars.jsx';
 import PublishStatusMenu from '../../../common/ui/PublishStatusMenu.jsx';
 
@@ -42,6 +43,7 @@ import {
   IconSubtitlesAi,
   IconTrash,
 } from '@tabler/icons-react';
+import clsx from 'clsx';
 
 const PAGE_DRAFT_FIELDS = [
   'title',
@@ -185,6 +187,10 @@ export default function PageEdit({ onSuccess }) {
 
   // AI Writer state
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
+
+  // Revisions sidebar state
+  const [revisionsSidebarOpened, setRevisionsSidebarOpened] = useState(false);
+
   const [editorKey, setEditorKey] = useState(0);
 
   // Presence + live draft sync
@@ -631,31 +637,6 @@ export default function PageEdit({ onSuccess }) {
     setEditorKey((k) => k + 1);
   };
 
-  // Callback to trigger preview update when content changes in editor
-  const handleContentChange = useCallback(() => {
-    setPreviewTrigger((prev) => prev + 1);
-  }, []);
-
-  // Wrap setRecord to detect content changes
-  const wrappedSetRecord = useCallback(
-    (newRecordOrFunction) => {
-      // Handle both object and function updates
-      if (typeof newRecordOrFunction === 'function') {
-        setRecord((prevRecord) => {
-          const updatedRecord = newRecordOrFunction(prevRecord);
-          // Trigger preview update after state update
-          setTimeout(() => setPreviewTrigger((prev) => prev + 1), 0);
-          return updatedRecord;
-        });
-      } else {
-        setRecord(newRecordOrFunction);
-        // Trigger preview update when record changes
-        setPreviewTrigger((prev) => prev + 1);
-      }
-    },
-    [setRecord],
-  );
-
   // Create mode still uses the regular CRUD POST; draft autosave only runs in edit mode.
   const handleCreateSubmit = useCallback(
     async (e) => {
@@ -828,8 +809,10 @@ export default function PageEdit({ onSuccess }) {
     <>
       <form
         onSubmit={isCreateMode ? handleCreateSubmit : (e) => e.preventDefault()}
-        className="w-full flex flex-col overflow-hidden"
-        style={{ height: 'calc(100dvh - 70px)' }}
+        className={clsx(
+          'w-full flex flex-col',
+          'min-h-[calc(100vh-(var(--app-shell-header-offset,0rem)+var(--app-shell-padding))-var(--app-shell-padding))]',
+        )}
       >
         {/* Top Toolbar */}
         <div className="flex-shrink-0 px-4 py-2 flex items-center justify-end gap-2">
@@ -987,6 +970,7 @@ export default function PageEdit({ onSuccess }) {
               await refetchAfterChange();
               resetUnsavedChanges();
             }}
+            onOpenRevisions={() => setRevisionsSidebarOpened(true)}
           />
           {isCreateMode && (
             <Button
@@ -1007,7 +991,7 @@ export default function PageEdit({ onSuccess }) {
           </Tooltip>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1">
           {/* Form Section - Left Side */}
           <div
             className={
@@ -1109,9 +1093,6 @@ export default function PageEdit({ onSuccess }) {
                           onChange={(value) => {
                             updateContentField(content.id, 'content', value);
                           }}
-                          classNames={{
-                            content: 'min-h-[1000px]',
-                          }}
                           styles={{
                             root: { border: 'none' },
                           }}
@@ -1188,15 +1169,25 @@ export default function PageEdit({ onSuccess }) {
               </div>
             </>
           )}
+
+          <AIWriterSidebar
+            opened={aiWriterSidebarOpened}
+            onClose={() => setAiWriterSidebarOpened(false)}
+            activeContent={activeContent}
+            updateContentField={updateContentField}
+            onContentInserted={handleContentInserted}
+          />
         </div>
-        <AIWriterSidebar
-          opened={aiWriterSidebarOpened}
-          onClose={() => setAiWriterSidebarOpened(false)}
-          activeContent={activeContent}
-          updateContentField={updateContentField}
-          onContentInserted={handleContentInserted}
-        />
       </form>
+
+      <RevisionsModal
+        opened={revisionsSidebarOpened}
+        onClose={() => setRevisionsSidebarOpened(false)}
+        contentType="page"
+        contentId={currentContent?.id}
+        hasWritePermission={true}
+        onContentRestored={refetchAfterChange}
+      />
 
       {/* Add Language Modal */}
       <Modal

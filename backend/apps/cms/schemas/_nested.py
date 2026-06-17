@@ -36,6 +36,16 @@ class UserNested(BaseModel):
     last_name: Optional[str] = None
 
 
+class ContentParentNested(BaseModel):
+    """Minimal parent content info embedded in revision records for rendering context."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    organization_id: Optional[int] = None
+    locale: Optional[LocaleNested] = None
+
+
 class PageContentRevisionNested(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -19,6 +19,9 @@ class PageContentRevisionModel(Base, BaseModel):
         nullable=False,
     )
     page_content = relationship("PageContentModel", foreign_keys=[page_content_id])
+    owner = relationship(
+        "UserModel", foreign_keys="PageContentRevisionModel.owner_id", lazy="joined"
+    )
 
     old_content = Column(String)
     new_content = Column(String)

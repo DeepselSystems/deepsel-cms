@@ -1,6 +1,7 @@
 export * from './cookieUtils.js';
 export * from './getDefaultBackendHost.js';
 export * from './getHostname.js';
+export * from './htmlDiff.js';
 export * from './isObjectOrArray.js';
 
 /**
