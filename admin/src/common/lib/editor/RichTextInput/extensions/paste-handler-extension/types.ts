@@ -29,4 +29,10 @@ export interface PasteHandlerOptions {
    * so the URL resolves to the locale-specific version of the attachment.
    */
   locale?: string;
+  /**
+   * Database ID of the active editor locale.
+   * When provided, passed as locale_id query param on paste-upload so the
+   * created AttachmentLocaleVersion is linked to the correct locale.
+   */
+  currentLocaleId?: number | null;
 }

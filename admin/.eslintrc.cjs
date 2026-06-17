@@ -17,4 +17,11 @@ module.exports = {
     'unused-imports/no-unused-imports': 'error',
     'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
+  overrides: [
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    },
+  ],
 };

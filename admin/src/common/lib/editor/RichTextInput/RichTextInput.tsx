@@ -315,6 +315,7 @@ export const RichTextInput = forwardRef<RichTextInputRef, RichTextInputProps>((p
           organizationId,
           notify,
           locale: locale?.iso_code,
+          currentLocaleId: locale?.id,
         }),
         AuthenticatedContent,
         jinja2Markdown,
