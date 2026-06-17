@@ -1,5 +1,5 @@
 import { WebsiteDataProvider, useWebsiteData } from "@deepsel/cms-react";
-import { WebsiteDataTypes } from "@deepsel/cms-utils";
+import {getAttachmentByNameRelativeUrl, WebsiteDataTypes} from "@deepsel/cms-utils";
 import type { BlogPostData } from "@deepsel/cms-utils";
 import Footer from "./Footer";
 import Menu from "./Menu";
@@ -21,7 +21,7 @@ function BlogPostContent() {
   const { websiteData } = useWebsiteData();
   const post = websiteData.data as BlogPostData;
   const heroImage = post?.featured_image_name
-    ? `/api/v1/attachment/serve/${post.featured_image_name}`
+    ? getAttachmentByNameRelativeUrl(post.featured_image_name)
     : hero.src;
 
   return (
@@ -56,7 +56,7 @@ function BlogPostContent() {
               <div className="flex items-center gap-2">
                 {post.author.image && (
                   <img
-                    src={`/api/v1/attachment/serve/${post.author.image}`}
+                    src={getAttachmentByNameRelativeUrl(post.author.image)}
                     alt={post.author.display_name || post.author.username}
                     className="w-10 h-10 rounded-full"
                   />
