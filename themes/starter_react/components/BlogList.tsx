@@ -79,7 +79,7 @@ function BlogListContent() {
                           <>
                             {post.author.image && (
                               <img
-                                src={getAttachmentByNameRelativeUrl(post.author.image)}
+                                src={getAttachmentByNameRelativeUrl(post.author.image, websiteData.data.lang)}
                                 alt={post.author.display_name || post.author.username}
                                 className="w-8 h-8 rounded-full"
                               />
