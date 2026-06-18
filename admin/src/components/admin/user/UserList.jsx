@@ -17,8 +17,6 @@ import Chip from '../../../common/ui/Chip.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
 
-const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
-
 export default function UserList() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -55,10 +53,6 @@ export default function UserList() {
     setOrderBy,
   } = query;
   const [selectedRows, setSelectedRows] = useState([]);
-
-  // Flag to indicate if we're using client-side filtering
-  const isClientSideFiltering = Boolean(organizationId);
-
   const columns = [
     {
       field: 'image.name',
