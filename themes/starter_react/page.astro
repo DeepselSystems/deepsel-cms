@@ -1,5 +1,6 @@
 ---
 import type { PageData } from "@deepsel/cms-utils";
+import { getAttachmentRelativeUrl, getAttachmentByNameRelativeUrl } from "@deepsel/cms-utils";
 import Page from "./components/Page";
 import "@deepsel/cms-utils/styles.css";
 import "./main.css";
@@ -9,6 +10,14 @@ interface Props {
 }
 
 const { data } = Astro.props;
+
+const seoMeta = data.seo_metadata;
+const _ogImagePath = seoMeta?.featured_image_version_name
+  ? getAttachmentRelativeUrl(seoMeta.featured_image_version_name)
+  : seoMeta?.featured_image_name
+    ? getAttachmentByNameRelativeUrl(seoMeta.featured_image_name)
+    : null;
+const ogImageUrl = _ogImagePath ? new URL(_ogImagePath, Astro.url).href : null;
 ---
 
 <!DOCTYPE html>
@@ -20,6 +29,12 @@ const { data } = Astro.props;
     <title>{data.seo_metadata?.title || ''}</title>
     <meta name="description" content={data.seo_metadata?.description || ''} />
     <meta name="robots" content={data.seo_metadata?.allow_indexing ? 'index, follow' : 'noindex, nofollow'} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta property="og:title" content={data.seo_metadata?.title || ''} />
+    <meta property="og:description" content={data.seo_metadata?.description || ''} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
