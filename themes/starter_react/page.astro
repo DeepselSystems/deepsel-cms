@@ -1,6 +1,6 @@
 ---
 import type { PageData } from "@deepsel/cms-utils";
-import { getAttachmentRelativeUrl, getAttachmentByNameRelativeUrl } from "@deepsel/cms-utils";
+import { getAttachmentRelativeUrl } from "@deepsel/cms-utils";
 import Page from "./components/Page";
 import "@deepsel/cms-utils/styles.css";
 import "./main.css";
@@ -12,12 +12,11 @@ interface Props {
 const { data } = Astro.props;
 
 const seoMeta = data.seo_metadata;
-const _ogImagePath = seoMeta?.featured_image_version_name
-  ? getAttachmentRelativeUrl(seoMeta.featured_image_version_name)
-  : seoMeta?.featured_image_name
-    ? getAttachmentByNameRelativeUrl(seoMeta.featured_image_name)
-    : null;
-const ogImageUrl = _ogImagePath ? new URL(_ogImagePath, Astro.url).href : null;
+// featured_image_version_name = AttachmentLocaleVersionModel.name (SEO-friendly storage key).
+// Converted to absolute URL because og:image requires a full URL.
+const ogImageUrl = seoMeta?.featured_image_version_name
+  ? new URL(getAttachmentRelativeUrl(seoMeta.featured_image_version_name), Astro.url).href
+  : null;
 ---
 
 <!DOCTYPE html>
