@@ -735,6 +735,7 @@ export function useModel<T = Record<string, unknown>>(
     setLoading(false);
 
     modals.openConfirmModal({
+      zIndex: 20000,
       title: React.createElement('span', { className: 'text-2xl font-bold' }, t('Delete')),
       centered: true,
       labels: { confirm: t('Delete'), cancel: t('Cancel') },

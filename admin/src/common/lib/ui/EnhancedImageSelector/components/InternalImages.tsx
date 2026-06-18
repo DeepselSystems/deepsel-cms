@@ -1,14 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import clsx from 'clsx';
-import {
-  AspectRatio,
-  Box,
-  Text,
-  Checkbox,
-  UnstyledButton,
-  Skeleton,
-  TextInput,
-} from '@mantine/core';
+import { AspectRatio, Box, Text, Checkbox, Skeleton, TextInput } from '@mantine/core';
 import { useIntersection, useDebouncedValue } from '@mantine/hooks';
 import { IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +17,8 @@ import { useSelectedVersion } from '../../../../hooks/useSelectedVersion';
 import { useAttachmentCardOverlay } from '../../../hooks/useAttachmentCardOverlay';
 import { AttachmentPreview } from '../../AttachmentPreview';
 import type { OrgLanguage } from '../../AttachmentPreview';
-import { IconChecks, IconEdit, IconPhotoPlus, IconX } from '@tabler/icons-react';
+import { IconChecks, IconEdit, IconX } from '@tabler/icons-react';
+import { Button } from '../../Button';
 
 interface InternalImagesProps {
   multiple?: boolean;
@@ -352,30 +345,33 @@ export function InternalImages({
         {/*region edit actions*/}
         <Box className="text-end my-4 mx-2 space-x-6">
           {isEditMode && !!editingImages?.length && (
-            <UnstyledButton
-              className="!text-primary-main font-bold space-x-2"
+            <Button
+              variant="transparent"
+              leftSection={<IconX size={16} />}
+              className="!px-0"
               onClick={handleDelete}
             >
-              <IconX size={16} />
-              <span>{t('Delete')}</span>
-            </UnstyledButton>
+              {t('Delete')}
+            </Button>
           )}
           {isEditMode && (
-            <UnstyledButton
-              className="!text-primary-main font-bold space-x-2"
+            <Button
+              variant="transparent"
+              leftSection={<IconChecks size={16} />}
+              className="!px-0"
               onClick={handleSelectAll}
             >
-              <IconChecks size={16} />
-              <span>{isSelectedAllEditing ? t('Deselect all') : t('Select all')}</span>
-            </UnstyledButton>
+              {isSelectedAllEditing ? t('Deselect all') : t('Select all')}
+            </Button>
           )}
-          <UnstyledButton
-            className="!text-primary-main font-bold space-x-2"
+          <Button
+            variant="transparent"
+            leftSection={<IconEdit size={16} />}
+            className="!px-0"
             onClick={() => setIsEditMode((prev) => !prev)}
           >
-            <IconEdit size={16} />
-            <span>{t('Toggle edit')}</span>
-          </UnstyledButton>
+            {t('Toggle edit')}
+          </Button>
         </Box>
         {/*endregion edit actions*/}
 
