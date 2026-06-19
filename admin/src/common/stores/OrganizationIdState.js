@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const initialState = {
-  organizationId: parseInt(localStorage.getItem('organizationId')) || 1,
+  organizationId: parseInt(localStorage.getItem('organizationId')) || null,
 };
 
 export default create((set) => ({

@@ -27,6 +27,16 @@ export interface LoginResponse {
   user?: User;
 }
 
+export interface LoginOrganizationItem {
+  id: number;
+  name: string;
+}
+
+export interface LoginOrganizationsResponse {
+  organizations: LoginOrganizationItem[];
+  last_used_organization_id: number | null;
+}
+
 export interface UseAuthenticationConfig {
   backendHost: string;
   user: User | null;
@@ -44,6 +54,7 @@ export interface UseAuthenticationReturn {
   initUser: () => Promise<unknown>;
   fetchUserData: () => Promise<User>;
   fetchUser: () => Promise<void>;
+  fetchLoginOrganizations: (username: string) => Promise<LoginOrganizationsResponse>;
   login: (credentials: LoginCredentials) => Promise<User | { is_require_user_config_2fa: boolean }>;
   signup: (credentials: SignupCredentials, autoLogin?: boolean) => Promise<unknown>;
   logout: () => Promise<never>;
@@ -122,6 +133,26 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     await saveUserData(userData);
   }
 
+  /**
+   * Fetch the list of organizations a username belongs to, for use in the
+   * org-selector step before password entry. Returns empty list on unknown user.
+   */
+  async function fetchLoginOrganizations(username: string): Promise<LoginOrganizationsResponse> {
+    try {
+      const res = await fetch(`${backendHost}/login/organizations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `username=${encodeURIComponent(username)}`,
+      });
+      if (!res.ok) {
+        return { organizations: [], last_used_organization_id: null };
+      }
+      return res.json();
+    } catch {
+      return { organizations: [], last_used_organization_id: null };
+    }
+  }
+
   async function login(
     credentials: LoginCredentials,
   ): Promise<User | { is_require_user_config_2fa: boolean }> {
@@ -132,11 +163,13 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       const encodedPassword = encodeURIComponent(password);
 
       const attemptLogin = async (orgId: number | undefined) => {
+        const baseBody = `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}`;
+        const body = orgId !== undefined ? `${baseBody}&organization_id=${orgId}` : baseBody;
         const res = await fetch(`${backendHost}/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           credentials: 'include',
-          body: `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}&organization_id=${orgId}`,
+          body,
         });
         if (res.ok) {
           return { ok: true as const, data: (await res.json()) as LoginResponse };
@@ -286,6 +319,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
     initUser,
     fetchUserData,
     fetchUser,
+    fetchLoginOrganizations,
     login,
     signup,
     logout,

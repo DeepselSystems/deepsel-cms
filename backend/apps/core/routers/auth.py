@@ -7,6 +7,7 @@ from fastapi import Body, Depends, Form, Request
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing_extensions import Annotated
 
 from settings import (
@@ -183,7 +184,10 @@ def get_login_organizations(
     """
     user = (
         db.query(UserModel)
-        .filter(UserModel.username == username, UserModel.active == True)  # noqa: E712
+        .filter(
+            or_(UserModel.username == username, UserModel.email == username),
+            UserModel.active == True,  # noqa: E712
+        )
         .first()
     )
 
