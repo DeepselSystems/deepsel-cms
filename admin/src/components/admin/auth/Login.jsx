@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Tabs } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
-import { useTranslation } from 'react-i18next';
-import { Badge, Modal, Select, Tabs, Text } from '@mantine/core';
-import TextInput from '../../../common/ui/TextInput.jsx';
-import Button from '../../../common/ui/Button.jsx';
 import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import { useDisclosure } from '@mantine/hooks';
 import useFetch from '../../../common/api/useFetch.js';
 import { useBasename } from '../../../common/BasenameContext.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import clsx from 'clsx';
+import UsernameStepForm from './components/UsernameStepForm.jsx';
+import PasswordStepForm from './components/PasswordStepForm.jsx';
+import SignupForm from './components/SignupForm.jsx';
+import EmailRequestModal from './components/EmailRequestModal.jsx';
+import { useEffectOnce } from '../../../common/lib/hooks/index.js';
 
 /**
  * Step identifiers for the two-step login flow.
@@ -25,11 +25,15 @@ const LOGIN_STEP = {
 };
 
 /**
- * Minimum number of organizations required to show the selector dropdown.
- * If the user belongs to exactly one org, a badge is shown instead.
+ * Two-step login flow component with org selector.
+ * Step 1: enter username → fetch orgs → select org.
+ * Step 2: enter password → authenticate.
+ *
+ * @param {string} [defaultRedirect='/pages'] - Path to redirect after successful login.
+ * @param {boolean} [allowSignup=true] - Show the signup tab when org allows public signup.
+ * @param {boolean} [allowResetPassword=true] - Show the reset password button.
+ * @param {boolean} [allowPasswordlessLogin=true] - Show the passwordless login option.
  */
-const MULTI_ORG_THRESHOLD = 1;
-
 export default function Login({
   defaultRedirect = '/pages',
   allowSignup = true,
@@ -57,7 +61,7 @@ export default function Login({
   const [orgsFetching, setOrgsFetching] = useState(false);
 
   // reset password feature
-  const [isOpenModel, setIsOpenModel] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const [email, setEmail] = useState('');
   const [isPasswordResetLoading, setIsPasswordResetLoading] = useState(false);
   const [isUseOtpField, setIsUseOtpField] = useState(false);
@@ -76,22 +80,12 @@ export default function Login({
   const searchParams = useSearchParams()[0];
   const passwordlessToken = searchParams.get('passwordless');
 
-  // on mount, if passwordlessToken is present, try to login
-  useEffect(() => {
-    if (allowPasswordlessLogin && passwordlessToken) {
-      void handlePasswordlessLogin();
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchOrgPublicSettings();
-  }, [organizationId]);
-
-  async function fetchOrgPublicSettings() {
-    const response = await fetch(`${backendHost}/util/public_settings/${organizationId}`);
+  /** Fetches public org settings for the currently selected organization */
+  const fetchOrgPublicSettings = useCallback(async () => {
+    const response = await fetch(`/util/public_settings/${organizationId}`);
     const data = await response.json();
     setOrgPublicSettings(data);
-  }
+  }, [organizationId]);
 
   /**
    * Resolves the correct redirect path after a successful login,
@@ -149,6 +143,7 @@ export default function Login({
     setLoginOrganizations([]);
   }
 
+  /** Submits credentials and navigates on success, or prompts for OTP/2FA on demand */
   async function handleLogin(e) {
     try {
       e.preventDefault();
@@ -160,7 +155,7 @@ export default function Login({
       });
 
       if (result?.is_require_user_config_2fa) {
-        setIsOpenModel(true);
+        setIsOpenModal(true);
         setIsOpenResetPasswordModalToConfig2Fa(true);
         return;
       }
@@ -189,6 +184,7 @@ export default function Login({
     }
   }
 
+  /** Submits signup credentials and navigates on success */
   async function handleSignup(e) {
     try {
       e.preventDefault();
@@ -215,11 +211,13 @@ export default function Login({
     }
   }
 
+  /** Closes the reset-password / 2FA modal and clears the email field */
   function closeModal() {
-    setIsOpenModel(false);
+    setIsOpenModal(false);
     setEmail('');
   }
 
+  /** Submits the password-reset or 2FA setup request */
   async function handleResetPasswordSubmit(e) {
     e.preventDefault();
     const isValid = e.target.reportValidity();
@@ -265,6 +263,7 @@ export default function Login({
     }
   }
 
+  /** Requests a passwordless login link to be sent to the provided email */
   async function handlePasswordlessRequest(e) {
     e.preventDefault();
     try {
@@ -282,6 +281,7 @@ export default function Login({
     }
   }
 
+  /** Consumes the passwordless token from the URL query param to authenticate */
   async function handlePasswordlessLogin() {
     try {
       setLoading(true);
@@ -303,50 +303,19 @@ export default function Login({
     }
   }
 
-  const isMultiOrg = loginOrganizations.length > MULTI_ORG_THRESHOLD;
+  // on mount, if passwordlessToken is present, try to login
+  useEffectOnce(() => {
+    if (allowPasswordlessLogin && passwordlessToken) {
+      void handlePasswordlessLogin();
+    }
+  });
 
   /**
-   * The organization selector section rendered in step 2.
-   * Shows a dropdown when multiple orgs exist, or a badge for a single org.
+   * Fetches public org settings for the currently selected organization
    */
-  function renderOrgSelector() {
-    if (loginOrganizations.length === 0) {
-      return null;
-    }
-
-    if (isMultiOrg) {
-      const selectData = loginOrganizations.map((org) => ({
-        value: String(org.id),
-        label: org.name,
-      }));
-      return (
-        <Select
-          label={t('Organization')}
-          data={selectData}
-          value={String(organizationId)}
-          onChange={(val) => {
-            if (val) {
-              setOrganizationId(parseInt(val, 10));
-            }
-          }}
-          allowDeselect={false}
-        />
-      );
-    }
-
-    // Single org — show badge
-    const singleOrg = loginOrganizations[0];
-    return (
-      <div className="flex flex-col gap-1">
-        <Text size="sm" fw={500}>
-          {t('Organization')}
-        </Text>
-        <Badge variant="light" size="lg" className="self-start">
-          {singleOrg.name}
-        </Badge>
-      </div>
-    );
-  }
+  useEffect(() => {
+    void fetchOrgPublicSettings();
+  }, [fetchOrgPublicSettings, organizationId]);
 
   return (
     <main className="max-w-screen-xl grow mx-auto pt-10 w-full">
@@ -361,206 +330,86 @@ export default function Login({
         <Tabs.Panel value="login">
           {loginStep === LOGIN_STEP.USERNAME ? (
             /* Step 1: username only */
-            <form className="flex flex-col gap-2 pt-2" onSubmit={handleUsernameSubmit}>
-              <TextInput
-                label={t('Email or Username')}
-                type="text"
-                required
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-              />
-              <Button type="submit" loading={orgsFetching} disabled={orgsFetching}>
-                {t('Continue')}
-              </Button>
-            </form>
+            <UsernameStepForm
+              email={loginEmail}
+              onEmailChange={(e) => setLoginEmail(e.target.value)}
+              loading={orgsFetching}
+              onSubmit={handleUsernameSubmit}
+            />
           ) : (
             /* Step 2: org selector + password */
-            <form className="flex flex-col gap-2 pt-2" onSubmit={handleLogin}>
-              {/* Back button to step 1 */}
-              <button
-                type="button"
-                className={clsx(
-                  'flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700',
-                  'self-start mb-1',
-                )}
-                onClick={handleBackToUsername}
-              >
-                <FontAwesomeIcon icon={faArrowLeft} size="xs" />
-                <span>{loginEmail}</span>
-              </button>
-
-              {renderOrgSelector()}
-
-              <TextInput
-                label={t('Password')}
-                type="password"
-                required
-                autoFocus
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-              />
-              {isUseOtpField && (
-                <TextInput
-                  autoComplete="one-time-code"
-                  name="otp"
-                  label={t('OTP')}
-                  type="text"
-                  value={loginOtp}
-                  onChange={(e) => setLoginOtp(e.target.value)}
-                />
-              )}
-
-              <Button type="submit" loading={loading} disabled={loading}>
-                {t('Login')}
-              </Button>
-              {orgPublicSettings?.is_enabled_google_sign_in && (
-                <Button
-                  className="flex items-center"
-                  variant="light"
-                  onClick={() =>
-                    (window.location.href = `${backendHost}/login/google?organization_id=${organizationId}`)
-                  }
-                >
-                  <img src="/images/google-logo.svg" alt="" className="w-5 h-5 object-contain" />
-                  <div className="ml-4">{t('Login with Google')}</div>
-                </Button>
-              )}
-              {orgPublicSettings?.is_enabled_saml && (
-                <Button
-                  className="flex items-center"
-                  variant="light"
-                  onClick={() => {
-                    const redirect = new URLSearchParams(location.search).get('redirect');
-                    const baseUrl = `${backendHost}/login/saml?organization_id=${organizationId}`;
-                    window.location.href = redirect
-                      ? `${baseUrl}&redirect=${encodeURIComponent(redirect)}`
-                      : baseUrl;
-                  }}
-                >
-                  <div className="flex items-center justify-center w-5 h-5 bg-blue-600 text-white rounded text-xs font-bold">
-                    S
-                  </div>
-                  <div className="ml-4">{t('Login with SAML')}</div>
-                </Button>
-              )}
-              {allowResetPassword && (
-                <Button
-                  onClick={() => {
-                    setIsOpenModel(true);
-                    setIsOpenResetPasswordModalToConfig2Fa(false);
-                  }}
-                  variant="light"
-                >
-                  {t('Reset password')}
-                </Button>
-              )}
-
-              {allowPasswordlessLogin && failCount > 0 && orgPublicSettings?.is_smtp_configured && (
-                <button
-                  className="text-primary-main underline text-sm mt-2"
-                  onClick={openPasswordlessModal}
-                >
-                  {t('Having trouble? Login quickly with your email')}
-                </button>
-              )}
-            </form>
+            <PasswordStepForm
+              loginEmail={loginEmail}
+              loginPassword={loginPassword}
+              onPasswordChange={(e) => setLoginPassword(e.target.value)}
+              loginOtp={loginOtp}
+              onOtpChange={(e) => setLoginOtp(e.target.value)}
+              isUseOtpField={isUseOtpField}
+              loading={loading}
+              onSubmit={handleLogin}
+              onBack={handleBackToUsername}
+              organizations={loginOrganizations}
+              organizationId={organizationId}
+              setOrganizationId={setOrganizationId}
+              orgPublicSettings={orgPublicSettings}
+              backendHost={backendHost}
+              locationSearch={location.search}
+              allowResetPassword={allowResetPassword}
+              allowPasswordlessLogin={allowPasswordlessLogin}
+              failCount={failCount}
+              onOpenResetModal={() => {
+                setIsOpenModal(true);
+                setIsOpenResetPasswordModalToConfig2Fa(false);
+              }}
+              onOpenPasswordlessModal={openPasswordlessModal}
+            />
           )}
         </Tabs.Panel>
 
         {allowSignup && orgPublicSettings?.allow_public_signup && (
           <Tabs.Panel value="signup">
-            <form className="flex flex-col gap-2 pt-2" onSubmit={handleSignup}>
-              <TextInput
-                label={t('Email')}
-                type="email"
-                required
-                value={signupEmail}
-                onChange={(e) => setSignupEmail(e.target.value)}
-              />
-              <TextInput
-                label={t('Password')}
-                type="password"
-                required
-                value={signupPassword}
-                onChange={(e) => setSignupPassword(e.target.value)}
-              />
-              <TextInput
-                label={t('Confirm Password')}
-                type="password"
-                required
-                value={signupPasswordConfirm}
-                onChange={(e) => setSignupPasswordConfirm(e.target.value)}
-              />
-              <Button type="submit" loading={loading} disabled={loading}>
-                {t('Signup')}
-              </Button>
-            </form>
+            <SignupForm
+              email={signupEmail}
+              onEmailChange={(e) => setSignupEmail(e.target.value)}
+              password={signupPassword}
+              onPasswordChange={(e) => setSignupPassword(e.target.value)}
+              passwordConfirm={signupPasswordConfirm}
+              onPasswordConfirmChange={(e) => setSignupPasswordConfirm(e.target.value)}
+              loading={loading}
+              onSubmit={handleSignup}
+            />
           </Tabs.Panel>
         )}
       </Tabs>
 
-      <Modal
-        opened={isOpenModel}
+      <EmailRequestModal
+        opened={isOpenModal}
         onClose={closeModal}
         title={
-          <div className="text-lg font-semibold">
-            {isOpenResetPasswordModalToConfig2Fa
-              ? t('Two-Factor-Authentication')
-              : t('Reset Password')}
-          </div>
+          isOpenResetPasswordModalToConfig2Fa ? t('Two-Factor-Authentication') : t('Reset Password')
         }
-      >
-        {isOpenResetPasswordModalToConfig2Fa && (
-          <div className="mb-4">
-            {t(
-              'Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials',
-            )}
-          </div>
-        )}
-        <form onSubmit={handleResetPasswordSubmit} className="flex items-center gap-2">
-          <TextInput
-            className="grow"
-            type="email"
-            label={t('Email or Username')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button
-            type="submit"
-            loading={isPasswordResetLoading}
-            disabled={isPasswordResetLoading}
-            className="mt-3 self-end"
-          >
-            {t('Submit')}
-          </Button>
-        </form>
-      </Modal>
+        description={
+          isOpenResetPasswordModalToConfig2Fa
+            ? t(
+                'Your organization require Two-Factor-Authentication. Please enter your email to set up new login credentials',
+              )
+            : undefined
+        }
+        email={email}
+        onEmailChange={(e) => setEmail(e.target.value)}
+        onSubmit={handleResetPasswordSubmit}
+        loading={isPasswordResetLoading}
+      />
 
-      <Modal
+      <EmailRequestModal
         opened={passwordlessModalOpen}
         onClose={closePasswordlessModal}
-        title={<div className="text-lg font-semibold">{t('Passwordless Login')}</div>}
-      >
-        <form onSubmit={handlePasswordlessRequest} className="flex items-center gap-2">
-          <TextInput
-            className="grow"
-            type="email"
-            label={t('Email or Username')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button
-            type="submit"
-            loading={passwordlessLoading}
-            disabled={passwordlessLoading}
-            className="mt-3 self-end"
-          >
-            {t('Submit')}
-          </Button>
-        </form>
-      </Modal>
+        title={t('Passwordless Login')}
+        email={email}
+        onEmailChange={(e) => setEmail(e.target.value)}
+        onSubmit={handlePasswordlessRequest}
+        loading={passwordlessLoading}
+      />
     </main>
   );
 }
