@@ -5,6 +5,7 @@ from ..types.public_settings import PublicSettings
 from ..types.blog import BlogPostListItem
 from apps.core.utils.models_pool import models_pool
 from .domain_detection import detect_domain_from_request
+from apps.cms.utils.attachment_utils import resolve_attachment_locale_version
 from fastapi import Request
 from traceback import print_exc
 import logging
@@ -125,6 +126,13 @@ def get_blog_list(
                     "featured_image_id": content.featured_image_id,
                     "featured_image_name": (
                         content.featured_image.name if content.featured_image else None
+                    ),
+                    "featured_image_version_name": getattr(
+                        resolve_attachment_locale_version(
+                            content.featured_image, target_lang_iso_code
+                        ),
+                        "name",
+                        None,
                     ),
                     "publish_date": (
                         blog_post.publish_date.isoformat()

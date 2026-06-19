@@ -5,19 +5,17 @@ import H1 from '../../../common/ui/H1.jsx';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Alert } from '@mantine/core';
+import { Alert, Avatar } from '@mantine/core';
 import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import LinkedCell from '../../../common/ui/LinkedCell.jsx';
 import DataGridColumnMenu from '../../../common/ui/DataGridColumnMenu.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import { Link } from 'react-router-dom';
 import Button from '../../../common/ui/Button.jsx';
-import FileDisplay from '../../../common/ui/FileDisplay.jsx';
 import Chip from '../../../common/ui/Chip.jsx';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import { IconAlertTriangle, IconPlus } from '@tabler/icons-react';
-
-const renderCell = (params) => <LinkedCell params={params}>{params.value}</LinkedCell>;
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 
 export default function UserList() {
   const { t } = useTranslation();
@@ -55,10 +53,6 @@ export default function UserList() {
     setOrderBy,
   } = query;
   const [selectedRows, setSelectedRows] = useState([]);
-
-  // Flag to indicate if we're using client-side filtering
-  const isClientSideFiltering = Boolean(organizationId);
-
   const columns = [
     {
       field: 'image.name',
@@ -68,7 +62,16 @@ export default function UserList() {
       width: 200,
       renderCell: (params) => (
         <LinkedCell params={params}>
-          <FileDisplay type="image" src={params.row?.image?.name} width={30} height={30} />
+          <Avatar
+            name={params.row?.image?.name || ''}
+            color="initials"
+            src={
+              params.row?.image?.name
+                ? getAttachmentByNameRelativeUrl(params.row?.image?.name)
+                : null
+            }
+            size="md"
+          />
         </LinkedCell>
       ),
     },

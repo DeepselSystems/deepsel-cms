@@ -6,7 +6,7 @@ import { useDisclosure } from '@mantine/hooks';
 import clsx from 'clsx';
 import {
   downloadFromAttachUrl,
-  getAttachmentUrl,
+  getAttachmentByNameRelativeUrl,
   getFileExtension,
   getFileNameFromAttachUrl,
 } from '@deepsel/cms-utils';
@@ -18,7 +18,6 @@ import { IconDownload, IconEye, IconFileText } from '@tabler/icons-react';
 // ---------------------------------------------------------------------------
 
 interface SubDisplayProps {
-  backendHost: string;
   src: string;
   width: number;
   height: number;
@@ -38,7 +37,7 @@ interface OtherFileDisplayProps
  * Renders a generic file (non-image/video/PDF) as a linked file icon + filename
  */
 const OtherFileDisplay = forwardRef<HTMLAnchorElement, OtherFileDisplayProps>(
-  ({ backendHost, src, width, height, disabledLink = false, ...otherProps }, ref) => {
+  ({ src, width, height, disabledLink = false, ...otherProps }, ref) => {
     return (
       <a
         ref={ref}
@@ -48,7 +47,7 @@ const OtherFileDisplay = forwardRef<HTMLAnchorElement, OtherFileDisplayProps>(
         onClick={(e) => {
           if (disabledLink) return;
           e.preventDefault();
-          downloadFromAttachUrl(getAttachmentUrl(backendHost, src));
+          downloadFromAttachUrl(getAttachmentByNameRelativeUrl(src));
         }}
       >
         <Indicator label={getFileExtension(src).toUpperCase()} zIndex="auto" size={15}>
@@ -66,7 +65,6 @@ OtherFileDisplay.displayName = 'OtherFileDisplay';
  * Renders a PDF file with View / Download menu
  */
 function PdfDisplay({
-  backendHost,
   src,
   width,
   height,
@@ -83,13 +81,7 @@ function PdfDisplay({
       trigger={showMenuOnHover ? 'hover' : 'click'}
     >
       <Menu.Target>
-        <OtherFileDisplay
-          disabledLink
-          width={width}
-          height={height}
-          backendHost={backendHost}
-          src={src}
-        />
+        <OtherFileDisplay disabledLink width={width} height={height} src={src} />
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item leftSection={<IconEye size={16} />} onClick={onViewMenuClick}>
@@ -98,7 +90,7 @@ function PdfDisplay({
         <Menu.Item
           leftSection={<IconDownload size={16} />}
           component="a"
-          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
+          onClick={() => downloadFromAttachUrl(getAttachmentByNameRelativeUrl(src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -117,7 +109,6 @@ interface ImageDisplayProps extends SubDisplayProps {
  * Renders an image with View / Download menu
  */
 function ImageDisplay({
-  backendHost,
   src,
   width,
   height,
@@ -137,7 +128,7 @@ function ImageDisplay({
     >
       <Menu.Target>
         <img
-          src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
+          src={src?.startsWith('http') ? src : getAttachmentByNameRelativeUrl(src)}
           alt={alt}
           width={width}
           height={height}
@@ -151,7 +142,7 @@ function ImageDisplay({
         <Menu.Item
           leftSection={<IconDownload size={16} />}
           component="a"
-          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
+          onClick={() => downloadFromAttachUrl(getAttachmentByNameRelativeUrl(src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -165,7 +156,6 @@ function ImageDisplay({
  * Renders a video with View / Download menu
  */
 function VideoDisplay({
-  backendHost,
   src,
   width,
   height,
@@ -183,7 +173,7 @@ function VideoDisplay({
     >
       <Menu.Target>
         <video
-          src={src?.startsWith('http') ? src : getAttachmentUrl(backendHost, src)}
+          src={src?.startsWith('http') ? src : getAttachmentByNameRelativeUrl(src)}
           width={width}
           height={height}
           className="cursor-pointer"
@@ -197,7 +187,7 @@ function VideoDisplay({
         <Menu.Item
           leftSection={<IconDownload size={16} />}
           component="a"
-          onClick={() => downloadFromAttachUrl(getAttachmentUrl(backendHost, src))}
+          onClick={() => downloadFromAttachUrl(getAttachmentByNameRelativeUrl(src))}
           download={getFileNameFromAttachUrl(src)}
         >
           {t('Download')}
@@ -251,19 +241,11 @@ export interface FileDisplayProps {
 
   /** Class names for root, img, and placeholder elements */
   classNames?: FileDisplayClassNames;
-
-  /**
-   * Backend host URL.
-   * Typically sourced from BackendHostURLState.
-   */
-  backendHost: string;
 }
 
 /**
  * Displays a file attachment with preview modal and download support.
  * Handles images, videos, PDFs, and generic files.
- *
- * Requires backendHost prop (sourced from BackendHostURLState in the consuming app).
  */
 export function FileDisplay({
   label = '',
@@ -276,7 +258,6 @@ export function FileDisplay({
   dropdownPosition = 'bottom',
   placeholder,
   classNames = { root: '', img: '', placeholder: '' },
-  backendHost,
 }: FileDisplayProps) {
   const { t } = useTranslation();
   const [opened, { open, close }] = useDisclosure();
@@ -284,7 +265,7 @@ export function FileDisplay({
   const resolvedSrc = src
     ? src.startsWith('http')
       ? src
-      : getAttachmentUrl(backendHost, src)
+      : getAttachmentByNameRelativeUrl(src)
     : '';
 
   return (
@@ -307,7 +288,6 @@ export function FileDisplay({
             imgClassName={classNames.img}
             width={width}
             height={height}
-            backendHost={backendHost}
             src={src}
             alt={alt}
             onViewMenuClick={open}
@@ -318,7 +298,6 @@ export function FileDisplay({
           <VideoDisplay
             width={width}
             height={height}
-            backendHost={backendHost}
             src={src}
             onViewMenuClick={open}
             showMenuOnHover={showMenuOnHover}
@@ -328,14 +307,13 @@ export function FileDisplay({
           <PdfDisplay
             width={width}
             height={height}
-            backendHost={backendHost}
             src={src}
             onViewMenuClick={open}
             showMenuOnHover={showMenuOnHover}
             dropdownPosition={dropdownPosition}
           />
         ) : (
-          <OtherFileDisplay width={width} height={height} backendHost={backendHost} src={src} />
+          <OtherFileDisplay width={width} height={height} src={src} />
         )
       ) : placeholder ? (
         <img

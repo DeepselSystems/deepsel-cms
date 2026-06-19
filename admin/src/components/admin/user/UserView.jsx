@@ -41,7 +41,11 @@ export default function UserView() {
           <H1>{record.email || record.username}</H1>
           <div className={`flex gap-4 my-2`}>
             <ReadOnlyField>
-              <FileDisplay type="image" src={record.image?.name} />
+              <FileDisplay
+                classNames={{ img: 'object-cover bg-gray-200 rounded-xl' }}
+                type="image"
+                src={record.image?.name}
+              />
             </ReadOnlyField>
 
             <ReadOnlyField label={t('Username')} value={record.username} />

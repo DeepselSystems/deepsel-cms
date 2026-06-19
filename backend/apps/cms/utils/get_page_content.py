@@ -1,3 +1,4 @@
+from .attachment_utils import resolve_attachment_locale_version
 from .domain_detection import detect_domain_from_request
 from .render_wysiwyg_content import render_wysiwyg_content
 import logging
@@ -178,6 +179,14 @@ def get_page_content(
                         matching_content.seo_metadata_featured_image.name
                         if matching_content.seo_metadata_featured_image
                         else None
+                    ),
+                    "featured_image_version_name": getattr(
+                        resolve_attachment_locale_version(
+                            matching_content.seo_metadata_featured_image,
+                            lang if lang != "default" else default_lang,
+                        ),
+                        "name",
+                        None,
                     ),
                     "allow_indexing": matching_content.seo_metadata_allow_indexing,
                 },

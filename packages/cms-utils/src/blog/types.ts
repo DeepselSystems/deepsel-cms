@@ -1,5 +1,5 @@
 import type { SiteSettings } from '../types.js';
-import type { SeoMetadata, LanguageAlternative } from '../page/types.js';
+import type { SeoMetadata, LanguageAlternative } from '../page';
 
 export interface BlogPostAuthor {
   id: number;
@@ -15,6 +15,7 @@ export interface BlogPostListItem {
   excerpt?: string;
   featured_image_id?: number;
   featured_image_name?: string;
+  featured_image_version_name?: string | null;
   publish_date?: string;
   author?: BlogPostAuthor;
   lang: string;
@@ -42,6 +43,7 @@ export interface BlogPostData {
   require_login?: boolean | null;
   featured_image_id?: number | null;
   featured_image_name?: string | null;
+  featured_image_version_name?: string | null;
   publish_date?: string | null;
   author?: BlogPostAuthor | null;
   language_alternatives?: LanguageAlternative[];
