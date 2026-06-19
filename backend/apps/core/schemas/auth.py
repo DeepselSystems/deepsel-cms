@@ -78,3 +78,13 @@ class Info2FaDto(BaseModel):
     is_organization_require_2fa: bool = False
     is_already_config_2fa: bool = False
     totp_uri: str = ""
+
+
+class LoginOrganizationItem(BaseModel):
+    id: int
+    name: str
+
+
+class LoginOrganizationsResponse(BaseModel):
+    organizations: list[LoginOrganizationItem]
+    last_used_organization_id: Optional[int] = None

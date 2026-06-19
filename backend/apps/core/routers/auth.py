@@ -31,7 +31,11 @@ from apps.core.schemas.auth import (
     ChangePasswordSubmission,
     Info2FaDto,
     UserReadSchema,
+    LoginOrganizationItem,
+    LoginOrganizationsResponse,
 )
+from apps.core.schemas.user import UserPreferences
+from apps.core.utils.resolve_login_organization import resolve_login_organization_id
 from deepsel.utils.crypto import encrypt, decrypt
 from apps.core.utils.get_current_user import get_current_user
 from apps.core.utils.models_pool import models_pool
@@ -106,7 +110,7 @@ def _build_current_user(user):
 def login_for_access_token(
     request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    organization_id: int = Form(...),
+    organization_id: Optional[int] = Form(None),
     db: Session = Depends(get_db),
     otp: Optional[str] = Form(None),
 ):
@@ -114,8 +118,15 @@ def login_for_access_token(
     session_store = _get_session_store(request)
     auth_service.session_store = session_store
 
+    # Resolve organization: use supplied value or auto-detect from user membership
+    resolved_org_id = (
+        organization_id
+        if organization_id is not None
+        else resolve_login_organization_id(db, form_data.username)
+    )
+
     result = auth_service.login(
-        db, organization_id, form_data.username, form_data.password, otp
+        db, resolved_org_id, form_data.username, form_data.password, otp
     )
 
     if result.require_2fa_setup:
@@ -125,7 +136,16 @@ def login_for_access_token(
             is_require_user_config_2fa=True,
         )
 
+    # Build current user before committing so attributes remain loaded
     current_user = _build_current_user(result.user)
+
+    # Persist last-used org in user preferences so future auto-resolve is accurate
+    existing = UserPreferences.model_validate(result.user.preferences or {})
+    existing.last_used_organization_id = resolved_org_id
+    result.user.preferences = existing.model_dump()
+    db.add(result.user)
+    db.commit()
+
     response_data = TokenResponse(
         access_token=result.access_token,
         user=current_user,
@@ -139,13 +159,52 @@ def login_for_access_token(
     )
     if result.session_id:
         OrgModel = models_pool["organization"]
-        org = db.query(OrgModel).get(organization_id)
+        org = db.query(OrgModel).get(resolved_org_id)
         max_age = 60 * 60 * 24
         if org and org.access_token_expire_minutes:
             max_age = int(org.access_token_expire_minutes * 60)
         _set_session_cookie(response, result.session_id, max_age)
 
     return response
+
+
+@router.post("/login/organizations", response_model=LoginOrganizationsResponse)
+def get_login_organizations(
+    username: str = Form(...),
+    db: Session = Depends(get_db),
+) -> LoginOrganizationsResponse:
+    """
+    Return the list of organizations a user belongs to, for display in the
+    org-selector step of the login flow. Accepts username (exact match only —
+    no email fallback) to avoid leaking user enumeration via email addresses.
+
+    Always returns HTTP 200: an unknown username yields an empty organizations
+    list rather than a 404, to prevent user existence enumeration.
+    """
+    user = (
+        db.query(UserModel)
+        .filter(UserModel.username == username, UserModel.active == True)  # noqa: E712
+        .first()
+    )
+
+    if user is None:
+        return LoginOrganizationsResponse(
+            organizations=[],
+            last_used_organization_id=None,
+        )
+
+    organizations = [
+        LoginOrganizationItem(id=org.id, name=org.name)
+        for org in (user.organizations or [])
+    ]
+
+    prefs = UserPreferences.model_validate(user.preferences or {})
+    last_used = prefs.last_used_organization_id
+
+    return LoginOrganizationsResponse(
+        organizations=organizations,
+        last_used_organization_id=last_used,
+    )
 
 
 @router.post("/logout")

@@ -4,6 +4,14 @@ from typing import Any, List, Optional
 from pydantic import BaseModel, ConfigDict
 
 
+class UserPreferences(BaseModel):
+    """Typed schema for the user.preferences JSON column."""
+
+    model_config = ConfigDict(extra="allow")
+
+    last_used_organization_id: Optional[int] = None
+
+
 class UserAttachmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -73,7 +81,7 @@ class UserRead(BaseModel):
     roles: list[UserRoleRead] = []
 
     # misc
-    preferences: Optional[Any] = None
+    preferences: Optional[UserPreferences] = None
     owner_id: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
