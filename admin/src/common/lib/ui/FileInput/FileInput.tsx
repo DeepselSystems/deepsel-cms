@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from 'react';
-
+import { useMemo, useState } from 'react';
 import { Indicator } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { getAttachmentUrl, getFileNameFromAttachUrl } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl, getFileNameFromAttachUrl } from '@deepsel/cms-utils';
 import { ChooseAttachmentModal } from '../ChooseAttachmentModal';
 import type { AttachmentFile } from '../ChooseAttachmentModal';
-import type { User } from '../../types';
+import type { User, Locale } from '../../types';
 import { IconFile, IconFileText, IconPhoto, IconPlus, IconX } from '@tabler/icons-react';
 
 /** File object passed to the onChange callback */
@@ -53,6 +52,12 @@ export interface FileInputProps {
   backendHost: string;
 
   /**
+   * Locale object used to resolve the attachment version.
+   * When omitted, the backend falls back to the org default locale.
+   */
+  locale?: Locale;
+
+  /**
    * Currently authenticated user.
    * Typically sourced from UserState.
    */
@@ -85,6 +90,7 @@ export function FileInput({
   backendHost,
   user,
   setUser,
+  locale,
 }: FileInputProps) {
   const [attachUrl, setAttachUrl] = useState(value || '');
   const [isOpen, { open, close }] = useDisclosure();
@@ -151,7 +157,7 @@ export function FileInput({
                 e.stopPropagation();
                 open();
               }}
-              src={getAttachmentUrl(backendHost, attachUrl)}
+              src={getAttachmentByNameRelativeUrl(attachUrl, locale?.iso_code)}
               alt={alt}
               width={width}
               height={height}
@@ -160,7 +166,7 @@ export function FileInput({
           ) : (
             <a
               className="flex items-end text-primary-main"
-              href={getAttachmentUrl(backendHost, attachUrl)}
+              href={getAttachmentByNameRelativeUrl(attachUrl, locale?.iso_code)}
               target="_blank"
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}

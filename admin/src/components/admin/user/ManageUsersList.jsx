@@ -13,11 +13,10 @@ import ListViewSearchBar from '../../../common/ui/ListViewSearchBar.jsx';
 import ListViewPagination from '../../../common/ui/ListViewPagination.jsx';
 import { ListViewSkeleton } from '../../../common/lib/ui';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
-import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import NotificationState from '../../../common/stores/NotificationState.js';
-import { getAttachmentUrl } from '../../../common/utils/index.js';
 import CreateUserModal from './CreateUserModal.jsx';
 import useShowSiteSelector from '../../../common/hooks/useShowSiteSelector.js';
+import { getAttachmentByNameRelativeUrl } from '@deepsel/cms-utils';
 
 const CMS_ROLE_IDS = ['website_admin_role', 'website_editor_role', 'website_author_role'];
 
@@ -25,7 +24,6 @@ export default function ManageUsersList() {
   useShowSiteSelector();
   const { t } = useTranslation();
   const { organizationId } = OrganizationIdState();
-  const { backendHost } = BackendHostURLState();
   const { notify } = NotificationState();
   const { user: currentUser } = useAuthentication();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -161,7 +159,7 @@ export default function ManageUsersList() {
                           color="initials"
                           src={
                             user?.image?.name
-                              ? getAttachmentUrl(backendHost, user.image.name)
+                              ? getAttachmentByNameRelativeUrl(user.image.name)
                               : null
                           }
                           size="md"

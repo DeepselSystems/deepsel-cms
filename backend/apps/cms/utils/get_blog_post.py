@@ -6,6 +6,7 @@ from ..types.shared_datatypes import SEOMetadata, LocaleData
 from ..types.blog import AuthorData, LanguageAlternative
 from ..types.public_settings import PublicSettings
 from apps.core.utils.models_pool import models_pool
+from .attachment_utils import resolve_attachment_locale_version
 from .domain_detection import detect_domain_from_request
 from .render_wysiwyg_content import render_wysiwyg_content
 from fastapi import Request
@@ -28,6 +29,7 @@ class BlogPostResponse(BaseModel):
     require_login: Optional[bool] = None
     featured_image_id: Optional[int] = None
     featured_image_name: Optional[str] = None
+    featured_image_version_name: Optional[str] = None
     publish_date: Optional[str] = None
     author: Optional[AuthorData] = None
     language_alternatives: list[LanguageAlternative]
@@ -135,9 +137,15 @@ def get_blog_post(
             if matching_content.seo_metadata_featured_image
             else None
         ),
+        featured_image_version_name=getattr(
+            resolve_attachment_locale_version(
+                matching_content.seo_metadata_featured_image, target_lang
+            ),
+            "name",
+            None,
+        ),
         allow_indexing=matching_content.seo_metadata_allow_indexing,
     )
-
     # Convert author to AuthorData if it exists
     author_data = None
     if blog_post.author:
@@ -187,6 +195,13 @@ def get_blog_post(
             matching_content.featured_image.name
             if matching_content.featured_image
             else None
+        ),
+        featured_image_version_name=getattr(
+            resolve_attachment_locale_version(
+                matching_content.featured_image, target_lang
+            ),
+            "name",
+            None,
         ),
         publish_date=(
             blog_post.publish_date.isoformat() if blog_post.publish_date else None

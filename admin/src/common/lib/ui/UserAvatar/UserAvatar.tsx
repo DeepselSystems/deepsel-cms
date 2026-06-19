@@ -1,7 +1,6 @@
-import React from 'react';
 import { Avatar } from '@mantine/core';
 import type { AvatarProps } from '@mantine/core';
-import { getAttachmentUrl, stringAvatar } from '@deepsel/cms-utils';
+import { getAttachmentByNameRelativeUrl, stringAvatar } from '@deepsel/cms-utils';
 
 /**
  * Authenticated user with an optional attached image
@@ -31,19 +30,13 @@ export interface UserAvatarProps extends Omit<AvatarProps, 'src' | 'alt' | 'chil
 
   /** External user data — takes precedence over local user image */
   externalUserData?: ExternalUserData | null;
-
-  /**
-   * Backend host URL used to resolve attachment image URLs.
-   * Typically sourced from BackendHostURLState.
-   */
-  backendHost: string;
 }
 
 /**
  * Displays a user avatar — external avatar URL, local attachment image,
  * or auto-generated initials with a deterministic background color.
  */
-export function UserAvatar({ user, externalUserData, backendHost, ...props }: UserAvatarProps) {
+export function UserAvatar({ user, externalUserData, ...props }: UserAvatarProps) {
   const getAvatarProps = (): AvatarProps => {
     if (externalUserData?.avatar_url) {
       const displayName =
@@ -54,7 +47,7 @@ export function UserAvatar({ user, externalUserData, backendHost, ...props }: Us
     if (user?.image) {
       const displayName = user.name || user.email || user.username;
       return {
-        src: getAttachmentUrl(backendHost, user.image.name),
+        src: getAttachmentByNameRelativeUrl(user.image.name),
         alt: displayName,
         ...props,
       };

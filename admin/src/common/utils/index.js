@@ -1,6 +1,7 @@
 export {
   getAttachmentUrl,
   getAttachmentRelativeUrl,
+  getAttachmentByNameRelativeUrl,
   getFileNameFromAttachUrl,
   downloadFromAttachUrl,
   getFileExtension,

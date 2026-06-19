@@ -169,6 +169,7 @@ export default function UserEdit() {
           <div className={`flex items-start justify-between gap-2`}>
             <div className={`flex items-center gap-2`}>
               <FileInput
+                classNames={{ img: 'object-cover bg-gray-200 rounded-xl' }}
                 value={record.image?.name}
                 onChange={(file) => {
                   setRecord({

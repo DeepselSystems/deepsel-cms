@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
-import { getActivityUserName, getAttachmentUrl } from '../../utils';
+import { getActivityUserName, getAttachmentByNameRelativeUrl } from '../../utils';
 import { useTranslation } from 'react-i18next';
 import { useDisclosure } from '@mantine/hooks';
 import Button from '../Button';
@@ -81,7 +81,7 @@ export default function ActivityPanel(props) {
               name: user.name,
               username: user.username,
               id: user.id,
-              avatar_url: getAttachmentUrl(backendHost, user.image?.name),
+              avatar_url: getAttachmentByNameRelativeUrl(user.image?.name),
             })
           : null,
         meta_data: {

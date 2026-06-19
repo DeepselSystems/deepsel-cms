@@ -26,3 +26,13 @@ export type NotifyFn = (params: {
   type: 'info' | 'success' | 'error' | 'warning';
   duration?: number;
 }) => void;
+
+/**
+ * Locale record as returned by the locales API.
+ */
+export interface Locale {
+  id: number;
+  name: string;
+  iso_code: string;
+  emoji_flag: string;
+}
