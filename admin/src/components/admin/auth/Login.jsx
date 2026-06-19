@@ -82,7 +82,7 @@ export default function Login({
 
   /** Fetches public org settings for the currently selected organization */
   const fetchOrgPublicSettings = useCallback(async () => {
-    const response = await fetch(`/util/public_settings/${organizationId}`);
+    const response = await fetch(`api/v1/util/public_settings/${organizationId}`);
     const data = await response.json();
     setOrgPublicSettings(data);
   }, [organizationId]);
@@ -229,7 +229,7 @@ export default function Login({
       const headers = {
         'Content-Type': 'application/json',
       };
-      const response = await fetch(`${backendHost}/reset-password-request`, {
+      const response = await fetch(`api/v1/reset-password-request`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
