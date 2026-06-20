@@ -206,7 +206,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
 
       const attemptLogin = async (orgId: number | undefined) => {
         const baseBody = `username=${encodedIdentifier}&password=${encodedPassword}&otp=${otp}`;
-        const body = orgId !== undefined ? `${baseBody}&organization_id=${orgId}` : baseBody;
+        const body = orgId ? `${baseBody}&organization_id=${orgId}` : baseBody;
         const res = await fetch(`${backendHost}/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
