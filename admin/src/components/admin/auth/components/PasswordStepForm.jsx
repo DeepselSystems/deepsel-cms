@@ -26,7 +26,6 @@ const FORM_SHELL_CLASS = 'flex flex-col gap-2 pt-2';
  * @param {number|null} organizationId - Currently selected org ID.
  * @param {function} setOrganizationId - Setter for the selected org ID.
  * @param {object} orgPublicSettings - Public settings for the selected org.
- * @param {string} backendHost - Base URL of the backend API.
  * @param {string} locationSearch - value of `location.search` for redirect handling.
  * @param {boolean} allowResetPassword - Whether to show the reset password button.
  * @param {boolean} allowPasswordlessLogin - Whether to show the passwordless login link.
@@ -48,7 +47,6 @@ export default function PasswordStepForm({
   organizationId,
   setOrganizationId,
   orgPublicSettings,
-  backendHost,
   locationSearch,
   allowResetPassword,
   allowPasswordlessLogin,
@@ -105,9 +103,7 @@ export default function PasswordStepForm({
         <Button
           className="flex items-center"
           variant="light"
-          onClick={() =>
-            (window.location.href = `${backendHost}/login/google?organization_id=${organizationId}`)
-          }
+          onClick={() => (window.location.href = `/login/google?organization_id=${organizationId}`)}
         >
           <img src="/images/google-logo.svg" alt="" className="w-5 h-5 object-contain" />
           <div className="ml-4">{t('Login with Google')}</div>
@@ -119,7 +115,7 @@ export default function PasswordStepForm({
           variant="light"
           onClick={() => {
             const redirect = new URLSearchParams(locationSearch).get('redirect');
-            const baseUrl = `${backendHost}/login/saml?organization_id=${organizationId}`;
+            const baseUrl = `/login/saml?organization_id=${organizationId}`;
             window.location.href = redirect
               ? `${baseUrl}&redirect=${encodeURIComponent(redirect)}`
               : baseUrl;

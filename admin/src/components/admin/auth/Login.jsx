@@ -5,7 +5,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import NotificationState from '../../../common/stores/NotificationState.js';
 import useAuthentication from '../../../common/api/useAuthentication.js';
-import BackendHostURLState from '../../../common/stores/BackendHostURLState.js';
 import OrganizationIdState from '../../../common/stores/OrganizationIdState.js';
 import useFetch from '../../../common/api/useFetch.js';
 import { useBasename } from '../../../common/BasenameContext.js';
@@ -44,7 +43,6 @@ export default function Login({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const basename = useBasename();
-  const { backendHost } = BackendHostURLState((state) => state);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginOtp, setLoginOtp] = useState('');
@@ -82,7 +80,8 @@ export default function Login({
 
   /** Fetches public org settings for the currently selected organization */
   const fetchOrgPublicSettings = useCallback(async () => {
-    const response = await fetch(`api/v1/util/public_settings/${organizationId}`);
+    if (!organizationId) return;
+    const response = await fetch(`/util/public_settings/${organizationId}`);
     const data = await response.json();
     setOrgPublicSettings(data);
   }, [organizationId]);
@@ -315,7 +314,7 @@ export default function Login({
    */
   useEffect(() => {
     void fetchOrgPublicSettings();
-  }, [fetchOrgPublicSettings, organizationId]);
+  }, [fetchOrgPublicSettings]);
 
   return (
     <main className="max-w-screen-xl grow mx-auto pt-10 w-full">
@@ -352,7 +351,6 @@ export default function Login({
               organizationId={organizationId}
               setOrganizationId={setOrganizationId}
               orgPublicSettings={orgPublicSettings}
-              backendHost={backendHost}
               locationSearch={location.search}
               allowResetPassword={allowResetPassword}
               allowPasswordlessLogin={allowPasswordlessLogin}
