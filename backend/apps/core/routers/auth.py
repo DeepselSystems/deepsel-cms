@@ -176,11 +176,11 @@ def get_login_organizations(
 ) -> LoginOrganizationsResponse:
     """
     Return the list of organizations a user belongs to, for display in the
-    org-selector step of the login flow. Accepts username (exact match only —
-    no email fallback) to avoid leaking user enumeration via email addresses.
+    org-selector step of the login flow. Accepts either username or email
+    (exact match on either field).
 
-    Always returns HTTP 200: an unknown username yields an empty organizations
-    list rather than a 404, to prevent user existence enumeration.
+    Always returns HTTP 200: an unknown identifier yields an empty organizations
+    list rather than a 404, to prevent user existence enumeration via status codes.
     """
     user = (
         db.query(UserModel)
