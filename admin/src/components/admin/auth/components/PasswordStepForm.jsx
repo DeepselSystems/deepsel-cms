@@ -103,7 +103,11 @@ export default function PasswordStepForm({
         <Button
           className="flex items-center"
           variant="light"
-          onClick={() => (window.location.href = `/login/google?organization_id=${organizationId}`)}
+          onClick={() =>
+            (window.location.href = organizationId
+              ? `/api/v1/login/google?organization_id=${organizationId}`
+              : `/api/v1/login/google`)
+          }
         >
           <img src="/images/google-logo.svg" alt="" className="w-5 h-5 object-contain" />
           <div className="ml-4">{t('Login with Google')}</div>
@@ -115,9 +119,11 @@ export default function PasswordStepForm({
           variant="light"
           onClick={() => {
             const redirect = new URLSearchParams(locationSearch).get('redirect');
-            const baseUrl = `/login/saml?organization_id=${organizationId}`;
+            const baseUrl = organizationId
+              ? `/api/v1/login/saml?organization_id=${organizationId}`
+              : `/api/v1/login/saml`;
             window.location.href = redirect
-              ? `${baseUrl}&redirect=${encodeURIComponent(redirect)}`
+              ? `${baseUrl}${organizationId ? '&' : '?'}redirect=${encodeURIComponent(redirect)}`
               : baseUrl;
           }}
         >
