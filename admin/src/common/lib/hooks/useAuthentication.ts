@@ -141,7 +141,7 @@ export function useAuthentication(config: UseAuthenticationConfig): UseAuthentic
       credentials: 'include',
       body: JSON.stringify({
         device_info: deviceInfoExtended,
-        organization_id: organizationId,
+        ...(organizationId != null && { organization_id: organizationId }),
         anonymous_id: anonymousId,
       }),
     });
