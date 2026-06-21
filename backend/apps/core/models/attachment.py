@@ -30,6 +30,40 @@ class AttachmentModel(Base, BaseModel):
         cascade="all, delete-orphan",
     )
 
+    def delete(
+        self,
+        db,
+        user,
+        force=False,
+        commit=True,
+        bypass_permission=False,
+        *args,
+        **kwargs,
+    ):
+        """Override delete to clean up storage files for all locale versions."""
+        # Avoid circular import: attachment.py <-> attachment_locale_version.py
+        from apps.core.models.attachment_locale_version import (
+            AttachmentLocaleVersionModel,
+        )
+
+        # Capture file info while session is active (lazy-load triggers here, before commit)
+        locale_version_files = [(v.name, v.type) for v in self.locale_versions]
+
+        response = super().delete(
+            db=db,
+            user=user,
+            force=force,
+            commit=commit,
+            bypass_permission=bypass_permission,
+            *args,
+            **kwargs,
+        )
+
+        for name, type_ in locale_version_files:
+            AttachmentLocaleVersionModel.delete_from_storage(name, type_)
+
+        return response
+
     @classmethod
     def _get_bulk_delete_query_options(cls):
         """Eagerly load locale_versions so they remain accessible on detached instances after commit."""
