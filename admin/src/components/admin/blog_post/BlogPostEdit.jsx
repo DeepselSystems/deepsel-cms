@@ -190,6 +190,9 @@ export default function BlogPostEdit() {
   );
 
   const draftOverlayAppliedForIdRef = useRef(null);
+  // True once the draft overlay effect has run — prevents autosave from firing
+  // before overlaid draft values are captured as the baseline.
+  const [overlayReady, setOverlayReady] = useState(isCreateMode);
   const [aiAutocompleteEnabled, setAiAutocompleteEnabled] = useState(true);
   const [aiWriterSidebarOpened, setAiWriterSidebarOpened] = useState(false);
   const [revisionsModalOpened, setRevisionsModalOpened] = useState(false);
@@ -206,6 +209,11 @@ export default function BlogPostEdit() {
     'Please specify an API key and autocomplete model in Site Settings to use this feature.',
   );
 
+  // Reset overlayReady when navigating to a different blog post record.
+  useEffect(() => {
+    if (!isCreateMode) setOverlayReady(false);
+  }, [id, isCreateMode]);
+
   // Overlay draft_* onto live fields once per loaded record so the editor shows the working copy.
   // We must bump editorKey so RichTextInput (TipTap) remounts with the draft content —
   // it only reads its `content` prop on mount.
@@ -218,6 +226,8 @@ export default function BlogPostEdit() {
       setRecord({ ...record, contents: overlaid });
       setEditorKey((k) => k + 1);
     }
+    // Signal that the overlay is done — autosave may now enable.
+    setOverlayReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record?.id, isCreateMode]);
 
@@ -242,7 +252,7 @@ export default function BlogPostEdit() {
   const autosave = useDraftAutosave({
     recordType: 'blog_post',
     recordId: isCreateMode ? null : id,
-    enabled: !isCreateMode && !!record?.id,
+    enabled: !isCreateMode && !!record?.id && overlayReady,
     buildContentsPayload,
   });
 
@@ -972,8 +982,12 @@ export default function BlogPostEdit() {
         contentId={activeContent?.id}
         hasWritePermission={true}
         onContentRestored={async () => {
+          // Disable autosave before refetch so restored content isn't treated
+          // as a user edit — re-enabling resets the baseline via useDraftAutosave.
+          setOverlayReady(false);
           await getOne(id);
           setEditorKey((k) => k + 1);
+          setOverlayReady(true);
         }}
       />
     </>
