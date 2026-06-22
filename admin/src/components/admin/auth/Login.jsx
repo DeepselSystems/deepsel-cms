@@ -78,10 +78,17 @@ export default function Login({
   const searchParams = useSearchParams()[0];
   const passwordlessToken = searchParams.get('passwordless');
 
-  /** Fetches public org settings for the currently selected organization */
+  /**
+   * Fetches public org settings.
+   * When an org is selected, uses the org-specific endpoint.
+   * When no org is selected (e.g. incognito/first visit), falls back to the
+   * domain-based endpoint so Google/SAML buttons are visible before org selection.
+   */
   const fetchOrgPublicSettings = useCallback(async () => {
-    if (!organizationId) return;
-    const response = await fetch(`/util/public_settings/${organizationId}`);
+    const url = organizationId
+      ? `/util/public_settings/${organizationId}`
+      : `/util/public_settings`;
+    const response = await fetch(url);
     const data = await response.json();
     setOrgPublicSettings(data);
   }, [organizationId]);
@@ -334,6 +341,9 @@ export default function Login({
               onEmailChange={(e) => setLoginEmail(e.target.value)}
               loading={orgsFetching}
               onSubmit={handleUsernameSubmit}
+              orgPublicSettings={orgPublicSettings}
+              organizationId={organizationId}
+              locationSearch={location.search}
             />
           ) : (
             /* Step 2: org selector + password */
