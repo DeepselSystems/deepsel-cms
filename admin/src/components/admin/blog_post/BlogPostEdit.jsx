@@ -436,6 +436,11 @@ export default function BlogPostEdit() {
   };
 
   const refetchAfterChange = async () => {
+    // Disable autosave before refetching so the incoming content does not look like
+    // a user edit. The disabled→enabled transition resets the autosave baseline via
+    // useDraftAutosave's enabled-off effect, ensuring the fresh data is captured as
+    // the new baseline without scheduling a save.
+    setOverlayReady(false);
     // The overlay useEffect is keyed on record.id and won't re-run for a refetch
     // of the same record, so we apply it manually here to keep any still-pending
     // per-language drafts visible (e.g. after reverting only the active language).
@@ -445,6 +450,7 @@ export default function BlogPostEdit() {
       setRecord({ ...fresh, contents: overlaid });
       setEditorKey((k) => k + 1);
       draftOverlayAppliedForIdRef.current = fresh.id;
+      setOverlayReady(true);
     }
   };
 
@@ -982,12 +988,21 @@ export default function BlogPostEdit() {
         contentId={activeContent?.id}
         hasWritePermission={true}
         onContentRestored={async () => {
-          // Disable autosave before refetch so restored content isn't treated
-          // as a user edit — re-enabling resets the baseline via useDraftAutosave.
+          // Disable autosave before refetch so restored content isn't treated as a
+          // user edit — re-enabling resets the baseline via useDraftAutosave.
+          // Apply overlay manually: the overlay useEffect is keyed on record.id so it
+          // won't re-run for a same-id refetch; and draftOverlayAppliedForIdRef must
+          // be reset so the next overlay pass sees the restored draft_* fields.
           setOverlayReady(false);
-          await getOne(id);
-          setEditorKey((k) => k + 1);
-          setOverlayReady(true);
+          const fresh = await getOne(id);
+          if (fresh?.contents) {
+            draftOverlayAppliedForIdRef.current = null;
+            const overlaid = applyDraftOverlayToContents(fresh.contents);
+            setRecord({ ...fresh, contents: overlaid });
+            setEditorKey((k) => k + 1);
+            draftOverlayAppliedForIdRef.current = fresh.id;
+            setOverlayReady(true);
+          }
         }}
       />
     </>

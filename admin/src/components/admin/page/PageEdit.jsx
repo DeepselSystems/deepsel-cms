@@ -713,8 +713,8 @@ export default function PageEdit({ onSuccess }) {
       setRecord({ ...fresh, contents: overlaid });
       setEditorKey((k) => k + 1);
       draftOverlayAppliedForIdRef.current = fresh.id;
+      setOverlayReady(true);
     }
-    setOverlayReady(true);
   };
 
   // Snapshot parent-level settings when the drawer opens so we can detect on close
