@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { LocalstorageKey } from '../../constants/localstorage.js';
 
 const initialState = {
   organizationId: parseInt(localStorage.getItem('organizationId')) || 1,
@@ -7,7 +8,7 @@ const initialState = {
 export default create((set) => ({
   ...initialState,
   setOrganizationId: (organizationId) => {
-    localStorage.setItem('organizationId', organizationId);
+    localStorage.setItem(LocalstorageKey.OrganizationId, organizationId && String(organizationId));
     set(() => ({ organizationId }));
   },
 }));
