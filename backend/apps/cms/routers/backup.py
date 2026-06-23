@@ -178,6 +178,8 @@ def export_backup(
             "attachment/seo_metadata_featured_image_id",
             "seo_metadata_allow_indexing",
             "custom_code",
+            "published",
+            "last_modified_at",
         ]
 
         def get_seo_featured_image_string_id(record):
@@ -239,6 +241,8 @@ def export_backup(
             "seo_metadata_description",
             "attachment/seo_metadata_featured_image_id",
             "seo_metadata_allow_indexing",
+            "published",
+            "last_modified_at",
         ]
 
         def get_featured_image_string_id(record):
