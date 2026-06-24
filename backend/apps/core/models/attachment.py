@@ -28,6 +28,7 @@ class AttachmentModel(Base, BaseModel):
         "AttachmentLocaleVersionModel",
         back_populates="attachment",
         cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
     def delete(

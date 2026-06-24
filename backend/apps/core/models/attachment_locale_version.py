@@ -4,11 +4,11 @@ from sqlalchemy import Column, Enum, Integer, String, ForeignKey, UniqueConstrai
 from sqlalchemy.orm import relationship
 
 from db import Base
-from apps.core.mixins.base_model import BaseModel
+from apps.core.mixins.base_model import ORMBaseMixin
 from deepsel.orm.attachment_mixin import AttachmentMixin, AttachmentTypeOptions
 
 
-class AttachmentLocaleVersionModel(Base, AttachmentMixin, BaseModel):
+class AttachmentLocaleVersionModel(Base, AttachmentMixin, ORMBaseMixin):
     """
     One file per locale per attachment object.
     EN and DE can have completely different files, file names, and alt text.

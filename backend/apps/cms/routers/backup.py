@@ -29,47 +29,60 @@ def _filter_attachment_rows_for_import(
     skips: list,
 ) -> list[dict]:
     """
-    Filter attachment rows that already exist in the DB (matched by name + organization_id).
+    Filter attachment/locale-version rows that already exist in the DB by name.
 
     Rows with a matching record but a different string_id are dropped from the import
-    to avoid UniqueViolation. The existing record's string_id is updated in the current
-    DB session so that cross-table references (e.g. attachment/attachment_id in
-    attachment_locale_version.csv) can still resolve by string_id within the same
-    transaction.
+    to avoid UniqueViolation. The existing record's string_id is updated in-session
+    (only when no other record already holds the target string_id) so that cross-table
+    FK references can still resolve within the same transaction.
 
-    Only intended for attachment and attachment_locale_version models.
-    Skipped rows are appended to the provided skips list.
+    All queries run inside a no_autoflush block to prevent premature constraint errors
+    when the model does not carry an organization_id column.
     """
-    AttachmentModel = models_pool[model_name]
+    Model = models_pool.get(model_name)
+    if Model is None:
+        return rows
+
     kept_rows = []
-    for row in rows:
-        name = row.get("name")
-        string_id = row.get("string_id")
-        existing = (
-            db.query(AttachmentModel)
-            .filter_by(name=name, organization_id=org_id)
-            .first()
-        )
-        if existing and existing.string_id != string_id:
-            existing.string_id = string_id
-            reason = (
-                f"record with name='{name}' already exists "
-                f"in organization {org_id} with a different string_id"
-            )
-            logger.warning(
-                f"Skipping {model_name} '{name}' (string_id='{string_id}'): "
-                f"{reason} (existing string_id='{existing.string_id}')"
-            )
-            skips.append(
-                {
-                    "model": model_name,
-                    "string_id": string_id,
-                    "name": name,
-                    "reason": reason,
-                }
-            )
-        else:
-            kept_rows.append(row)
+    with db.no_autoflush:
+        for row in rows:
+            name = row.get("name")
+            string_id = row.get("string_id")
+
+            query = db.query(Model).filter(Model.name == name)
+            if hasattr(Model, "organization_id"):
+                query = query.filter(Model.organization_id == org_id)
+            existing = query.first()
+
+            if existing and existing.string_id != string_id:
+                # Only reassign string_id when no other record already holds it.
+                string_id_taken = (
+                    db.query(Model)
+                    .filter(Model.string_id == string_id, Model.id != existing.id)
+                    .first()
+                )
+                if not string_id_taken:
+                    existing.string_id = string_id
+
+                reason = (
+                    f"record with name='{name}' already exists "
+                    f"in organization {org_id} with a different string_id"
+                )
+                logger.warning(
+                    f"Skipping {model_name} '{name}' (string_id='{string_id}'): "
+                    f"{reason} (existing string_id='{existing.string_id}')"
+                )
+                skips.append(
+                    {
+                        "model": model_name,
+                        "string_id": string_id,
+                        "name": name,
+                        "reason": reason,
+                    }
+                )
+            else:
+                kept_rows.append(row)
+
     return kept_rows
 
 
@@ -202,6 +215,37 @@ def export_backup(
             },
         )
 
+        # Export PageContent Revisions
+        PageContentRevisionModel = models_pool.get("page_content_revision")
+        if PageContentRevisionModel:
+            page_content_revisions = (
+                db.query(PageContentRevisionModel)
+                .filter_by(organization_id=org_id)
+                .all()
+            )
+
+            def get_page_content_string_id_for_revision(record):
+                return ensure_string_id(record.page_content, "page_content")
+
+            page_content_revision_fields = [
+                "string_id",
+                "name",
+                "revision_number",
+                "page_content/page_content_id",
+                "old_content",
+                "new_content",
+            ]
+
+            write_model_csv(
+                zip_file,
+                "page_content_revision",
+                page_content_revisions,
+                page_content_revision_fields,
+                extra_fields={
+                    "page_content/page_content_id": get_page_content_string_id_for_revision
+                },
+            )
+
         # 2. Export Blog Posts
         BlogPostModel = models_pool["blog_post"]
         blog_posts = db.query(BlogPostModel).filter_by(organization_id=org_id).all()
@@ -271,6 +315,37 @@ def export_backup(
                 "attachment/seo_metadata_featured_image_id": get_blog_seo_featured_image_string_id,
             },
         )
+
+        # Export BlogPostContent Revisions
+        BlogPostContentRevisionModel = models_pool.get("blog_post_content_revision")
+        if BlogPostContentRevisionModel:
+            blog_post_content_revisions = (
+                db.query(BlogPostContentRevisionModel)
+                .filter_by(organization_id=org_id)
+                .all()
+            )
+
+            def get_blog_post_content_string_id_for_revision(record):
+                return ensure_string_id(record.blog_post_content, "blog_post_content")
+
+            blog_post_content_revision_fields = [
+                "string_id",
+                "name",
+                "revision_number",
+                "blog_post_content/blog_post_content_id",
+                "old_content",
+                "new_content",
+            ]
+
+            write_model_csv(
+                zip_file,
+                "blog_post_content_revision",
+                blog_post_content_revisions,
+                blog_post_content_revision_fields,
+                extra_fields={
+                    "blog_post_content/blog_post_content_id": get_blog_post_content_string_id_for_revision
+                },
+            )
 
         # 3. Export Menus
         MenuModel = models_pool["menu"]
@@ -502,8 +577,10 @@ def import_backup(
                 "attachment_locale_version.csv",
                 "page.csv",
                 "page_content.csv",
+                "page_content_revision.csv",
                 "blog_post.csv",
                 "blog_post_content.csv",
+                "blog_post_content_revision.csv",
                 "menu.csv",
             ]
 
