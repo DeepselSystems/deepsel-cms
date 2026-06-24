@@ -4,8 +4,11 @@ import { ADMIN_USERNAME, ADMIN_PASSWORD } from "../playwright.config";
 /**
  * Regression: useUpload previously read `organizationId` directly from
  * localStorage. On a fresh login the Zustand store has the in-memory default
- * (`1`) but localStorage hasn't been written yet, so uploads went out without
+ * (`1`) but localStorage hadn't been written yet, so uploads went out without
  * `X-Organization-Id` and the backend returned 400.
+ *
+ * The organizationId is now written to localStorage immediately after login,
+ * so both the in-memory store and localStorage are consistent from the start.
  *
  * This spec uses a brand-new browser context (no saved storage state), logs
  * in via the UI, performs an upload immediately, and asserts the upload
@@ -24,15 +27,15 @@ test("upload immediately after fresh login carries X-Organization-Id", async ({
   await loginPanel.getByRole("button", { name: "Login", exact: true }).click();
   await page.waitForURL("**/admin/pages", { timeout: 15_000 });
 
-  // Sanity: localStorage should not yet contain organizationId — that proves
-  // the upload header has to come from the in-memory store value, not LS.
+  // Sanity: organizationId is now written to localStorage immediately after
+  // login — verify it is present so uploads can read it.
   const orgIdInLs = await page.evaluate(() =>
     localStorage.getItem("organizationId"),
   );
   expect(
     orgIdInLs,
-    "localStorage should be empty for the org id on fresh login",
-  ).toBeNull();
+    "localStorage should contain organizationId after login",
+  ).not.toBeNull();
 
   await page.goto("/admin/media");
   await expect(page).toHaveURL(/\/admin\/media/);
