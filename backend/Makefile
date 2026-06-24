@@ -52,7 +52,7 @@ clean:
 
 test:
 	@echo "Running tests with coverage..."
-	TESTCONTAINERS_RYUK_DISABLED=true pytest --cov=. --cov-report=term-missing --cov-report=xml
+	pytest --cov=. --cov-report=term-missing --cov-report=xml
 
 lint:
 	@echo "Running flake8..."
