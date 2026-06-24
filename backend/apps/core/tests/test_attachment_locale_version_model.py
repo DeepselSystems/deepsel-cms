@@ -39,7 +39,6 @@ def test_unique_constraint_blocks_duplicate_locale_for_same_attachment(db):
             locale_id=locale.id,
             attachment_id=att.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     db.add(
@@ -48,7 +47,6 @@ def test_unique_constraint_blocks_duplicate_locale_for_same_attachment(db):
             locale_id=locale.id,
             attachment_id=att.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     with pytest.raises(IntegrityError):
@@ -71,7 +69,6 @@ def test_unique_constraint_allows_same_locale_across_different_attachments(db):
             locale_id=locale.id,
             attachment_id=att_a.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     db.add(
@@ -80,7 +77,6 @@ def test_unique_constraint_allows_same_locale_across_different_attachments(db):
             locale_id=locale.id,
             attachment_id=att_b.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     db.commit()  # Should not raise
@@ -103,7 +99,6 @@ def test_locale_version_name_is_globally_unique(db):
             locale_id=locale.id,
             attachment_id=att_a.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     db.commit()
@@ -114,7 +109,6 @@ def test_locale_version_name_is_globally_unique(db):
             locale_id=locale.id,
             attachment_id=att_b.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     with pytest.raises(IntegrityError):
@@ -145,14 +139,12 @@ def test_deleting_attachment_cascades_to_all_locale_versions(db):
                 locale_id=en_locale.id,
                 attachment_id=att.id,
                 content_type="image/jpeg",
-                organization_id=org.id,
             ),
             AttachmentLocaleVersionModel(
                 name="cascade_de.jpg",
                 locale_id=de_locale.id,
                 attachment_id=att.id,
                 content_type="image/jpeg",
-                organization_id=org.id,
             ),
         ]
     )

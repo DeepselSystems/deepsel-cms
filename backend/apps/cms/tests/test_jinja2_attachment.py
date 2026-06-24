@@ -174,7 +174,6 @@ def _create_attachment_with_versions(db, org, versions):
             attachment_id=att.id,
             content_type=content_type,
             alt_text=alt_text,
-            organization_id=org.id,
         )
         db.add(lv)
         rows.append(lv)
@@ -309,7 +308,6 @@ def test_attachment_func_treats_non_json_string_as_a_name(db):
             locale_id=en_locale.id,
             attachment_id=b.id,
             content_type="image/jpeg",
-            organization_id=org.id,
         )
     )
     db.commit()
