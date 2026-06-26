@@ -1,4 +1,4 @@
-import { WebsiteDataProvider, useWebsiteData } from "@deepsel/cms-react";
+import { WebsiteDataProvider, useWebsiteData, CustomCodeRenderer } from "@deepsel/cms-react";
 import {getAttachmentByNameRelativeUrl, WebsiteDataTypes} from "@deepsel/cms-utils";
 import type { BlogPostData } from "@deepsel/cms-utils";
 import Footer from "./Footer";
@@ -87,6 +87,11 @@ function BlogPostContent() {
       </div>
 
       <Footer />
+      <CustomCodeRenderer
+        pageData={post as unknown as Record<string, unknown>}
+        contentData={post as unknown as Record<string, unknown>}
+        type="blog_post"
+      />
     </main>
   );
 }

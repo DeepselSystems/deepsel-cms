@@ -39,7 +39,7 @@ export interface BlogPostData {
   public_settings: SiteSettings;
   seo_metadata?: SeoMetadata;
   custom_code?: string | null;
-  page_custom_code?: string | null;
+  blog_post_custom_code?: string | null;
   require_login?: boolean | null;
   featured_image_id?: number | null;
   featured_image_name?: string | null;

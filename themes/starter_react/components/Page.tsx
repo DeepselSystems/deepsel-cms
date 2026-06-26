@@ -1,5 +1,5 @@
 import { WebsiteDataTypes, type PageData } from "@deepsel/cms-utils";
-import { WebsiteDataProvider, ContentRenderer } from "@deepsel/cms-react";
+import { WebsiteDataProvider, ContentRenderer, CustomCodeRenderer } from "@deepsel/cms-react";
 import Menu from "./Menu";
 import Footer from "./Footer";
 import LangSwitcher from "./LangSwitcher";
@@ -27,6 +27,11 @@ export default function Page({ pageData }: { pageData: PageData }) {
           <ContentRenderer />
         </div>
         <Footer />
+        <CustomCodeRenderer
+          pageData={pageData as unknown as Record<string, unknown>}
+          contentData={pageData as unknown as Record<string, unknown>}
+          type="page"
+        />
       </main>
     </WebsiteDataProvider>
   );
